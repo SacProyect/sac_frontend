@@ -4,16 +4,16 @@ import { useNavigate } from 'react-router-dom';
 import { signIn } from '../utils/api-connection';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
+import TextInput from '../UI/TextInput';
 
 function Login() {
-    const { register, handleSubmit, errors } = useForm();
+    const { register, handleSubmit } = useForm();
     const navigate = useNavigate();
     const { login, user } = useAuth()
 
     const validarLogin = async (data) => {
         try {
             const user = await signIn(Number(data.cedula), data.password)
-            console.log(user)
             login(user)
         } catch (error) {
             console.error('Error al validar el login:', error);
@@ -28,18 +28,15 @@ function Login() {
                 <div className='flex-col bg-white p-10 w-96 rounded-lg shadow-md z-10'>
                     <h2 className="text-black text-2xl font-bold mb-5">Iniciar Sesión</h2>
                     <form onSubmit={handleSubmit(validarLogin)}>
-                        <input
-                            type="text"
-                            {...register('cedula')}
-                            placeholder="Usuario"
-                            className="w-full text p-2 mb-4 border border-[#ccc] rounded-[4px] bg-slate-50 text-black"
+                        <TextInput
+                            register={{ ...register('cedula') }}
+                            placeholder={"Cedula"}
                         />
 
-                        <input
+                        <TextInput
                             type="password"
-                            {...register('password')}
+                            register={{ ...register('password') }}
                             placeholder="Contraseña"
-                            className="w-full p-2 mb-4 border border-[#ccc] rounded-[4px] bg-slate-50 text-black"
                         />
 
                         <button

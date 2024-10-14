@@ -3,6 +3,10 @@ import LoginPage from './pages/Auth/LoginPage'
 import { ProtectedRoute } from './components/Navigation/ProtectedRoute';
 import Sidebar from './components/Navigation/Sidebar';
 import HomePage from './pages/Home/HomePage';
+import FinePage from './pages/Events/FinePage';
+import ComitmentPage from './pages/Events/ComitmentPage';
+import PaymentPage from './pages/Events/PaymentPage';
+import NoticePage from './pages/Events/NoticePage';
 
 
 export default function App() {
@@ -20,6 +24,19 @@ export default function App() {
         {
           path: "home",
           element: <HomePage />
+        }, {
+          path: "multa",
+          element: <FinePage />
+        },
+        {
+          path: "compromiso_pago",
+          element: <ComitmentPage />
+        }, {
+          path: "pago",
+          element: <PaymentPage />
+        }, {
+          path: "aviso",
+          element: <NoticePage />
         }
       ]
     }
