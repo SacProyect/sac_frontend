@@ -7,6 +7,7 @@ import FinePage from './pages/Events/FinePage';
 import ComitmentPage from './pages/Events/ComitmentPage';
 import PaymentPage from './pages/Events/PaymentPage';
 import NoticePage from './pages/Events/NoticePage';
+import TaxpayerForm from './components/Taxpayer/TaxpayerForm';
 
 
 export default function App() {
@@ -37,6 +38,9 @@ export default function App() {
         }, {
           path: "aviso",
           element: <NoticePage />
+        }, {
+          path: "contribuyente",
+          element: <TaxpayerForm />
         }
       ]
     }

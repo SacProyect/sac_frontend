@@ -12,7 +12,7 @@ import { parseDate } from '@internationalized/date';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { useEffect } from 'react';
 
-function EventForm({ title = 'Multa', type = "multa", contribuyente = "1" }) {
+function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
     const { user } = useAuth();
     const taxpayerArray = user.contribuyentes
     const {
@@ -38,7 +38,7 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "1" }) {
             <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Agregar {title}</h2>
             <Form onSubmit={handleSubmit(onSubmit)}>
                 {
-                    contribuyente == "1" &&
+                    contribuyente == "" &&
                     <TaxpayerCombobox name={"contribuyenteId"} control={control} label={"Contribuyente"} taxpayers={taxpayerArray} />
                 }
                 <DateInputUI

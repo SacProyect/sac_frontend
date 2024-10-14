@@ -12,7 +12,7 @@ function Sidebar() {
         {
             name: 'Buscar', path: '/'
         }, {
-            name: 'Contribuyentes', path: '/'
+            name: 'Contribuyentes', path: '/contribuyente'
         }, {
             name: 'Avisos', path: '/aviso'
         }, {
@@ -26,7 +26,7 @@ function Sidebar() {
         {
             name: 'Buscar', path: '/'
         }, {
-            name: 'Contribuyentes', path: '/'
+            name: 'Contribuyentes', path: '/contribuyente'
         }, {
             name: 'Avisos', path: '/aviso'
         }, {

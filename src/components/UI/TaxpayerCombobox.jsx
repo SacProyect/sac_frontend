@@ -2,13 +2,11 @@ import React from 'react'
 import { Input } from 'react-aria-components'
 import { ComboBox } from 'react-aria-components'
 import { Controller } from 'react-hook-form'
-import InputButton from './InputButton'
 import { Label } from 'react-aria-components'
 import { Popover } from 'react-aria-components'
 import { ListBox } from 'react-aria-components'
 import { ListBoxItem } from 'react-aria-components'
 import { useFilter } from 'react-aria'
-import { Group } from 'react-aria-components'
 import { Button } from 'react-aria-components'
 
 function TaxpayerCombobox({ control, name, label, taxpayers = [] }) {
