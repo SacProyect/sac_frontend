@@ -7,7 +7,6 @@ import { Form } from 'react-aria-components'
 import { Label } from 'react-aria-components';
 import { Button } from 'react-aria-components';
 import DateInputUI from '../UI/DateInputUI';
-import { fromDate } from '@internationalized/date';
 import { parseDate } from '@internationalized/date';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { useEffect } from 'react';
@@ -46,13 +45,17 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                     control={control}
                     label={"Fecha de pago"}
                 />
+                {type !== "aviso" &&
+                    <>
+                        <Label className="text-black">Monto</Label>
 
-                <Label className="text-black">Monto</Label>
-                <TextInput
-                    placeholder={'3500...'}
-                    type='number'
-                    register={{ ...register("monto", { required: "Campo Obligatroio" }) }}
-                />
+                        <TextInput
+                            placeholder={'3500...'}
+                            type='number'
+                            register={{ ...register("monto", { required: "Campo Obligatroio" }) }}
+                        />
+                    </>
+                }
                 <Button
                     type='submit'
                     isDisabled={!isValid}

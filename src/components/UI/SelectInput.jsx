@@ -27,6 +27,7 @@ const SelectInput = ({ control, name, items = [], label }) => {
                     isRequired
                     validationBehavior="aria"
                     isInvalid={invalid}
+                    placeholder='Seleccione un item'
                     defaultSelectedKey={items.length > 0 ? items[0].id : undefined}
                 >
                     <Label>{label}</Label>
@@ -50,7 +51,7 @@ const SelectInput = ({ control, name, items = [], label }) => {
                             {
                                 item =>
                                     <ListBoxItem
-                                        className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1"
+                                        className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1 cursor-pointer"
                                         value={item.value}
                                         key={item.value}
                                     >

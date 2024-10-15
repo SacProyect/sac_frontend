@@ -7,9 +7,13 @@ import { Label } from 'react-aria-components';
 import TextInput from '../UI/TextInput';
 import SelectInput from '../UI/SelectInput';
 import { Button } from 'react-aria-components';
+import { useState } from 'react';
+import { useEffect } from 'react';
+import { getFuncionarios } from '../utils/api-connection';
 
 function TaxpayerForm() {
     const { user } = useAuth()
+    const [official, setOfficials] = useState([])
     const {
         register,
         handleSubmit,
@@ -34,10 +38,25 @@ function TaxpayerForm() {
         { value: 'ORDINARIO', name: 'ORDINARIO', id: 'ORDINARIO' },
         { value: 'ESPECIAL', name: 'ESPECIAL', id: 'ESPECIAL' },
     ]
+    const loadOfficials = async () => {
+        const response = await getFuncionarios()
+        const officialArray = response.map((item) => { return { value: item.id, name: `${item.nombre} C.I.:${item.cedula}`, id: item.id } })
+        setOfficials(officialArray)
+    }
+
+    useEffect(() => { loadOfficials() }, [])
+
+    const onSubmit = async () => {
+        try {
+
+        } catch (error) {
+
+        }
+    }
     return (
         <FormContainer>
             <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Agregar Contribuyente</h2>
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit(onSubmit)}>
                 <Label>Nro. Providencia</Label>
                 <TextInput
                     placeholder={"Ingrese el numero de providencia"}
@@ -67,6 +86,12 @@ function TaxpayerForm() {
                     name="tipoContrato"
                     items={contractArray}
                     label="Tipo Contribuyente"
+                />
+                <SelectInput
+                    control={control}
+                    name={"funcionarioId"}
+                    items={official}
+                    label={"Funcionario"}
                 />
                 <Button
                     type='submit'

@@ -69,7 +69,7 @@ function DateInputUI({ control, name, label }) {
                                     </InputButton>
                                 </header>
                                 <CalendarGrid className='w-full px-4'>
-                                    {(date) => <CalendarCell className={'self-center text-center hover:bg-[#3498db] rounded-lg hover:-translate-y-1'} date={date} />}
+                                    {(date) => <CalendarCell className={'self-center text-center hover:bg-[#3498db] hover:text-white rounded-lg hover:-translate-y-1'} date={date} />}
                                 </CalendarGrid>
                             </Calendar>
                         </Dialog>

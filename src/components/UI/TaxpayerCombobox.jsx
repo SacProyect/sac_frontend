@@ -28,6 +28,7 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }) {
             }) => (
                 <ComboBox
                     onSelectionChange={onChange}
+
                     onInputChange={(value) => {
                         setShowAll(false);
                         setFilterValue(value);
@@ -61,7 +62,7 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }) {
                         <ListBox ref={ref} className={"bg-white w-full rounded-2xl shadow-2xl border border-black"}>
                             {
                                 item =>
-                                    <ListBoxItem className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1" value={`${item.id}`} textValue={`${item.nroProvidencia} ${item.procedimiento} ${item.rif}`}>
+                                    <ListBoxItem className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1 hover:text-white" value={`${item.id}`} textValue={`${item.nroProvidencia} ${item.procedimiento} ${item.rif}`}>
                                         {item.nroProvidencia} {item.procedimiento} {item.rif}
                                     </ListBoxItem>
                             }
