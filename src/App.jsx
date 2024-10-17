@@ -8,6 +8,7 @@ import ComitmentPage from './pages/Events/ComitmentPage';
 import PaymentPage from './pages/Events/PaymentPage';
 import NoticePage from './pages/Events/NoticePage';
 import TaxpayerForm from './components/Taxpayer/TaxpayerForm';
+import TaxpayerDetail from './pages/Taxpayer/TaxpayerDetail';
 
 
 export default function App() {
@@ -26,21 +27,24 @@ export default function App() {
           path: "home",
           element: <HomePage />
         }, {
-          path: "multa",
+          path: "multa/:contribuyente?",
           element: <FinePage />
         },
         {
-          path: "compromiso_pago",
+          path: "compromiso_pago/:contribuyente?",
           element: <ComitmentPage />
         }, {
-          path: "pago",
+          path: "pago/:contribuyente?",
           element: <PaymentPage />
         }, {
-          path: "aviso",
+          path: "aviso/:contribuyente?",
           element: <NoticePage />
         }, {
-          path: "contribuyente",
+          path: "contribuyente/",
           element: <TaxpayerForm />
+        }, {
+          path: "contribuyente/:contribuyente?",
+          element: <TaxpayerDetail />
         }
       ]
     }

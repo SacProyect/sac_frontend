@@ -9,7 +9,8 @@ import SelectInput from '../UI/SelectInput';
 import { Button } from 'react-aria-components';
 import { useState } from 'react';
 import { useEffect } from 'react';
-import { getFuncionarios } from '../utils/api-connection';
+import { getFuncionarios } from '../utils/api/userFunctions';
+
 
 function TaxpayerForm() {
     const { user } = useAuth()

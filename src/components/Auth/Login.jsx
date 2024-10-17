@@ -1,10 +1,10 @@
 import React from 'react'
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { signIn } from '../utils/api-connection';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
 import TextInput from '../UI/TextInput';
+import { signIn } from '../utils/api/userFunctions';
 
 function Login() {
     const { register, handleSubmit } = useForm();

@@ -1,9 +1,54 @@
-import React from 'react'
+import React, { useMemo } from 'react';
+import TaxpayerTable from '../../components/Taxpayer/TaxpayerTable';
+import { useAuth } from '../../hooks/useAuth';
+import { Input } from 'react-aria-components';
+import { SearchField } from 'react-aria-components';
+import { Controller, useForm } from 'react-hook-form';
+import { useFilter } from 'react-aria';
+import { Label } from 'react-aria-components';
 
 function HomePage() {
+    const { user } = useAuth();
+    const taxpayers = user.contribuyentes;
+    const { contains } = useFilter({ sensitivity: "case" })
+    const {
+        control,
+        watch,
+    } = useForm({ defaultValues: { search: '' } })
+    const filterValue = watch('search')
+    const filteredItems = useMemo(
+        () => taxpayers.filter((item) => contains(`${item.rif} ${item.procedimiento} ${item.nombre}`, filterValue)),
+        [taxpayers, filterValue]);
+
     return (
-        <h1>Culo</h1>
-    )
+        <div className='flex justify-center w-4/5 mt-20'>
+            <div className='flex-col'>
+                <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Administración</h2>
+                <Controller
+                    control={control}
+                    name='search'
+                    render={({
+                        field: { name, value, onChange, onBlur, ref }
+                    }) => (
+                        <SearchField
+                            name={name}
+                            value={value}
+                            onChange={onChange}
+                            onBlur={onBlur}
+                            className={"flex flex-col"}
+                        >
+                            <Label>Buscar</Label>
+                            <Input
+                                className={"w-1/2 p-1 mb-4 border border-[#ccc] rounded-lg bg-slate-50 text-black cursor-pointer"}
+                                onChange={onChange} />
+                        </SearchField>
+                    )}
+                />
+
+                <TaxpayerTable propRows={filteredItems} />
+            </div>
+        </div>
+    );
 }
 
-export default HomePage
+export default HomePage;

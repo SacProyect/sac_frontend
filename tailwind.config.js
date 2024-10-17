@@ -1,4 +1,5 @@
 /** @type {import('tailwindcss').Config} */
+
 export default {
   content: [
     "./index.html",
@@ -12,6 +13,6 @@ export default {
       display: ["group-hover"],
     },
   },
-  plugins: [],
+  plugins: [require('tailwindcss-react-aria-components')],
 }
 

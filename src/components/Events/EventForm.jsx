@@ -9,7 +9,7 @@ import { Button } from 'react-aria-components';
 import DateInputUI from '../UI/DateInputUI';
 import { parseDate } from '@internationalized/date';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-import { useEffect } from 'react';
+
 
 function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
     const { user } = useAuth();
@@ -26,9 +26,6 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                 fecha: parseDate(new Date().toISOString().split('T')[0]),
             }
         });
-    const taxWatcher = watch("contribuyenteId")
-
-    useEffect(() => console.log(taxWatcher), [taxWatcher])
     const onSubmit = (data) => {
         console.log("culo", data)
     }
