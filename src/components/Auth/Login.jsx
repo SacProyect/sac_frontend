@@ -13,8 +13,8 @@ function Login() {
 
     const validarLogin = async (data) => {
         try {
-            const user = await signIn(Number(data.cedula), data.password)
-            login(user)
+            const { user, token } = await signIn(Number(data.cedula), data.password)
+            login(user, token)
         } catch (error) {
             console.error('Error al validar el login:', error);
             alert('Ocurrió un error al intentar iniciar sesión');

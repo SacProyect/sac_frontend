@@ -10,7 +10,7 @@ function Sidebar() {
     const { user, logout } = useAuth()
     const navOptions = user.tipo != "ADMIN" ? [
         {
-            name: 'Inicio', path: '/home'
+            name: 'Inicio', path: '/'
         }, {
             name: 'Contribuyentes', path: '/contribuyente'
         }, {
@@ -24,7 +24,7 @@ function Sidebar() {
         }
     ] : [
         {
-            name: 'Inicio', path: '/home'
+            name: 'Inicio', path: '/'
         }, {
             name: 'Contribuyentes', path: '/contribuyente'
         }, {

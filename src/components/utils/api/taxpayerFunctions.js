@@ -1,10 +1,8 @@
-import axios from "axios"
-
-const apiURL = "http://localhost:8000/contribuyente"
+import { apiConnection } from "./apiConnection"
 
 export const createTaxpayer = async (taxpayerData) => {
 	try {
-		const response = await (await axios.post(`${apiURL}`, taxpayerData)).data
+		const response = await (await apiConnection.post(`/contribuyente`, taxpayerData)).data
 		return response
 	} catch (error) {
 		console.error(error)
@@ -14,11 +12,11 @@ export const createTaxpayer = async (taxpayerData) => {
 
 export const getTaxpayerEvents = async (taxpayerId, eventType) => {
 	try {
-		let requestURL = `${apiURL}/event/${taxpayerId}`
+		let requestURL = `/contribuyente/event/${taxpayerId}`
 		if (eventType) {
 			requestURL = `${requestURL}/${eventType}`;
 		}
-		const response = await (await axios.get(requestURL)).data
+		const response = await (await apiConnection.get(requestURL)).data
 		return response
 	} catch (error) {
 		console.error(error)
@@ -28,7 +26,7 @@ export const getTaxpayerEvents = async (taxpayerId, eventType) => {
 
 export const getAllEvents = async () => {
 	try {
-		const response = await (await axios.get(`${apiURL}/event/all`)).data
+		const response = await (await apiConnection.get(`/contribuyente/event/all`)).data
 		return response
 	} catch (error) {
 		return false

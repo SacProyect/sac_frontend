@@ -1,14 +1,17 @@
 import { createContext, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./useLocalStorage";
+import { useOutlet } from "react-router-dom";
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useLocalStorage("user", null);
+    const [token, setToken] = useLocalStorage("authToken", null);
     const navigate = useNavigate();
 
-    const login = async (data) => {
-        setUser(data);
+    const login = async (user, token) => {
+        setUser(user);
+        setToken(token);
         navigate("/");
     };
     const logout = () => {
@@ -20,6 +23,7 @@ export const AuthProvider = ({ children }) => {
         () => ({
             user,
             login,
+            token,
             logout,
         }),
         [user]
@@ -29,4 +33,12 @@ export const AuthProvider = ({ children }) => {
 
 export const useAuth = () => {
     return useContext(AuthContext);
+};
+
+export const AuthLayout = () => {
+    const outlet = useOutlet();
+
+    return (
+        <AuthProvider>{outlet}</AuthProvider>
+    );
 };

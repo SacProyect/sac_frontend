@@ -7,12 +7,12 @@ import { useState } from 'react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { getFineHistory, getPaymentHistory } from '../../components/utils/api/reportFunctions'
+import { useLoaderData } from 'react-router-dom'
 
 const TaxpayerDetail = () => {
 	const { contribuyente } = useParams()
-	const [fines, setFines] = useState()
-	const [payments, setPayments] = useState()
-	const [events, setEvents] = useState([])
+	const { events, fines, payments } = useLoaderData()
+
 	const options = [{
 		name: 'Aviso', path: `/aviso/${contribuyente}`
 	}, {
@@ -23,22 +23,6 @@ const TaxpayerDetail = () => {
 		name: 'Compromiso de pago', path: `/compromiso_pago/${contribuyente}`
 	}
 	]
-
-	const loadEvents = async () => {
-		const aux = await getTaxpayerEvents(contribuyente)
-		aux.forEach(event => event.id = `${event.id}_${event.tipo}`)
-		setEvents(aux)
-	}
-	const loadStats = async () => {
-		const auxFines = await getFineHistory(contribuyente)
-		const auxPayments = await getPaymentHistory(contribuyente)
-		setFines(auxFines)
-		setPayments(auxPayments)
-	}
-	useEffect(() => {
-		loadEvents();
-		loadStats();
-	}, []);
 
 	return (
 		<div

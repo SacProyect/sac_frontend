@@ -1,14 +1,12 @@
-import axios from "axios"
-
-const apiURL = "http://localhost:8000/reportes"
+import { apiConnection } from "./apiConnection";
 
 export const getFineHistory = async (taxpayerId) => {
 	try {
-		let requestURL = `${apiURL}/multa`
+		let requestURL = `/reportes/multa`
 		if (taxpayerId) {
 			requestURL = `${requestURL}/${taxpayerId}`;
 		}
-		const response = await (await axios.get(requestURL)).data;
+		const response = await (await apiConnection.get(requestURL)).data;
 		return response
 	} catch (error) {
 		console.error(error)
@@ -17,11 +15,11 @@ export const getFineHistory = async (taxpayerId) => {
 }
 export const getPaymentHistory = async (taxpayerId) => {
 	try {
-		let requestURL = `${apiURL}/pagos`
+		let requestURL = `reportes/pagos`
 		if (taxpayerId) {
 			requestURL = `${requestURL}/${taxpayerId}`;
 		}
-		const response = await (await axios.get(requestURL)).data;
+		const response = await (await apiConnection.get(requestURL)).data;
 		return response
 	} catch (error) {
 		console.error(error)

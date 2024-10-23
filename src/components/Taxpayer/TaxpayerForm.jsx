@@ -7,18 +7,16 @@ import { Label } from 'react-aria-components';
 import TextInput from '../UI/TextInput';
 import SelectInput from '../UI/SelectInput';
 import { Button } from 'react-aria-components';
-import { useState } from 'react';
-import { useEffect } from 'react';
-import { getFuncionarios } from '../utils/api/userFunctions';
+import { useLoaderData } from 'react-router-dom';
 
 
 function TaxpayerForm() {
     const { user } = useAuth()
-    const [official, setOfficials] = useState([])
+    const official = useLoaderData()
+
     const {
         register,
         handleSubmit,
-        watch,
         formState: { isValid },
         control } = useForm({
             defaultValues: {
@@ -39,13 +37,7 @@ function TaxpayerForm() {
         { value: 'ORDINARIO', name: 'ORDINARIO', id: 'ORDINARIO' },
         { value: 'ESPECIAL', name: 'ESPECIAL', id: 'ESPECIAL' },
     ]
-    const loadOfficials = async () => {
-        const response = await getFuncionarios()
-        const officialArray = response.map((item) => { return { value: item.id, name: `${item.nombre} C.I.:${item.cedula}`, id: item.id } })
-        setOfficials(officialArray)
-    }
 
-    useEffect(() => { loadOfficials() }, [])
 
     const onSubmit = async () => {
         try {
@@ -88,12 +80,14 @@ function TaxpayerForm() {
                     items={contractArray}
                     label="Tipo Contribuyente"
                 />
-                <SelectInput
-                    control={control}
-                    name={"funcionarioId"}
-                    items={official}
-                    label={"Funcionario"}
-                />
+                {user.tipo === "ADMIN" &&
+                    <SelectInput
+                        control={control}
+                        name={"funcionarioId"}
+                        items={official}
+                        label={"Funcionario"}
+                    />
+                }
                 <Button
                     type='submit'
                     isDisabled={!isValid}
