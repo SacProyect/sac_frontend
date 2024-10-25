@@ -8,6 +8,7 @@ import TextInput from '../UI/TextInput';
 import SelectInput from '../UI/SelectInput';
 import { Button } from 'react-aria-components';
 import { useLoaderData } from 'react-router-dom';
+import { createTaxpayer } from '../utils/api/taxpayerFunctions';
 
 
 function TaxpayerForm() {
@@ -39,11 +40,21 @@ function TaxpayerForm() {
     ]
 
 
-    const onSubmit = async () => {
+    const onSubmit = async (data) => {
         try {
+            console.log(data)
+            const newTaxpayer = await createTaxpayer(data)
+            const auxTaxpayerArray = user.contribuyentes
+            const auxUser = user
+            if (newTaxpayer) {
+                auxTaxpayerArray.push(newTaxpayer)
+                auxUser.contribuyentes = auxTaxpayerArray
+            }
 
+            console.log(auxTaxpayerArray)
+            setUser(auxUser)
         } catch (error) {
-
+            console.log
         }
     }
     return (
@@ -72,7 +83,7 @@ function TaxpayerForm() {
                 <TextInput
                     placeholder={"9668523..."}
                     type='number'
-                    register={{ ...register("RIF", { required: "Campo Obligatroio" }) }}
+                    register={{ ...register("rif", { required: "Campo Obligatroio" }) }}
                 />
                 <SelectInput
                     control={control}

@@ -6,10 +6,12 @@ import { SearchField } from 'react-aria-components';
 import { Controller, useForm } from 'react-hook-form';
 import { useFilter } from 'react-aria';
 import { Label } from 'react-aria-components';
+import { useEffect } from 'react';
+import { useState } from 'react';
 
 function HomePage() {
     const { user } = useAuth();
-    const taxpayers = user.contribuyentes;
+    const [taxpayers, setTaxpayers] = useState(user.contribuyentes)
     const { contains } = useFilter({ sensitivity: "case" })
     const {
         control,
@@ -18,8 +20,12 @@ function HomePage() {
     const filterValue = watch('search')
     const filteredItems = useMemo(
         () => taxpayers.filter((item) => contains(`${item.rif} ${item.procedimiento} ${item.nombre}`, filterValue)),
-        [taxpayers, filterValue]);
+        [taxpayers, filterValue, user]);
 
+    useEffect(() => {
+        setTaxpayers(user.contribuyentes)
+        console.log(user.contribuyentes)
+    }, [user])
     return (
         <div className='flex justify-center w-4/5 mt-20'>
             <div className='flex-col'>

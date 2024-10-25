@@ -8,7 +8,7 @@ import PaymentPage from './pages/Events/PaymentPage';
 import NoticePage from './pages/Events/NoticePage';
 import TaxpayerForm from './components/Taxpayer/TaxpayerForm';
 import TaxpayerDetail from './pages/Taxpayer/TaxpayerDetail';
-import { getTaxpayerEvents } from './components/utils/api/taxpayerFunctions';
+import { getPendingPayments, getTaxpayerEvents } from './components/utils/api/taxpayerFunctions';
 import { createBrowserRouter } from 'react-router-dom';
 import { AuthLayout } from './hooks/useAuth';
 import { getFineHistory, getPaymentHistory } from './components/utils/api/reportFunctions';
@@ -41,7 +41,17 @@ export const router = createBrowserRouter([
             element: <ComitmentPage />
           }, {
             path: "pago/:contribuyente?",
-            element: <PaymentPage />
+            element: <PaymentPage />,
+            loader: async ({ params }) => {
+              try {
+                const taxpayerId = params.contribuyente
+                const pendingPayments = await getPendingPayments(taxpayerId)
+                const mappedPayments = pendingPayments.map((event) => { return { id: event.id, value: event.id, name: `${event.tipo} ${event.fecha.split("T")[0]} ${event.contribuyente}` } })
+                return mappedPayments
+              } catch (error) {
+                return []
+              }
+            }
           }, {
             path: "aviso/:contribuyente?",
             element: <NoticePage />

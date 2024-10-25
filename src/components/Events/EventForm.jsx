@@ -7,27 +7,38 @@ import { Form } from 'react-aria-components'
 import { Label } from 'react-aria-components';
 import { Button } from 'react-aria-components';
 import DateInputUI from '../UI/DateInputUI';
-import { parseDate } from '@internationalized/date';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
+import { createEvent } from '../utils/api/taxpayerFunctions';
+import { parseDateTime } from '@internationalized/date';
+import { useLoaderData } from 'react-router-dom';
+import SelectInput from '../UI/SelectInput';
 
 
 function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
     const { user } = useAuth();
     const taxpayerArray = user.contribuyentes
+    const pendingPayments = useLoaderData()
     const {
         register,
         handleSubmit,
-        watch,
         formState: { isValid },
         control } = useForm({
             defaultValues: {
+                eventId: "",
                 monto: '',
                 contribuyenteId: `${contribuyente}`,
-                fecha: parseDate(new Date().toISOString().split('T')[0]),
+                fecha: parseDateTime(new Date().toISOString().split('T')[0]),
             }
         });
-    const onSubmit = (data) => {
-        console.log("culo", data)
+    const onSubmit = async (data) => {
+        try {
+            data.fecha = data.fecha.toDate();
+            data.monto == "" ? delete data.monto : data.monto
+            data.eventId == "" ? delete data.eventId : data.eventId
+            const newEvent = await createEvent(type, data)
+        } catch (error) {
+
+        }
     }
     return (
         <FormContainer>
@@ -36,6 +47,17 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                 {
                     contribuyente == "" &&
                     <TaxpayerCombobox name={"contribuyenteId"} control={control} label={"Contribuyente"} taxpayers={taxpayerArray} />
+                }
+                {
+                    type == "pago" &&
+                    <>
+                        <SelectInput
+                            control={control}
+                            name={"eventId"}
+                            label={"Pagos Pendientes"}
+                            items={pendingPayments}
+                        />
+                    </>
                 }
                 <DateInputUI
                     name="fecha"

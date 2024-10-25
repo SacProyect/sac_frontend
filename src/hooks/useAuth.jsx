@@ -18,10 +18,10 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         navigate("/", { replace: true });
     };
-
     const value = useMemo(
         () => ({
             user,
+            setUser,
             login,
             token,
             logout,

@@ -24,13 +24,13 @@ const TaxpayerTable = ({ propRows }) => {
         column: "nroProvidencia",
         direction: "ascending"
     })
-    console.log(rows)
+
     const sortedItems = useMemo(() => {
         return rows.sort((a, b) => {
-
             const first = `${a[sortDescriptor.column]}`
             const second = `${b[sortDescriptor.column]}`
             let cmp = first.localeCompare(second)
+
             if (sortDescriptor.direction === 'descending') {
                 cmp *= -1;
             }

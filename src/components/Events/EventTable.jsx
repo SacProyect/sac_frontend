@@ -25,15 +25,25 @@ const EventTable = ({ propRows }) => {
 
   const sortedItems = useMemo(() => {
     return propRows.sort((a, b) => {
-      const first = `${a[sortDescriptor.column]}`
-      const second = `${b[sortDescriptor.column]}`
-      let cmp = first.localeCompare(second)
-      if (sortDescriptor.direction === 'descending') {
-        cmp *= -1;
+      const aValue = a[sortDescriptor.column];
+      const bValue = b[sortDescriptor.column];
+
+      // Convert to numbers if the values are numeric strings
+      const aNum = typeof aValue === 'string' && !isNaN(aValue) ? parseFloat(aValue) : aValue;
+      const bNum = typeof bValue === 'string' && !isNaN(bValue) ? parseFloat(bValue) : bValue;
+
+      // Check if both values are numbers
+      if (typeof aNum === 'number' && typeof bNum === 'number') {
+        return sortDescriptor.direction === 'ascending' ? aNum - bNum : bNum - aNum;
+      } else {
+        // Convert to string for comparison
+        const first = String(aNum).toLowerCase(); // Convert to string and lowercase for consistent comparison
+        const second = String(bNum).toLowerCase();
+        let cmp = first.localeCompare(second);
+        return sortDescriptor.direction === 'descending' ? -cmp : cmp;
       }
-      return cmp;
-    })
-  }, [sortDescriptor, propRows])
+    });
+  }, [sortDescriptor, propRows]);
 
   return (
     <Table

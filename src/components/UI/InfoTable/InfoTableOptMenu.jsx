@@ -5,11 +5,32 @@ import { Dialog } from 'react-aria-components'
 import { Popover } from 'react-aria-components'
 import { DialogTrigger } from 'react-aria-components'
 import { Link } from 'react-router-dom'
+import { useAuth } from '../../../hooks/useAuth'
+import { delteTaxpayer } from '../../utils/api/taxpayerFunctions'
+import { useNavigate } from 'react-router-dom'
 
 const InfoTableOptMenu = ({ id }) => {
-    const options = [{
-        name: 'Detalles', path: `/contribuyente/${id}`
+    const { user, setUser } = useAuth()
+    const navigate = useNavigate()
+    const deleteHandler = async () => {
+        try {
+            await delteTaxpayer(id)
+            const auxTaxpayerArray = user.contribuyentes
+            const auxUser = user
+            const deletedTaxpayerIndex = auxTaxpayerArray.findIndex((taxpayer) => taxpayer.id === id)
+            auxTaxpayerArray.splice(deletedTaxpayerIndex, 1)
+            auxUser.contribuyentes = auxTaxpayerArray
+            setUser(auxUser)
+            navigate(0);
+        } catch (error) {
+            console.log(error)
+        }
+
     }
+
+    const options = [
+        { name: 'Detalles', path: `/contribuyente/${id}` },
+        { name: 'Borrar', onPress: () => deleteHandler }
     ]
     return (
         <DialogTrigger>
@@ -27,11 +48,21 @@ const InfoTableOptMenu = ({ id }) => {
                     <ul>
                         {options.map((opt) => (
                             <li key={opt.name}>
-                                <Link to={opt.path} className='w-full'>
-                                    <span className='text-black'>
-                                        {opt.name}
-                                    </span>
-                                </Link>
+                                {opt.path ?
+                                    <Link to={opt.path} className='w-full'>
+                                        <span className='text-black'>
+                                            {opt.name}
+                                        </span>
+                                    </Link> :
+                                    <Button
+                                        className={"bg-inherit p-0 inline-flex items-center justify-center text-center hover:border-white selected:border-white"}
+                                        onPress={deleteHandler}
+                                    >
+                                        <span className='text-black'>
+                                            {opt.name}
+                                        </span>
+                                    </Button>
+                                }
                             </li>
                         ))}
                     </ul>
