@@ -2,7 +2,6 @@ import { apiConnection } from "./apiConnection"
 
 export const signIn = async (user, password) => {
     try {
-        console.log(user, password)
         const response = await (await apiConnection.post(`/usuario`, { cedula: user, password: password })).data
         return response
     } catch (error) {
