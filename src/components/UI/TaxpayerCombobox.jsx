@@ -59,7 +59,7 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }) {
                         </Button>
                     </div>
                     <Popover className={"w-[25rem] "}>
-                        <ListBox ref={ref} className={"bg-white w-full rounded-2xl shadow-2xl border border-black"}>
+                        <ListBox ref={ref} className={"bg-white w-full rounded-2xl shadow-2xl border border-black overflow-y-scroll max-h-40"}>
                             {
                                 item =>
                                     <ListBoxItem className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1 hover:text-white" value={`${item.id}`} textValue={`${item.nroProvidencia} ${item.procedimiento} ${item.rif}`}>

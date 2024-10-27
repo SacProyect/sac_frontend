@@ -8,20 +8,26 @@ import { Label } from 'react-aria-components';
 import { Button } from 'react-aria-components';
 import DateInputUI from '../UI/DateInputUI';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-import { createEvent } from '../utils/api/taxpayerFunctions';
+import { createEvent, getPendingPayments } from '../utils/api/taxpayerFunctions';
 import { parseDateTime } from '@internationalized/date';
 import { useLoaderData } from 'react-router-dom';
 import SelectInput from '../UI/SelectInput';
+import { useState } from 'react';
+import { useCallback } from 'react';
+import { useEffect } from 'react';
+import Alert from '../UI/Alert';
 
 
 function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
     const { user } = useAuth();
     const taxpayerArray = user.contribuyentes
-    const pendingPayments = useLoaderData()
+    const [pendingPayments, setPendingPayments] = useState(useLoaderData())
+    const [isAlertOpen, setAlertOpen] = useState(false);
     const {
         register,
         handleSubmit,
         formState: { isValid },
+        watch,
         control } = useForm({
             defaultValues: {
                 eventId: "",
@@ -30,12 +36,25 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                 fecha: parseDateTime(new Date().toISOString().split('T')[0]),
             }
         });
+    const taxPayerWatcher = watch("contribuyenteId")
+    const getTaxpayerPendingPayments = useCallback(
+        async () => {
+            const auxPayments = await getPendingPayments(parseInt(taxPayerWatcher))
+            const mappedPayments = auxPayments.map((event) => { return { id: event.id, value: event.id, name: `${event.tipo} ${event.fecha.split("T")[0]} ${event.contribuyente}` } })
+            setPendingPayments(mappedPayments)
+        }, [taxPayerWatcher]
+    )
+    useEffect(() => { if (taxPayerWatcher != "" && type == "pago") { getTaxpayerPendingPayments() } }, [taxPayerWatcher])
     const onSubmit = async (data) => {
         try {
             data.fecha = data.fecha.toDate();
             data.monto == "" ? delete data.monto : data.monto
             data.eventId == "" ? delete data.eventId : data.eventId
             const newEvent = await createEvent(type, data)
+            if (newEvent) {
+                setAlertOpen(true)
+                reset()
+            }
         } catch (error) {
 
         }
@@ -92,6 +111,11 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                     Enviar
                 </Button>
             </Form>
+            <Alert
+                message={`${title} creado exitosamente...`}
+                isOpen={isAlertOpen}
+                onClose={() => setAlertOpen(false)}
+            />
         </FormContainer>
     )
 }

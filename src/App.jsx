@@ -61,7 +61,6 @@ export const router = createBrowserRouter([
             loader: async ({ params }) => {
               try {
                 const response = await getFuncionarios()
-                console.log(response)
                 const official = response.map((item) => { return { value: item.id, name: `${item.nombre} C.I.:${item.cedula}`, id: item.id } })
                 return official
               } catch (error) {

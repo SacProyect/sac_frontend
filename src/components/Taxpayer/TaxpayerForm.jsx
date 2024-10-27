@@ -9,15 +9,18 @@ import SelectInput from '../UI/SelectInput';
 import { Button } from 'react-aria-components';
 import { useLoaderData } from 'react-router-dom';
 import { createTaxpayer } from '../utils/api/taxpayerFunctions';
+import Alert from '../UI/Alert';
+import { useState } from 'react';
 
 
 function TaxpayerForm() {
     const { user } = useAuth()
     const official = useLoaderData()
-
+    const [isAlertOpen, setAlertOpen] = useState(false);
     const {
         register,
         handleSubmit,
+        reset,
         formState: { isValid },
         control } = useForm({
             defaultValues: {
@@ -42,68 +45,71 @@ function TaxpayerForm() {
 
     const onSubmit = async (data) => {
         try {
-            console.log(data)
+            if (data.funcionarioId == "") {
+                data.funcionarioId = user.id
+            }
             const newTaxpayer = await createTaxpayer(data)
             const auxTaxpayerArray = user.contribuyentes
             const auxUser = user
             if (newTaxpayer) {
                 auxTaxpayerArray.push(newTaxpayer)
                 auxUser.contribuyentes = auxTaxpayerArray
+                setAlertOpen(true)
+                reset()
             }
-
-            console.log(auxTaxpayerArray)
             setUser(auxUser)
         } catch (error) {
             console.log
         }
     }
     return (
-        <FormContainer>
-            <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Agregar Contribuyente</h2>
-            <Form onSubmit={handleSubmit(onSubmit)}>
-                <Label>Nro. Providencia</Label>
-                <TextInput
-                    placeholder={"Ingrese el numero de providencia"}
-                    type='number'
-                    register={{ ...register("nroProvidencia", { required: "Campo Obligatroio" }) }}
-                />
-                <SelectInput
-                    control={control}
-                    name="procedimiento"
-                    items={procedureArray}
-                    label="Procedimiento"
-                />
-                <Label>nombre</Label>
-                <TextInput
-                    placeholder={"Juan Pedro..."}
-                    type='text'
-                    register={{ ...register("nombre", { required: "Campo Obligatroio" }) }}
-                />
-                <Label>RIF</Label>
-                <TextInput
-                    placeholder={"9668523..."}
-                    type='number'
-                    register={{ ...register("rif", { required: "Campo Obligatroio" }) }}
-                />
-                <SelectInput
-                    control={control}
-                    name="tipoContrato"
-                    items={contractArray}
-                    label="Tipo Contribuyente"
-                />
-                {user.tipo === "ADMIN" &&
+        <>
+            <FormContainer>
+                <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Agregar Contribuyente</h2>
+                <Form onSubmit={handleSubmit(onSubmit)}>
+                    <Label>Nro. Providencia</Label>
+                    <TextInput
+                        placeholder={"Ingrese el numero de providencia"}
+                        type='number'
+                        register={{ ...register("nroProvidencia", { required: "Campo Obligatroio" }) }}
+                    />
                     <SelectInput
                         control={control}
-                        name={"funcionarioId"}
-                        items={official}
-                        label={"Funcionario"}
+                        name="procedimiento"
+                        items={procedureArray}
+                        label="Procedimiento"
                     />
-                }
-                <Button
-                    type='submit'
-                    isDisabled={!isValid}
-                    className={
-                        `w-full 
+                    <Label>nombre</Label>
+                    <TextInput
+                        placeholder={"Juan Pedro..."}
+                        type='text'
+                        register={{ ...register("nombre", { required: "Campo Obligatroio" }) }}
+                    />
+                    <Label>RIF</Label>
+                    <TextInput
+                        placeholder={"9668523..."}
+                        type='number'
+                        register={{ ...register("rif", { required: "Campo Obligatroio" }) }}
+                    />
+                    <SelectInput
+                        control={control}
+                        name="tipoContrato"
+                        items={contractArray}
+                        label="Tipo Contribuyente"
+                    />
+                    {user.tipo === "ADMIN" &&
+                        <SelectInput
+                            control={control}
+                            name={"funcionarioId"}
+                            items={official}
+                            label={"Funcionario"}
+                        />
+                    }
+                    <Button
+                        type='submit'
+                        isDisabled={!isValid}
+                        className={
+                            `w-full 
                         p-2 
                         bg-[#007bff] 
                         hover:bg-[#0056b3] 
@@ -111,12 +117,19 @@ function TaxpayerForm() {
                         rounded-lg 
                         cursor-pointer 
                         disabled:bg-gray-400`
-                    }
-                >
-                    Enviar
-                </Button>
-            </Form>
-        </FormContainer>
+                        }
+                    >
+                        Enviar
+                    </Button>
+                    <Alert
+                        message={"Contribuyente creado exitosamente..."}
+                        isOpen={isAlertOpen}
+                        onClose={() => setAlertOpen(false)}
+                    />
+                </Form>
+
+            </FormContainer>
+        </>
     )
 }
 

@@ -28,9 +28,12 @@ const InfoTableOptMenu = ({ id }) => {
 
     }
 
-    const options = [
+    const options = user.tipo == "ADMIN" ? [
         { name: 'Detalles', path: `/contribuyente/${id}` },
         { name: 'Borrar', onPress: () => deleteHandler }
+    ] : [
+        { name: 'Detalles', path: `/contribuyente/${id}` }
+
     ]
     return (
         <DialogTrigger>

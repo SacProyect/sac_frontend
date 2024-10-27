@@ -7,7 +7,7 @@ import { useMemo } from 'react'
 import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
 import InfoTableRow from '../UI/InfoTable/InfoTableRow'
 import { Cell } from 'react-aria-components'
-import InfoTableOptMenu from '../UI/InfoTable/InfoTableOptMenu'
+
 
 const EventTable = ({ propRows }) => {
 
@@ -52,7 +52,7 @@ const EventTable = ({ propRows }) => {
       selectionBehavior="replace"
       sortDescriptor={sortDescriptor}
       onSortChange={setSortDescriptor}
-      className="border-separate border-spacing-0">
+      className="border-separate border-spacing-0 overflow-y-scroll max-h-40">
       <InfoTableHeader columns={columns}>
         {column => (
           <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
@@ -60,7 +60,7 @@ const EventTable = ({ propRows }) => {
           </InfoTableColumn>
         )}
       </InfoTableHeader>
-      <TableBody items={sortedItems}>
+      <TableBody items={sortedItems} >
         {item => (
           <InfoTableRow columns={columns} key={`${item.tipo}_${item.id}`}>
             {column =>

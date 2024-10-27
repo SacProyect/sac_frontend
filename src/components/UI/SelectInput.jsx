@@ -45,7 +45,7 @@ const SelectInput = ({ control, name, items = [], label }) => {
                     </Button>
                     <Popover className={"w-[25rem]"}>
                         <ListBox
-                            className={"bg-white w-full rounded-2xl shadow-2xl border border-black"}
+                            className={"bg-white w-full rounded-2xl shadow-2xl border border-black overflow-y-scroll max-h-44"}
                             items={items}
                         >
                             {
