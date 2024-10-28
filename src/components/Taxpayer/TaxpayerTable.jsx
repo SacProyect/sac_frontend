@@ -14,7 +14,7 @@ const TaxpayerTable = ({ propRows }) => {
     const columns = [
         { name: "Nro. Providencia", id: "nroProvidencia", isRowHeader: true },
         { name: "Procedimiento", id: "procedimiento" },
-        { name: "Razón Soacial", id: "nombre" },
+        { name: "Razón Social", id: "nombre" },
         { name: "RIF", id: "rif" },
         { name: "Tipo de Contribuyente", id: "tipoContrato" },
         { name: "Opciones", id: "options" },

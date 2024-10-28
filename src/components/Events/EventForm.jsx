@@ -30,7 +30,7 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
         watch,
         control } = useForm({
             defaultValues: {
-                eventId: "",
+                eventoId: "",
                 monto: '',
                 contribuyenteId: `${contribuyente}`,
                 fecha: parseDateTime(new Date().toISOString().split('T')[0]),
@@ -49,7 +49,8 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
         try {
             data.fecha = data.fecha.toDate();
             data.monto == "" ? delete data.monto : data.monto
-            data.eventId == "" ? delete data.eventId : data.eventId
+            data.eventoId == "" ? delete data.eventoId : data.eventoId
+            console.log(data)
             const newEvent = await createEvent(type, data)
             if (newEvent) {
                 setAlertOpen(true)
@@ -72,7 +73,7 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                     <>
                         <SelectInput
                             control={control}
-                            name={"eventId"}
+                            name={"eventoId"}
                             label={"Pagos Pendientes"}
                             items={pendingPayments}
                         />

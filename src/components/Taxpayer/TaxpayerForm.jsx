@@ -79,7 +79,7 @@ function TaxpayerForm() {
                         items={procedureArray}
                         label="Procedimiento"
                     />
-                    <Label>nombre</Label>
+                    <Label>Razón Social</Label>
                     <TextInput
                         placeholder={"Juan Pedro..."}
                         type='text'
