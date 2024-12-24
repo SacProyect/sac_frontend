@@ -27,8 +27,8 @@ function HomePage() {
         console.log(user.contribuyentes)
     }, [user])
     return (
-        <div className='flex justify-center w-4/5 mt-20'>
-            <div className='flex-col'>
+        <div className='flex justify-center w-full mt-20 pb-10 sm:pb-10 sm:mt-0'>
+            <div className='flex-col w-[18rem] sm:w-[60rem] ml-0 sm:ml-20'>
                 <h2 className="text-black text-2xl font-bold w-full text-center mb-11">Administración</h2>
                 <Controller
                     control={control}
@@ -51,7 +51,9 @@ function HomePage() {
                     )}
                 />
 
-                <TaxpayerTable propRows={filteredItems} />
+                <div className="overflow-x-auto w-full">
+                    <TaxpayerTable propRows={filteredItems} />
+                </div>
             </div>
         </div>
     );

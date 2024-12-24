@@ -71,7 +71,7 @@ function TaxpayerForm() {
                     <TextInput
                         placeholder={"Ingrese el numero de providencia"}
                         type='number'
-                        register={{ ...register("nroProvidencia", { required: "Campo Obligatroio" }) }}
+                        register={{ ...register("nroProvidencia", { required: "Campo Obligatorio" }) }}
                     />
                     <SelectInput
                         control={control}
@@ -83,14 +83,27 @@ function TaxpayerForm() {
                     <TextInput
                         placeholder={"Juan Pedro..."}
                         type='text'
-                        register={{ ...register("nombre", { required: "Campo Obligatroio" }) }}
+                        register={{ ...register("nombre", { required: "Campo Obligatorio" }) }}
                     />
                     <Label>RIF</Label>
-                    <TextInput
-                        placeholder={"9668523..."}
-                        type='number'
-                        register={{ ...register("rif", { required: "Campo Obligatroio" }) }}
-                    />
+                    <div className="flex">
+                        <span className="text-black mr-2 mt-2">J-</span>
+                        <TextInput
+                            placeholder={"Ingrese el número de RIF"}
+                            type="text"
+                            maxLength="9"
+                            register={{
+                                ...register("rif", {
+                                    required: "Campo Obligatorio",
+                                    pattern: {
+                                        value: /^[0-9]{9}$/, 
+                                        message: "El RIF debe tener 9 dígitos numéricos"
+                                    }
+                                })
+                            }}
+                        />
+                    </div>
+
                     <SelectInput
                         control={control}
                         name="tipoContrato"
