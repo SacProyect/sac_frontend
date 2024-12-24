@@ -91,7 +91,7 @@ function EventForm({ title = 'Multa', type = "multa", contribuyente = "" }) {
                         <TextInput
                             placeholder={'3500...'}
                             type='number'
-                            register={{ ...register("monto", { required: "Campo Obligatroio" }) }}
+                            register={{ ...register("monto", { required: "Campo Obligatorio" }) }}
                         />
                     </>
                 }
