@@ -12,6 +12,7 @@ export interface Event {
     taxpayer: Taxpayer[],
     payment: Payment[] | undefined,
     debt?: number;
+    expires_at: string,
 
     
 }
