@@ -27,6 +27,7 @@
     "@radix-ui/react-tabs": "^1.1.13",
     "@radix-ui/react-toast": "^1.2.15",
     "axios": "^1.7.7",
+<<<<<<< HEAD
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
@@ -40,6 +41,11 @@
     "jspdf-autotable": "^5.0.2",
     "lucide-react": "^0.525.0",
     "react": "^19.0.0",
+=======
+    "dotenv": "^16.4.7",
+    "lodash": "^4.17.21",
+    "react": "^18.3.1",
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     "react-aria": "^3.35.0",
     "react-aria-components": "^1.4.0",
     "react-dom": "^19.0.0",
@@ -47,6 +53,7 @@
     "react-error-boundary": "^5.0.0",
     "react-hook-form": "^7.53.0",
     "react-hot-toast": "^2.5.2",
+<<<<<<< HEAD
     "react-icons": "^5.5.0",
     "react-router-dom": "^6.26.2",
     "react-window": "^1.8.11",
@@ -62,6 +69,16 @@
     "@types/react": "^19.0.12",
     "@types/react-dom": "^19.0.4",
     "@types/react-window": "^1.8.8",
+=======
+    "react-router-dom": "^6.26.2",
+    "sac_frontend": "file:",
+    "tailwindcss-react-aria-components": "^1.1.6"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.11.1",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     "@vitejs/plugin-react": "^4.3.2",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "autoprefixer": "^10.4.20",
@@ -74,7 +91,11 @@
     "prettier-plugin-tailwindcss": "^0.6.8",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.8.2",
+<<<<<<< HEAD
     "vite": "^5.4.0",
     "vite-plugin-qrcode": "^0.2.4"
+=======
+    "vite": "^5.4.11"
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
   }
 }

@@ -18,7 +18,10 @@ export interface Payment {
     last_payments: number;
     total_amount: number;
     payments_number: number;
+<<<<<<< HEAD
     total_payments: number;
+=======
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }
 
 

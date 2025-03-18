@@ -30,7 +30,11 @@ function SidebarButton({ children, route, onClick }: SidebarButtonProps) {
                 hover:-translate-y-1
             `}
         >
+<<<<<<< HEAD
             <p className='text-base text-white'>
+=======
+            <p className='text-base text-white '>
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                 {children}
             </p>
         </Link>

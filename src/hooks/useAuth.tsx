@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 import { createContext, useCallback, useContext, useMemo } from "react";
+=======
+import { createContext, useContext, useMemo } from "react";
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./useLocalStorage";
 import { useOutlet } from "react-router-dom";
 import { User } from "../types/user";
 import { ReactNode } from "react";
+<<<<<<< HEAD
 import apiConnection from "@/components/utils/api/apiConnection";
+=======
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 
 interface AuthContextType {
@@ -13,12 +20,16 @@ interface AuthContextType {
     login: (user: User, token: string) => Promise<void>;
     token: string | null;
     logout: () => void;
+<<<<<<< HEAD
     refreshUser: () => Promise<void>;
+=======
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }
 
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+<<<<<<< HEAD
 // MODO DESARROLLO: Usuario admin fake para revisar V2 sin backend
 const DEV_MODE = true; // Cambiar a false cuando quieras usar autenticación real
 const FAKE_ADMIN_USER: User = {
@@ -59,6 +70,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setStoredToken(newToken);
     };
     
+=======
+export const AuthProvider = ({ children }: { children: ReactNode }) => {
+    const [user, setUser] = useLocalStorage("user", null);
+    const [token, setToken] = useLocalStorage("authToken", null);
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     const navigate = useNavigate();
 
     const login = async (user: User, token: string) => {
@@ -66,6 +82,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(token);
         navigate("/");
     };
+<<<<<<< HEAD
 
     const logout = () => {
         setUser(null);
@@ -97,6 +114,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     }, [token]);
 
+=======
+    const logout = () => {
+        setUser(null);
+        navigate("/", { replace: true });
+    };
+
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     const value = useMemo(
         () => ({
             user,
@@ -104,7 +128,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             login,
             token,
             logout,
+<<<<<<< HEAD
             refreshUser
+=======
+>>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
         }),
         [user]
     );
