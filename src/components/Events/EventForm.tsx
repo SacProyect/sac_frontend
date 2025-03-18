@@ -288,6 +288,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     debt: data.debt,
                 };
             }
+            
 
 >>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
             if (!newEvent.amount || isNaN(Number(newEvent.amount))) {
