@@ -22,21 +22,19 @@ interface TaxPayerValues {
 function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValues) {
     const { contains } = useFilter({ sensitivity: 'base' })
     const [showAll, setShowAll] = React.useState(false);
-
-    // if (!taxpayers) {
-    //     console.error("No taxpayers defined");
-    //     return <div>No taxpayers</div>
-    // }
-
     const [filterValue, setFilterValue] = React.useState('');
+
+
+
     const filteredItems = React.useMemo(() => {
-        // console.log("Taxpayers received in combobox:", taxpayers);
         const result = taxpayers.filter(item =>
-            contains(`${item.providenceNum} ${item.process} ${item.rif}`, filterValue)
+            contains(`${item.providenceNum} ${item.process} ${item.rif} ${item.name}`, filterValue)
         );
-        // console.log("Filtered Items:", result);
+
         return result;
     }, [taxpayers, filterValue, contains]);
+
+
     return (
         <Controller
             control={control}
@@ -54,11 +52,13 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValu
                         setShowAll(false);
                         setFilterValue(value);
                     }}
+
                     onOpenChange={(isOpen, menuTrigger) => {
                         if (menuTrigger === 'manual' && isOpen) {
                             setShowAll(true);
                         }
                     }}
+
                     name={name}
                     onBlur={onBlur}
                     isRequired

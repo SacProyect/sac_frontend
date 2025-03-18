@@ -40,6 +40,7 @@ export interface NewEvent {
     eventId?: string;
     debt?: number;
     expires_at?: string;
+    fineEventId?: string;
 
 }
 
@@ -87,14 +88,14 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     const getTaxpayerPendingPayments = useCallback(
         async () => {
             const auxPayments = await getPendingPayments((taxPayerWatcher))
-            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} `, amount: event.amount, debt: event.debt } })
+            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt  } })
             setPendingPayments(mappedPayments)
         }, [taxPayerWatcher]
     )
-    useEffect(() => { if (taxPayerWatcher != "" && type == "payment") { getTaxpayerPendingPayments() } }, [taxPayerWatcher])
+    useEffect(() => { if (taxPayerWatcher != "" && type == "payment" || type == "warning" || type == "payment_compromise") { getTaxpayerPendingPayments() } }, [taxPayerWatcher])
 
 
-    if (type == "payment") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
+    if (type == "payment" || type == "warning" || type == "payment_compromise") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
 
 
     const onSubmit = async (data: EventFormData) => {
@@ -123,6 +124,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     amount: data.amount,
                     taxpayerId: data.taxpayerId,
                     expires_at:  formattedExpiresAt,
+                    fineEventId: data.eventId,
                 };
             } else {
                 newEvent = {
@@ -181,15 +183,12 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     // Watch for changes to the selected eventId
     const selectedEventId = watch("eventId");
 
-    if (selectedEventId) {
-
-        useEffect(() => {
-            // Find the selected payment based on eventId
+    useEffect(() => {
+        if (selectedEventId) {
             const payment = pendingPayments.find(payment => payment.id === selectedEventId);
-            setSelectedPayment(payment || null); // Update the selected payment state
-
-        }, [selectedEventId, pendingPayments]); // Trigger effect when selectedEventId or pendingPayments changes
-    }
+            setSelectedPayment(payment || null);
+        }
+    }, [selectedEventId, pendingPayments]);
 
 
 
@@ -208,7 +207,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 {/* If the type is payment, show the pending payments */}
                 {
-                    (type === "payment" || type === "payment_compromise") &&
+                    (type === "payment" || type === "payment_compromise" || type ==="warning") &&
                     <>
                         <SelectInput
                             control={control}
@@ -242,10 +241,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 {/* Show acumulated debt */}
                 {
-                    type == "payment" &&
+                    (type == "payment" || type == "payment_compromise" || type == "warning") &&
                     <>
                         {selectedPayment && (
-                            <p>Deuda acumulada: {selectedPayment.debt?.toString()} </p>
+                            <p>Deuda a pagar: {selectedPayment.debt?.toString()} </p>
                         )}
                     </>
                 }
