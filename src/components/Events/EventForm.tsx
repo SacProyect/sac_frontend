@@ -30,6 +30,7 @@ export interface EventFormData {
     taxpayerId: string;
     eventId?: string
     debt?: number,
+    expires_at: string,
 }
 
 export interface NewEvent {
@@ -38,6 +39,8 @@ export interface NewEvent {
     taxpayerId: string;
     eventId?: string;
     debt?: number;
+    expires_at?: string;
+
 }
 
 export interface PendingPayments {
@@ -46,6 +49,7 @@ export interface PendingPayments {
     name: string;
     amount: string;
     debt?: number;
+    expires_at: string;
 }
 
 
@@ -107,6 +111,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
             const parsedDate = parseDate(data.date);
             const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();
 
+            const expiresAt = new Date(parsedDate.year, parsedDate.month -1, parsedDate.day);
+            expiresAt.setDate(expiresAt.getDate() + 25);
+            const formattedExpiresAt = expiresAt.toISOString();
+
             let newEvent: NewEvent;
             if (type != "payment") {
                 // Define data for the api request
@@ -114,6 +122,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     date: formattedDate,
                     amount: data.amount,
                     taxpayerId: data.taxpayerId,
+                    expires_at:  formattedExpiresAt,
                 };
             } else {
                 newEvent = {
@@ -199,7 +208,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 {/* If the type is payment, show the pending payments */}
                 {
-                    type == "payment" &&
+                    (type === "payment" || type === "payment_compromise") &&
                     <>
                         <SelectInput
                             control={control}
