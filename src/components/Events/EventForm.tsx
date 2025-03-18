@@ -124,8 +124,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     debt: data.debt,
                 };
             }
-            
 
+
+
+            
             if (!newEvent.amount || isNaN(Number(newEvent.amount))) {
                 console.error("Error: Amount is required and must be a valid number.");
                 toast.error("El monto debe ser un monto válido")
