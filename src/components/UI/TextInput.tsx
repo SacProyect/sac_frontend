@@ -5,6 +5,9 @@ interface TextInputProps {
 }
 
 function TextInput({ register, type = 'text', placeholder }: TextInputProps) {
+    // Destructure onChange from the register object and keep the rest of the properties.
+    const { onChange: originalOnChange, ...restRegister } = register;
+
     // Handle decimal validation only for 'number' type input
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (type === 'number') {
@@ -14,6 +17,10 @@ function TextInput({ register, type = 'text', placeholder }: TextInputProps) {
             if (/^\d*\.?\d{0,2}$/.test(inputValue)) {
                 e.target.value = inputValue;  // Update the value of the input field directly
             }
+        }
+
+        if (type == "password") {
+            originalOnChange(e);
         }
     };
 
