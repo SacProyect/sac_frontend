@@ -27,8 +27,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         setToken(token);
         navigate("/");
     };
+
     const logout = () => {
         setUser(null);
+        setToken(null);
         navigate("/", { replace: true });
     };
 
