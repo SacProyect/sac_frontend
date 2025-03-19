@@ -40,6 +40,7 @@ function Login() {
 
     const validateLogin = async (data: { personId: string; password: string }) => {
         try {
+
             const response = await signIn(data.personId, data.password);
 
             
@@ -86,7 +87,7 @@ function Login() {
                         />
 
                         <TextInput
-                            type="password"
+                            type='password'
                             register={{ ...register('password') }}
                             placeholder="Contraseña"
                         // className="w-full"
