@@ -34,6 +34,7 @@ function TaxpayerForm() {
         navigate("/login")
         return null;
     }
+
     const official = useLoaderData() as Item[]
     const [isAlertOpen, setAlertOpen] = useState(false);
     const [rifPrefix, setRifPrefix] = useState("J")
@@ -65,27 +66,28 @@ function TaxpayerForm() {
 
 
     const onSubmit: SubmitHandler<NewTaxpayer> = async (data) => {
-
         try {
-            if (data.officerId == "") {
-                data.officerId = user.id
-            }
+
+            if (user.role != "ADMIN") data.officerId = user.id;
+            
 
             // Adds rif prefix to the rif numeric data
-            const formattedData = {...data, rif: rifPrefix + data.rif};
+            const formattedData = { ...data, rif: rifPrefix + data.rif };
+
 
 
             const newTaxpayer = await createTaxpayer(formattedData);
-            console.log("NEW TAXPAYER: " + JSON.stringify(formattedData, null, 2));
 
 
             if (newTaxpayer && newTaxpayer.id) {
                 toast.success("Contribuyente creado exitosamente")
                 reset()
+            } else if (newTaxpayer.message) {
+                toast.error(newTaxpayer.message); // Display the error message returned from the backend
             }
 
         } catch (error) {
-            toast.error("No se pudo crear el contribuyente, por favor, inténtelo de nuevo.")
+            toast.error("No se pudo crear el contribuyente, por favor, inténtelo de nuevo.");
             console.log(error)
         }
     }
@@ -155,16 +157,16 @@ function TaxpayerForm() {
                                     ...register("rif", {
                                         required: "Campo Obligatorio",
                                         pattern: {
-                                            value:  /^\d{9}$/, // Only 10 digits including the person letter
+                                            value: /^\d{9}$/, // Only 10 digits including the person letter
                                             message: "El RIF debe tener exactamente 9 dígitos numéricos"
                                         },
                                         minLength: {
                                             value: 9,
-                                            message: "El RIF debe tener exactamente 9 dígitos"
+                                            message: "El RIF debe tener exactamente 9 dígitos numéricos"
                                         },
                                         maxLength: {
                                             value: 9,
-                                            message: "El RIF debe tener exactamente 9 dígitos"
+                                            message: "El RIF debe tener exactamente 9 dígitos numéricos"
                                         },
                                     })
                                 }}
@@ -193,15 +195,20 @@ function TaxpayerForm() {
                     </div>
                     {errors.contract_type && <span className="text-sm text-red-600">{errors.contract_type.message}</span>}
 
-
-                    {user.role === "ADMIN" &&
+                    {user.role === "ADMIN" ? (
                         <SelectInput
                             control={control}
-                            name={"funcionarioId"}
+                            name={"officerId"}
                             items={official}
                             label={"Funcionario"}
                         />
-                    }
+                    ) : (
+                        <div className="py-2">
+                            <div className="py-2 mt-4 px-4 border border-[#ccc] rounded-lg bg-slate-50 w-full hover:bg-white hover:border-black hover:border-1">
+                                <Label className="block text-base font-medium">{`Funcionario: ${user.name}`}</Label>
+                            </div>
+                        </div>
+                    )}
                     {errors.officerId && <span className="text-sm text-red-600">{errors.officerId.message}</span>}
 
 
