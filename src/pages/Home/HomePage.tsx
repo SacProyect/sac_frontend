@@ -184,7 +184,7 @@ function HomePage() {
     const filterValue = watch('search')
     const filteredItems = useMemo(
         () => (taxpayers || [])
-            .filter((item) => contains(`${item.rif} ${item.process} ${item.name}`, filterValue)),
+            .filter((item) => contains(`${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()}`, filterValue.toLowerCase())),
         [taxpayers, filterValue, user]);
 
     useEffect(() => {
@@ -205,7 +205,7 @@ function HomePage() {
                     }) => (
                         <SearchField
                             name={name}
-                            value={value}
+                            value={value.toLowerCase()}
                             onChange={onChange}
                             onBlur={onBlur}
                             className={"flex flex-col"}
