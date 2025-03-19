@@ -16,6 +16,7 @@ interface TaxpayerData {
 
 export const createTaxpayer = async (taxpayerData: TaxpayerData) => {
 	try {
+
 		const response = await apiConnection.post(`/taxpayer`, taxpayerData);
 
 		if (response.status == 200 || response.status == 201) {
@@ -28,13 +29,14 @@ export const createTaxpayer = async (taxpayerData: TaxpayerData) => {
 		if (error.response) {
 			// Error response from the server
 			console.error('Server responded with error:', error.response.status, error.response.data);
-			return { success: false, message: error.response.data.message || 'Unknown server error' };
+
+			return { success: false, message: error.response.data }
 		} else if (error.request) {
-			// The request was made but no response was received
+			// No response received
 			console.error('No response received:', error.request);
 			return { success: false, message: 'No response from server' };
 		} else {
-			// Other errors (e.g., malformed request)
+			// Other errors (e.g., network or code issues)
 			console.error('Error occurred:', error.message);
 			return { success: false, message: error.message || 'An unknown error occurred' };
 		}
