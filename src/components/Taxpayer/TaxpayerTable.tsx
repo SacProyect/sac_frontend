@@ -450,7 +450,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
             selectionBehavior="replace"
             sortDescriptor={sortDescriptor}
             onSortChange={handleSortChange}
-            className="border-separate border-spacing-0"
+            className=""
         >
             <InfoTableHeader columns={columns}>
                 {(column: Column) => (
@@ -464,7 +464,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                 {item => (
                     <InfoTableRow columns={columns}>
                         {(column: Column) =>
-                            <Cell className={`px-4 py-2 truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
+                            <Cell className={` pl-4 text-sm truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
                                 {
                                     column.id != "options" ? String(item[column.id]) :
                                         <InfoTableOptMenu id={item.id} />

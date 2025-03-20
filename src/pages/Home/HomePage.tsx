@@ -162,6 +162,7 @@ import { Label } from 'react-aria-components';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { contract_type } from '@/types/taxpayer';
 
 function HomePage() {
     const { user } = useAuth();
@@ -184,7 +185,11 @@ function HomePage() {
     const filterValue = watch('search')
     const filteredItems = useMemo(
         () => (taxpayers || [])
-            .filter((item) => contains(`${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()}`, filterValue.toLowerCase())),
+            .filter((item) => contains(`${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()}`, filterValue.toLowerCase()))
+            .map((item) => ({
+                ...item,
+                contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
+            })),
         [taxpayers, filterValue, user]);
 
     useEffect(() => {
@@ -192,10 +197,12 @@ function HomePage() {
         console.log(user.taxpayer)
     }, [user])
 
+    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+
 
     return (
-        <div className='flex justify-center w-full pb-10 mt-20 sm:pb-10 sm:mt-0'>
-            <div className='flex-col w-[18rem] sm:w-[60rem] ml-0 sm:ml-20'>
+        <div className='flex w-full items-center justify-center  pb-10 mt-20 sm:pb-10 sm:mt-0'>
+            <div className='flex-col  ml-0 sm:w-[60rem] items-center justify-center '>
                 <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Administración</h2>
                 <Controller
                     control={control}
@@ -218,7 +225,7 @@ function HomePage() {
                     )}
                 />
 
-                <div className="w-full overflow-x-auto">
+                <div className="">
                     <TaxpayerTable propRows={filteredItems} />
 >>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                 </div>

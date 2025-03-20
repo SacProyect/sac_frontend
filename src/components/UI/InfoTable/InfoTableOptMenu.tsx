@@ -141,10 +141,10 @@ const InfoTableOptMenu = ({ id }: {id: string}) => {
     }
 
     const options = user.role == "ADMIN" ? [
-        { name: 'Detalles', path: `/contribuyente/${id}` },
+        { name: 'Detalles', path: `/taxpayer/${id}` },
         { name: 'Borrar', onPress: () => deleteHandler }
     ] : [
-        { name: 'Detalles', path: `/contribuyente/${id}` }
+        { name: 'Detalles', path: `/taxpayer/${id}` }
 
     ]
     return (

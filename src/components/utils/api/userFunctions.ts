@@ -56,7 +56,7 @@ export const getOfficers = async () => {
     }
 };
 
-export const getFuncionarios = async () => {
+export const getOfficers = async () => {
     try {
 
         const response = await (await apiConnection.get(`/user/all/`)).data
