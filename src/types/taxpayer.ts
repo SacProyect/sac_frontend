@@ -17,8 +17,8 @@ export interface Taxpayer{
 }
 
 export enum contract_type {
-    SPECIAL,
-    ORDINARY,
+    SPECIAL = "SPECIAL",
+    ORDINARY = "ORDINARY",
 }
 
 export enum taxpayer_process {

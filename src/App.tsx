@@ -12,15 +12,16 @@ import { getPendingPayments, getTaxpayerEvents } from './components/utils/api/ta
 import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 import { AuthLayout } from './hooks/useAuth';
 import { getFineHistory, getPaymentHistory } from './components/utils/api/reportFunctions';
-import { getFuncionarios } from './components/utils/api/userFunctions';
+import { getOfficers } from './components/utils/api/userFunctions';
 import { Event } from './types/event';
 import { Payment } from './types/payment';
+import MainLayout from '@/MainLayout';
 
 
 type LoaderData = {
   events: Event[],
   payments: Payment[],
-  fines : Fines[]
+  fines: Fines[]
 }
 
 export interface Fines {
@@ -42,79 +43,89 @@ export const router = createBrowserRouter([
     children: [
       {
         path: "/login",
-        element: <LoginPage />
+        element: <LoginPage />,
       },
       {
-        element: <ProtectedRoute>
-          <Sidebar />
-        </ProtectedRoute>,
+        path: "/",
+        element: <ProtectedRoute><MainLayout /></ProtectedRoute>,
         children: [
           {
-            path: "/",
-            element: <HomePage />
-          }, {
+            index: true,
+            element: <HomePage />,
+          },
+          {
             path: "fine/:taxpayer?",
-            element: <FinePage />
+            element: <FinePage />,
           },
           {
             path: "payment_compromise/:taxpayer?",
-            element: <ComitmentPage />
-          }, {
+            element: <ComitmentPage />,
+          },
+          {
             path: "payment/:taxpayer?",
             element: <PaymentPage />,
-              loader: async ({ params }) => {
-              try {
-                const taxpayerId = params.taxpayer
-                if (!taxpayerId) return [];
-                const pendingPayments = await getPendingPayments(taxpayerId)
-                const mappedPayments = pendingPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}` } })
-                return mappedPayments
-              } catch (error) {
-                console.log("No se pudieron obtener los taxpayers: " + error)
-                return []
-              }
-            }
-          }, {
-            path: "warning/:taxpayer?",
-            element: <NoticePage />
-          }, {
-            path: "taxpayer/",
-            element: <TaxpayerForm />,
             loader: async ({ params }) => {
               try {
-                const response = await getFuncionarios()
-                const official = response.map((item: { id: number; name: string; personId: string }) => { return { value: item.id, name: `${item.name} C.I.:${item.personId}`, id: item.id } })
-                return official
+                const taxpayerId = params.taxpayer;
+                if (!taxpayerId) return [];
+                const pendingPayments = await getPendingPayments(taxpayerId);
+                return pendingPayments.map((event: Event) => ({
+                  id: event.id,
+                  value: event.id,
+                  name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}`,
+                }));
               } catch (error) {
-                console.error("No se pudieron obtener los funcionarios: " + error)
-                return []
+                console.log("No se pudieron obtener los taxpayers: " + error);
+                return [];
               }
-
-
-            }
-          }, {
+            },
+          },
+          {
+            path: "warning/:taxpayer?",
+            element: <NoticePage />,
+          },
+          {
+            path: "taxpayer/",
+            element: <TaxpayerForm />,
+            loader: async () => {
+              try {
+                const response = await getOfficers();
+                return response.map((item: { id: number; name: string; personId: string }) => ({
+                  value: item.id,
+                  name: `${item.name} C.I.:${item.personId}`,
+                  id: item.id,
+                }));
+              } catch (error) {
+                console.error("No se pudieron obtener los funcionarios: " + error);
+                return [];
+              }
+            },
+          },
+          {
             path: "taxpayer/:taxpayer?",
             element: <TaxpayerDetail />,
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
-                const taxpayerId = params.taxpayer
-                const event_type = params.event_type
-                if (!taxpayerId || !event_type) return { events: [], fines: [], payments: [] }
-                const events: Event[] = await getTaxpayerEvents(taxpayerId)
-                events.forEach(event => event.id = `${event.id}_${event.type}`)
+                const taxpayerId = params.taxpayer;
+                if (!taxpayerId) return { events: [], fines: [], payments: [] };
+                const events: Event[] = await getTaxpayerEvents(taxpayerId);
+                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
 
-                const fines = await getFineHistory(taxpayerId)
-                const payments = await getPaymentHistory(taxpayerId)
+                const fines = await getFineHistory(taxpayerId);
+                const payments = await getPaymentHistory(taxpayerId);
 
-                return { events, fines, payments }
+                console.log("EVENTOS DESDE APP.TSX: " + JSON.stringify(events))
+
+                return { events, fines, payments };
               } catch (error) {
-                  console.error(error)
-                  return { events: [], fines: [], payments: [] }
+                console.error(error);
+                return { events: [], fines: [], payments: [] };
               }
-            }
-          }
-        ]
-      }
-    ]
+            },
+          },
+        ],
+      },
+    ],
   },
 ]);
+
