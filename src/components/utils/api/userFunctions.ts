@@ -11,7 +11,7 @@ export const signIn = async (user: string, password: string) => {
     }
 };
 
-export const getFuncionarios = async () => {
+export const getOfficers = async () => {
     try {
 
         const response = await (await apiConnection.get(`/user/all/`)).data

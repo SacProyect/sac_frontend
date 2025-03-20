@@ -1,12 +1,12 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-#root {
-  max-width: 1280px;
-  margin: 0;
+/* #root {
+  /* max-width: 1280px; */
+  /* margin: 0;
   padding: 0;
-  text-align: center;
-}
+  text-align: center; */
+/* } */ */
 
 .logo {
   height: 6em;
