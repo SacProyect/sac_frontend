@@ -1,7 +1,13 @@
 // import React from 'react'
 import { Collection, Row } from 'react-aria-components'
 
-const InfoTableRow = (props) => {
+interface InfoTableRowProps {
+    columns: any[];
+    children?: any;
+    [key: string]: any;
+}
+
+const InfoTableRow = (props: InfoTableRowProps) => {
     const { id, columns, children, ...otherProps } = props
     return (
         <Row id={id} {...otherProps}

@@ -20,18 +20,20 @@ interface EventTableProps {
 const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
 
   const [sortDescriptor, setSortDescriptor] = useState<{ column: string, direction: "ascending" | "descending" }>({
-    column: "tipo",
+    column: "type",
     direction: "ascending"
   })
   const columns = [
-    { name: "Tipo", id: "type", isRowHeader: true },
+    { name: "tipo", id: "type", isRowHeader: true },
     { name: "Contribuyente", id: "taxpayer" },
     { name: "Monto", id: "amount" },
     { name: "Fecha", id: "date" },
-
   ]
 
+  console.log("PROP ROWS: " + propRows)
+
   const sortedItems = useMemo(() => {
+    if (!Array.isArray(propRows)) return []; // Ensure propRows is an array
     return propRows.sort((a, b) => {
       const aValue = a[sortDescriptor.column];
       const bValue = b[sortDescriptor.column];
@@ -75,11 +77,11 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
       </InfoTableHeader>
       <TableBody items={sortedItems} >
         {item => (
-          <InfoTableRow columns={columns} key={`${item.tipo}_${item.id}`}>
+          <InfoTableRow columns={columns} key={`${item.type}_${item.id}`}>
             {(column: { name: string; id: string; isRowHeader?: boolean }) =>
               <Cell className={`px-4 py-2 truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
                 {
-                  column.id != "fecha" ? item[column.id] : new Date(item.fecha).toLocaleDateString()
+                  column.id != "date" ? item[column.id] : new Date(item.date).toLocaleDateString()
                 }
               </Cell>
             }

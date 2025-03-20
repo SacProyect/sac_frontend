@@ -42,8 +42,8 @@ function Sidebar() {
     useEffect(() => { console.log(user) }, [user])
 
     return (
-        <div className="flex w-screen">
-            <div className={`fixed top-0 left-0 h-screen bg-gray-800 text-gray-100 rounded-r-lg w-64 z-40 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
+        <div className="flex w-64">
+            <div className={`w-full  h-screen bg-gray-800 text-gray-100 rounded-r-lg z-40 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
                 <div className="flex flex-col w-full h-full p-4">
                     <div
                         className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group"
@@ -77,7 +77,7 @@ function Sidebar() {
             </div>
 
 
-            <div className="fixed z-50 block lg:hidden bottom-4 right-4">
+            {/* <div className="fixed z-50 block lg:hidden bottom-4 right-4">
                 <button
                     className="flex items-center justify-center p-3 text-white bg-gray-800 rounded-full shadow-lg"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -86,9 +86,9 @@ function Sidebar() {
                 </button>
             </div>
 
-            <div className="flex-1">
+            <div className="">
                 <Outlet />
-            </div>
+            </div> */}
         </div>
     )
 }

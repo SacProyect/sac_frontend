@@ -3,15 +3,27 @@ import { Group } from 'react-aria-components'
 import { useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useLoaderData } from 'react-router-dom'
-import { Event } from '../../types/event'
 import { Fines } from '../../App'
 import { Payment } from '../../types/payment'
+import { Taxpayer } from '@/types/taxpayer'
+
+
+interface Event {
+	id: string,
+	date: string,
+	type: string,
+	amount: string,
+	taxpayerId: string,
+	taxpayer: Taxpayer,
+}
 
 
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-	const { event, fines, payments } = useLoaderData() as {event: Event, fines: Fines, payments: Payment}
+	const { events, fines, payments } = useLoaderData() as {events: Event[], fines: Fines, payments: Payment}
+
+	console.log("EVENT: " + events)
 
 	const options = [{
 		name: 'Aviso', path: `/warning/${taxpayer}`
@@ -20,7 +32,7 @@ const TaxpayerDetail = () => {
 	}, {
 		name: 'Pago', path: `/payment/${taxpayer}`
 	}, {
-		name: 'Compromiso de pago', path: `/compromiso_pago/${taxpayer}`
+		name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`
 	}
 	]
 
@@ -67,7 +79,7 @@ const TaxpayerDetail = () => {
 						</Link>
 					))}
 				</Group>
-				<EventTable propRows={event} />
+				<EventTable propRows={events} />
 			</div>
 		</div>
 	)
