@@ -56,7 +56,7 @@ export interface PendingPayments {
 
 
 
-function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
+function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>(useLoaderData() as PendingPayments[])
@@ -66,6 +66,8 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
         navigate("/login");
         return null;
     }
+
+    console.log("Taxpayer Id receive in event form: " + taxpayerId)
 
     const taxpayerArray: Taxpayer[] = user.taxpayer
 
@@ -82,13 +84,14 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
             }
         });
 
-
     const taxPayerWatcher = watch("taxpayerId")
+
 
     const getTaxpayerPendingPayments = useCallback(
         async () => {
-            const auxPayments = await getPendingPayments((taxPayerWatcher))
-            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt  } })
+            console.log("taxPayerWatcher: " + taxPayerWatcher)
+            const auxPayments = taxpayerId == "" ? await getPendingPayments((taxPayerWatcher)) : await getPendingPayments(taxpayerId)
+            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt } })
             setPendingPayments(mappedPayments)
         }, [taxPayerWatcher]
     )
@@ -99,6 +102,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
 
     const onSubmit = async (data: EventFormData) => {
+        console.log("DATA FROM EVENTFORM: " + JSON.stringify(data))
+
+
+
         // Control to avoid several submits with the same data
         if (isSubmiting) return;
 
@@ -112,7 +119,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
             const parsedDate = parseDate(data.date);
             const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();
 
-            const expiresAt = new Date(parsedDate.year, parsedDate.month -1, parsedDate.day);
+            const expiresAt = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day);
             expiresAt.setDate(expiresAt.getDate() + 25);
             const formattedExpiresAt = expiresAt.toISOString();
 
@@ -122,15 +129,15 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                 newEvent = {
                     date: formattedDate,
                     amount: data.amount,
-                    taxpayerId: data.taxpayerId,
-                    expires_at:  formattedExpiresAt,
+                    taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    expires_at: formattedExpiresAt,
                     fineEventId: data.eventId,
                 };
             } else {
                 newEvent = {
                     date: formattedDate,
                     amount: data.amount,
-                    taxpayerId: data.taxpayerId,
+                    taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
                     eventId: data.eventId,
                     debt: data.debt,
                 };
@@ -138,7 +145,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
 
 
-            
+
             if (!newEvent.amount || isNaN(Number(newEvent.amount))) {
                 console.error("Error: Amount is required and must be a valid number.");
                 toast.error("El monto debe ser un monto válido")
@@ -169,6 +176,11 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     taxpayerId: "",
                     eventId: "",
                 });
+
+                setSelectedPayment(null);
+
+                // Refresh pending payments after submitting a payment
+                await getTaxpayerPendingPayments();
             }
         } catch (error) {
             console.error("Error creating event:", error);
@@ -201,13 +213,13 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 {/* Select the taxpayer by it's ID */}
                 {
-                    taxpayer == "" &&
+                    taxpayerId == "" &&
                     <TaxpayerCombobox name={"taxpayerId"} control={control} label={"Contribuyente"} taxpayers={taxpayerArray} />
                 }
 
                 {/* If the type is payment, show the pending payments */}
                 {
-                    (type === "payment" || type === "payment_compromise" || type ==="warning") &&
+                    (type === "payment" || type === "payment_compromise" || type === "warning") &&
                     <>
                         <SelectInput
                             control={control}

@@ -69,38 +69,40 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     }
 
     return (
-        <Table
-            aria-label='Contribuyentes'
-            selectionMode="multiple"
-            selectionBehavior="replace"
-            sortDescriptor={sortDescriptor}
-            onSortChange={handleSortChange}
-            className=""
-        >
-            <InfoTableHeader columns={columns}>
-                {(column: Column) => (
-                    <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
-                        {column.name}
-                    </InfoTableColumn>
-                )}
+        <div className='min-w-[4rem] max-w-[24rem] min-h-[4rem] max-h-full overflow-y-auto  overflow-x-auto lg:overflow-x-hidden lg:min-h-[26rem] lg:max-h-[56rem] lg:min-w-full lg:max-w-full custom-scroll'>
+            <Table
+                aria-label='Contribuyentes'
+                selectionMode="multiple"
+                selectionBehavior="replace"
+                sortDescriptor={sortDescriptor}
+                onSortChange={handleSortChange}
+                className="min-w-full table-fixed"
+            >
+                <InfoTableHeader columns={columns}>
+                    {(column: Column) => (
+                        <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
+                            {column.name}
+                        </InfoTableColumn>
+                    )}
 
-            </InfoTableHeader>
-            <TableBody items={sortedItems}>
-                {item => (
-                    <InfoTableRow columns={columns}>
-                        {(column: Column) =>
-                            <Cell className={` pl-4 text-sm truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
-                                {
-                                    column.id != "options" ? String(item[column.id]) :
-                                        <InfoTableOptMenu id={item.id} />
-                                }
-                            </Cell>
-                        }
-                    </InfoTableRow>
-                )}
+                </InfoTableHeader>
+                <TableBody items={sortedItems}>
+                    {item => (
+                        <InfoTableRow columns={columns}>
+                            {(column: Column) =>
+                                <Cell className={` pl-4 text-sm truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
+                                    {
+                                        column.id != "options" ? String(item[column.id]) :
+                                            <InfoTableOptMenu id={item.id} />
+                                    }
+                                </Cell>
+                            }
+                        </InfoTableRow>
+                    )}
 
-            </TableBody>
-        </Table>
+                </TableBody>
+            </Table>
+        </div>
     )
 }
 

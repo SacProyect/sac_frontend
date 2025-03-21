@@ -3,14 +3,12 @@ import Sidebar from "@/components/Navigation/Sidebar";
 
 const MainLayout = () => {
     return (
-        <div className="w-full flex h-screen">
+        <div className="flex w-screen">
             {/* Sidebar */}
             <Sidebar />
 
             {/* Main Content */}
-            <div className="w-full flex justify-center items-center">
-                <Outlet />
-            </div>
+            <Outlet />
         </div>
     );
 };
