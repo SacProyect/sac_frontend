@@ -324,6 +324,12 @@ interface EventTableProps {
   propRows: EventRow[];
 }
 
+const typeMapping: { [key: string]: string } = {
+  FINE: "MULTA",
+  WARNING: "AVISO",
+  PAYMENT_COMPROMISE: "COMPROMISO DE PAGO"
+};
+
 const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
 
   const [sortDescriptor, setSortDescriptor] = useState<{ column: string, direction: "ascending" | "descending" }>({
@@ -363,40 +369,45 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
   }, [sortDescriptor, propRows]);
 
   return (
-    <Table
-      aria-label={"Eventos"}
-      selectionMode="multiple"
-      selectionBehavior="replace"
-      sortDescriptor={sortDescriptor}
-      onSortChange={(descriptor) =>
-        setSortDescriptor({
-          column: String(descriptor.column),
-          direction: descriptor.direction,
-        })
-      }
-      className="overflow-y-scroll border-separate border-spacing-0 max-h-40">
-      <InfoTableHeader columns={columns}>
-        {(column: { name: string; id: string; isRowHeader?: boolean }) => (
-          <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
-            {column.name}
-          </InfoTableColumn>
-        )}
-      </InfoTableHeader>
-      <TableBody items={sortedItems} >
-        {item => (
-          <InfoTableRow columns={columns} key={`${item.type}_${item.id}`}>
-            {(column: { name: string; id: string; isRowHeader?: boolean }) =>
-              <Cell className={`px-4 py-2 truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
-                {
-                  column.id != "date" ? item[column.id] : new Date(item.date).toLocaleDateString()
-                }
-              </Cell>
-            }
-          </InfoTableRow>
-        )}
+    <div className='pl-4 lg:pl-0 max-w-[24rem] lg:max-w-full overflow-x-auto text-xs lg:text-base flex items-center justify-center'>
+      <Table
+        aria-label={"Eventos"}
+        selectionMode="multiple"
+        selectionBehavior="replace"
+        sortDescriptor={sortDescriptor}
+        onSortChange={(descriptor) =>
+          setSortDescriptor({
+            column: String(descriptor.column),
+            direction: descriptor.direction,
+          })
+        }
+        className="overflow-y-scroll max-w-[22rem]">
+        <InfoTableHeader columns={columns}>
+          {(column: { name: string; id: string; isRowHeader?: boolean }) => (
+            <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
+              {column.name}
+            </InfoTableColumn>
+          )}
+        </InfoTableHeader>
+        <TableBody items={sortedItems} >
+          {item => (
+            <InfoTableRow columns={columns} key={`${item.type}_${item.id}`}>
+              {(column: { name: string; id: string; isRowHeader?: boolean }) =>
+                <Cell className={`px-4 py-2 truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
+                  {
+                    column.id == "type"
+                      ? typeMapping[item[column.id]] || item[column.id]
+                      : column.id != "date"
+                        ? item[column.id] : new Date(item.date).toLocaleDateString()
+                  }
+                </Cell>
+              }
+            </InfoTableRow>
+          )}
 
-      </TableBody>
-    </Table>
+        </TableBody>
+      </Table>
+    </div>
   )
 }
 
