@@ -17,13 +17,16 @@ function Login() {
 
             const response = await signIn(data.personId, data.password);
 
+
+
             
             const { user, token } = response;
 
             login(user, token);
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error al validar el login:", error);
             alert("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
+            <div>ERROR: {error}</div>
         }
     };
 

@@ -5,14 +5,18 @@ import { getTaxpayerEvents } from '../../components/utils/api/taxpayerFunctions'
 import { useEffect } from 'react'
 
 function FinePage() {
-    const { taxpayer } = useParams()
-    const loadEvents = async (taxpayerId: string) => {
-        const eventArray = await getTaxpayerEvents(taxpayerId, "FINE")
-        console.log(eventArray)
-    }
-    useEffect(() => { if (taxpayer) { loadEvents(taxpayer) } }, [taxpayer])
+    const { taxpayerId } = useParams()
+
+    console.log("USE PARAMS OUTPUT: " + taxpayerId)
+
+    // const loadEvents = async (taxpayerId: string) => {
+    //     const eventArray = await getTaxpayerEvents(taxpayerId, "FINE")
+    //     console.log(eventArray)
+    // }
+    // useEffect(() => { if (taxpayer) { loadEvents(taxpayer) } }, [taxpayer])
+
     return (
-        <EventForm title='Multa' type='fine' taxpayer={taxpayer} />
+        <EventForm title='Multa' type='fine' taxpayerId={taxpayerId} />
     )
 }
 

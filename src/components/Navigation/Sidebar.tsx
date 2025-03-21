@@ -1,4 +1,4 @@
-import  { useState, useEffect } from 'react'
+import { useState, useEffect } from 'react'
 import SidebarButton from './SidebarButton'
 import { useAuth } from '../../hooks/useAuth'
 import NegativeButton from '../UI/NegativeButton'
@@ -9,7 +9,6 @@ import { useNavigate } from 'react-router-dom'
 function Sidebar() {
     const { user, logout } = useAuth()
     const navigate = useNavigate();
-
 
     if (!user) {
         navigate("/login");
@@ -42,12 +41,11 @@ function Sidebar() {
     useEffect(() => { console.log(user) }, [user])
 
     return (
-        <div className="flex w-64">
-            <div className={`w-full  h-screen bg-gray-800 text-gray-100 rounded-r-lg z-40 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-                <div className="flex flex-col w-full h-full p-4">
-                    <div
-                        className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group"
-                    >
+        <div className="lg:flex sm:hidden">
+            {/* Sidebar for larger screens */}
+            <div className="hidden w-64 h-screen p-4 text-gray-100 bg-gray-800 rounded-r-lg lg:block">
+                <div className="flex flex-col w-full h-full">
+                    <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
                         <p className="text-lg">{user.name}</p>
                         <p className="text-md">{user.role}</p>
                         <div className="absolute z-20 hidden p-2 bg-gray-900 rounded-lg group-hover:block w-max min-w-40 -translate-x-1/4">
@@ -67,7 +65,7 @@ function Sidebar() {
                     </ul>
 
                     <div className="mt-auto justify-self-end">
-                        <NegativeButton onClick={() => {}}>
+                        <NegativeButton onClick={() => { }}>
                             <Link to={'/'}>
                                 <p className="text-lg text-white">Aviso de Error</p>
                             </Link>
@@ -76,8 +74,40 @@ function Sidebar() {
                 </div>
             </div>
 
+            {/* Sidebar for mobile (fixed) */}
+            <div className={`fixed z-40 block lg:hidden w-64 h-screen bg-gray-800 text-gray-100 p-4 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                <div className="flex flex-col w-full h-full">
+                    <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
+                        <p className="text-lg">{user.name}</p>
+                        <p className="text-md">{user.role}</p>
+                        <div className="absolute z-20 hidden p-2 bg-gray-900 rounded-lg group-hover:block w-max min-w-40 -translate-x-1/4">
+                            <p>Cédula: {user.personId}</p>
+                            <NegativeButton onClick={handleLogout}>
+                                Cerrar sesión
+                            </NegativeButton>
+                        </div>
+                    </div>
 
-            {/* <div className="fixed z-50 block lg:hidden bottom-4 right-4">
+                    <ul>
+                        {navOptions.map((opt) => (
+                            <li key={opt.name}>
+                                <SidebarButton route={opt.path}>{opt.name}</SidebarButton>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div className="mt-auto justify-self-end">
+                        <NegativeButton onClick={() => { }}>
+                            <Link to={'/'}>
+                                <p className="text-lg text-white">Aviso de Error</p>
+                            </Link>
+                        </NegativeButton>
+                    </div>
+                </div>
+            </div>
+
+            {/* Mobile Toggle Button */}
+            <div className="fixed z-50 block lg:hidden bottom-4 right-4">
                 <button
                     className="flex items-center justify-center p-3 text-white bg-gray-800 rounded-full shadow-lg"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -85,10 +115,6 @@ function Sidebar() {
                     <span className="material-icons">menu</span>
                 </button>
             </div>
-
-            <div className="">
-                <Outlet />
-            </div> */}
         </div>
     )
 }

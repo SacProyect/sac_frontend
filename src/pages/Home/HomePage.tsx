@@ -48,8 +48,8 @@ function HomePage() {
 
 
     return (
-        <div className='flex w-full items-center justify-center  pb-10 mt-20 sm:pb-10 sm:mt-0'>
-            <div className='flex-col  ml-0 sm:w-[60rem] items-center justify-center '>
+        <div className='flex items-center justify-center w-full pb-10 mt-20 sm:pb-10 sm:mt-0'>
+            <div className='flex-col items-center justify-center ml-0 '>
                 <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Administración</h2>
                 <Controller
                     control={control}
@@ -66,7 +66,7 @@ function HomePage() {
                         >
                             <Label>Buscar</Label>
                             <Input
-                                className={"w-1/2 p-1 mb-4 border border-[#ccc] rounded-lg bg-slate-50 text-black cursor-pointer"}
+                                className={"w-full lg:w-1/2 p-1 mb-4 border border-[#ccc] rounded-lg bg-slate-50 text-black cursor-pointer"}
                                 onChange={onChange} />
                         </SearchField>
                     )}
