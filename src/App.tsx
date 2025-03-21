@@ -54,19 +54,24 @@ export const router = createBrowserRouter([
             element: <HomePage />,
           },
           {
-            path: "fine/:taxpayer?",
+            path: "fine/:taxpayerId?",
             element: <FinePage />,
           },
           {
-            path: "payment_compromise/:taxpayer?",
+            path: "payment_compromise/:taxpayerId?",
             element: <ComitmentPage />,
           },
           {
-            path: "payment/:taxpayer?",
+            path: "payment/:taxpayerId?",
             element: <PaymentPage />,
             loader: async ({ params }) => {
               try {
                 const taxpayerId = params.taxpayer;
+
+                // console.log("TAXPAYER ID APP.TSX: " + taxpayerId)
+
+                
+
                 if (!taxpayerId) return [];
                 const pendingPayments = await getPendingPayments(taxpayerId);
                 return pendingPayments.map((event: Event) => ({
@@ -81,7 +86,7 @@ export const router = createBrowserRouter([
             },
           },
           {
-            path: "warning/:taxpayer?",
+            path: "warning/:taxpayerId?",
             element: <NoticePage />,
           },
           {
