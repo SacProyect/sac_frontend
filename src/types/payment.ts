@@ -18,6 +18,7 @@ export interface Payment {
     last_payments: number;
     total_amount: number;
     payments_number: number;
+    total_payments: number;
 }
 
 
