@@ -91,7 +91,23 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         async () => {
             console.log("taxPayerWatcher: " + taxPayerWatcher)
             const auxPayments = taxpayerId == "" ? await getPendingPayments((taxPayerWatcher)) : await getPendingPayments(taxpayerId)
-            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt } })
+
+            const filteredPayments = auxPayments.filter((event: Event) => {
+                if (type === "payment_compromise") {
+                    const currentDate = new Date();
+
+                    const expirationDate = new Date(event.expires_at);
+
+                    console.log("EXPIRES AT FORMAT: " + event.expires_at)
+
+                    console.log("EXPIRATION DATE VS CURRENT DATE: " + expirationDate + " vs: " + currentDate)
+                    return expirationDate <= currentDate;
+                }
+                return true;
+            })
+
+
+            const mappedPayments = filteredPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt } })
             setPendingPayments(mappedPayments)
         }, [taxPayerWatcher]
     )
