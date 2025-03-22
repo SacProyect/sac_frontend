@@ -74,10 +74,12 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const {
         register,
         handleSubmit,
-        formState: { isValid },
+        formState: { isValid, errors },
         watch,
         control,
+        trigger,
         reset } = useForm<EventFormData>({
+            mode: "onChange",
             defaultValues: {
                 amount: 0.00,
                 date: new Date().toISOString().split('T')[0],  // Ensure date is a string
@@ -215,6 +217,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         if (selectedEventId) {
             const payment = pendingPayments.find(payment => payment.id === selectedEventId);
             setSelectedPayment(payment || null);
+            trigger("amount");
         }
     }, [selectedEventId, pendingPayments]);
 
@@ -262,9 +265,27 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     <TextInput
                         placeholder={'3500...'}
                         type='number'
-                        register={{ ...register("amount", { required: "Campo Obligatorio" }) }}
+                        register={{
+                            ...register("amount", {
+                                required: "Campo Obligatorio",
+                                min: {
+                                    value: 0,
+                                    message: "El monto no puede ser negativo"
+                                },
+                                ...(type !== "fine" && {
+                                    max: {
+                                        value: selectedPayment?.debt ?? Infinity,
+                                        message: `El monto no puede ser mayor a ${selectedPayment?.debt}`,
+                                    },
+                                }),
+                            })
+                        }}
                     />
                 </>
+
+                {errors.amount && (
+                    <p className='text-red-500 text-sm'> {errors.amount.message}</p>
+                )}
 
 
                 {/* Show acumulated debt */}
