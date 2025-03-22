@@ -119,8 +119,9 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     if (type == "payment" || type == "warning" || type == "payment_compromise") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
 
 
+    // Submit form function to send the data of the form
     const onSubmit = async (data: EventFormData) => {
-        console.log("DATA FROM EVENTFORM: " + JSON.stringify(data))
+        // console.log("DATA FROM EVENTFORM: " + JSON.stringify(data))
 
 
 
