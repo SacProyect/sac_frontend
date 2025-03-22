@@ -31,7 +31,7 @@ export interface Fines {
   type: string,
   status: boolean,
   taxpayerId: string,
-  quantity: number,
+  fines_quantity: number,
   total_amount: number
 }
 
@@ -119,7 +119,9 @@ export const router = createBrowserRouter([
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
 
-                console.log("EVENTOS DESDE APP.TSX: " + JSON.stringify(events))
+                // console.log("EVENTOS DESDE APP.TSX: " + JSON.stringify(events))
+                // console.log("FINES FROM APP.TSX: " + fines)
+                // console.log("PAYMENTS FROM APP.TSX: " + payments)
 
                 return { events, fines, payments };
               } catch (error) {
