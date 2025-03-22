@@ -369,7 +369,7 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
   }, [sortDescriptor, propRows]);
 
   return (
-    <div className='pl-4 lg:pl-0 max-w-[24rem] lg:max-w-full overflow-x-auto text-xs lg:text-base flex items-center justify-center'>
+    <div className='pl-4 lg:pl-0 max-w-[24rem] lg:max-w-full max-h-[24rem] lg:max-h-[36rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base flex  custom-scroll'>
       <Table
         aria-label={"Eventos"}
         selectionMode="multiple"
@@ -381,7 +381,7 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
             direction: descriptor.direction,
           })
         }
-        className="overflow-y-scroll max-w-[22rem]">
+        className="overflow-y-auto max-w-[22rem]">
         <InfoTableHeader columns={columns}>
           {(column: { name: string; id: string; isRowHeader?: boolean }) => (
             <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
