@@ -67,7 +67,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         return null;
     }
 
-    console.log("Taxpayer Id receive in event form: " + taxpayerId)
+    // console.log("Taxpayer Id receive in event form: " + taxpayerId)
 
     const taxpayerArray: Taxpayer[] = user.taxpayer
 
@@ -91,7 +91,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
     const getTaxpayerPendingPayments = useCallback(
         async () => {
-            console.log("taxPayerWatcher: " + taxPayerWatcher)
+            // console.log("taxPayerWatcher: " + taxPayerWatcher)
             const auxPayments = taxpayerId == "" ? await getPendingPayments((taxPayerWatcher)) : await getPendingPayments(taxpayerId)
 
             const filteredPayments = auxPayments.filter((event: Event) => {
@@ -100,9 +100,9 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
                     const expirationDate = new Date(event.expires_at);
 
-                    console.log("EXPIRES AT FORMAT: " + event.expires_at)
+                    // console.log("EXPIRES AT FORMAT: " + event.expires_at)
 
-                    console.log("EXPIRATION DATE VS CURRENT DATE: " + expirationDate + " vs: " + currentDate)
+                    // console.log("EXPIRATION DATE VS CURRENT DATE: " + expirationDate + " vs: " + currentDate)
                     return expirationDate <= currentDate;
                 }
                 return true;
@@ -171,7 +171,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 return;
             }
 
-            console.log(newEvent);
+            // console.log(newEvent);
 
             // Create the event using the api passing the type of the event and the information
             const createdEvent = await createEvent(type, newEvent);

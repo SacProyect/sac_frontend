@@ -73,7 +73,7 @@ export const createEvent = async (event_type: string, event_data: NewEvent) => {
 		return response
 	} catch (error) {
 		console.log(error)
-		return false
+		return {error: true, message: "No se pudo crear el evento"}
 	}
 }
 
