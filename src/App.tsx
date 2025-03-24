@@ -2,12 +2,6 @@ import LoginPage from './pages/Auth/LoginPage'
 import { ProtectedRoute } from './components/Navigation/ProtectedRoute';
 import Sidebar from './components/Navigation/Sidebar';
 import HomePage from './pages/Home/HomePage';
-import FinePage from './pages/Events/FinePage';
-import ComitmentPage from './pages/Events/ComitmentPage';
-import PaymentPage from './pages/Events/PaymentPage';
-import NoticePage from './pages/Events/NoticePage';
-import TaxpayerForm from './components/Taxpayer/TaxpayerForm';
-import TaxpayerDetail from './pages/Taxpayer/TaxpayerDetail';
 import { getPendingPayments, getTaxpayerEvents } from './components/utils/api/taxpayerFunctions';
 import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 import { AuthLayout } from './hooks/useAuth';
@@ -16,6 +10,14 @@ import { getOfficers } from './components/utils/api/userFunctions';
 import { Event } from './types/event';
 import { Payment } from './types/payment';
 import MainLayout from '@/MainLayout';
+import { lazy, Suspense } from 'react';
+
+const FinePage = lazy(() => import('./pages/Events/FinePage'));
+const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'))
+const PaymentPage = lazy(() => import('./pages/Events/PaymentPage'));
+const NoticePage = lazy(() => import('./pages/Events/NoticePage'));
+const TaxpayerForm = lazy(() => import('./components/Taxpayer/TaxpayerForm'));
+const TaxpayerDetail = lazy(() => import('./pages/Taxpayer/TaxpayerDetail'));
 
 
 type LoaderData = {
@@ -55,15 +57,15 @@ export const router = createBrowserRouter([
           },
           {
             path: "fine/:taxpayerId?",
-            element: <FinePage />,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de compromisos de multas...</div>} > <FinePage /> </Suspense> ,
           },
           {
             path: "payment_compromise/:taxpayerId?",
-            element: <ComitmentPage />,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de compromisos de pago...</div>} ><ComitmentPage /></Suspense> ,
           },
           {
             path: "payment/:taxpayerId?",
-            element: <PaymentPage />,
+            element:<Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de pagos...</div>} > <PaymentPage /> </Suspense>,
             loader: async ({ params }) => {
               try {
                 const taxpayerId = params.taxpayer;
@@ -87,11 +89,11 @@ export const router = createBrowserRouter([
           },
           {
             path: "warning/:taxpayerId?",
-            element: <NoticePage />,
+            element:<Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de Avisos...</div>} ><NoticePage /></Suspense> ,
           },
           {
             path: "taxpayer/",
-            element: <TaxpayerForm />,
+            element:<Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes...</div>} ><TaxpayerForm /></Suspense> ,
             loader: async () => {
               try {
                 const response = await getOfficers();
@@ -108,7 +110,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "taxpayer/:taxpayer?",
-            element: <TaxpayerDetail />,
+            element:<Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Detalles del Contribuyente...</div>} ><TaxpayerDetail /></Suspense> ,
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
