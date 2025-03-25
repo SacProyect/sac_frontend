@@ -48,9 +48,9 @@ function HomePage() {
 
 
     return (
-        <div className='flex items-center justify-center w-full pb-10 mt-20 sm:pb-10 sm:mt-0'>
+        <div className='flex items-center justify-center w-full mt-20 sm:mt-0'>
             <div className='flex-col items-center justify-center ml-0 '>
-                <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Administración</h2>
+                <h2 className="w-full text-2xl font-bold text-center text-black ">Administración</h2>
                 <Controller
                     control={control}
                     name='search'
