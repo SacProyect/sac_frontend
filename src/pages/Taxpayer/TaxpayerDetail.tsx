@@ -46,16 +46,16 @@ const TaxpayerDetail = () => {
 				<div className='flex w-full max-w-[46rem] lg:max-w-full flex-wrap justify-center text-center'>
 
 					<div className="w-1/2">
-						<h2 className="w-full text-2xl font-bold text-center text-black mb-6">Multas</h2>
-						<div className='flex flex-col text-left items-center'>
+						<h2 className="w-full mb-6 text-2xl font-bold text-center text-black">Multas</h2>
+						<div className='flex flex-col items-center text-left'>
 							<span className='text-black'>Número total de multas: {fines.fines_quantity}</span>
 							<span className='text-black'>Monto total adeudado: {fines.total_amount} Bs</span>
 						</div>
 					</div>
 
 					<div className="w-1/2">
-						<h2 className="w-full text-2xl font-bold text-center text-black mb-6">Pagos</h2>
-						<div className='flex flex-col text-left items-center'>
+						<h2 className="w-full mb-6 text-2xl font-bold text-center text-black">Pagos</h2>
+						<div className='flex flex-col items-center text-left'>
 							<span className='text-black'>Pagos Totales: {payments.total_payments}</span>
 							<span className='text-black'>Pagos Parciales: {payments.payments_number}</span>
 							<span className='text-black'>Monto total de Pagos: {payments.total_amount} Bs</span>
@@ -79,7 +79,7 @@ const TaxpayerDetail = () => {
 					</Link>
 				))}
 			</Group>
-			<div className='w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0 flex items-center justify-center'>
+			<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
 				<EventTable propRows={events} />
 			</div>
 		</div>
