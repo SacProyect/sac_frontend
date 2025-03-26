@@ -31,7 +31,7 @@ function Sidebar() {
         { name: 'Multas', path: '/fine' },
         { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
-        { name: "Estadísticas", path: "/" }
+        { name: "Estadísticas", path: "/" },
     ]
 
     const handleLogout = () => {
@@ -66,7 +66,7 @@ function Sidebar() {
 
                     <div className="mt-auto justify-self-end">
                         <NegativeButton onClick={() => { }}>
-                            <Link to={'/'}>
+                            <Link to={'/report/errors'}>
                                 <p className="text-lg text-white">Aviso de Error</p>
                             </Link>
                         </NegativeButton>
@@ -98,7 +98,7 @@ function Sidebar() {
 
                     <div className="mt-auto justify-self-end">
                         <NegativeButton onClick={() => { }}>
-                            <Link to={'/'}>
+                            <Link to={'/report/errors'}>
                                 <p className="text-lg text-white">Aviso de Error</p>
                             </Link>
                         </NegativeButton>

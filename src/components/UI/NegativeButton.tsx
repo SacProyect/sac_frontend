@@ -1,6 +1,11 @@
 import React from 'react'
 
-function NegativeButton({ children, onClick }) {
+interface NegativeButtonProps {
+    children: React.ReactNode;
+    onClick: () => void;
+}
+
+function NegativeButton({ children, onClick }: NegativeButtonProps) {
     return (
         <button
             onClick={onClick}
