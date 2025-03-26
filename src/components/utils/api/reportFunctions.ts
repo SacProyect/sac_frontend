@@ -1,3 +1,4 @@
+import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./apiConnection";
 
 export const getFineHistory = async (taxpayerId: string) => {
@@ -25,4 +26,22 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 		console.error(error)
 		return false
 	}
+}
+
+export const createError = async (data: InputErrors) => {
+
+	console.log("data on createError: " + data)
+
+	try {
+		const requestUrl = `reports/errors`
+
+		const response = (await apiConnection.post(requestUrl, data));
+
+		console.log(response.data)
+		return response;
+	} catch (e) {
+		console.error(e)
+		return false;
+	}
+
 }
