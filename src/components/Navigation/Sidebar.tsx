@@ -38,7 +38,7 @@ function Sidebar() {
         logout()
     }
 
-    useEffect(() => { console.log(user) }, [user])
+    useEffect(() => {}, [user])
 
     return (
         <div className="lg:flex sm:hidden">
