@@ -1,13 +1,28 @@
+import axios from "axios";
 import { apiConnection } from "./apiConnection"
 
 export const signIn = async (user: string, password: string) => {
     try {
+
         const response = await apiConnection.post(`/user`, { personId: parseInt(user), password: password });
-        console.log("API Response:", response); // Log full response
+        // console.log("API Response:", response); // Log full response
         return response.data; // Ensure returning response.data
-    } catch (error) {
+    } catch (error: any) {
+
         console.error("API Error:", error);
-        return false;
+
+        // Handle specific axios errors
+        if (axios.isAxiosError(error)) {
+            if (error.response) {
+                // Backend responded with an error
+                throw new Error(error.response.data.message || "Invalid credentials.");
+            } else if (error.request) {
+                // No response received from the server
+                throw new Error("No response from server. Check your internet connection.");
+            }
+        }
+
+        throw new Error("Something went wrong. Please try again later.");
     }
 };
 
