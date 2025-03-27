@@ -41,10 +41,10 @@ function HomePage() {
 
     useEffect(() => {
         setTaxpayers(user.taxpayer)
-        console.log(user.taxpayer)
+        // console.log(user.taxpayer)
     }, [user])
 
-    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
