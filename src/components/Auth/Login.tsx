@@ -49,6 +49,7 @@ function Login() {
                             placeholder="Cédula"
                         />
 
+
                         <TextInput
                             type='password'
                             register={{ ...register('password') }}
