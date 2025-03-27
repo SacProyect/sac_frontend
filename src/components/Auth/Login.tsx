@@ -6,9 +6,12 @@ import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
 import TextInput from '../UI/TextInput';
 import { signIn } from '../utils/api/userFunctions';
+import toast from 'react-hot-toast';
 
 function Login() {
     const { register, handleSubmit } = useForm<{ personId: string; password: string }>();
+
+
     const navigate = useNavigate();
     const { login, user } = useAuth()!;
 
@@ -17,16 +20,14 @@ function Login() {
 
             const response = await signIn(data.personId, data.password);
 
-
-
-            
             const { user, token } = response;
 
             login(user, token);
+            toast.success("¡Inicio de sesión exitoso!")
+
         } catch (error: any) {
             console.error("Error al validar el login:", error);
-            alert("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
-            <div>ERROR: {error}</div>
+            toast.error("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
         }
     };
 
@@ -46,14 +47,12 @@ function Login() {
                         <TextInput
                             register={{ ...register('personId') }}
                             placeholder="Cédula"
-                        // className="w-full"
                         />
 
                         <TextInput
                             type='password'
                             register={{ ...register('password') }}
                             placeholder="Contraseña"
-                        // className="w-full"
                         />
 
                         <button
