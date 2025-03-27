@@ -78,14 +78,24 @@ export default function ErrorsReport() {
 
         const userId = user.id
 
-        const formattedData = {
-            ...data, userId
-        }
+        const formData = new FormData();
+
+        formData.append("title", data.title || "")
+        formData.append("description", data.description || "")
+        formData.append("type", data.type || "")
+        formData.append("userId", userId || "")
+
+        // Append image files to FormData (if any files are selected)
+        uploadedFiles.forEach((file) => {
+            formData.append("images", file);
+        });
+
+
 
         try {
             setIsSubmiting(true);
 
-            const request = await createError(formattedData);
+            const request = await createError(formData);
 
             if (request) {
                 toast.success("¡Error reportado exitosamente!")
@@ -212,6 +222,8 @@ export default function ErrorsReport() {
                             Enviar
                         </button>
                     </div>
+
+                    {errors.userId && <p className='text-center text-red-600'>{errors.userId.message}</p>}
 
                 </form>
             </div>
