@@ -61,6 +61,7 @@ export default function ErrorsReport() {
 
 
 
+    // Configuration for react drop zone
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         accept: { "image/*": [] }, // Accepts only images
         multiple: true, // Allows multiple file uploads
@@ -72,6 +73,7 @@ export default function ErrorsReport() {
 
 
 
+    // Submit form function handler
     const onSubmit: SubmitHandler<InputErrors> = async (data) => {
 
         if (isSubmiting) return;
@@ -100,6 +102,7 @@ export default function ErrorsReport() {
             if (request) {
                 toast.success("¡Error reportado exitosamente!")
                 reset()
+                setUploadedFiles([]);
             }
 
         } catch (e) {
