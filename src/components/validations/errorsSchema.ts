@@ -30,6 +30,6 @@ export const errorsSchema = z.object({
 
     errorImages: z.array(errorImageSchema).optional(),
 
-    userId: z.string().min(1, { message: "User ID is required" }),
+    userId: z.string().min(1, { message: "Por favor, cierre sesión y vuelva a iniciar sesión de nuevo" }),
 
 })

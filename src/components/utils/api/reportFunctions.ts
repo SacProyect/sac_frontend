@@ -28,16 +28,18 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 	}
 }
 
-export const createError = async (data: InputErrors) => {
+export const createError = async (data: FormData) => {
 
-	console.log("data on createError: " + data)
 
 	try {
 		const requestUrl = `reports/errors`
 
-		const response = (await apiConnection.post(requestUrl, data));
+		const response = (await apiConnection.post(requestUrl, data, {
+			headers: {
+				'Content-Type': "multipart/form-data",
+			}
+		}));
 
-		console.log(response.data)
 		return response;
 	} catch (e) {
 		console.error(e)

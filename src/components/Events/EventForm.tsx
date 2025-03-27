@@ -171,7 +171,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 return;
             }
 
-            // console.log(newEvent);
 
             // Create the event using the api passing the type of the event and the information
             const createdEvent = await createEvent(type, newEvent);
@@ -285,7 +284,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 </>
 
                 {errors.amount && (
-                    <p className='text-red-500 text-sm'> {errors.amount.message}</p>
+                    <p className='text-sm text-red-500'> {errors.amount.message}</p>
                 )}
 
 
