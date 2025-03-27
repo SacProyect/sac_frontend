@@ -11,6 +11,8 @@ import { createTaxpayer } from '../utils/api/taxpayerFunctions';
 import { useState } from 'react';
 import { taxpayer_process, contract_type } from '../../types/taxpayer';
 import toast from 'react-hot-toast';
+import { useDropzone } from 'react-dropzone'
+import { HiOutlineUpload } from 'react-icons/hi';
 
 
 
@@ -36,8 +38,10 @@ function TaxpayerForm() {
     }
 
     const official = useLoaderData() as Item[]
-    const [isAlertOpen, setAlertOpen] = useState(false);
     const [rifPrefix, setRifPrefix] = useState("J")
+    const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+
+
     const {
         register,
         handleSubmit,
@@ -54,6 +58,10 @@ function TaxpayerForm() {
                 officerId: ''
             }
         });
+
+
+
+    // Types for the arrays
     const procedureArray = [
         { value: 'VDF', name: 'VDF', id: 'VDF' },
         { value: 'FP', name: 'FP', id: 'FP' },
@@ -65,32 +73,55 @@ function TaxpayerForm() {
     ]
 
 
+    // Submit form
     const onSubmit: SubmitHandler<NewTaxpayer> = async (data) => {
         try {
 
             if (user.role != "ADMIN") data.officerId = user.id;
-            
+
 
             // Adds rif prefix to the rif numeric data
-            const formattedData = { ...data, rif: rifPrefix + data.rif };
 
+            const formData = new FormData();
 
+            formData.append("providenceNum", data.providenceNum.toString());
+            formData.append("process", data.process);
+            formData.append("name", data.name);
+            formData.append("rif", rifPrefix + data.rif);
+            formData.append("contract_type", data.contract_type);
+            formData.append("officerId", data.officerId);
 
-            const newTaxpayer = await createTaxpayer(formattedData);
+            uploadedFiles.forEach((file) => {
+                formData.append("pdfs", file)
+            })
 
+            const newTaxpayer = await createTaxpayer(formData);
 
-            if (newTaxpayer && newTaxpayer.id) {
-                toast.success("Contribuyente creado exitosamente")
+            if (!newTaxpayer.success) {
+                toast.error(newTaxpayer.message)
+            } else {
+                toast.success("¡Contribuyente creado exitosamente!")
+                setUploadedFiles([]);
                 reset()
-            } else if (newTaxpayer.message) {
-                toast.error(newTaxpayer.message); // Display the error message returned from the backend
             }
 
         } catch (error) {
             toast.error("No se pudo crear el contribuyente, por favor, inténtelo de nuevo.");
-            console.log(error)
         }
     }
+
+
+    const { getRootProps, getInputProps, isDragActive } = useDropzone({
+        accept: {
+            "application/pdf": [], // Accepts PDF's
+            "application/msword": [], // Accepts .doc (Word 97-2003)
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document": [] // Accepts .docx (modern Word format)
+        },
+        multiple: true, // Allows multiple file uploads
+        onDrop: (acceptedFiles) => {
+            setUploadedFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
+        },
+    });
 
 
     return (
@@ -179,7 +210,13 @@ function TaxpayerForm() {
                         <Controller
                             control={control}
                             name="contract_type"
-                            rules={{ required: "Campo obligatorio", validate: value => value !== contract_type.ORDINARY && value !== contract_type.SPECIAL || "Por favor seleccione un tipo de contrato" }}  // Add validation rules here
+                            rules={{
+                                required: "Campo obligatorio",
+                                validate: (value) =>
+                                    value === contract_type.ORDINARY || value === contract_type.SPECIAL
+                                        ? true
+                                        : "Por favor seleccione un tipo de contrato"
+                            }}
                             render={({ field }) => (
                                 <SelectInput
                                     {...field}
@@ -210,6 +247,48 @@ function TaxpayerForm() {
                         </div>
                     )}
                     {errors.officerId && <span className="text-sm text-red-600">{errors.officerId.message}</span>}
+
+                    {/* Drag and Drop Zone */}
+                    <div className=" pt-4">
+                        <div
+                            {...getRootProps()}
+                            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"
+                                } transition-all duration-200`}
+                        >
+                            <input {...getInputProps()} />
+                            {isDragActive ? (
+                                <div className='flex items-center'>
+                                    <div className='pr-4 text-blue-500'>
+                                        <HiOutlineUpload size={50} />
+                                    </div>
+                                    <p className="text-sm text-blue-500">Suelta los archivos aquí...</p>
+                                </div>
+
+                            ) : (
+                                <div className='flex items-center'>
+                                    <div className='pr-4 text-blue-500'>
+                                        <HiOutlineUpload size={50} />
+                                    </div>
+                                    <p className="text-sm text-gray-600">Arrastra y suelta los archivos o haz clic aquí para seleccionarlos</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Display Uploaded Files */}
+                        {uploadedFiles.length > 0 && (
+                            <div className="h-24 mt-4 space-y-1 ">
+                                <p className="font-semibold">Archivos subidos:</p>
+                                <ul className="h-16 space-y-1 overflow-y-auto text-sm text-gray-700">
+                                    {uploadedFiles.map((file, index) => (
+                                        <li key={index} className="flex items-center space-x-2">
+                                            <span>📄 {file.name}</span>
+                                            <span className="text-gray-500">({(file.size / 1024).toFixed(2)} KB)</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </div>
 
 
                     <Button

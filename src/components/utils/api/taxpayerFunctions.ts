@@ -14,31 +14,38 @@ interface TaxpayerData {
 
 
 
-export const createTaxpayer = async (taxpayerData: TaxpayerData) => {
+export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
 
-		const response = await apiConnection.post(`/taxpayer`, taxpayerData);
+		taxpayerData.forEach((value, key) => {
 
-		if (response.status == 200 || response.status == 201) {
-			return response.data;
+			console.log("taxpayerfunctions: " + key, value)
+		})
+
+		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
+			headers: {
+				'Content-Type': "multipart/form-data",
+			}
+		}));
+
+		if (response.status === 200 || response.status === 201) {
+			return { success: true, data: response.data };
 		} else {
 			console.error("API ERROR: ", response.status, response.data);
-			return { success: false, message: "Failed to create taxpayer." }
+			return { success: false, message: response.data?.message || "Failed to create taxpayer." };
 		}
-	} catch (error: any) {
-		if (error.response) {
-			// Error response from the server
-			console.error('Server responded with error:', error.response.status, error.response.data);
 
-			return { success: false, message: error.response.data }
+	} catch (error: any) {
+		// Handle Axios errors properly
+		if (error.response) {
+			// Server responded with a status code outside 2xx
+			return { success: false, message: error.response.data?.message || "Server error occurred." };
 		} else if (error.request) {
 			// No response received
-			console.error('No response received:', error.request);
-			return { success: false, message: 'No response from server' };
+			return { success: false, message: "No response from server. Check your network." };
 		} else {
-			// Other errors (e.g., network or code issues)
-			console.error('Error occurred:', error.message);
-			return { success: false, message: error.message || 'An unknown error occurred' };
+			// Other unexpected errors
+			return { success: false, message: "Unexpected error occurred. Try again later." };
 		}
 	}
 }
