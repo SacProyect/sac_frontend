@@ -11,6 +11,7 @@ import { Event } from './types/event';
 import { Payment } from './types/payment';
 import MainLayout from '@/MainLayout';
 import { lazy, Suspense } from 'react';
+import ContributionsPage from './pages/Contributions/ContributionsPage';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'))
@@ -59,6 +60,10 @@ export const router = createBrowserRouter([
           {
             path: "fine/:taxpayerId?",
             element: <Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de compromisos de multas...</div>} > <FinePage /> </Suspense> ,
+          },
+          {
+            path: "/contributions",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center justify-center z-50 bg-white'>Cargando Página de contribuciones...</div>} > <ContributionsPage/> </Suspense> ,
           },
           {
             path: "payment_compromise/:taxpayerId?",
