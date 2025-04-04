@@ -17,13 +17,23 @@ function Sidebar() {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-    const navOptions = user.role !== "ADMIN" ? [
+    const navOptions = user.role === "ADMIN" ? [
         { name: 'Inicio', path: '/' },
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Pagos', path: '/payment' },
-        { name: 'Compromisos de pagos', path: '/payment_compromise' }
+        { name: 'Compromisos de pagos', path: '/payment_compromise' },
+        { name: "Contribuciones", path: "/contributions" },
+        { name: "Estadísticas", path: "/" },
+    ] : user.role === "COORDINATOR" ? [
+        { name: 'Inicio', path: '/' },
+        { name: 'Contribuyentes', path: '/taxpayer' },
+        { name: 'Avisos', path: '/warning' },
+        { name: 'Multas', path: '/fine' },
+        { name: 'Pagos', path: '/payment' },
+        { name: 'Compromisos de pagos', path: '/payment_compromise' },
+        { name: "Contribuciones", path: "/contributions" }
     ] : [
         { name: 'Inicio', path: '/' },
         { name: 'Contribuyentes', path: '/taxpayer' },
@@ -31,14 +41,13 @@ function Sidebar() {
         { name: 'Multas', path: '/fine' },
         { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
-        { name: "Estadísticas", path: "/" },
     ]
 
     const handleLogout = () => {
         logout()
     }
 
-    useEffect(() => {}, [user])
+    useEffect(() => { }, [user])
 
     return (
         <div className="lg:flex sm:hidden">

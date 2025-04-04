@@ -1,0 +1,272 @@
+import React, { useEffect, useState } from 'react'
+import { getContributions } from '../utils/api/reportFunctions';
+import toast from 'react-hot-toast';
+import { GroupData } from './ContributionTypes';
+import { BiSort, BiSortUp, BiSortDown } from "react-icons/bi";
+
+
+interface ContributionsStatisticsProps {
+    groupData: GroupData[],
+    selectedGroup: string,
+}
+
+
+function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStatisticsProps) {
+    const [typeClicked, setTypeClicked] = useState("FP")
+    const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
+
+
+    // Filter the statistics to show based on the selected group
+    const groupStatistics = groupData.filter((group) => {
+        return group.id == selectedGroup
+    })
+
+    const selectedGroupData = groupStatistics.length > 0 ? groupStatistics[0] : null;
+
+
+    // Selected data based on process type inside of taxpayers
+    const selectedData = selectedGroupData?.members
+        ?.map((member) => {
+            // Filter taxpayers based on the selected type
+            const filteredTaxpayers = member.taxpayer.filter(
+                (taxpayer) => !typeClicked || taxpayer.process === typeClicked
+            );
+
+            // Sum up payments only for the filtered taxpayers
+            const totalCollected = filteredTaxpayers.reduce((memberSum, taxpayer) => {
+                const taxpayerTotal = taxpayer.payment.reduce(
+                    (sum, pay) => sum + Number(pay.amount),
+                    0
+                );
+                return memberSum + taxpayerTotal;
+            }, 0);
+
+            const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
+                return warningSum + taxpayer.event.filter(event => event.type === "WARNING").length;
+            }, 0);
+
+            const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
+                return finesSum + taxpayer.event.filter(event => event.type === "FINE").length;
+            }, 0);
+
+            const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
+                return compromisesSum + taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length;
+            }, 0);
+
+            const totalTaxpayers = filteredTaxpayers.length;
+
+            return {
+                ...member,
+                taxpayer: filteredTaxpayers, // Keep only the filtered taxpayers
+                totalCollected, // Store the total collected amount
+                totalWarnings,
+                totalFines,
+                totalCompromises,
+                totalTaxpayers,
+            };
+        })
+        .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
+
+    console.log("SELECTED DATA: " + JSON.stringify(selectedData))
+
+
+    // Handle the sorting of each column
+    const handleSort = (key: string) => {
+        setMultiSortConfig((prev) => {
+            const currentDirection = prev[key];
+            let newDirection: 'asc' | 'desc' | null;
+
+            // If the column is already sorted, toggle its direction
+            if (currentDirection === 'asc') {
+                newDirection = 'desc';
+            } else if (currentDirection === 'desc') {
+                newDirection = null;
+            } else {
+                newDirection = 'asc';
+            }
+
+            // If the column is not the same as the one clicked, reset it to null
+            const newConfig: Record<string, 'asc' | 'desc' | null> = {};
+            Object.keys(prev).forEach((column) => {
+                if (column === key) {
+                    newConfig[column] = newDirection;
+                } else {
+                    newConfig[column] = null; // Reset other columns to default
+                }
+            });
+
+            return newConfig;
+        });
+    };
+
+
+    // Sort selectedData based on sortConfig
+    const sortedData = selectedData ? [...selectedData].sort((a, b) => {
+        const sortKeys = Object.keys(multiSortConfig).filter((key) => multiSortConfig[key]);
+
+        for (let key of sortKeys) {
+            const direction = multiSortConfig[key];
+            const valueA = a[key as keyof typeof a];
+            const valueB = b[key as keyof typeof b];
+
+            const valA = typeof valueA === "number" ? valueA : valueA?.toString().toLowerCase();
+            const valB = typeof valueB === "number" ? valueB : valueB?.toString().toLowerCase();
+
+            if (valA < valB) return direction === 'asc' ? -1 : 1;
+            if (valA > valB) return direction === 'asc' ? 1 : -1;
+        }
+
+        return 0;
+    }) : [];
+
+
+    // Icon to sort each column of the table
+    const SortIcon = ({ column }: { column: string }) => {
+        const direction = multiSortConfig[column];
+        if (!direction) return <BiSort />;
+        if (direction === 'asc') return <BiSortUp />;
+        return <BiSortDown />;
+    };
+
+
+    return (
+        <section className=' border border-gray-200 w-full h-[56vh] rounded-md'>
+            {/* Section header */}
+
+            {selectedGroupData ? (
+                <>
+                    <div className='w-full flex justify-between'>
+                        <p className='text-xl font-semibold pt-4 pl-4'>Estadisticas para grupo: {selectedGroupData?.id} - Abril 2025</p>
+                        <button className='font-normal text-gray-500'>Close</button>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className='grid grid-cols-3 w-full text-center py-4 px-4'>
+                        <div className={`w-full rounded-l-md`} >
+                            <button className={`w-full ${typeClicked == "FP" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("FP")}>FP</button>
+                        </div>
+                        <div className='w-full bg-gray-200'>
+                            <button className={`w-full ${typeClicked == "AF" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("AF")}>AF</button>
+                        </div>
+                        <div className='w-full bg-gray-200 rounded-r-md'>
+                            <button className={`w-full ${typeClicked == "VDF" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("VDF")}>VDF</button>
+                        </div>
+                    </div>
+
+
+
+                    {/* Table */}
+                    <div className="px-4">
+                        <div className="w-full h-[30rem] border border-gray-200 rounded-md">
+                            <div className="grid lg:grid-cols-7 grid-cols-1 sm:grid-cols-2 w-full " style={{ gridTemplateColumns: 'repeat(7, minmax(100px, auto))' }}>
+                                <div className=''>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("name")}>
+                                            Fiscal
+                                        </button>
+                                        <SortIcon column="name" />
+                                    </div>
+                                    {sortedData?.map((data) => (
+                                        <div className='flex items-center flex-col w-full bg-gray-200 border-t-2 border-gray-300 py-2'>
+                                            <p>{data.name}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("type")}>Tipo</button>
+                                        <SortIcon column="type" />
+                                    </div>
+                                    {sortedData?.map((data) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{typeClicked}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("totalCollected")}>Recaudado</button>
+                                        <SortIcon column="totalCollected" />
+                                    </div>
+                                    {sortedData?.map((data) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{data.totalCollected}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("totalWarnings")}>Avisos</button>
+                                        <SortIcon column="totalWarnings" />
+                                    </div>
+                                    {sortedData?.map((member) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{member.totalWarnings}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("totalFines")}>Multas</button>
+                                        <SortIcon column="totalFines" />
+                                    </div>
+                                    {sortedData?.map((member) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{member.totalFines}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("totalCompromises")}>Compromisos</button>
+                                        <SortIcon column="totalCompromises" />
+                                    </div>
+                                    {sortedData?.map((member) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{member.totalCompromises}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                                <div>
+                                    <div className="flex items-center justify-center">
+                                        <button onClick={() => handleSort("totalTaxpayers")}>Contribuyentes</button>
+                                        <SortIcon column="totalTaxpayers" />
+                                    </div>
+                                    {sortedData?.map((member) => (
+                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                            <p>{member.totalTaxpayers}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Under the table */}
+                    <div className=' pt-1 flex justify-between px-6'>
+                        <div className=''>
+                            <p className='text-gray-600'>Cantidad de fiscales muestreados en procedimiento {typeClicked}: {selectedData?.length}</p>
+                        </div>
+                        <div className=''>
+                            <p className='text-gray-600'>*Deslice hacia abajo para ver la lista completa*</p>
+                        </div>
+                    </div>
+                </>
+            ) : (
+                <div className='w-full h-full flex items-center justify-center'>
+                    <p className='text-2xl pl-4 pt-4'>Seleccione un grupo por favor</p>
+                </div>
+            )}
+
+
+
+
+
+
+
+
+        </section>
+    )
+}
+
+export default ContributionsStatistics

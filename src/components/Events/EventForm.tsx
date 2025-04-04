@@ -121,7 +121,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
     // Submit form function to send the data of the form
     const onSubmit = async (data: EventFormData) => {
-        // console.log("DATA FROM EVENTFORM: " + JSON.stringify(data))
+        console.log("DATA FROM EVENTFORM: " + JSON.stringify(data))
 
 
 
@@ -143,7 +143,22 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
             const formattedExpiresAt = expiresAt.toISOString();
 
             let newEvent: NewEvent;
-            if (type != "payment") {
+
+            if (type == "payment") {
+                newEvent = {
+                    date: formattedDate,
+                    amount: data.amount,
+                    taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    eventId: data.eventId,
+                    debt: data.debt,
+                };
+            } else if (type == "fine") {
+                newEvent = {
+                    date: formattedDate,
+                    amount: data.amount,
+                    taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                };
+            } else {
                 // Define data for the api request
                 newEvent = {
                     date: formattedDate,
@@ -151,14 +166,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
                     expires_at: formattedExpiresAt,
                     fineEventId: data.eventId,
-                };
-            } else {
-                newEvent = {
-                    date: formattedDate,
-                    amount: data.amount,
-                    taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
-                    eventId: data.eventId,
-                    debt: data.debt,
                 };
             }
 

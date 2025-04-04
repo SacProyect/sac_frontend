@@ -1,6 +1,14 @@
 import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./apiConnection";
 
+
+interface ContributionsInput {
+	id?: string,
+	startDate?: string,
+	endDate?: string
+}
+
+
 export const getFineHistory = async (taxpayerId: string) => {
 	try {
 		let requestURL = `/reports/fine`
@@ -44,6 +52,27 @@ export const createError = async (data: FormData) => {
 	} catch (e) {
 		console.error(e)
 		return false;
+	}
+
+}
+
+export const getContributions = async (data?: ContributionsInput ) => {
+
+	try {
+
+		const requestUrl = `reports/fiscal-groups`
+
+		const response = await apiConnection.get(requestUrl, {
+			params: data,
+		})
+
+		console.log(response.data)
+
+		return response.data
+
+	} catch (e) {
+		console.error(e)
+		throw e;
 	}
 
 }
