@@ -98,7 +98,7 @@ function TaxpayerForm() {
             const newTaxpayer = await createTaxpayer(formData);
 
             if (!newTaxpayer.success) {
-                toast.error(newTaxpayer.message)
+                toast.error("No se pudo crear el contribuyente, por favor, intente de nuevo.")
             } else {
                 toast.success("¡Contribuyente creado exitosamente!")
                 setUploadedFiles([]);

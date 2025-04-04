@@ -10,7 +10,11 @@ export interface User {
     password: string,
     status: boolean,
     taxpayer: Taxpayer[],
+    coordinatedGroup: CoordinatedGroup,
 }
 
+export interface CoordinatedGroup {
+    id: string,
+}
 
 

@@ -1,6 +1,13 @@
 import { Link } from 'react-router-dom';
 
-function SidebarButton({ children, route }) {
+import { ReactNode } from 'react';
+
+interface SidebarButtonProps {
+    children: ReactNode;
+    route: string;
+}
+
+function SidebarButton({ children, route }: SidebarButtonProps) {
     return (
         <Link
             to={route}

@@ -39,6 +39,7 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 		// Handle Axios errors properly
 		if (error.response) {
 			// Server responded with a status code outside 2xx
+			console.log(error)
 			return { success: false, message: error.response.data?.message || "Server error occurred." };
 		} else if (error.request) {
 			// No response received
@@ -75,6 +76,10 @@ export const deleteTaxpayer = async (taxpayerId: string) => {
 
 export const createEvent = async (event_type: string, event_data: NewEvent) => {
 	try {
+
+		console.log(event_data)
+
+
 		const response = await (await apiConnection.post(`/taxpayer/${event_type}`, event_data)).data
 
 		return response
