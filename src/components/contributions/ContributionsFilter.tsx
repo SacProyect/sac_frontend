@@ -33,7 +33,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
 
     if (user.role === "COORDINATOR") setSelectedGroup(user.coordinatedGroup.id);
 
-    const startYear = 2024;
+    const startYear = new Date().getFullYear();
     const startMonth = 0; // April = 3 (0-based index)
 
     useEffect(() => {
@@ -102,7 +102,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 <div className='pt-1 pl-4 '>
                     <button className='flex items-center justify-center space-x-4 text-center bg-white border border-gray-200 ' onClick={() => setCalendarOpen(!calendarOpen)}>
                         <CiCalendar size={15} />
-                        <p className='text-xs'>Año</p>
+                        <p className='text-xs'>Año {startYear}</p>
                     </button>
                 </div>
                 {calendarOpen && (
