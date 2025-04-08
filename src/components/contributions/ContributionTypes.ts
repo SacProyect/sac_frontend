@@ -1,5 +1,6 @@
 export interface GroupData {
     id:            string;
+    name:          string;
     coordinatorId: string;
     created_at:    Date;
     members:       Member[];

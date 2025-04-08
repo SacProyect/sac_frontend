@@ -136,7 +136,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
             {selectedGroupData ? (
                 <>
                     <div className='flex justify-between w-full'>
-                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para grupo: {selectedGroupData?.id} - Abril 2025</p>
+                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {selectedGroupData?.name} - Abril 2025</p>
                         <button className='font-normal text-gray-500'>Close</button>
                     </div>
 
