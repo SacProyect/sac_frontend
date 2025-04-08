@@ -47,6 +47,7 @@ function ContributionsPage() {
                 if (user.role === "ADMIN") {
                     const response = await getContributions(query);
                     setGroupData(response);
+                    console.log(response)
                 } else if (user.role === "COORDINATOR") {
                     const groupId = user.coordinatedGroup.id;
                     query.id = groupId;

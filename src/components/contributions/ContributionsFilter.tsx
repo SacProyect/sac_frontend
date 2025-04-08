@@ -102,7 +102,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 <div className='pt-1 pl-4 '>
                     <button className='flex items-center justify-center space-x-4 text-center bg-white border border-gray-200 ' onClick={() => setCalendarOpen(!calendarOpen)}>
                         <CiCalendar size={15} />
-                        <p className='text-xs'>Year 2025</p>
+                        <p className='text-xs'>Año</p>
                     </button>
                 </div>
                 {calendarOpen && (
@@ -162,7 +162,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                             <div key={group.id} className='w-full pt-2 border-2 border-black rounded-lg cursor-pointer h-28' onClick={() => setSelectedGroup(group.id)}>
                                 <div className='flex justify-between w-full px-2 space-x-2'>
                                     <div className='w-2/3'>
-                                        <p className='text-xs font-semibold'>{group.id}</p>
+                                        <p className='text-xs font-semibold'>{group.name}</p>
                                     </div>
                                     <div className='w-1/2'>
                                         <p className='w-full px-4 py-1 text-xs font-semibold text-center bg-gray-200 border border-gray-400 rounded-full'>Año 2025</p>
