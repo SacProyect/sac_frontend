@@ -131,17 +131,17 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
 
     return (
         <section className=' border border-gray-200 w-full h-[56vh] rounded-md'>
+            
             {/* Section header */}
-
             {selectedGroupData ? (
                 <>
-                    <div className='w-full flex justify-between'>
-                        <p className='text-xl font-semibold pt-4 pl-4'>Estadisticas para grupo: {selectedGroupData?.id} - Abril 2025</p>
+                    <div className='flex justify-between w-full'>
+                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para grupo: {selectedGroupData?.id} - Abril 2025</p>
                         <button className='font-normal text-gray-500'>Close</button>
                     </div>
 
                     {/* Buttons */}
-                    <div className='grid grid-cols-3 w-full text-center py-4 px-4'>
+                    <div className='grid w-full grid-cols-3 px-4 py-4 text-center'>
                         <div className={`w-full rounded-l-md`} >
                             <button className={`w-full ${typeClicked == "FP" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("FP")}>FP</button>
                         </div>
@@ -157,8 +157,8 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
 
                     {/* Table */}
                     <div className="px-4">
-                        <div className="w-full h-[30rem] border border-gray-200 rounded-md">
-                            <div className="grid lg:grid-cols-7 grid-cols-1 sm:grid-cols-2 w-full " style={{ gridTemplateColumns: 'repeat(7, minmax(100px, auto))' }}>
+                        <div className="w-full h-[30rem] border border-gray-200 rounded-md overflow-y-auto custom-scroll">
+                            <div className="grid w-full grid-cols-1 lg:grid-cols-7 sm:grid-cols-2 " style={{ gridTemplateColumns: 'repeat(7, minmax(100px, auto))' }}>
                                 <div className=''>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("name")}>
@@ -167,7 +167,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="name" />
                                     </div>
                                     {sortedData?.map((data) => (
-                                        <div className='flex items-center flex-col w-full bg-gray-200 border-t-2 border-gray-300 py-2'>
+                                        <div className='flex flex-col items-center w-full py-2 bg-gray-200 border-t-2 border-gray-300'>
                                             <p>{data.name}</p>
                                         </div>
                                     ))}
@@ -178,7 +178,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="type" />
                                     </div>
                                     {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{typeClicked}</p>
                                         </div>
                                     ))}
@@ -189,7 +189,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{data.totalCollected}</p>
                                         </div>
                                     ))}
@@ -200,7 +200,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="totalWarnings" />
                                     </div>
                                     {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{member.totalWarnings}</p>
                                         </div>
                                     ))}
@@ -211,7 +211,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="totalFines" />
                                     </div>
                                     {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{member.totalFines}</p>
                                         </div>
                                     ))}
@@ -222,7 +222,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="totalCompromises" />
                                     </div>
                                     {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{member.totalCompromises}</p>
                                         </div>
                                     ))}
@@ -233,7 +233,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                         <SortIcon column="totalTaxpayers" />
                                     </div>
                                     {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center bg-gray-200 border-t-2 border-gray-300 py-2">
+                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{member.totalTaxpayers}</p>
                                         </div>
                                     ))}
@@ -243,7 +243,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                     </div>
 
                     {/* Under the table */}
-                    <div className=' pt-1 flex justify-between px-6'>
+                    <div className='flex justify-between px-6 pt-1 '>
                         <div className=''>
                             <p className='text-gray-600'>Cantidad de fiscales muestreados en procedimiento {typeClicked}: {selectedData?.length}</p>
                         </div>
@@ -253,8 +253,8 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                     </div>
                 </>
             ) : (
-                <div className='w-full h-full flex items-center justify-center'>
-                    <p className='text-2xl pl-4 pt-4'>Seleccione un grupo por favor</p>
+                <div className='flex items-center justify-center w-full h-full'>
+                    <p className='pt-4 pl-4 text-2xl'>Seleccione un grupo por favor</p>
                 </div>
             )}
 
