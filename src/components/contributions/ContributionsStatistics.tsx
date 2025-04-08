@@ -67,7 +67,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
         })
         .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
 
-    console.log("SELECTED DATA: " + JSON.stringify(selectedData))
+    // console.log("SELECTED DATA: " + JSON.stringify(selectedData))
 
 
     // Handle the sorting of each column
@@ -85,17 +85,10 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                 newDirection = 'asc';
             }
 
-            // If the column is not the same as the one clicked, reset it to null
-            const newConfig: Record<string, 'asc' | 'desc' | null> = {};
-            Object.keys(prev).forEach((column) => {
-                if (column === key) {
-                    newConfig[column] = newDirection;
-                } else {
-                    newConfig[column] = null; // Reset other columns to default
-                }
-            });
-
-            return newConfig;
+            return {
+                ...prev, // Keep existing sorting for other columns
+                [key]: newDirection, // Update the clicked column only
+            };
         });
     };
 
@@ -131,13 +124,13 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
 
     return (
         <section className=' border border-gray-200 w-full h-[56vh] rounded-md'>
-            
+
             {/* Section header */}
             {selectedGroupData ? (
                 <>
                     <div className='flex justify-between w-full'>
                         <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {selectedGroupData?.name} - Abril 2025</p>
-                        <button className='font-normal text-gray-500'>Close</button>
+                        {/* <button className='font-normal text-gray-500'>Close</button> */}
                     </div>
 
                     {/* Buttons */}
