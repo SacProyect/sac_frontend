@@ -18,56 +18,52 @@ function ContributionsPage() {
 
     const [groupData, setGroupData] = useState<GroupData[]>([]);
     const [selectedGroup, setSelectedGroup] = useState<string>("");
-
-    if (!user) {
-        navigate("/login")
-        return null;
-    }
-
-    console.log(user.coordinatedGroup)
+    const [startDate, setStartDate] = useState("");
+    const [endDate, setEndDate] = useState("");
 
 
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+            return;
+        }
 
-    if (user.role === "ADMIN") {
-        useEffect(() => {
-            const fetchGroups = async () => {
-                try {
-                    const response = await getContributions()
+        const shouldFetch = user.role === "ADMIN" || user.role === "COORDINATOR";
 
+        const hasValidDates = startDate && endDate;
 
-                    console.log(response);
-                    setGroupData(response);
-                } catch (e) {
-                    console.error(e)
-                    toast.error("No se pudieron obtener las contribuciones, por favor intente de nuevo.")
+        // No ejecutar si faltan datos necesarios
+        if (!shouldFetch || (user.role === "ADMIN" && !hasValidDates)) return;
+
+        const fetchGroups = async () => {
+            try {
+                const query: Record<string, string> = {};
+
+                if (hasValidDates) {
+                    query.startDate = startDate;
+                    query.endDate = endDate;
                 }
-            }
 
-            fetchGroups();
-
-        }, []);
-    } else if (user.role === "COORDINATOR") {
-        useEffect(() => {
-            const fetchGroups = async () => {
-                try {
-                    const groupId = user.coordinatedGroup.id
-
-                    const response = await getContributions({ id: groupId })
-
-
+                if (user.role === "ADMIN") {
+                    const response = await getContributions(query);
                     setGroupData(response);
-                } catch (e) {
-                    toast.error("No se pudieron obtener las contribuciones.")
+                } else if (user.role === "COORDINATOR") {
+                    const groupId = user.coordinatedGroup.id;
+                    query.id = groupId;
+                    const response = await getContributions(query);
+                    setGroupData(response);
+                    setSelectedGroup(groupId);
+                } else {
+                    navigate("/401");
                 }
+            } catch (e) {
+                toast.error("No se pudieron obtener las contribuciones.");
             }
+        };
 
-            fetchGroups();
+        fetchGroups();
+    }, [startDate, endDate]);
 
-        }, []);
-    } else {
-        navigate("/401")
-        return null
-    }
 
 
 
@@ -75,8 +71,8 @@ function ContributionsPage() {
     return (
         <aside className='w-[82vw] h-full overflow-y-auto'>
             <ContributionsHeader />
-            <ContributionsFilter groupData={groupData} setSelectedGroup={setSelectedGroup} />
-            <div className='pl-8 pr-4 pt-8'>
+            <ContributionsFilter groupData={groupData} setSelectedGroup={setSelectedGroup} setStartDate={setStartDate} setEndDate={setEndDate} />
+            <div className='pt-8 pl-8 pr-4'>
                 <ContributionsStatistics groupData={groupData} selectedGroup={selectedGroup} />
             </div>
         </aside>
