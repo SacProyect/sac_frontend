@@ -32,10 +32,15 @@ function HomePage() {
     const filterValue = watch('search')
     const filteredItems = useMemo(
         () => (taxpayers || [])
-            .filter((item) => contains(`${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()}`, filterValue.toLowerCase()))
+            .filter((item) =>
+                contains(
+                    `${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()} ${item.address.toLowerCase()}`, filterValue.toLowerCase() 
+                )
+            )
             .map((item) => ({
                 ...item,
                 contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
+                address: item.address || 'N/A'
             })),
         [taxpayers, filterValue, user]);
 
@@ -44,7 +49,7 @@ function HomePage() {
         // console.log(user.taxpayer)
     }, [user])
 
-    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
