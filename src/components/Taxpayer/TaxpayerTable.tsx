@@ -38,6 +38,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
         { name: "Razón Social", id: "name" },
         { name: "RIF", id: "rif" },
         { name: "Tipo de Contribuyente", id: "contract_type" },
+        { name: "Dirección", id: "address" },
         { name: "Opciones", id: "options" },
     ]
 
@@ -91,7 +92,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                     {item => (
                         <InfoTableRow columns={columns}>
                             {(column: Column) =>
-                                <Cell className={` pl-4 text-sm truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
+                                <Cell className={` pl-4 py-2 text-sm truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white max-w-[200px] break-words whitespace-normal`}>
                                     {
                                         column.id != "options" ? String(item[column.id]) :
                                             <InfoTableOptMenu id={item.id} />

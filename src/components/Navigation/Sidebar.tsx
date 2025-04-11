@@ -25,7 +25,7 @@ function Sidebar() {
         { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
-        { name: "Estadísticas", path: "/" },
+        { name: "Estadísticas", path: "/stats" },
     ] : user.role === "COORDINATOR" ? [
         { name: 'Inicio', path: '/' },
         { name: 'Contribuyentes', path: '/taxpayer' },

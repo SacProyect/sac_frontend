@@ -5,6 +5,7 @@ import { Payment } from "./payment"
 export interface Taxpayer{
     id: string,
     providenceNum: number,
+    address: string,
     process: taxpayer_process,
     name: string,
     rif: string,
