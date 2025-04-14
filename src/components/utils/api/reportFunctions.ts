@@ -74,3 +74,31 @@ export const getContributions = async (data?: ContributionsInput ) => {
 	}
 
 }
+
+export const getGlobalPerformance = async () => {
+	try {
+		const requestUrl = `reports/global-performance`
+
+		const response = await apiConnection.get(requestUrl)
+
+		console.log("response: " + JSON.stringify(response.data))
+		return response.data
+	} catch (e) {
+		console.error(e)
+		throw new Error("No se pudo obtener el rendimiento global")
+	}
+}
+
+export const getGlobalTaxpayerPerformance = async () => {
+	try {
+		const requestUrl = `reports/global-taxpayer-performance`
+
+		const response = await apiConnection.get(requestUrl)
+
+		console.log("TAXPAYER PERFORMANCE: " + JSON.stringify(response.data))
+		return response.data
+	} catch (e) {
+		console.error(e)
+		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
+	}
+}
