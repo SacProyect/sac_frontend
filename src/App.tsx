@@ -136,6 +136,8 @@ export const router = createBrowserRouter([
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
 
+                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+
                 return { events, fines, payments };
               } catch (error) {
                 console.error(error);

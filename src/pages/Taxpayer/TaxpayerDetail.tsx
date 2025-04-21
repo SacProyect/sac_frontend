@@ -6,15 +6,18 @@ import { useLoaderData } from 'react-router-dom'
 import { Fines } from '../../App'
 import { Payment } from '../../types/payment'
 import { Taxpayer } from '@/types/taxpayer'
+import { IndividualStats } from '@/components/stats/IndividualStats'
+import {Decimal} from "decimal.js"
 
 
-interface Event {
+export interface Event {
 	id: string,
 	date: string,
 	type: string,
 	amount: string,
 	taxpayerId: string,
 	taxpayer: Taxpayer,
+	debt: number;
 }
 
 
@@ -40,8 +43,8 @@ const TaxpayerDetail = () => {
 	]
 
 	return (
-		<div className='flex flex-col max-w-[46rem] lg:max-w-full mt-20 justify-center items-center w-full overflow-hidden'>
-			{
+		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
+			{/* {
 				(fines && payments) &&
 				<div className='flex w-full max-w-[46rem] lg:max-w-full flex-wrap justify-center text-center'>
 
@@ -65,8 +68,9 @@ const TaxpayerDetail = () => {
 					</div>
 
 				</div>
-			}
-			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20"}>
+			} */}
+			<IndividualStats fines={fines} events={events} payments={payments} />
+			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20 pt-10"}>
 				{options.map((opt) => (
 					<Link
 						to={opt.path}
