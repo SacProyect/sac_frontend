@@ -111,3 +111,20 @@ export const getPendingPayments = async (taxpayerId: string) => {
 		return []
 	}
 }
+
+export const getTaxpayerData = async (taxpayerId: string) => {
+
+	try {
+		let requestURL = `/reports/pending`
+		if (taxpayerId) {
+			requestURL = `/taxpayer/data/${taxpayerId}`
+		}
+		const response = await (await apiConnection.get(requestURL)).data
+		return response
+		
+	} catch (e) {
+		console.error(e);
+		throw new Error("Ha ocurrido un error");
+	}
+}
+
