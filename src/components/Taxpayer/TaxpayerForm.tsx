@@ -29,7 +29,7 @@ export type NewTaxpayer = {
 
 
 function TaxpayerForm() {
-    const { user } = useAuth()
+    const { user, refreshUser } = useAuth()
     const navigate = useNavigate();
 
     if (!user) {
@@ -102,6 +102,9 @@ function TaxpayerForm() {
             } else {
                 toast.success("¡Contribuyente creado exitosamente!")
                 setUploadedFiles([]);
+                console.log("User before" + JSON.stringify(user))
+                refreshUser()
+                console.log("User after" + JSON.stringify(user))
                 reset()
             }
 
