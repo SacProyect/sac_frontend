@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom'
 function NoticePage() {
     const { taxpayer } = useParams()
     return (
-        <EventForm type='warning' title='Aviso' taxpayer={taxpayer} />
+        <EventForm type='warning' title='Aviso' taxpayerId={taxpayer} />
     )
 }
 
