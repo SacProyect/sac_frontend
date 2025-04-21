@@ -56,7 +56,7 @@ export const createError = async (data: FormData) => {
 
 }
 
-export const getContributions = async (data?: ContributionsInput ) => {
+export const getContributions = async (data?: ContributionsInput) => {
 
 	try {
 
@@ -101,4 +101,36 @@ export const getGlobalTaxpayerPerformance = async () => {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
 	}
+}
+
+export const getGroupPerformance = async () => {
+
+	try {
+		const requestUrl = `reports/group-perfomance`
+
+		const response = await apiConnection.get(requestUrl)
+
+		return response.data
+	} catch (e) {
+		console.error(e)
+		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
+	}
+}
+
+export const getGlobalKPI = async () => {
+
+	try {
+
+		const requestURL = 'reports/global-kpi'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response.data;
+
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener los KPI globales...")
+	}
+
 }

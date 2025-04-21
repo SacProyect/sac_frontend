@@ -1,10 +1,14 @@
+import { GlobalKPIStats, KPIStat } from '@/components/stats/GlobalKpiStats'
+import { GroupPerformanceStats } from '@/components/stats/GroupPerformanceStats'
 import PageOneStats, { Stat } from '@/components/stats/PageOneStats'
 import { FinesStat, PageTwoStats } from '@/components/stats/PageTwoStats'
-import { getGlobalPerformance, getGlobalTaxpayerPerformance } from '@/components/utils/api/reportFunctions'
+import { getGlobalKPI, getGlobalPerformance, getGlobalTaxpayerPerformance, getGroupPerformance } from '@/components/utils/api/reportFunctions'
 import { useAuth } from '@/hooks/useAuth'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
+import {GroupStat} from "@/components/stats/GroupPerformanceStats"
+
 
 function StatsPage() {
 
@@ -13,6 +17,8 @@ function StatsPage() {
     const [rawStats, setRawStats] = useState<Stat[]>([]);
     const [loaded, setLoaded] = useState(false);
     const [taxpayerPerformance, setTaxpayerPerformance] = useState<FinesStat | null>(null);
+    const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
+    const [globalKpi, setGlobalKpi] = useState<KPIStat[]>([]);
 
 
 
@@ -56,14 +62,21 @@ function StatsPage() {
                     const taxPerformance = await getGlobalTaxpayerPerformance()
 
                     setTaxpayerPerformance(taxPerformance)
-                    console.log(taxPerformance)
 
-                    console.log("SUCCESFULLY LOADED")
+                    const groupPerformance = await getGroupPerformance()
+
+                    setGroupStats(groupPerformance);
+
+                    const kpi = await getGlobalKPI();
+
+                    setGlobalKpi(kpi);
+
+
                 } else {
                     toast.error("No se encontraron estadísticas para algunos de los gráficos.");
                 }
-            } catch (e) {
-                toast.error("Ha ocurrido un error obteniendo las estadísticas para algunos de los gráficos.");
+            } catch (e: any) {
+                toast.error(e);
             } finally {
                 setLoaded(true);
             }
@@ -73,17 +86,24 @@ function StatsPage() {
     }, []);
 
 
+
     return (
-        <div className='flex w-[84vw] h-full'>
+        <div className='flex flex-col '>
             {!loaded ? (
-                <div className='flex justify-center items-center w-full h-[90vh]'>
-                    <p className='text-center  w-full text-2xl'>Cargando los datos, por favor espere.</p>
+                <div className='flex items-center justify-center w-[84vw] h-[90vh]'>
+                    <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
-                <>
-                    <PageOneStats rawStats={rawStats} />
-                    {taxpayerPerformance && <PageTwoStats finesStats={taxpayerPerformance} />}
-                </>
+                <div className='  '>
+                    <div className='flex  w-[84vw] h-[50vh]'>
+                        <PageOneStats rawStats={rawStats} />
+                        {taxpayerPerformance && <PageTwoStats finesStats={taxpayerPerformance} />}
+                    </div>
+                    <div className='flex w-[84vw] h-[50vh]'>
+                        {groupStats && <GroupPerformanceStats groupStats={groupStats} />}
+                        {globalKpi && <GlobalKPIStats globalKpi={globalKpi} />}
+                    </div>
+                </div>
             )}
         </div>
     )
