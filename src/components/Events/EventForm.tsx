@@ -100,9 +100,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
                     const expirationDate = new Date(event.expires_at);
 
-                    // console.log("EXPIRES AT FORMAT: " + event.expires_at)
-
-                    // console.log("EXPIRATION DATE VS CURRENT DATE: " + expirationDate + " vs: " + currentDate)
                     return expirationDate <= currentDate;
                 }
                 return true;
