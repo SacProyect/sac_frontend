@@ -1,9 +1,10 @@
-import { createContext, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./useLocalStorage";
 import { useOutlet } from "react-router-dom";
 import { User } from "../types/user";
 import { ReactNode } from "react";
+import apiConnection from "@/components/utils/api/apiConnection";
 
 
 interface AuthContextType {
@@ -12,6 +13,7 @@ interface AuthContextType {
     login: (user: User, token: string) => Promise<void>;
     token: string | null;
     logout: () => void;
+    refreshUser: () => Promise<void>;
 }
 
 
@@ -34,6 +36,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         navigate("/", { replace: true });
     };
 
+    const refreshUser = useCallback(async () => {
+        if (!token) return;
+        try {
+            const resp = await apiConnection.get<{
+                user: User;
+                token: string;
+            }>("/user/me", {
+                headers: { Authorization: `Bearer ${token}` },
+            });
+            setUser(resp.data.user);
+            setToken(resp.data.token);
+        } catch (err) {
+            console.error("Failed to refresh user:", err);
+            // if your token is invalid, log them out
+            logout();
+        }
+    }, [token]);
+
     const value = useMemo(
         () => ({
             user,
@@ -41,6 +61,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             login,
             token,
             logout,
+            refreshUser
         }),
         [user]
     );
