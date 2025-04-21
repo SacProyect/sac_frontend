@@ -74,15 +74,15 @@ const PageOneStats = ({rawStats} : {rawStats: Stat[]}) => {
         : 0;
 
     return (
-        <div className="flex flex-col items-center w-1/2 h-[502px] bg-[#1c1c1b] py-8 text-white font-inter">
+        <div className="flex flex-col items-center w-1/2 h-[50vh] bg-[#1c1c1b] py-8 text-white font-inter">
             {/* Title and Description */}
             <div className="mb-4 text-center">
                 <div className="w-full border border-[#b7c0cd] bg-[#292d33] rounded-md">
-                    <h1 className="font-semibold text-[24.5px] py-2 px-4">
+                    <h1 className="font-semibold text-[24.5px] py-1 px-4 text-white font-inter whitespace-nowrap">
                         RENDIMIENTO GLOBAL DE CONTRIBUYENTES
                     </h1>
                 </div>
-                <p className="mt-2 text-xs text-[#949491]">
+                <p className="mt-2 text-[9.4px] leading-[12.9px] text-[#838382] font-inter">
                     A continuación, se presenta una estadística del rendimiento global anual <br />
                     de los contribuyentes registrados en la plataforma.
                 </p>
@@ -110,7 +110,7 @@ const PageOneStats = ({rawStats} : {rawStats: Stat[]}) => {
             </div>
 
             {/* Summary Below Chart */}
-            <div className="flex flex-col items-center gap-4 mt-6 text-center sm:flex-row">
+            <div className="flex flex-col items-center gap-4 mt-2 text-center sm:flex-row">
                 <div className="px-4 py-2 bg-[#5996ff] rounded-lg shadow">
                     <p className="text-xs font-medium">
                         {bestMonth ? `${bestMonth.month} ha sido el mes con mejor rendimiento` : "No hay datos disponibles para determinar el mejor mes"} {/* Full name of the best month */}
