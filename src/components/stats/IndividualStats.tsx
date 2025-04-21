@@ -11,9 +11,7 @@ import { useParams } from "react-router-dom";
 
 
 interface IndividualStatsProps {
-    fines: Fines,
     events: Event[],
-    payments: Payment,
 }
 
 interface TaxpayerData {
@@ -27,7 +25,7 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ fines, events, payments }: IndividualStatsProps) => {
+export const IndividualStats = ({events }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
 
