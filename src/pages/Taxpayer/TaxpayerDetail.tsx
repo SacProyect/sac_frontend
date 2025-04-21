@@ -69,7 +69,7 @@ const TaxpayerDetail = () => {
 
 				</div>
 			} */}
-			<IndividualStats fines={fines} events={events} payments={payments} />
+			<IndividualStats  events={events} />
 			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20 pt-10"}>
 				{options.map((opt) => (
 					<Link
