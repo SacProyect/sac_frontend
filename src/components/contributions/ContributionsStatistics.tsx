@@ -123,7 +123,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
 
 
     return (
-        <section className=' border border-gray-200 w-full h-[56vh] rounded-md'>
+        <section className=' border border-gray-200 w-full lg:h-[52vh] h-[80vh] rounded-md mb-4 lg:mb-0'>
 
             {/* Section header */}
             {selectedGroupData ? (
@@ -150,8 +150,8 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
 
                     {/* Table */}
                     <div className="px-4">
-                        <div className="w-full h-[30rem] border border-gray-200 rounded-md overflow-y-auto custom-scroll">
-                            <div className="grid w-full grid-cols-1 lg:grid-cols-7 sm:grid-cols-2 " style={{ gridTemplateColumns: 'repeat(7, minmax(100px, auto))' }}>
+                        <div className="w-full lg:h-[20rem] h-[24rem] border border-gray-200 rounded-md overflow-y-auto custom-scroll">
+                            <div className="w-[1400px] lg:w-full grid grid-cols-7" style={{ gridTemplateColumns: 'repeat(7, minmax(100px, 1fr))' }}>
                                 <div className=''>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("name")}>
@@ -223,7 +223,9 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                 <div>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("totalTaxpayers")}>Contribuyentes</button>
-                                        <SortIcon column="totalTaxpayers" />
+                                        <div className='pr-4'>
+                                            <SortIcon column="totalTaxpayers" />
+                                        </div>
                                     </div>
                                     {sortedData?.map((member) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">

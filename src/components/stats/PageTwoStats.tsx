@@ -1,99 +1,70 @@
 import React from "react";
 
 export interface FinesStat {
-    paid: number,
-    unpaid: number,
-    compromises: number,
-    fines: number,
+    paid: number;
+    unpaid: number;
+    compromises: number;
+    fines: number;
 }
 
-
 export const PageTwoStats = ({ finesStats }: { finesStats: FinesStat }) => {
+    const getBarWidthPercent = (value: number) =>
+        `${(finesStats ? (value / finesStats.fines) * 100 : 0)}%`;
 
-    console.log(finesStats)
+    const getPercentage = (value: number) =>
+        `${finesStats ? Math.round((value / finesStats.fines) * 100) : 0}%`;
 
-    // Function to get bar width proportional to the total fines (max = 412px)
-    const getBarWidth = (value: number) => ` ${(finesStats ? value / finesStats.fines : 0) * 412}px`;
-
-    // Function to get percentage label
-    const getPercentage = (value: number) => ` ${finesStats ? Math.round((value / finesStats.fines) * 100) : 0}%`;
+    const bars = [
+        { label: "Cumplimiento", value: finesStats.paid },
+        { label: "Compromisos", value: finesStats.compromises },
+        { label: "Incumplimiento", value: finesStats.unpaid },
+        { label: "Multas", value: finesStats.fines },
+    ];
 
     return (
-        <div className="flex justify-center w-[42vw] bg-transparent">
-            <div className="w-full h-full">
-                <div className="bg-[#1c1c1b] w-full h-[50vh]">
-                    <div className="relative top-[15px] w-full h-[460px]">
+        <div className="w-full lg:w-[41vw] h-full lg:h-[50vh] pt-16 lg:pt-0">
+            <div className="bg-[#1c1c1b] w-full h-full p-4 flex flex-col justify-between">
+                {/* Title */}
+                <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-2">
+                    <p className="text-white text-center text-lg font-semibold font-inter">
+                        CUMPLIMIENTO DE OBLIGACIONES
+                    </p>
+                </div>
 
-                        {/* Percentage Scale from 0% to 100% under the bars */}
-                        <div className="absolute top-[450px] left-[192px] w-[412px] h-[25px] flex justify-between text-[#808584] text-[12.2px] font-inter">
-                            {[...Array(11)].map((_, i) => (
-                                <div key={i} className="text-center" style={{ width: "1px" }}>
-                                    {i * 10}%
+                {/* Description */}
+                <p className="text-[11px] md:text-xs text-[#838382] font-inter text-center leading-5 pt-8">
+                    A continuación, se puede observar la tasa y total de los contribuyentes registrados que han realizado a tiempo sus pagos, cuáles se han ido a compromiso de pago y cuáles no han cumplido. Asimismo, se presenta el porcentaje de contribuyentes multados.
+                </p>
+
+                {/* Bars + Percentage Scale */}
+                <div className="relative flex-1 flex flex-col justify-center">
+                    {/* Bars */}
+                    <div className="space-y-8">
+                        {bars.map((bar, index) => (
+                            <div key={index} className="flex items-center gap-2">
+                                <span className="text-[#949491] text-xs w-[28%]">{bar.label}</span>
+                                <div className="w-full bg-[#333] rounded-full overflow-hidden h-[20px] relative">
+                                    <div
+                                        className="bg-[#5996ff] h-full text-white text-xs flex justify-center items-center"
+                                        style={{ width: getBarWidthPercent(bar.value) }}
+                                    >
+                                        {bar.value}
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-
-                        {/* Labels */}
-                        <div className="absolute top-[400px] left-[146px] text-[#949491] text-[12.2px] w-[41px] font-inter">
-                            Multas
-                        </div>
-
-                        <div className="absolute top-[340px] left-[37px] text-[#929490] text-[12.2px] font-inter">
-                            Incumplimiento de Pagos
-                        </div>
-
-                        <div className="absolute top-[280px] left-[52px] text-[#939795] text-[12.2px] font-inter">
-                            Compromiso de pagos
-                        </div>
-
-                        <div className="absolute top-[220px] left-[45px] text-[#929693] text-[12.6px] font-inter">
-                            Cumplimiento de Pagos
-                        </div>
-
-                        {/* Bars */}
-                        <div className="absolute top-[400px] left-[195px] h-[20px] bg-[#5996ff] rounded-full flex items-center justify-center pr-4 text-white" style={{ width: getBarWidth(finesStats ? finesStats.fines : 0) }} >
-                            <p>{finesStats.fines}</p>
-                        </div>
-                        <div className="absolute top-[340px] left-[195px] h-[20px] bg-[#5996ff] rounded-full flex items-center justify-center pr-4 text-white" style={{ width: getBarWidth(finesStats ? finesStats.unpaid : 0) }} >
-                            <p>{finesStats.unpaid}</p>
-                        </div>
-                        <div className="absolute top-[280px] left-[195px] h-[20px] bg-[#5996ff] rounded-full flex items-center justify-center pr-4 text-white" style={{ width: getBarWidth(finesStats ? finesStats.compromises : 0) }} >
-                            <p>{finesStats.compromises}</p>
-                        </div>
-                        <div className="absolute top-[220px] left-[195px] h-[20px] bg-[#5996ff] rounded-full flex items-center justify-center pr-4 text-white" style={{ width: getBarWidth(finesStats ? finesStats.paid : 0) }} >
-                            <p>{finesStats.paid}</p>
-                        </div>
-
-                        {/* Percentages at the end of each bar */}
-                        <div className="absolute top-[400px] left-[calc(195px+412px+10px)] text-[#949491] text-[12.2px] font-inter">
-                            {finesStats ? getPercentage(finesStats.fines) : 0}
-                        </div>
-
-                        <div className="absolute top-[340px] left-[calc(195px+412px+10px)] text-[#929490] text-[12.2px] font-inter">
-                            {finesStats ? getPercentage(finesStats.unpaid) : 0}
-                        </div>
-
-                        <div className="absolute top-[280px] left-[calc(195px+412px+10px)] text-[#939795] text-[12.2px] font-inter">
-                            {finesStats ? getPercentage(finesStats.compromises) : 0}
-                        </div>
-
-                        <div className="absolute top-[220px] left-[calc(195px+412px+10px)] text-[#929693] text-[12.6px] font-inter">
-                            {finesStats ? getPercentage(finesStats.paid) : 0}
-                        </div>
-
-                        <p className="absolute top-[100px] left-[85px] text-[9.4px] leading-[12.9px] text-center text-[#838382] font-inter w-[516px]">
-                            A continuación, se puede observar la tasa y total de los contribuyentes registrados que han realizado a tiempo sus <br />
-                            pagos, cuáles se han ido a compromiso de pago y cuáles no han cumplido. Asimismo, se presenta el porcentaje de <br />
-                            contribuyentes multados.
-                        </p>
-
-                        <button className="absolute top-[0px] left-[50px] w-[36rem] h-[50px]">
-                            <div className="relative top-[5px] left-[5px] h-[42px] w-full bg-[#292d33] border border-[#b7c0cd] rounded-md ">
-                                <div className="absolute top-[0px] left-[70px] text-white text-[24.2px] font-semibold font-inter whitespace-nowrap ">
-                                    <p className="text-center">CUMPLIMIENTO DE OBLIGACIONES</p>
-                                </div>
+                                <span className="text-[#949491] text-xs w-[12%] text-right">
+                                    {getPercentage(bar.value)}
+                                </span>
                             </div>
-                        </button>
+                        ))}
+                    </div>
+
+                    {/* Percentage Scale */}
+                    <div className="absolute bottom-0 lg:bottom-8 left-[20%] right-[14%] lg:left-[22%] lg:right-[16%] flex justify-between text-[#808584] text-[11px] font-inter">
+                        {[...Array(11)].map((_, i) => (
+                            <span key={i} className="w-[1px] text-center">
+                                {i * 10}%
+                            </span>
+                        ))}
                     </div>
                 </div>
             </div>

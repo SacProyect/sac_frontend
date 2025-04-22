@@ -7,7 +7,7 @@ import { useAuth } from '@/hooks/useAuth'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
-import {GroupStat} from "@/components/stats/GroupPerformanceStats"
+import { GroupStat } from "@/components/stats/GroupPerformanceStats"
 
 
 function StatsPage() {
@@ -90,18 +90,28 @@ function StatsPage() {
     return (
         <div className='flex flex-col '>
             {!loaded ? (
-                <div className='flex items-center justify-center w-[84vw] h-[90vh]'>
+                <div className='flex items-center justify-center w-[100vw] h-[100vh] lg:w-[84vw]  lg:h-[90vh]'>
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
                 <div className='  '>
-                    <div className='flex  w-[84vw] h-[50vh]'>
-                        <PageOneStats rawStats={rawStats} />
-                        {taxpayerPerformance && <PageTwoStats finesStats={taxpayerPerformance} />}
+                    <div className='flex lg:flex-row flex-col w-full h-[100vh]  lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
+
+                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
+                            <PageOneStats rawStats={rawStats} />
+                        </div>
+                        <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
+                            {taxpayerPerformance && <PageTwoStats finesStats={taxpayerPerformance} />}
+                        </div>
                     </div>
-                    <div className='flex w-[84vw] h-[50vh]'>
-                        {groupStats && <GroupPerformanceStats groupStats={groupStats} />}
-                        {globalKpi && <GlobalKPIStats globalKpi={globalKpi} />}
+                    <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
+                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+                            {groupStats && <GroupPerformanceStats groupStats={groupStats} />}
+                        </div>
+
+                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+                            {globalKpi && <GlobalKPIStats globalKpi={globalKpi} />}
+                        </div>
                     </div>
                 </div>
             )}

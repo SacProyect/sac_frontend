@@ -8,7 +8,7 @@ import { qrcode } from 'vite-plugin-qrcode';
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(),qrcode()],
+  plugins: [react(), qrcode()],
   // base: process.env.VITE_BASE_PATH || '/react-vite-deploy',
   define: {
     // env variable from .env file
@@ -20,7 +20,9 @@ export default defineConfig({
     },
   },
   server: {
-    host: true,
-    port: 5173,
+    origin: "https://f7a3-149-88-17-159.ngrok-free.app", // your ngrok URL
+    allowedHosts: [
+      "f7a3-149-88-17-159.ngrok-free.app"
+    ],
   },
 });
