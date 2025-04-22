@@ -52,7 +52,7 @@ function Sidebar() {
     return (
         <div className="lg:flex sm:hidden">
             {/* Sidebar for larger screens */}
-            <div className="hidden w-64 h-screen p-4 text-gray-100 bg-gray-800 rounded-r-lg lg:block">
+            <div className="hidden w-[18vw] h-[100vh] p-4 text-gray-100 bg-gray-800 rounded-r-lg lg:block">
                 <div className="flex flex-col w-full h-full">
                     <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
                         <p className="text-lg">{user.name}</p>

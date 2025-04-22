@@ -25,7 +25,7 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({events }: IndividualStatsProps) => {
+export const IndividualStats = ({ events }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
 
@@ -79,9 +79,9 @@ export const IndividualStats = ({events }: IndividualStatsProps) => {
     ];
 
     return (
-        <div className="flex justify-center w-full min-h-[20vh] text-black mt-4">
+        <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal */}
-            <div className="flex w-[900px] h-auto shadow-xl ">
+            <div className="flex w-full lg:w-[900px] h-auto shadow-xl ">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
                 <div className="w-1/2 p-6">
@@ -90,12 +90,18 @@ export const IndividualStats = ({events }: IndividualStatsProps) => {
                     </h1>
 
                     <div className="flex flex-col space-y-2 text-sm">
-                        <p><span className="font-bold">NRO DE PROVIDENCIA:</span>{taxpayerData ? taxpayerData?.providenceNum: "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process: "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name: "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif: "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">TIPO DE CONTRIBUYENTE:</span> {taxpayerData ? taxpayerData?.contract_type: "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address: "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">NRO DE PROVIDENCIA:</span>{taxpayerData ? taxpayerData?.providenceNum : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">TIPO DE CONTRIBUYENTE:</span> {taxpayerData
+                            ? taxpayerData.contract_type === "ORDINARY"
+                                ? "ORDINARIO"
+                                : taxpayerData.contract_type === "SPECIAL"
+                                    ? "ESPECIAL"
+                                    : taxpayerData.contract_type
+                            : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
                     </div>
 
                     <p className="mt-6 text-xs leading-5">
@@ -137,22 +143,24 @@ export const IndividualStats = ({events }: IndividualStatsProps) => {
 
                     {/* Gráfica estilo pastel */}
                     <div className="flex items-center justify-center w-full">
-                        <PieChart width={300} height={240}>
-                            <Pie
-                                data={dataMock}
-                                dataKey="value"
-                                nameKey="name"
-                                cx="50%"
-                                cy="50%"
-                                outerRadius={80}
-                                label
-                            >
-                                {dataMock.map((entry, index) => (
-                                    <Cell key={`cell-${index}`} fill={entry.color} />
-                                ))}
-                            </Pie>
-                            <Tooltip />
-                        </PieChart>
+                        <div className="w-[300px] h-[240px] sm:w-[260px] sm:h-[220px] md:w-[280px] md:h-[230px] lg:w-[300px] lg:h-[240px]">
+                            <PieChart width={300} height={240}>
+                                <Pie
+                                    data={dataMock}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={80}
+                                    label
+                                >
+                                    {dataMock.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </div>
                     </div>
                 </div>
             </div>

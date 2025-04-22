@@ -70,7 +70,7 @@ function ContributionsPage() {
 
 
     return (
-        <aside className='w-[82vw] h-full overflow-y-auto'>
+        <aside className='lg:w-[82vw] w-full h-full overflow-y-auto'>
             <ContributionsHeader />
             <ContributionsFilter groupData={groupData} setSelectedGroup={setSelectedGroup} setStartDate={setStartDate} setEndDate={setEndDate} />
             <div className='pt-8 pl-8 pr-4'>

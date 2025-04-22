@@ -106,7 +106,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                     </button>
                 </div>
                 {calendarOpen && (
-                    <div ref={calendarRef} className='absolute w-72 h-32 bg-white top-16 left-[5.5rem] rounded-md shadow-lg pt-4 z-10'>
+                    <div ref={calendarRef} className='absolute lg:w-72 w-60 h-32 bg-white top-16 left-[5.5rem] rounded-md shadow-lg pt-4 z-10'>
                         <div className='flex w-full px-4'>
                             <button
                                 className={`w-1/2 py-2 ${optionClicked === "Month" ? "bg-white font-semibold" : "bg-gray-200"}`}
@@ -156,10 +156,10 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 )}
             </div>
             {user.role === "ADMIN" && (
-                <div className='h-64 pt-4 pr-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
+                <div className='lg:h-64 h-96 pt-4 pr-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
                     {groupData.length > 0 ? (
                         groupData.map((group) => (
-                            <div key={group.id} className='w-full pt-2 border-2 border-black rounded-lg cursor-pointer h-28' onClick={() => setSelectedGroup(group.id)}>
+                            <div key={group.id} className='lg:w-full w-full pt-2 border-2 border-black rounded-lg cursor-pointer h-28' onClick={() => setSelectedGroup(group.id)}>
                                 <div className='flex justify-between w-full px-2 space-x-2'>
                                     <div className='w-2/3'>
                                         <p className='text-xs font-semibold'>{group.name}</p>
@@ -184,7 +184,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 </div>
             )}
             {user.role === "COORDINATOR" && (
-                <div className='h-64 pt-4 pr-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
+                <div className='lg:h-64 h-64 pt-4 pr-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
                     {groupData.length > 0 ? (
                         groupData.map((group) => (
                             <div key={group.id} className='w-full pt-2 border-2 border-black rounded-lg cursor-pointer h-28'>

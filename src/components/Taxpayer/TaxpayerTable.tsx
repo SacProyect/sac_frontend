@@ -71,7 +71,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
 
 
     return (
-        <div className='min-w-[4rem] max-w-[24rem] min-h-[4rem] max-h-full  overflow-y-auto  overflow-x-auto lg:overflow-x-hidden lg:min-h-[26rem] lg:max-h-[54rem] lg:min-w-full lg:max-w-full pb-4 custom-scroll'>
+        <div className='min-w-[4rem] max-w-[24rem] min-h-[4rem] max-h-full  overflow-y-auto  overflow-x-auto lg:overflow-x-hidden lg:min-h-[24rem] lg:max-h-[50rem] lg:min-w-full lg:max-w-[80vw] pb-4 custom-scroll'>
             <Table
                 aria-label='Contribuyentes'
                 selectionMode="multiple"
