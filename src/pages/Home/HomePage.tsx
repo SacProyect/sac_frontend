@@ -67,7 +67,7 @@ function HomePage() {
                             value={value.toLowerCase()}
                             onChange={onChange}
                             onBlur={onBlur}
-                            className={"flex flex-col"}
+                            className={"flex flex-col ml-0 lg:ml-4"}
                         >
                             <Label>Buscar</Label>
                             <Input
