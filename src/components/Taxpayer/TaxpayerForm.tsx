@@ -91,9 +91,9 @@ function TaxpayerForm() {
             formData.append("contract_type", data.contract_type);
             formData.append("officerId", data.officerId);
 
-            uploadedFiles.forEach((file) => {
-                formData.append("pdfs", file)
-            })
+            // uploadedFiles.forEach((file) => {
+            //     formData.append("pdfs", file)
+            // })
 
             const newTaxpayer = await createTaxpayer(formData);
 
@@ -101,7 +101,7 @@ function TaxpayerForm() {
                 toast.error("No se pudo crear el contribuyente, por favor, intente de nuevo.")
             } else {
                 toast.success("¡Contribuyente creado exitosamente!")
-                setUploadedFiles([]);
+                // setUploadedFiles([]);
                 console.log("User before" + JSON.stringify(user))
                 refreshUser()
                 console.log("User after" + JSON.stringify(user))
