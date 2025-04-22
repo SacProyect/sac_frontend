@@ -90,7 +90,7 @@ function StatsPage() {
     return (
         <div className='flex flex-col '>
             {!loaded ? (
-                <div className='flex items-center justify-center w-[100vw] h-[100vh] lg:w-[84vw]  lg:h-[90vh]'>
+                <div className='flex items-center justify-center w-[82vw] h-[100vh] lg:w-[82vw]  lg:h-[100vh]'>
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
