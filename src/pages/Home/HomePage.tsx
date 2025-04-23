@@ -34,7 +34,7 @@ function HomePage() {
         () => (taxpayers || [])
             .filter((item) =>
                 contains(
-                    `${item.rif.toLowerCase()} ${item.process.toLowerCase()} ${item.name.toLowerCase()} ${item.address.toLowerCase()}`, filterValue.toLowerCase() 
+                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase(): ""} ${item.address? item.address.toLowerCase() : ""}`, filterValue?  filterValue.toLowerCase() : "" 
                 )
             )
             .map((item) => ({
@@ -49,7 +49,7 @@ function HomePage() {
         // console.log(user.taxpayer)
     }, [user])
 
-    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
