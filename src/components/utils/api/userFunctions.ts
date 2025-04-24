@@ -9,7 +9,7 @@ export const signIn = async (user: string, password: string) => {
         return response.data; // Ensure returning response.data
     } catch (error: any) {
 
-        console.error("API Error:", error);
+        // console.error("API Error:", error);
 
         // Handle specific axios errors
         if (axios.isAxiosError(error)) {
