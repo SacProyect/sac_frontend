@@ -47,10 +47,14 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             });
             setUser(resp.data.user);
             setToken(resp.data.token);
-        } catch (err) {
+        } catch (err: any) {
             console.error("Failed to refresh user:", err);
-            // if your token is invalid, log them out
-            logout();
+            if (err.response?.status === 401) {
+                logout();
+            } else {
+                // Optional: show error or just ignore
+                console.warn("Non-auth error during refresh, not logging out.");
+            }
         }
     }, [token]);
 
