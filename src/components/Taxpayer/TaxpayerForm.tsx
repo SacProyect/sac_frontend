@@ -242,6 +242,13 @@ function TaxpayerForm() {
                             items={official}
                             label={"Funcionario"}
                         />
+                    ) : user.role === "COORDINATOR" ? (
+                        <SelectInput
+                            control={control}
+                            name={"officerId"}
+                            items={official}
+                            label={"Funcionario"}
+                        />
                     ) : (
                         <div className="py-2">
                             <div className="py-2 mt-4 px-4 border border-[#ccc] rounded-lg bg-slate-50 w-full hover:bg-white hover:border-black hover:border-1">

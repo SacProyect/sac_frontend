@@ -69,7 +69,12 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
     // console.log("Taxpayer Id receive in event form: " + taxpayerId)
 
-    const taxpayerArray: Taxpayer[] = user.taxpayer
+    let taxpayerArray: Taxpayer[] = [];
+    if (user.role === "ADMIN" || user.role === "FISCAL") {
+        taxpayerArray = user.taxpayer;
+    } else if (user.role === "COORDINATOR") {
+        taxpayerArray = user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []);
+    }
 
     const {
         register,

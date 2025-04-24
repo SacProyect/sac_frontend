@@ -49,6 +49,7 @@ function Sidebar() {
 
     useEffect(() => { }, [user])
 
+
     return (
         <div className="lg:flex sm:hidden">
             {/* Sidebar for larger screens */}
@@ -56,7 +57,7 @@ function Sidebar() {
                 <div className="flex flex-col w-full h-full">
                     <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
                         <p className="text-lg">{user.name}</p>
-                        <p className="text-md">{user.role}</p>
+                        <p className="text-md">{user.role === "COORDINATOR" ? "COORDINADOR" : user.role}</p>
                         <div className="absolute z-20 hidden p-2 bg-gray-900 rounded-lg group-hover:block w-max min-w-40 -translate-x-1/4">
                             <p>Cédula: {user.personId}</p>
                             <NegativeButton onClick={handleLogout}>
