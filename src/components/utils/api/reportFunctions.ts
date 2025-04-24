@@ -38,7 +38,6 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 
 export const createError = async (data: FormData) => {
 
-
 	try {
 		const requestUrl = `reports/errors`
 
@@ -49,9 +48,9 @@ export const createError = async (data: FormData) => {
 		}));
 
 		return response;
-	} catch (e) {
-		console.error(e)
-		return false;
+	} catch (e : any) {
+		console.error("Upload failed:", e?.response?.data || e.message);
+		throw new Error("Error sending the report");
 	}
 
 }
