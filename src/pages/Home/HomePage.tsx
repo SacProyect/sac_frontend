@@ -187,7 +187,7 @@ function HomePage() {
         () => (taxpayers || [])
             .filter((item) =>
                 contains(
-                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase(): ""} ${item.address? item.address.toLowerCase() : ""}`, filterValue?  filterValue.toLowerCase() : "" 
+                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process ? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase() : ""} ${item.address ? item.address.toLowerCase() : ""}`, filterValue ? filterValue.toLowerCase() : ""
                 )
             )
             .map((item) => ({
@@ -198,7 +198,17 @@ function HomePage() {
         [taxpayers, filterValue, user]);
 
     useEffect(() => {
-        setTaxpayers(user.taxpayer)
+
+        if (user.role === "FISCAL" || user.role === "ADMIN" && user.taxpayer) setTaxpayers(user.taxpayer);
+
+
+        if (user.role === "COORDINATOR") {
+            const groupTaxpayers = user.coordinatedGroup?.members?.flatMap(
+                (member) => member.taxpayer
+            );
+            setTaxpayers(groupTaxpayers || []);
+        }
+
         // console.log(user.taxpayer)
     }, [user])
 
