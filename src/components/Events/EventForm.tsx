@@ -264,7 +264,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
                 {/* Amount input */}
                 <>
-                    <Label className="text-black">Monto</Label>
+                    <Label className="text-black">Monto en BS:</Label>
 
                     <TextInput
                         placeholder={'3500...'}
