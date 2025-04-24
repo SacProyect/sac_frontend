@@ -151,7 +151,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                     {/* Table */}
                     <div className="px-4">
                         <div className="w-full lg:h-[20rem] h-[24rem] border border-gray-200 rounded-md overflow-y-auto custom-scroll">
-                            <div className="w-[1400px] lg:w-full grid grid-cols-7" style={{ gridTemplateColumns: 'repeat(7, minmax(100px, 1fr))' }}>
+                            <div className="w-[1400px] lg:w-full grid grid-cols-7 text-xs" style={{ gridTemplateColumns: 'repeat(7, minmax(100px, 1fr))' }}>
                                 <div className=''>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("name")}>
@@ -161,7 +161,7 @@ function ContributionsStatistics({ groupData, selectedGroup }: ContributionsStat
                                     </div>
                                     {sortedData?.map((data) => (
                                         <div className='flex flex-col items-center w-full py-2 bg-gray-200 border-t-2 border-gray-300'>
-                                            <p>{data.name}</p>
+                                            <p className=''>{data.name}</p>
                                         </div>
                                     ))}
                                 </div>

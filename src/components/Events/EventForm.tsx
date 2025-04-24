@@ -73,7 +73,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     if (user.role === "ADMIN" || user.role === "FISCAL") {
         taxpayerArray = user.taxpayer;
     } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []);
+        taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
     }
 
     const {
