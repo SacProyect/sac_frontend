@@ -15,6 +15,10 @@ export interface User {
 
 export interface CoordinatedGroup {
     id: string,
+    name: string,
+    coordinatorId: string,
+    coordinator: User,
+    members: User[],
 }
 
 
