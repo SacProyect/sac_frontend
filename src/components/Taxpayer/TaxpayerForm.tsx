@@ -23,6 +23,7 @@ export type NewTaxpayer = {
     rif: string;
     contract_type: contract_type;
     officerId: string;
+    address: string;
 };
 
 
@@ -55,7 +56,8 @@ function TaxpayerForm() {
                 process: taxpayer_process.NA,
                 rif: '',
                 contract_type: contract_type.ORDINARY,
-                officerId: ''
+                officerId: '',
+                address: '',
             }
         });
 
@@ -90,6 +92,7 @@ function TaxpayerForm() {
             formData.append("rif", rifPrefix + data.rif);
             formData.append("contract_type", data.contract_type);
             formData.append("officerId", data.officerId);
+            formData.append("address", data.address);
 
             uploadedFiles.forEach((file) => {
                 formData.append("pdfs", file)
@@ -164,6 +167,7 @@ function TaxpayerForm() {
                     </div>
                     {errors.process && <span className="text-sm text-red-600 ">{errors.process.message}<br></br></span>}
 
+                    {/* Taxpayer name */}
                     <div className='pt-2'>
                         <Label>Razón Social</Label>
                         <TextInput
@@ -173,6 +177,17 @@ function TaxpayerForm() {
                         />
                     </div>
                     {errors.name && <span className="text-sm text-red-600">{errors.name.message}<br></br></span>}
+
+                    {/* Address */}
+                    <div className='pt-2'>
+                        <Label>Dirección</Label>
+                        <TextInput
+                            placeholder={"Caracas..."}
+                            type='text'
+                            register={{ ...register("address", { required: "Campo Obligatorio", min: 4 }) }}
+                        />
+                    </div>
+                    {errors.address && <span className="text-sm text-red-600">{errors.address.message}<br></br></span>}
 
                     <div className='pt-2'>
                         <Label>RIF</Label>
