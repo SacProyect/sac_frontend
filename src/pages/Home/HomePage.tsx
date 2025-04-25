@@ -24,6 +24,16 @@ function HomePage() {
     }
 
     const [taxpayers, setTaxpayers] = useState(user?.taxpayer || [])
+
+
+
+    useEffect(() => {
+        setTaxpayers(user.taxpayer);
+
+    }, [user]);
+
+
+
     const { contains } = useFilter({ sensitivity: "case" })
     const {
         control,
@@ -44,22 +54,7 @@ function HomePage() {
             })),
         [taxpayers, filterValue, user]);
 
-    useEffect(() => {
-
-        if (user.role === "FISCAL" || user.role === "ADMIN" && user.taxpayer) setTaxpayers(user.taxpayer);
-
-
-        if (user.role === "COORDINATOR") {
-            const groupTaxpayers = user.coordinatedGroup?.members?.flatMap(
-                (member) => member.taxpayer
-            );
-            setTaxpayers(groupTaxpayers || []);
-        }
-
-        // console.log(user.taxpayer)
-    }, [user])
-
-    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
