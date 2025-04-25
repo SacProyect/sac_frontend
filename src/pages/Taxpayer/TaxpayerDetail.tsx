@@ -27,9 +27,9 @@ const TaxpayerDetail = () => {
 	const { events, fines, payments } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment }
 
 
-	console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
-	console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
-	console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
+	// console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
+	// console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
+	// console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
 
 	const options = [{
 		name: 'Aviso', path: `/warning/${taxpayer}`
