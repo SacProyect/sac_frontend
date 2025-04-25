@@ -20,7 +20,8 @@ interface EventTableProps {
 const typeMapping: { [key: string]: string } = {
   FINE: "MULTA",
   WARNING: "AVISO",
-  PAYMENT_COMPROMISE: "COMPROMISO DE PAGO"
+  PAYMENT_COMPROMISE: "COMPROMISO DE PAGO",
+  payment: "PAGO"
 };
 
 const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
@@ -36,7 +37,6 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
     { name: "Fecha", id: "date" },
   ]
 
-  console.log("PROP ROWS: " + propRows)
 
   const sortedItems = useMemo(() => {
     if (!Array.isArray(propRows)) return []; // Ensure propRows is an array

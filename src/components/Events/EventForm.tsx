@@ -258,12 +258,11 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     </>
                 }
 
-
                 {/* Select Date */}
                 <DateInputUI
                     name="date"
                     control={control}
-                    label={"Fecha de pago"}
+                    label={type === "payment" ? "Fecha de pago" : "Fecha de emisión"}
                 />
 
 
