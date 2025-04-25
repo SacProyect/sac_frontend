@@ -181,8 +181,30 @@ function HomePage() {
 
 
     useEffect(() => {
-        setTaxpayers(user.taxpayer);
+        console.log("👤 User loaded:", user);
 
+        if ((user.role === "FISCAL" || user.role === "ADMIN") && user.taxpayer) {
+            console.log("📄 User is FISCAL or ADMIN, taxpayer:", user.taxpayer);
+            setTaxpayers(user.taxpayer);
+        } else if (user.role === "COORDINATOR") {
+            console.log("👥 User is COORDINATOR");
+
+            if (!user.coordinatedGroup) {
+                console.warn("⚠️ user.coordinatedGroup is undefined or null");
+            } else if (!user.coordinatedGroup.members) {
+                console.log("USER: " + JSON.stringify(user))
+                console.warn("⚠️ user.coordinatedGroup.members is undefined or empty");
+            } else {
+                console.log("✅ Members found:", user.coordinatedGroup.members);
+            }
+
+            const groupTaxpayers = user.coordinatedGroup?.members?.flatMap(
+                (member) => member.taxpayer || []
+            );
+
+            console.log("🧾 Extracted taxpayers from coordinator group:", groupTaxpayers);
+            setTaxpayers(groupTaxpayers || []);
+        }
     }, [user]);
 
 
