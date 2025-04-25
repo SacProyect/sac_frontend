@@ -79,7 +79,7 @@ function TaxpayerForm() {
     const onSubmit: SubmitHandler<NewTaxpayer> = async (data) => {
         try {
 
-            if (user.role != "ADMIN") data.officerId = user.id;
+            if (user.role == "FISCAL") data.officerId = user.id;
 
 
             // Adds rif prefix to the rif numeric data
