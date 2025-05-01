@@ -258,7 +258,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
     // 3️⃣ Specific warning: if there is a taxpayerId but no pending payments
     useEffect(() => {
-        if (type !== "FINE" && // Only show warnings if type is not "FINE"
+        if (type !== "fine" && // Only show warnings if type is not "FINE"
             taxPayerWatcher &&                                       // With taxpayer selected
             (!pendingPayments || pendingPayments.length === 0)       // But no pending payments
         ) {
