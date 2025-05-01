@@ -60,26 +60,26 @@ export const router = createBrowserRouter([
           },
           {
             path: "fine/:taxpayerId?",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de multas...</div>} > <FinePage /> </Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de multas...</div>} > <FinePage /> </Suspense>,
           },
           {
             path: "/contributions",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de contribuciones...</div>} > <ContributionsPage/> </Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de contribuciones...</div>} > <ContributionsPage /> </Suspense>,
           },
           {
             path: "payment_compromise/:taxpayerId?",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de compromisos de pago...</div>} ><ComitmentPage /></Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de compromisos de pago...</div>} ><ComitmentPage /></Suspense>,
           },
           {
             path: "payment/:taxpayerId?",
-            element:<Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de pagos...</div>} > <PaymentPage /> </Suspense>,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de pagos...</div>} > <PaymentPage /> </Suspense>,
             loader: async ({ params }) => {
               try {
                 const taxpayerId = params.taxpayer;
 
                 // console.log("TAXPAYER ID APP.TSX: " + taxpayerId)
 
-                
+
 
                 if (!taxpayerId) return [];
                 const pendingPayments = await getPendingPayments(taxpayerId);
@@ -96,19 +96,23 @@ export const router = createBrowserRouter([
           },
           {
             path: "warning/:taxpayerId?",
-            element:<Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Avisos...</div>} ><NoticePage /></Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Avisos...</div>} ><NoticePage /></Suspense>,
           },
           {
             path: "report/errors",
-            element:<Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Aviso de error...</div>} ><ErrorsReport/></Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Aviso de error...</div>} ><ErrorsReport /></Suspense>,
           },
           {
             path: "/stats",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage/></Suspense>
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
           },
           {
             path: "taxpayer/",
-            element:<Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes...</div>} ><TaxpayerForm /></Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes...</div>} >
+              <div className='w-full h-full'>
+                <TaxpayerForm />
+              </div>
+            </Suspense>,
             loader: async () => {
               try {
                 const response = await getOfficers();
@@ -125,7 +129,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "taxpayer/:taxpayer?",
-            element:<Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Detalles del Contribuyente...</div>} ><TaxpayerDetail /></Suspense> ,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Detalles del Contribuyente...</div>} ><TaxpayerDetail /></Suspense>,
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
