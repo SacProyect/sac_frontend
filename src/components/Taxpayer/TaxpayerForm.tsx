@@ -24,6 +24,8 @@ export type NewTaxpayer = {
     contract_type: contract_type;
     officerId: string;
     address: string;
+    description: string;
+    emition_date: string;
 };
 
 
@@ -58,6 +60,8 @@ function TaxpayerForm() {
                 contract_type: contract_type.ORDINARY,
                 officerId: '',
                 address: '',
+                emition_date: '',
+                description: '',
             }
         });
 
@@ -93,6 +97,8 @@ function TaxpayerForm() {
             formData.append("contract_type", data.contract_type);
             formData.append("officerId", data.officerId);
             formData.append("address", data.address);
+            formData.append("description", data.description);
+            formData.append("emition_date", data.emition_date);
 
             uploadedFiles.forEach((file) => {
                 formData.append("pdfs", file)
@@ -132,194 +138,221 @@ function TaxpayerForm() {
 
     return (
         <>
-            <FormContainer>
-                <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar Contribuyente</h2>
-                <Form onSubmit={handleSubmit(onSubmit)} className=''>
-                    <div className=''>
-                        <Label className=''>Nro. Providencia</Label>
-                    </div>
-                    <TextInput
-                        placeholder={"Ingrese el numero de providencia"}
-                        type='number'
-                        register={{ ...register("providenceNum", { required: "Campo Obligatorio", min: { value: 0, message: "Por favor introduzca un número de providencia válido" } }) }}
-                    />
-                    {errors.providenceNum && <span className="text-sm text-red-600">{errors.providenceNum.message}</span>}
-
-
-                    {/* Process input field */}
-                    <div className='pt-2'>
-                        <Controller
-                            control={control}
-                            name="process"
-                            rules={{
-                                required: "Campo obligatorio", validate: value =>
-                                    Object.values(taxpayer_process).includes(value) || "Por favor, seleccione un campo válido",
-                            }}
-                            render={({ field }) => (
-                                <SelectInput
-                                    {...field}
-                                    control={control}
-                                    items={procedureArray}
-                                    label="Procedimiento"
-                                />
-                            )}
-                        />
-                    </div>
-                    {errors.process && <span className="text-sm text-red-600 ">{errors.process.message}<br></br></span>}
-
-                    {/* Taxpayer name */}
-                    <div className='pt-2'>
-                        <Label>Razón Social</Label>
+            <div className=' flex items-center justify-center text-xs max-h-[80vh]'>
+                <FormContainer>
+                    <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar Contribuyente</h2>
+                    <Form onSubmit={handleSubmit(onSubmit)} className=''>
+                        <div className=''>
+                            <Label className=''>Nro. Providencia</Label>
+                        </div>
                         <TextInput
-                            placeholder={"Juan Pedro..."}
-                            type='text'
-                            register={{ ...register("name", { required: "Campo Obligatorio" }) }}
+                            placeholder={"Ingrese el numero de providencia"}
+                            type='number'
+                            register={{ ...register("providenceNum", { required: "Campo Obligatorio", min: { value: 0, message: "Por favor introduzca un número de providencia válido" } }) }}
                         />
-                    </div>
-                    {errors.name && <span className="text-sm text-red-600">{errors.name.message}<br></br></span>}
+                        {errors.providenceNum && <span className="text-sm text-red-600">{errors.providenceNum.message}</span>}
 
-                    {/* Address */}
-                    <div className='pt-2'>
-                        <Label>Dirección</Label>
-                        <TextInput
-                            placeholder={"Caracas..."}
-                            type='text'
-                            register={{ ...register("address", { required: "Campo Obligatorio", min: 4 }) }}
-                        />
-                    </div>
-                    {errors.address && <span className="text-sm text-red-600">{errors.address.message}<br></br></span>}
 
-                    <div className='pt-2'>
-                        <Label>RIF</Label>
-                        <div className="flex items-center justify-center">
-                            <select name='person-type' onChange={(e) => setRifPrefix(e.target.value)}>
-                                <option value="J" className='text-black'>J-</option>
-                                <option value="V" className='text-black'>V-</option>
-                                <option value="E" className='text-black'>E-</option>
-                                <option value="G" className='text-black'>G-</option>
-                                <option value="P" className='text-black'>P-</option>
-                            </select>
-                            <TextInput
-                                placeholder={"Ingrese el número de RIF"}
-                                type="text"
-                                register={{
-                                    ...register("rif", {
-                                        required: "Campo Obligatorio",
-                                        pattern: {
-                                            value: /^\d{9}$/, // Only 10 digits including the person letter
-                                            message: "El RIF debe tener exactamente 9 dígitos numéricos"
-                                        },
-                                        minLength: {
-                                            value: 9,
-                                            message: "El RIF debe tener exactamente 9 dígitos numéricos"
-                                        },
-                                        maxLength: {
-                                            value: 9,
-                                            message: "El RIF debe tener exactamente 9 dígitos numéricos"
-                                        },
-                                    })
+                        {/* Process input field */}
+                        <div className='pt-2'>
+                            <Controller
+                                control={control}
+                                name="process"
+                                rules={{
+                                    required: "Campo obligatorio", validate: value =>
+                                        Object.values(taxpayer_process).includes(value) || "Por favor, seleccione un campo válido",
                                 }}
+                                render={({ field }) => (
+                                    <SelectInput
+                                        {...field}
+                                        control={control}
+                                        items={procedureArray}
+                                        label="Procedimiento"
+                                    />
+                                )}
                             />
                         </div>
-                        {errors.rif && <span className="text-sm text-red-600">{errors.rif.message}</span>}
-                    </div>
+                        {errors.process && <span className="text-sm text-red-600 ">{errors.process.message}<br></br></span>}
 
-                    <div className='pt-2'>
-                        <Controller
-                            control={control}
-                            name="contract_type"
-                            rules={{
-                                required: "Campo obligatorio",
-                                validate: (value) =>
-                                    value === contract_type.ORDINARY || value === contract_type.SPECIAL
-                                        ? true
-                                        : "Por favor seleccione un tipo de contrato"
-                            }}
-                            render={({ field }) => (
-                                <SelectInput
-                                    {...field}
-                                    control={control}
-                                    items={[
-                                        { id: 'SPECIAL', name: 'ESPECIAL', value: 'SPECIAL' },
-                                        { id: 'ORDINARY', name: 'ORDINARIO', value: 'ORDINARY' },
-                                    ]}
-                                    label="Tipo Contribuyente"
+                        {/* Taxpayer name */}
+                        <div className='pt-2'>
+                            <Label>Razón Social</Label>
+                            <TextInput
+                                placeholder={"Juan Pedro..."}
+                                type='text'
+                                register={{ ...register("name", { required: "Campo Obligatorio" }) }}
+                            />
+                        </div>
+                        {errors.name && <span className="text-sm text-red-600">{errors.name.message}<br></br></span>}
+
+                        {/* Address */}
+                        <div className='pt-2'>
+                            <Label>Dirección</Label>
+                            <TextInput
+                                placeholder={"Caracas..."}
+                                type='text'
+                                register={{ ...register("address", { required: "Campo Obligatorio", min: 4 }) }}
+                            />
+                        </div>
+                        {errors.address && <span className="text-sm text-red-600">{errors.address.message}<br></br></span>}
+
+                        {/* Fecha de Emisión */}
+                        <div className='pt-2'>
+                            <Label>Fecha de Emisión</Label>
+                            <TextInput
+                                placeholder="Seleccione una fecha"
+                                type="date"
+                                register={{ ...register("emition_date", { required: "Campo Obligatorio" }) }}
+                            />
+                        </div>
+                        {errors.emition_date && (
+                            <span className="text-sm text-red-600">{errors.emition_date.message}</span>
+                        )}
+
+                        {/* Descripción */}
+                        <div className='pt-2'>
+                            <Label>Descripción</Label>
+                            <textarea
+                                placeholder="Ingrese una descripción detallada..."
+                                className="w-full p-2 border border-gray-300 rounded-md min-h-[120px] resize-y text-black"
+                                {...register("description", { required: "Campo Obligatorio", minLength: { value: 10, message: "Debe ser más descriptivo" } })}
+                            />
+                        </div>
+                        {errors.description && (
+                            <span className="text-sm text-red-600">{errors.description.message}</span>
+                        )}
+
+                        <div className='pt-2'>
+                            <Label>RIF</Label>
+                            <div className="flex items-center justify-center">
+                                <select name='person-type' onChange={(e) => setRifPrefix(e.target.value)}>
+                                    <option value="J" className='text-black'>J-</option>
+                                    <option value="V" className='text-black'>V-</option>
+                                    <option value="E" className='text-black'>E-</option>
+                                    <option value="G" className='text-black'>G-</option>
+                                    <option value="P" className='text-black'>P-</option>
+                                </select>
+                                <TextInput
+                                    placeholder={"Ingrese el número de RIF"}
+                                    type="text"
+                                    register={{
+                                        ...register("rif", {
+                                            required: "Campo Obligatorio",
+                                            pattern: {
+                                                value: /^\d{9}$/, // Only 10 digits including the person letter
+                                                message: "El RIF debe tener exactamente 9 dígitos numéricos"
+                                            },
+                                            minLength: {
+                                                value: 9,
+                                                message: "El RIF debe tener exactamente 9 dígitos numéricos"
+                                            },
+                                            maxLength: {
+                                                value: 9,
+                                                message: "El RIF debe tener exactamente 9 dígitos numéricos"
+                                            },
+                                        })
+                                    }}
                                 />
-                            )}
-                        />
-                    </div>
-                    {errors.contract_type && <span className="text-sm text-red-600">{errors.contract_type.message}</span>}
-
-                    {user.role === "ADMIN" ? (
-                        <SelectInput
-                            control={control}
-                            name={"officerId"}
-                            items={official}
-                            label={"Funcionario"}
-                        />
-                    ) : user.role === "COORDINATOR" ? (
-                        <SelectInput
-                            control={control}
-                            name={"officerId"}
-                            items={official}
-                            label={"Funcionario"}
-                        />
-                    ) : (
-                        <div className="py-2">
-                            <div className="py-2 mt-4 px-4 border border-[#ccc] rounded-lg bg-slate-50 w-full hover:bg-white hover:border-black hover:border-1">
-                                <Label className="block text-base font-medium">{`Funcionario: ${user.name}`}</Label>
                             </div>
-                        </div>
-                    )}
-                    {errors.officerId && <span className="text-sm text-red-600">{errors.officerId.message}</span>}
-
-                    {/* Drag and Drop Zone */}
-                    <div className=" pt-4">
-                        <div
-                            {...getRootProps()}
-                            className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"
-                                } transition-all duration-200`}
-                        >
-                            <input {...getInputProps()} />
-                            {isDragActive ? (
-                                <div className='flex items-center'>
-                                    <div className='pr-4 text-blue-500'>
-                                        <HiOutlineUpload size={50} />
-                                    </div>
-                                    <p className="text-sm text-blue-500">Suelta los archivos aquí...</p>
-                                </div>
-
-                            ) : (
-                                <div className='flex items-center'>
-                                    <div className='pr-4 text-blue-500'>
-                                        <HiOutlineUpload size={50} />
-                                    </div>
-                                    <p className="text-sm text-gray-600">Arrastra y suelta los archivos o haz clic aquí para seleccionarlos</p>
-                                </div>
-                            )}
+                            {errors.rif && <span className="text-sm text-red-600">{errors.rif.message}</span>}
                         </div>
 
-                        {/* Display Uploaded Files */}
-                        {uploadedFiles.length > 0 && (
-                            <div className="h-24 mt-4 space-y-1 ">
-                                <p className="font-semibold">Archivos subidos:</p>
-                                <ul className="h-16 space-y-1 overflow-y-auto text-sm text-gray-700">
-                                    {uploadedFiles.map((file, index) => (
-                                        <li key={index} className="flex items-center space-x-2">
-                                            <span>📄 {file.name}</span>
-                                            <span className="text-gray-500">({(file.size / 1024).toFixed(2)} KB)</span>
-                                        </li>
-                                    ))}
-                                </ul>
+                        <div className='pt-2'>
+                            <Controller
+                                control={control}
+                                name="contract_type"
+                                rules={{
+                                    required: "Campo obligatorio",
+                                    validate: (value) =>
+                                        value === contract_type.ORDINARY || value === contract_type.SPECIAL
+                                            ? true
+                                            : "Por favor seleccione un tipo de contrato"
+                                }}
+                                render={({ field }) => (
+                                    <SelectInput
+                                        {...field}
+                                        control={control}
+                                        items={[
+                                            { id: 'SPECIAL', name: 'ESPECIAL', value: 'SPECIAL' },
+                                            { id: 'ORDINARY', name: 'ORDINARIO', value: 'ORDINARY' },
+                                        ]}
+                                        label="Tipo Contribuyente"
+                                    />
+                                )}
+                            />
+                        </div>
+                        {errors.contract_type && <span className="text-sm text-red-600">{errors.contract_type.message}</span>}
+
+                        {user.role === "ADMIN" ? (
+                            <SelectInput
+                                control={control}
+                                name={"officerId"}
+                                items={official}
+                                label={"Funcionario"}
+                            />
+                        ) : user.role === "COORDINATOR" ? (
+                            <SelectInput
+                                control={control}
+                                name={"officerId"}
+                                items={official}
+                                label={"Funcionario"}
+                            />
+                        ) : (
+                            <div className="py-2">
+                                <div className="py-2 mt-4 px-4 border border-[#ccc] rounded-lg bg-slate-50 w-full hover:bg-white hover:border-black hover:border-1">
+                                    <Label className="block text-base font-medium">{`Funcionario: ${user.name}`}</Label>
+                                </div>
                             </div>
                         )}
-                    </div>
+                        {errors.officerId && <span className="text-sm text-red-600">{errors.officerId.message}</span>}
+
+                        {/* Drag and Drop Zone */}
+                        <div className=" pt-4">
+                            <div
+                                {...getRootProps()}
+                                className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"
+                                    } transition-all duration-200`}
+                            >
+                                <input {...getInputProps()} />
+                                {isDragActive ? (
+                                    <div className='flex items-center'>
+                                        <div className='pr-4 text-blue-500'>
+                                            <HiOutlineUpload size={50} />
+                                        </div>
+                                        <p className="text-sm text-blue-500">Suelta los archivos aquí...</p>
+                                    </div>
+
+                                ) : (
+                                    <div className='flex items-center'>
+                                        <div className='pr-4 text-blue-500'>
+                                            <HiOutlineUpload size={50} />
+                                        </div>
+                                        <p className="text-sm text-gray-600">Arrastra y suelta los archivos o haz clic aquí para seleccionarlos</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Display Uploaded Files */}
+                            {uploadedFiles.length > 0 && (
+                                <div className="h-24 mt-4 space-y-1 ">
+                                    <p className="font-semibold">Archivos subidos:</p>
+                                    <ul className="h-16 space-y-1 overflow-y-auto text-sm text-gray-700">
+                                        {uploadedFiles.map((file, index) => (
+                                            <li key={index} className="flex items-center space-x-2">
+                                                <span>📄 {file.name}</span>
+                                                <span className="text-gray-500">({(file.size / 1024).toFixed(2)} KB)</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
 
 
-                    <Button
-                        type='submit'
-                        className={
-                            `w-full 
+                        <Button
+                            type='submit'
+                            className={
+                                `w-full 
                         p-2 
                         mt-4
                         bg-[#007bff] 
@@ -328,13 +361,14 @@ function TaxpayerForm() {
                         rounded-lg 
                         cursor-pointer 
                         disabled:bg-gray-400`
-                        }
-                    >
-                        Enviar
-                    </Button>
-                </Form>
+                            }
+                        >
+                            Enviar
+                        </Button>
+                    </Form>
 
-            </FormContainer>
+                </FormContainer>
+            </div>
         </>
     )
 }

@@ -21,6 +21,7 @@ interface TaxpayerData {
     contract_type: string,
     rif: string,
     name: string,
+    description: string,
 }
 
 
@@ -104,10 +105,10 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                         <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
                     </div>
 
-                    <p className="mt-6 text-xs leading-5">
-                        A continuación se puede observar el rendimiento individual del
-                        contribuyente, la cantidad de pagos realizados a tiempo,
-                        compromisos de pago e incumplimiento de los mismos.
+                    <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                        Descripción de la causa del procedimiento:
+                        <br />
+                        {taxpayerData?.description}
                     </p>
                 </div>
 
