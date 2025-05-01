@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth';
 import { useForm } from 'react-hook-form';
 import TextInput from '../UI/TextInput';
@@ -230,6 +230,41 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         }
     }, [selectedEventId, pendingPayments]);
 
+    function toastWarning(message: string) {
+        toast(message, {
+            icon: '⚠️',
+            style: {
+                border: '1px solid #facc15',
+                background: '#fef3c7',
+                color: '#92400e'
+            }
+        });
+    }
+
+    // 1️⃣ Ref for showing the global warning only once
+    const globalWarningShown = useRef(false);
+
+    // 2️⃣ Global warning: if no taxpayerId and no pending payments
+    useEffect(() => {
+        if (type !== "fine" && // Only show warnings if type is not "FINE"
+            !taxPayerWatcher &&                                        // No taxpayer selected
+            (!pendingPayments || pendingPayments.length === 0) &&      // No pending payments
+            !globalWarningShown.current                                 // Not shown yet
+        ) {
+            toastWarning("No hay pagos pendientes para los contribuyentes disponibles");
+            globalWarningShown.current = true;
+        }
+    }, [pendingPayments, taxPayerWatcher, type]);  // Added `type` to dependency array
+
+    // 3️⃣ Specific warning: if there is a taxpayerId but no pending payments
+    useEffect(() => {
+        if (type !== "FINE" && // Only show warnings if type is not "FINE"
+            taxPayerWatcher &&                                       // With taxpayer selected
+            (!pendingPayments || pendingPayments.length === 0)       // But no pending payments
+        ) {
+            toastWarning("No hay pagos pendientes para el contribuyente seleccionado");
+        }
+    }, [pendingPayments, taxPayerWatcher, type]);  // Added `type` to dependency array
 
 
 
