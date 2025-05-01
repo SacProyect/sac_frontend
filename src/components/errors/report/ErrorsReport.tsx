@@ -180,7 +180,7 @@ export default function ErrorsReport() {
                     {errors.description && <p className='text-center text-red-600 text-sm'>{errors.description.message}</p>}
 
                     {/* Drag and Drop */}
-                    {/* <div className="px-2 sm:px-4 lg:px-16">
+                    <div className="px-2 sm:px-4 lg:px-16">
                         <div
                             {...getRootProps()}
                             className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer border-blue-500 bg-blue-100 transition-all duration-200`}
@@ -212,7 +212,7 @@ export default function ErrorsReport() {
                             </div>
                         )}
                     </div>
-                    {errors.errorImages && <p className='text-center text-red-600 text-sm'>{errors.errorImages.message}</p>} */}
+                    {errors.errorImages && <p className='text-center text-red-600 text-sm'>{errors.errorImages.message}</p>}
 
                     {/* Submit button */}
                     <div className='flex justify-end px-2 sm:px-4 lg:pr-16'>

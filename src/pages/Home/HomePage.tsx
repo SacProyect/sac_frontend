@@ -233,7 +233,7 @@ function HomePage() {
 
 
     return (
-        <div className='flex items-center justify-center w-full mt-20 sm:mt-0'>
+        <div className='flex justify-center w-full lg:pt-8 sm:mt-0'>
             <div className='flex-col items-center justify-center ml-0 '>
                 <h2 className="w-full text-2xl font-bold text-center text-black ">Administración</h2>
                 <Controller
