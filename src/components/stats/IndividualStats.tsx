@@ -106,9 +106,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                     </div>
 
                     <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                        Descripción de la causa del procedimiento:
-                        <br />
-                        {taxpayerData?.description}
+                        A continuación se puede observar el rendimiento individual del contribuyente, la cantidad de pagos realizados a tiempo, compromisos de pago e incumplimiento de los mismos.
                     </p>
                 </div>
 
