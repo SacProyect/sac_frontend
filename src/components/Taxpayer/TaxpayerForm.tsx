@@ -24,7 +24,6 @@ export type NewTaxpayer = {
     contract_type: contract_type;
     officerId: string;
     address: string;
-    description: string;
     emition_date: string;
 };
 
@@ -61,7 +60,6 @@ function TaxpayerForm() {
                 officerId: '',
                 address: '',
                 emition_date: '',
-                description: '',
             }
         });
 
@@ -97,7 +95,6 @@ function TaxpayerForm() {
             formData.append("contract_type", data.contract_type);
             formData.append("officerId", data.officerId);
             formData.append("address", data.address);
-            formData.append("description", data.description);
             formData.append("emition_date", data.emition_date);
 
             uploadedFiles.forEach((file) => {
@@ -207,19 +204,6 @@ function TaxpayerForm() {
                         </div>
                         {errors.emition_date && (
                             <span className="text-sm text-red-600">{errors.emition_date.message}</span>
-                        )}
-
-                        {/* Descripción */}
-                        <div className='pt-2'>
-                            <Label>Descripción</Label>
-                            <textarea
-                                placeholder="Ingrese una descripción detallada..."
-                                className="w-full p-2 border border-gray-300 rounded-md min-h-[120px] resize-y text-black"
-                                {...register("description", { required: "Campo Obligatorio", minLength: { value: 10, message: "Debe ser más descriptivo" } })}
-                            />
-                        </div>
-                        {errors.description && (
-                            <span className="text-sm text-red-600">{errors.description.message}</span>
                         )}
 
                         <div className='pt-2'>
