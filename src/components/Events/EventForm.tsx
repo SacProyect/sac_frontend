@@ -63,6 +63,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>(useLoaderData() as PendingPayments[])
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
+    const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
     if (!user) {
         navigate("/login");
         return null;
@@ -98,6 +99,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
     const getTaxpayerPendingPayments = useCallback(
         async () => {
+
+            const taxpayerToQuery = taxpayerId || taxPayerWatcher;
+            if (!taxpayerToQuery) return;
+
             // console.log("taxPayerWatcher: " + taxPayerWatcher)
             const auxPayments = taxpayerId == "" ? await getPendingPayments((taxPayerWatcher)) : await getPendingPayments(taxpayerId)
 
@@ -115,9 +120,12 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
             const mappedPayments = filteredPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} monto de la multa: ${event.amount}`, debt: event.debt } })
             setPendingPayments(mappedPayments)
+            setHasFetchedPayments(true);
         }, [taxPayerWatcher]
     )
-    useEffect(() => { if (taxPayerWatcher != "" && type == "payment" || type == "warning" || type == "payment_compromise") { getTaxpayerPendingPayments() } }, [taxPayerWatcher])
+    useEffect(() => {
+        if (taxPayerWatcher != "" && type === "payment" || type === "warning" || type === "payment_compromise") { getTaxpayerPendingPayments() }
+    }, [taxPayerWatcher])
 
 
     if (type == "payment" || type == "warning" || type == "payment_compromise") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
@@ -245,30 +253,35 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         });
     }
 
-    // 1️⃣ Ref for showing the global warning only once
-    const globalWarningShown = useRef(false);
+    const alreadyWarnedRef = useRef(false);
 
-    // 2️⃣ Global warning: if no taxpayerId and no pending payments
     useEffect(() => {
-        if (type !== "fine" && // Only show warnings if type is not "FINE"
-            !taxPayerWatcher &&                                        // No taxpayer selected
-            (!pendingPayments || pendingPayments.length === 0) &&      // No pending payments
-            !globalWarningShown.current                                 // Not shown yet
+        console.log("pendingPayments:", pendingPayments);
+
+        if (type === "fine" || !hasFetchedPayments) return;
+
+        // If there is no selected taxpayer and there are no pending payments for any taxpayer
+        if (
+            !taxPayerWatcher &&
+            pendingPayments &&
+            pendingPayments.length === 0 &&
+            !alreadyWarnedRef.current
         ) {
             toastWarning("No hay pagos pendientes para los contribuyentes disponibles");
-            globalWarningShown.current = true;
+            alreadyWarnedRef.current = true; // show as shown
         }
-    }, [pendingPayments, taxPayerWatcher, type]);  // Added `type` to dependency array
 
-    // 3️⃣ Specific warning: if there is a taxpayerId but no pending payments
-    useEffect(() => {
-        if (type !== "fine" && // Only show warnings if type is not "FINE"
-            taxPayerWatcher &&                                       // With taxpayer selected
-            (!pendingPayments || pendingPayments.length === 0)       // But no pending payments
+        // If there is a taxpayer shown and doesn't have any pending payments
+        if (
+            taxPayerWatcher &&
+            pendingPayments &&
+            pendingPayments.length === 0
         ) {
             toastWarning("No hay pagos pendientes para el contribuyente seleccionado");
+            alreadyWarnedRef.current = true; // Show as shown
         }
-    }, [pendingPayments, taxPayerWatcher, type]);  // Added `type` to dependency array
+    }, [pendingPayments, taxPayerWatcher, type, hasFetchedPayments]);
+
 
 
 
