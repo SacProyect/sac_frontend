@@ -13,6 +13,7 @@ export default {
       display: ["group-hover"],
     },
   },
+  // eslint-disable-next-line no-undef
   plugins: [require('tailwindcss-react-aria-components')],
 }
 

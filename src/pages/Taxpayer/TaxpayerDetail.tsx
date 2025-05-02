@@ -7,7 +7,7 @@ import { Fines } from '../../App'
 import { Payment } from '../../types/payment'
 import { Taxpayer } from '@/types/taxpayer'
 import { IndividualStats } from '@/components/stats/IndividualStats'
-import {Decimal} from "decimal.js"
+import { Decimal } from "decimal.js"
 
 
 export interface Event {
@@ -40,6 +40,8 @@ const TaxpayerDetail = () => {
 		name: 'Pago', path: `/payment/${taxpayer}`
 	}, {
 		name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`
+	}, {
+		name: 'Observaciones', path: `/observations/${taxpayer}`
 	}
 	]
 
@@ -70,7 +72,7 @@ const TaxpayerDetail = () => {
 
 				</div>
 			} */}
-			<IndividualStats  events={events} />
+			<IndividualStats events={events} />
 			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20 pt-10"}>
 				{options.map((opt) => (
 					<Link
