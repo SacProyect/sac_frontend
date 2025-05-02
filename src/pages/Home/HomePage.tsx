@@ -71,19 +71,32 @@ function HomePage() {
                 )
             )
             .map((item) => {
-                const isCreatedByUser = item.officerId === user.id;
-                const memberName = user.coordinatedGroup?.members?.find(m => m.id === item.officerId)?.name;
+                const isCreatedByUser = item.user?.id === user.id;
+
+                let officerName: string = 'Desconocido';
+
+                if (isCreatedByUser || user.role === "FISCAL") {
+                    officerName = user.name;
+                } else if (user.role === 'ADMIN') {
+                    officerName = item.user?.name || 'Desconocido';
+                } else if (user.role === 'COORDINATOR') {
+                    // If the user is a coordinator, match officerId with member.id
+                    const matchedMember = user.coordinatedGroup?.members?.find(
+                        (member) => member.id === item.officerId
+                    );
+                    officerName = matchedMember?.name || 'Desconocido';
+                }
 
                 return {
                     ...item,
                     contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
                     address: item.address || 'N/A',
-                    officerName: isCreatedByUser ? user.name : memberName || 'Desconocido',
+                    officerName,
                 };
             });
     }, [taxpayers, filterValue, user]);
 
-    console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
