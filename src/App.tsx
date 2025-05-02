@@ -21,6 +21,7 @@ const TaxpayerForm = lazy(() => import('./components/Taxpayer/TaxpayerForm'));
 const TaxpayerDetail = lazy(() => import('./pages/Taxpayer/TaxpayerDetail'));
 const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"))
 const StatsPage = lazy(() => import("./pages/stats/StatsPage"))
+const ObservationsPage = lazy(()=> import("@/pages/Observations/ObservationsPage"))
 
 
 type LoaderData = {
@@ -97,6 +98,10 @@ export const router = createBrowserRouter([
           {
             path: "warning/:taxpayerId?",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Avisos...</div>} ><NoticePage /></Suspense>,
+          },
+          {
+            path: "observations/:taxpayerId?",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Observaciones...</div>} ><ObservationsPage/></Suspense>,
           },
           {
             path: "report/errors",
