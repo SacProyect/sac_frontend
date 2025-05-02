@@ -342,6 +342,7 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
     { name: "Contribuyente", id: "taxpayer" },
     { name: "Monto", id: "amount" },
     { name: "Fecha", id: "date" },
+    { name: "Motivo", id: "description" },
   ]
 
 
@@ -368,6 +369,9 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
     });
   }, [sortDescriptor, propRows]);
 
+  console.log("ITEMS: " + JSON.stringify(sortedItems));
+
+
   return (
     <div className='pl-4 lg:pl-0 max-w-[24rem] lg:max-w-full max-h-[24rem] lg:max-h-[25rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base flex  custom-scroll'>
       <Table
@@ -381,7 +385,7 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
             direction: descriptor.direction,
           })
         }
-        className="overflow-y-auto max-w-[22rem]">
+        className="overflow-y-auto max-w-full lg:max-w-[64rem] text-sm">
         <InfoTableHeader columns={columns}>
           {(column: { name: string; id: string; isRowHeader?: boolean }) => (
             <InfoTableColumn isRowHeader={column.isRowHeader} allowsSorting={column.id != "options"}>
@@ -393,12 +397,16 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
           {item => (
             <InfoTableRow columns={columns} key={`${item.type}_${item.id}`}>
               {(column: { name: string; id: string; isRowHeader?: boolean }) =>
-                <Cell className={`px-4 py-2 truncate focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}>
+                <Cell
+                  className={`px-4 py-2 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}
+
+                >
                   {
-                    column.id == "type"
-                      ? typeMapping[item[column.id]] || item[column.id]
-                      : column.id != "date"
-                        ? item[column.id] : new Date(item.date).toLocaleDateString()
+                    column.id === "type" ? (typeMapping[item[column.id]] || item[column.id]) :
+                      column.id === "date" ? new Date(item.date).toLocaleDateString() :
+                        column.id === "amount" ? `${item[column.id]} Bs` :
+                          column.id === "description" ? (item.description || "") :
+                            item[column.id]
                   }
                 </Cell>
               }
