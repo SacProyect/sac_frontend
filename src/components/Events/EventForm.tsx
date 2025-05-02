@@ -89,6 +89,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
             defaultValues: {
                 amount: 0.00,
                 date: new Date().toISOString().split('T')[0],  // Ensure date is a string
+                description: ""
             }
         });
 
@@ -204,6 +205,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     date: new Date().toISOString().split('T')[0],
                     taxpayerId: "",
                     eventId: "",
+                    description: ""
                 });
 
                 setSelectedPayment(null);
@@ -306,20 +308,20 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 {/* Description */}
                 {type === "fine" && (
                     <div className="w-full">
-                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                        <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-700">
                             Motivo de la multa
                         </label>
                         <input
                             id="description"
                             type="text"
                             {...register("description", { required: "Debe introducir un motivo para la multa" })}
-                            className="w-full px-3 py-3 h-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
+                            className="w-full h-12 px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
                             placeholder="Ingrese una descripción"
                         />
                     </div>
                 )}
                 {errors.description && (
-                    <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                    <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
                 )}
 
 
