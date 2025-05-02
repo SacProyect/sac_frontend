@@ -31,6 +31,7 @@ export interface EventFormData {
     eventId?: string
     debt?: number,
     expires_at: string,
+    description?: string;
 }
 
 export interface NewEvent {
@@ -159,6 +160,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     date: formattedDate,
                     amount: data.amount,
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    ...(data.description && { description: data.description }),
                 };
             } else {
                 // Define data for the api request
@@ -269,6 +271,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
 
 
+
     return (
         <FormContainer>
             <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar {title}</h2>
@@ -299,6 +302,25 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     control={control}
                     label={type === "payment" ? "Fecha de pago" : "Fecha de emisión"}
                 />
+
+                {/* Description */}
+                {type === "fine" && (
+                    <div className="w-full">
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
+                            Motivo de la multa
+                        </label>
+                        <input
+                            id="description"
+                            type="text"
+                            {...register("description", { required: "Debe introducir un motivo para la multa" })}
+                            className="w-full px-3 py-3 h-12 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
+                            placeholder="Ingrese una descripción"
+                        />
+                    </div>
+                )}
+                {errors.description && (
+                    <p className="text-red-500 text-sm mt-1">{errors.description.message}</p>
+                )}
 
 
                 {/* Amount input */}
