@@ -18,6 +18,7 @@ export interface Event {
 	taxpayerId: string,
 	taxpayer: Taxpayer,
 	debt: number;
+	description: string;
 }
 
 
