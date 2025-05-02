@@ -62,26 +62,33 @@ function HomePage() {
         watch,
     } = useForm({ defaultValues: { search: '' } })
     const filterValue = watch('search')
-    const filteredItems = useMemo(
-        () => (taxpayers || [])
+    const filteredItems = useMemo(() => {
+        return (taxpayers || [])
             .filter((item) =>
                 contains(
-                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process ? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase() : ""} ${item.address ? item.address.toLowerCase() : ""}`, filterValue ? filterValue.toLowerCase() : ""
+                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process ? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase() : ""} ${item.address ? item.address.toLowerCase() : ""}`,
+                    filterValue ? filterValue.toLowerCase() : ""
                 )
             )
-            .map((item) => ({
-                ...item,
-                contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
-                address: item.address || 'N/A'
-            })),
-        [taxpayers, filterValue, user]);
+            .map((item) => {
+                const isCreatedByUser = item.officerId === user.id;
+                const memberName = user.coordinatedGroup?.members?.find(m => m.id === item.officerId)?.name;
+
+                return {
+                    ...item,
+                    contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
+                    address: item.address || 'N/A',
+                    officerName: isCreatedByUser ? user.name : memberName || 'Desconocido',
+                };
+            });
+    }, [taxpayers, filterValue, user]);
 
     console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
 
 
     return (
         <div className='flex justify-center w-full lg:pt-8 sm:mt-0'>
-            <div className='flex-col items-center justify-center ml-0 '>
+            <div className='flex-col items-center justify-center ml-0'>
                 <h2 className="w-full text-2xl font-bold text-center text-black ">Administración</h2>
                 <Controller
                     control={control}
