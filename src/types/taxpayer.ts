@@ -18,6 +18,7 @@ export interface Taxpayer{
     emition_date: string;
     description: string;
     officerName: string;
+    user: User
 }
 
 export enum contract_type {
