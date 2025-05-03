@@ -78,18 +78,18 @@ function ObservationsHeader({taxpayerId, onObservationCreated}: ObservationsHead
                             <h2 className=' text-xl font-semibold mb-4 text-[#475569]'>Nueva Observación</h2>
                         </div>
                         <form className='flex pt-2' onSubmit={handleSubmit(onSubmit)}>
-                            <div className='w-[70%] h-[2rem]'>
+                            <div className='w-[75%] h-[2rem]'>
                                 <input className='w-full h-full pl-2 border border-gray-200 rounded-md' {...register("description", { required: "Se debe proporcionar una observación", minLength: { value: 20, message: "La observación debe contener más de 20 caracteres" } })}></input>
                                 {errors.description && (
                                     <p className="mt-1 text-sm text-red-500 ">{errors.description.message}</p>
                                 )}
                             </div>
 
-                            <div className='w-[30%] h-[2rem] flex items-center justify-around mx-2 bg-[#3498db] rounded-md text-sm'>
-                                <div className='pl-2'>
+                            <div className='w-[25%] h-[2rem] flex items-center justify-around mx-4 px-2 bg-[#3498db] rounded-md text-sm'>
+                                <div className=''>
                                     <CiCirclePlus size={15} className='text-white ' />
                                 </div>
-                                <button className='flex items-center text-white ' type='submit' disabled={isSubmitting}> Agregar Observación</button>
+                                <button className='flex items-center px-0 text-white' type='submit' disabled={isSubmitting}> Agregar Observación</button>
                             </div>
                         </form>
                     </div>
