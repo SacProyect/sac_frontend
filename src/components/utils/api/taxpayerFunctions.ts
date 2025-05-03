@@ -13,6 +13,10 @@ interface TaxpayerData {
 	officerId: string,
 }
 
+interface UpdateObservationPayload {
+	description: string;
+}
+
 
 
 
@@ -76,18 +80,42 @@ export const deleteTaxpayer = async (taxpayerId: string) => {
 	}
 }
 
+export const deleteObservations = async (observationId: string) => {
+	console.log(observationId)
+
+	try {
+		const response = await apiConnection.delete(`/taxpayer/del-observation/${observationId}`);
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo borrar la observación, por favor, intente de nuevo.")
+	}
+}
+
 export const createEvent = async (event_type: string, event_data: NewEvent) => {
 	try {
-
-		console.log(event_data)
-
-
 		const response = await (await apiConnection.post(`/taxpayer/${event_type}`, event_data)).data
 
 		return response
 	} catch (error) {
 		console.log(error)
 		return false
+	}
+}
+
+export const updateObservation = async (id: string, newDescription: string) => {
+	try {
+
+		let requestURL = "/taxpayer/modify-observations"
+
+		const response = await apiConnection.put(`${requestURL}/${id}`, {
+			newDescription,
+		});
+
+		return response
+	} catch (e) {
+		console.log("Error: " + e)
+		throw new Error("Error al modificar la observación");
 	}
 }
 
@@ -114,7 +142,7 @@ export const getObservations = async (taxpayerId: string) => {
 
 		return response;
 
-	} catch(e) {
+	} catch (e) {
 		console.error("Error obteniendo las observaciones: ", e);
 		throw new Error("No se pudieron obtener las observaciones");
 	}
