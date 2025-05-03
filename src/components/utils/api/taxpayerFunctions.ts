@@ -2,6 +2,7 @@ import { apiConnection } from "./apiConnection"
 import { contract_type, Taxpayer, taxpayer_process } from "../../../types/taxpayer";
 import { Event } from "../../../types/event";
 import { NewEvent } from "../../Events/EventForm";
+import { ObservationsForm } from "@/components/observations/ObservationsHeader";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -11,6 +12,7 @@ interface TaxpayerData {
 	contract_type: contract_type,
 	officerId: string,
 }
+
 
 
 
@@ -89,6 +91,37 @@ export const createEvent = async (event_type: string, event_data: NewEvent) => {
 	}
 }
 
+
+export const createObservation = async (data: ObservationsForm) => {
+	try {
+		let requestUrl = "taxpayer/observations"
+
+		const response = await apiConnection.post(requestUrl, data)
+
+		return response
+
+	} catch (e) {
+		console.error(e)
+		throw new Error("Error al crear la observación")
+	}
+}
+
+export const getObservations = async (taxpayerId: string) => {
+	try {
+		let requestURL = `taxpayer/get-observations/${taxpayerId}`
+
+		const response = (await apiConnection.get(requestURL)).data;
+
+		return response;
+
+	} catch(e) {
+		console.error("Error obteniendo las observaciones: ", e);
+		throw new Error("No se pudieron obtener las observaciones");
+	}
+}
+
+
+
 export const getAllEvents = async () => {
 	try {
 		const response = await (await apiConnection.get(`/taxpayer/event/all`)).data
@@ -121,10 +154,12 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 		}
 		const response = await (await apiConnection.get(requestURL)).data
 		return response
-		
+
 	} catch (e) {
 		console.error(e);
 		throw new Error("Ha ocurrido un error");
 	}
 }
+
+
 
