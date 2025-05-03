@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { CiCirclePlus } from "react-icons/ci";
 import { useForm } from 'react-hook-form'
 import { createObservation } from '../utils/api/taxpayerFunctions';
@@ -12,35 +12,53 @@ export interface ObservationsForm {
 }
 
 interface ObservationsHeaderProps {
-    taxpayerId: string | undefined
+    taxpayerId: string | undefined,
+    onObservationCreated: () => void;
 }
 
 
-function ObservationsHeader({taxpayerId}: ObservationsHeaderProps) {
+function ObservationsHeader({taxpayerId, onObservationCreated}: ObservationsHeaderProps) {
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { register, handleSubmit, reset, formState: { isValid, errors }, } = useForm<ObservationsForm>({
         mode: "onChange",
         defaultValues: {
             description: "",
             date: new Date().toISOString(),
-            taxpayerId: taxpayerId,
         }
     })
 
     const onSubmit = async (data: ObservationsForm) => {
+
+        if (!taxpayerId) {
+            toast.error("No se ha especificado un contribuyente.");
+            return;
+        }
+
+        setIsSubmitting(true); // block multiple clicks
+
         try {
-            const response = await createObservation(data);
+
+            const payload = {
+                ...data,
+                taxpayerId: taxpayerId!, // force taxpayerId from props
+            };
+
+            const response = await createObservation(payload);
 
             if (response) {
                 toast.success("¡Observación creada exitosamente!")
                 reset({
                     date: new Date().toISOString(),
                     description: "",
-                })
+                }),
+                onObservationCreated(); // ✅ trigger the refresh in parent
             }
         } catch (e) {
             console.error("Error al crear la observación...", e)
             toast.error("Ocurrió un error al crear la observación")
+        }   finally {
+            setIsSubmitting(false); // re-enable button
         }
     }
 
@@ -71,7 +89,7 @@ function ObservationsHeader({taxpayerId}: ObservationsHeaderProps) {
                                 <div className='pl-2'>
                                     <CiCirclePlus size={15} className='text-white ' />
                                 </div>
-                                <button className='flex items-center text-white ' type='submit'> Agregar Observación</button>
+                                <button className='flex items-center text-white ' type='submit' disabled={isSubmitting}> Agregar Observación</button>
                             </div>
                         </form>
                     </div>
