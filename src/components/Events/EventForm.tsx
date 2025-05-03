@@ -256,7 +256,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const alreadyWarnedRef = useRef(false);
 
     useEffect(() => {
-        console.log("pendingPayments:", pendingPayments);
+        // console.log("pendingPayments:", pendingPayments);
 
         if (type === "fine" || !hasFetchedPayments) return;
 
