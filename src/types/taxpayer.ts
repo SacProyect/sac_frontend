@@ -34,7 +34,7 @@ export enum taxpayer_process {
 }
 
 export enum event_type {
-    FINE,
-    WARNING,
-    PAYMENT_COMPROMISE
+    FINE = "FINE",
+    WARNING = "WARNING",
+    PAYMENT_COMPROMISE = "PAYMENT_COMPROMISE"
 }
