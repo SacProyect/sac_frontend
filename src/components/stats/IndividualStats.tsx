@@ -2,7 +2,7 @@ import { Fines } from "@/App";
 import React, { useEffect, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Payment } from '../../types/payment'
-import { Event } from "@/pages/Taxpayer/TaxpayerDetail";
+import { Event } from "@/types/event";
 import toast from "react-hot-toast";
 import { getTaxpayerData, notifyTaxpayer, updateFase } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
@@ -157,8 +157,8 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                                 Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
                             </p>
                         </div>
-                        
-                    ): (
+
+                    ) : (
                         <div>
                             <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                 Este contribuyente aún no ha sido notificado acerca de su procedimiento.
@@ -254,6 +254,32 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                             ))}
                         </div>
                     }
+
+
+                    {taxpayerData?.fase && (
+                        <div className="mt-2 w-full text-right text-sm italic text-gray-700">
+                            {taxpayerData.fase === "FASE_1" && (
+                                <p className="text-xs">
+                                    Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
+                                </p>)
+                            }
+                            {taxpayerData.fase === "FASE_2" && (
+                                <p className="text-xs">
+                                    Análisis y Desarrollo de hojas de trabajo y una breve predeterminación (con su respectivo soporte).
+                                </p>)
+                            }
+                            {taxpayerData.fase === "FASE_3" && (
+                                <p className="text-xs">
+                                    Determinación y reparo definitivo (Acta de reparo, informe y requerimiento finales)
+                                </p>)
+                            }
+                            {taxpayerData.fase === "FASE_4" && (
+                                <p className="text-xs">
+                                    Declaración de sustitutiva; resolución de imposición de sanción de allanamiento; culminación de expediente.
+                                </p>)
+                            }
+                        </div>
+                    )}
 
                 </div>
             </div>
