@@ -148,8 +148,24 @@ export const notifyTaxpayer = async(id: string) => {
 	} catch (e) {
 		throw new Error("Error al reportar al contribuyente como notificado")
 	}
+}
 
 
+export const updateFinePayment = async (id: string, status: "paid" | "not_paid") => {
+
+	try {
+
+		const requestURL = "/taxpayer/updatePayment"
+
+		const response = await apiConnection.put(`${requestURL}/${id}`, {
+			status,
+		})
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo actualizar la multa.")
+	}
 }
 
 
