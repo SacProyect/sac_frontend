@@ -170,7 +170,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
 
 
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
-                <div className="flex flex-col items-start w-1/2 p-6 h-[13rem]">
+                <div className="flex flex-col items-start w-1/2 p-0 h-[13rem]">
                     {(user?.role === "FISCAL" || user?.role === "ADMIN") && taxpayerData?.notified === false && (
                         <div className="w-full flex items-end justify-end">
                             <button
@@ -189,7 +189,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
 
                     {/* Sección de bullets */}
                     <div className="flex sm:flex-col lg:flex-row">
-                        <div className="flex flex-col mb-6 space-y-2">
+                        <div className="flex flex-col mb-0 space-y-2">
                             <div className="flex items-center">
                                 {/* Circulito Azul */}
                                 <span
@@ -241,7 +241,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                         )}
                     </div>
                     {user?.role === "COORDINATOR" || user?.role === "ADMIN" &&
-                        <div className="w-full flex justify-end items-end gap-2 mt-4">
+                        <div className="w-full flex justify-end items-end gap-2 mt-4 pr-2">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
@@ -257,25 +257,25 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
 
 
                     {taxpayerData?.fase && (
-                        <div className="mt-2 w-full text-right text-sm italic text-gray-700">
+                        <div className="mt-2 w-full text-right text-sm italic text-gray-700 pr-2">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
-                                    Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
+                                    FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
                                 </p>)
                             }
                             {taxpayerData.fase === "FASE_2" && (
                                 <p className="text-xs">
-                                    Análisis y Desarrollo de hojas de trabajo y una breve predeterminación (con su respectivo soporte).
+                                    FASE 2: Análisis y Desarrollo de hojas de trabajo y una breve predeterminación (con su respectivo soporte).
                                 </p>)
                             }
                             {taxpayerData.fase === "FASE_3" && (
                                 <p className="text-xs">
-                                    Determinación y reparo definitivo (Acta de reparo, informe y requerimiento finales)
+                                    FASE 3: Determinación y reparo definitivo (Acta de reparo, informe y requerimiento finales)
                                 </p>)
                             }
                             {taxpayerData.fase === "FASE_4" && (
                                 <p className="text-xs">
-                                    Declaración de sustitutiva; resolución de imposición de sanción de allanamiento; culminación de expediente.
+                                    FASE 4: Declaración de sustitutiva; resolución de imposición de sanción de allanamiento; culminación de expediente.
                                 </p>)
                             }
                         </div>
