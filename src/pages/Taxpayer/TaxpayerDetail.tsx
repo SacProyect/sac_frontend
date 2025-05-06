@@ -8,24 +8,18 @@ import { Payment } from '../../types/payment'
 import { Taxpayer } from '@/types/taxpayer'
 import { IndividualStats } from '@/components/stats/IndividualStats'
 import { Decimal } from "decimal.js"
+import { useState } from 'react'
 
 
-export interface Event {
-	id: string,
-	date: string,
-	type: string,
-	amount: string,
-	taxpayerId: string,
-	taxpayer: Taxpayer,
-	debt: number;
-	description: string;
-}
+import { Event } from '@/types/event';
 
 
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-	const { events, fines, payments } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment }
+	const { events: initialEvents, fines, payments } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment }
+
+	const [events, setEvents] = useState<Event[]>(initialEvents)
 
 
 	console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
@@ -62,7 +56,7 @@ const TaxpayerDetail = () => {
 				))}
 			</Group>
 			<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
-				<EventTable propRows={events} />
+				<EventTable rows={events} setRows={setEvents} />
 			</div>
 		</div>
 	)
