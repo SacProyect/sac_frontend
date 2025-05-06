@@ -193,7 +193,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
 
                     {/* Sección de bullets */}
                     <div className="flex sm:flex-col lg:flex-row">
-                        <div className="flex flex-col mb-0 space-y-2">
+                        <div className="flex flex-col mb-0 space-y-2 p-4">
                             <div className="flex items-center">
                                 {/* Circulito Azul */}
                                 <span
