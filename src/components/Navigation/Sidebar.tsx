@@ -22,7 +22,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
-        { name: 'Pagos', path: '/payment' },
+        // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
         { name: "Estadísticas", path: "/stats" },
@@ -31,7 +31,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
-        { name: 'Pagos', path: '/payment' },
+        // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" }
     ] : [
@@ -39,7 +39,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
-        { name: 'Pagos', path: '/payment' },
+        // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
     ]
 
