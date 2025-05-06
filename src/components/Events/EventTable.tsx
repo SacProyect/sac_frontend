@@ -314,6 +314,9 @@ import { useMemo } from 'react'
 import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
 import InfoTableRow from '../UI/InfoTable/InfoTableRow'
 import { Cell } from 'react-aria-components'
+import toast from 'react-hot-toast'
+import { updateFinePayment } from '../utils/api/taxpayerFunctions'
+import { Event } from '@/types/event'
 
 
 interface EventRow {
@@ -321,7 +324,8 @@ interface EventRow {
 }
 
 interface EventTableProps {
-  propRows: EventRow[];
+  rows: EventRow[];
+  setRows: React.Dispatch<React.SetStateAction<Event[]>>;
 }
 
 const typeMapping: { [key: string]: string } = {
@@ -331,45 +335,63 @@ const typeMapping: { [key: string]: string } = {
   payment: "PAGO"
 };
 
-const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
+const EventTable: React.FC<EventTableProps> = ({ rows, setRows }) => {
 
   const [sortDescriptor, setSortDescriptor] = useState<{ column: string, direction: "ascending" | "descending" }>({
     column: "type",
     direction: "ascending"
   })
+
+
   const columns = [
     { name: "tipo", id: "type", isRowHeader: true },
     { name: "Contribuyente", id: "taxpayer" },
     { name: "Monto", id: "amount" },
     { name: "Fecha", id: "date" },
     { name: "Motivo", id: "description" },
+    { name: "Estado", id: "debt" },
   ]
 
-
   const sortedItems = useMemo(() => {
-    if (!Array.isArray(propRows)) return []; // Ensure propRows is an array
-    return propRows.sort((a, b) => {
+    if (!Array.isArray(rows)) return [];
+    return [...rows].sort((a, b) => {
       const aValue = a[sortDescriptor.column];
       const bValue = b[sortDescriptor.column];
 
-      // Convert to numbers if the values are numeric strings
       const aNum = typeof aValue === 'string' && !Number.isNaN(parseFloat(aValue)) ? parseFloat(aValue) : aValue;
       const bNum = typeof bValue === 'string' && !Number.isNaN(parseFloat(bValue)) ? parseFloat(bValue) : bValue;
 
-      // Check if both values are numbers
       if (typeof aNum === 'number' && typeof bNum === 'number') {
         return sortDescriptor.direction === 'ascending' ? aNum - bNum : bNum - aNum;
       } else {
-        // Convert to string for comparison
-        const first = String(aNum).toLowerCase(); // Convert to string and lowercase for consistent comparison
+        const first = String(aNum).toLowerCase();
         const second = String(bNum).toLowerCase();
         let cmp = first.localeCompare(second);
         return sortDescriptor.direction === 'descending' ? -cmp : cmp;
       }
     });
-  }, [sortDescriptor, propRows]);
+  }, [sortDescriptor, rows]);
 
   console.log("ITEMS: " + JSON.stringify(sortedItems));
+
+
+  const handlePaymentChange = async (id: string, newStatus: "paid" | "not_paid"): Promise<boolean> => {
+    try {
+      const res = await updateFinePayment(id, newStatus);
+      toast.success("Estado de pago actualizado.");
+
+      setRows(prevRows =>
+        prevRows.map(row =>
+          row.id.startsWith(id) ? { ...row, debt: newStatus === "paid" ? 0 : 1 } : row
+        )
+      );
+
+      return true;
+    } catch (e) {
+      toast.error("Error actualizando el pago de la multa.");
+      return false;
+    }
+  };
 
 
   return (
@@ -393,26 +415,56 @@ const EventTable: React.FC<EventTableProps> = ({ propRows }) => {
             </InfoTableColumn>
           )}
         </InfoTableHeader>
-        <TableBody items={sortedItems} >
-          {item => (
-            <InfoTableRow columns={columns} key={`${item.type}_${item.id}`}>
-              {(column: { name: string; id: string; isRowHeader?: boolean }) =>
-                <Cell
-                  className={`px-4 py-2 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white`}
+        <TableBody items={sortedItems}>
+          {item => {
+            const itemKey = item.id;
+            const currentStatus = item.debt > 0 ? "not_paid" : "paid";
 
-                >
-                  {
-                    column.id === "type" ? (typeMapping[item[column.id]] || item[column.id]) :
-                      column.id === "date" ? new Date(item.date).toLocaleDateString() :
-                        column.id === "amount" ? `${item[column.id]} Bs` :
-                          column.id === "description" ? (item.description || "") :
-                            item[column.id]
-                  }
-                </Cell>
-              }
-            </InfoTableRow>
-          )}
-
+            return (
+              <InfoTableRow columns={columns} key={itemKey}>
+                {(column: { name: string; id: string; isRowHeader?: boolean }) =>
+                  <Cell
+                    className="px-4 py-2 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white"
+                  >
+                    {
+                      column.id === "type" ? (typeMapping[item[column.id]] || item[column.id]) :
+                        column.id === "date" ? new Date(item.date).toLocaleDateString() :
+                          column.id === "amount" ? `${item[column.id]} Bs` :
+                            column.id === "description" ? (item.description || "") :
+                              column.id === "debt" ? (
+                                item.type === "FINE" ? (
+                                  <select
+                                    value={currentStatus}
+                                    onChange={async (e) => {
+                                      const value = e.target.value as "paid" | "not_paid";
+                                      const [rawId] = item.id.split('_'); // Gets only the UUID before '_FINE'
+                                      const success = await handlePaymentChange(rawId, value);
+                                      if (success) {
+                                        // Just update the rows directly, no need for the statusMap anymore
+                                        setRows(prevRows =>
+                                          prevRows.map(row =>
+                                            row.id.startsWith(item.id) ? { ...row, debt: value === "paid" ? 0 : 1 } : row
+                                          )
+                                        );
+                                      }
+                                    }}
+                                    className={`rounded px-2 py-1 text-xs text-white
+                                    ${currentStatus === 'not_paid' ? 'bg-red-600' : 'bg-green-600'}
+                                    `}
+                                  >
+                                    <option value="not_paid" className="text-white bg-red-600">No pagada</option>
+                                    <option value="paid" className="text-white bg-green-600">Pagada</option>
+                                  </select>
+                                ) : (
+                                  <span className="text-gray-700">—</span> // or show nothing, or the debt value
+                                )
+                              ) : item[column.id]
+                    }
+                  </Cell>
+                }
+              </InfoTableRow>
+            );
+          }}
         </TableBody>
       </Table>
     </div>
