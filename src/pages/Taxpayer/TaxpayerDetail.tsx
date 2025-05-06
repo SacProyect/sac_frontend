@@ -9,9 +9,7 @@ import { Taxpayer } from '@/types/taxpayer'
 import { IndividualStats } from '@/components/stats/IndividualStats'
 import { Decimal } from "decimal.js"
 import { useState } from 'react'
-
-
-import { Event } from '@/types/event';
+import { Event } from '@/types/event'
 
 
 
