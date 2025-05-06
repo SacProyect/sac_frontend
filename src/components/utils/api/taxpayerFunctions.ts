@@ -119,6 +119,39 @@ export const updateObservation = async (id: string, newDescription: string) => {
 	}
 }
 
+export const updateFase = async (id: string, fase: string) => {
+
+	try {
+		let requestUrl = "/taxpayer/update-fase"
+
+		const response = await apiConnection.put(`${requestUrl}/${id}`, {
+			fase,
+		})
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo actualizar la fase del contribuyente, por favor, inténtelo de nuevo")
+	}
+}
+
+export const notifyTaxpayer = async(id: string) => {
+
+	try {
+		let requestURL = "/taxpayer/notify"
+
+
+		const response = await apiConnection.put(`${requestURL}/${id}`);
+
+		return response;
+	} catch (e) {
+		throw new Error("Error al reportar al contribuyente como notificado")
+	}
+
+
+}
+
 
 export const createObservation = async (data: ObservationsForm) => {
 	try {
