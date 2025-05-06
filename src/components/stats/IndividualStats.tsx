@@ -67,6 +67,8 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
     let compliance = 0;
     let nonCompliance = 0;
 
+    let fines = 0;
+
 
     events.forEach((event) => {
         if (event.type == "PAYMENT_COMPROMISE") {
@@ -80,6 +82,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
         if (event.type == "FINE" && Number(event.debt) > 0) {
             nonCompliance += 1;
         }
+        if (event.type == "FINE") fines +=1;
     })
 
 
@@ -149,6 +152,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                                     : taxpayerData.contract_type
                             : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">Multas registradas:</span> {fines ? fines : "No se pudo cargar la información"}</p>
                     </div>
 
                     {taxpayerData?.notified === true ? (
