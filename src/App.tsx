@@ -14,14 +14,15 @@ import { lazy, Suspense } from 'react';
 import ContributionsPage from './pages/Contributions/ContributionsPage';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
-const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'))
+const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
 const PaymentPage = lazy(() => import('./pages/Events/PaymentPage'));
 const NoticePage = lazy(() => import('./pages/Events/NoticePage'));
 const TaxpayerForm = lazy(() => import('./components/Taxpayer/TaxpayerForm'));
 const TaxpayerDetail = lazy(() => import('./pages/Taxpayer/TaxpayerDetail'));
-const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"))
-const StatsPage = lazy(() => import("./pages/stats/StatsPage"))
-const ObservationsPage = lazy(()=> import("@/pages/Observations/ObservationsPage"))
+const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"));
+const StatsPage = lazy(() => import("./pages/stats/StatsPage"));
+const ObservationsPage = lazy(()=> import("@/pages/Observations/ObservationsPage"));
+const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
 
 
 type LoaderData = {
@@ -110,6 +111,10 @@ export const router = createBrowserRouter([
           {
             path: "/stats",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
+          },
+          {
+            path: "/iva",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de IVA...</div>} ><IvaReport /></Suspense>
           },
           {
             path: "taxpayer/",

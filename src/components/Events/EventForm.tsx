@@ -1,6 +1,6 @@
 import React, { useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth';
-import { useForm } from 'react-hook-form';
+import { Control, useForm } from 'react-hook-form';
 import TextInput from '../UI/TextInput';
 import FormContainer from '../UI/FormContainer';
 import { Form, Label, Button } from 'react-aria-components'
@@ -15,6 +15,7 @@ import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
 import { parseDate, parseDateTime, CalendarDate, parseZonedDateTime } from '@internationalized/date';
 import toast from 'react-hot-toast';
+import { IvaReportFormData } from '../iva/IvaForm';
 
 
 
@@ -295,7 +296,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 {/* Select the taxpayer by it's ID */}
                 {
                     taxpayerId == "" &&
-                    <TaxpayerCombobox name={"taxpayerId"} control={control} label={"Contribuyente"} taxpayers={taxpayerArray} />
+                    <TaxpayerCombobox name={"taxpayerId"} control={control as Control<EventFormData | IvaReportFormData>} label={"Contribuyente"} taxpayers={taxpayerArray} />
                 }
 
                 {/* If the type is payment, show the pending payments */}
