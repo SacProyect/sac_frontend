@@ -22,6 +22,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
+        { name: 'Reporte IVA', path: '/iva' },
         // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
@@ -31,6 +32,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
+        { name: 'Reporte IVA', path: '/iva' },
         // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" }
@@ -39,6 +41,7 @@ function Sidebar() {
         { name: 'Contribuyentes', path: '/taxpayer' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
+        { name: 'Reporte IVA', path: '/iva' },
         // { name: 'Pagos', path: '/payment' },
         { name: 'Compromisos de pagos', path: '/payment_compromise' },
     ]
