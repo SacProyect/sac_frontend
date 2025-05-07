@@ -6,12 +6,13 @@ import { Popover, Label, ListBox, ListBoxItem, Button } from 'react-aria-compone
 import { useFilter } from 'react-aria'
 import { Taxpayer } from '../../types/taxpayer'
 import { EventFormData } from '../Events/EventForm'
+import { IvaReportFormData } from '../iva/IvaForm'
 
 
 
 
 interface TaxPayerValues {
-    control: Control<EventFormData>
+    control: Control<EventFormData | IvaReportFormData>
     name: keyof EventFormData;
     label: string;
     taxpayers?: Taxpayer[]
@@ -72,9 +73,9 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValu
                         <Input className={`                            
                             border-[#ccc] border
                             rounded-lg bg-slate-50
-                            w-full p-2 mb-4
+                            w-full p-2 mb-0
                             hover:bg-white hover:border-black`} />
-                        <Button className={"w-6 h-6 box-content p-0 text-xs bg-[#3498db] text-white -ml-9  mb-4"}>
+                        <Button className={"w-6 h-6 box-content p-0 text-xs bg-[#3498db] text-white -ml-9  mb-0"}>
                             ▼
                         </Button>
                     </div>

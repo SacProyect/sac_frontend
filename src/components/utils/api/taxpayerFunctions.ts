@@ -3,6 +3,7 @@ import { contract_type, Taxpayer, taxpayer_process } from "../../../types/taxpay
 import { Event } from "../../../types/event";
 import { NewEvent } from "../../Events/EventForm";
 import { ObservationsForm } from "@/components/observations/ObservationsHeader";
+import { IvaReportFormData } from "@/components/iva/IvaForm";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -180,6 +181,20 @@ export const createObservation = async (data: ObservationsForm) => {
 	} catch (e) {
 		console.error(e)
 		throw new Error("Error al crear la observación")
+	}
+}
+
+export const createIVA = async (data: IvaReportFormData) => {
+	try {
+
+		let requestUrl = "/taxpayer/createIVA"
+
+		const response = await apiConnection.post(requestUrl, data);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo agregar el reporte. Por favor, intente de nuevo.")
 	}
 }
 
