@@ -22,6 +22,7 @@ export const getFineHistory = async (taxpayerId: string) => {
 		return false
 	}
 }
+
 export const getPaymentHistory = async (taxpayerId: string) => {
 	try {
 		let requestURL = `reports/payments`
@@ -35,6 +36,23 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 		return false
 	}
 }
+
+export const getTaxHistory = async (taxpayerId: string) => {
+
+	try {
+
+		let requestURL = "taxpayer/getTaxSummary"
+
+		const response = await apiConnection.get(`${requestURL}/${taxpayerId}`);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener el historial de IVA de este contribuyente. Por favor, inténtelo de nuevo.")
+	}
+}
+
 
 export const createError = async (data: FormData) => {
 
