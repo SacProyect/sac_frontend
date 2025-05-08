@@ -10,17 +10,25 @@ import { IndividualStats } from '@/components/stats/IndividualStats'
 import { Decimal } from "decimal.js"
 import { useState } from 'react'
 import { Event } from '@/types/event'
+import { MdInventory } from "react-icons/md";
+import { IoDocumentTextOutline } from "react-icons/io5";
+import { IVAReports } from '@/types/IvaReports'
+import TaxSummaryTable from '@/components/iva/TaxSummaryTable'
+
+
 
 
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-	const { events: initialEvents, fines, payments } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment }
+	const { events: initialEvents, fines, payments, taxSummary } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[] }
 
 	const [events, setEvents] = useState<Event[]>(initialEvents)
+	const [selectedTable, setSelectedTable] = useState("fine")
 
 
 	console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
+	console.log("TAX SUMMARY FROM TAXPAYERDETAIL: " + JSON.stringify(taxSummary))
 	// console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
 	// console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
 
@@ -53,9 +61,25 @@ const TaxpayerDetail = () => {
 					</Link>
 				))}
 			</Group>
-			<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
-				<EventTable rows={events} setRows={setEvents} />
+			<div className='w-full space-x-2 flex pb-4 pl-4'>
+				<div className='flex items-center border border-gray-200 pl-2 rounded-md'>
+					<MdInventory size={15} />
+					<button className='py-1 px-2' onClick={() => setSelectedTable("fine")}>Historial de multas</button>
+				</div>
+				<div className='flex items-center border border-gray-200 pl-2 rounded-md'>
+					<IoDocumentTextOutline size={15} />
+					<button className='py-1 px-2' onClick={() => setSelectedTable("iva")}>Historial de reporte de IVA</button>
+				</div>
 			</div>
+			{selectedTable == "fine" ? (
+				<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
+					<EventTable rows={events} setRows={setEvents} />
+				</div>
+			) : (
+				<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
+					<TaxSummaryTable rows={taxSummary} />
+				</div>
+			)}
 		</div>
 	)
 }
