@@ -5,13 +5,14 @@ import HomePage from './pages/Home/HomePage';
 import { getPendingPayments, getTaxpayerEvents } from './components/utils/api/taxpayerFunctions';
 import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 import { AuthLayout } from './hooks/useAuth';
-import { getFineHistory, getPaymentHistory } from './components/utils/api/reportFunctions';
+import { getFineHistory, getPaymentHistory, getTaxHistory } from './components/utils/api/reportFunctions';
 import { getOfficers } from './components/utils/api/userFunctions';
 import { Event } from './types/event';
 import { Payment } from './types/payment';
 import MainLayout from '@/MainLayout';
 import { lazy, Suspense } from 'react';
 import ContributionsPage from './pages/Contributions/ContributionsPage';
+import { IVAReports } from './types/IvaReports';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
@@ -23,12 +24,14 @@ const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"
 const StatsPage = lazy(() => import("./pages/stats/StatsPage"));
 const ObservationsPage = lazy(()=> import("@/pages/Observations/ObservationsPage"));
 const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
+const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"))
 
 
 type LoaderData = {
   events: Event[],
   payments: Payment[],
-  fines: Fines[]
+  fines: Fines[],
+  taxSummary: IVAReports[],
 }
 
 export interface Fines {
@@ -113,6 +116,10 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
           },
           {
+            path: "/gen-reports",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportsPage /></Suspense>
+          },
+          {
             path: "/iva",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de IVA...</div>} ><IvaReport /></Suspense>
           },
@@ -143,19 +150,20 @@ export const router = createBrowserRouter([
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
-                if (!taxpayerId) return { events: [], fines: [], payments: [] };
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));
 
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
+                const taxSummary = (await getTaxHistory(taxpayerId)).data;
 
                 console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
-                return { events, fines, payments };
+                return { events, fines, payments, taxSummary };
               } catch (error) {
                 console.error(error);
-                return { events: [], fines: [], payments: [] };
+                return { events: [], fines: [], payments: [], taxSummary: [] };
               }
             },
           },
