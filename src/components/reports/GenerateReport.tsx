@@ -1,12 +1,17 @@
-import React from 'react'
+import React, { useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
+import ReportModal from './ReportModal';
 
 
 
 function GenerateReport() {
+    const [showReportModal, setShowReportModal] = useState(false);
 
-
+    // Dummy data for demonstration; replace with real data as needed.
+    const taxpayerData = { rif: 'J478477845', name: 'Victor Enrique Rivas Rios' };
+    const fineData: { id: number; description: string; amount: number }[] = [/* ...your fines data... */];
+    const taxSummaryData: { [key: string]: any }[] = [/* ...your tax summary data... */];
 
 
 
@@ -64,7 +69,7 @@ function GenerateReport() {
                                 <p className='p-1'>Victor Enrique Rivas Rios</p>
                             </div>
                             <div className='w-1/3 flex justify-end'>
-                                <button className='p-1 m-0 border border-gray-200 px-2 font-medium'>Ver Reporte</button>
+                                <button className='p-1 m-0 border border-gray-200 px-2 font-medium' onClick={() => setShowReportModal(true)}>Ver Reporte</button>
                             </div>
                         </div>
                     </div>
@@ -162,6 +167,15 @@ function GenerateReport() {
 
                 </div>
             </div>
+
+            {showReportModal && (
+                <ReportModal
+                    taxpayer={taxpayerData.name}
+                    // fineData={fineData}
+                    // taxSummary={taxSummaryData}
+                    onClose={() => setShowReportModal(false)}
+                />
+            )}
 
         </section>
     )
