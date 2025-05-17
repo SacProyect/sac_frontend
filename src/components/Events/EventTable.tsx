@@ -395,7 +395,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows }) => {
 
 
   return (
-    <div className='pl-4 lg:pl-0 max-w-[24rem] lg:max-w-full max-h-[24rem] lg:max-h-[25rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base flex  custom-scroll'>
+    <div className='pl-4 lg:pl-0 flex items-center justify-center max-w-full lg:max-w-full max-h-[24rem] lg:max-h-[25rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base   custom-scroll'>
       <Table
         aria-label={"Eventos"}
         selectionMode="multiple"
