@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  img {
+    @apply inline-block;
+  }
+}
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
@@ -22,6 +28,7 @@ a {
   color: #646cff;
   text-decoration: inherit;
 }
+
 a:hover {
   color: #535bf2;
 }
@@ -33,8 +40,10 @@ a:hover {
 }
 
 .custom-scroll {
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none; /* IE & Edge */
+  scrollbar-width: none;
+  /* Firefox */
+  -ms-overflow-style: none;
+  /* IE & Edge */
 }
 
 
@@ -55,6 +64,29 @@ h1 {
   box-sizing: border-box;
 } */
 
+/* @media print {
+  .pdf-container {
+    width: 100vw !important;
+    position: static !important;
+  }
+
+  .pdf-container * {
+    overflow: visible !important;
+  }
+} */
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .printable-area {
+    overflow: visible !important;
+    position: static !important;
+  }
+}
+
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -66,6 +98,7 @@ button {
   /* cursor: pointer; */
   transition: border-color 0.25s;
 }
+
 /* button:hover {
   border-color: #646cff;
 } */
@@ -79,9 +112,11 @@ button:focus-visible {
     color: #213547;
     background-color: #ffffff;
   }
+
   a:hover {
     color: #747bff;
   }
+
   button {
     background-color: #f9f9f9;
   }
