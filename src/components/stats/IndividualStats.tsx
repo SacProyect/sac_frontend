@@ -7,12 +7,14 @@ import toast from "react-hot-toast";
 import { getTaxpayerData, notifyTaxpayer, updateFase } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
+import { IVAReports } from "@/types/IvaReports";
 
 
 
 
 interface IndividualStatsProps {
     events: Event[],
+    IVAReports: IVAReports[],
 }
 
 interface TaxpayerData {
@@ -29,7 +31,7 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
     const { user } = useAuth();
@@ -62,35 +64,27 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
 
     }, [])
 
-
-    let compromises = 0;
-    let compliance = 0;
-    let nonCompliance = 0;
-
     let fines = 0;
 
 
+    let buys = 0;
+    let sells = 0;
+
+    IVAReports.forEach((rep) => {
+        buys += rep.purchases;
+        sells += rep.sells
+    })
+
+
     events.forEach((event) => {
-        if (event.type == "PAYMENT_COMPROMISE") {
-            compromises += 1;
-        }
-
-        if (event.type == "FINE" && Number(event.debt) === 0) {
-            compliance += 1;
-        }
-
-        if (event.type == "FINE" && Number(event.debt) > 0) {
-            nonCompliance += 1;
-        }
-        if (event.type == "FINE") fines +=1;
+        if (event.type == "FINE") fines += 1;
     })
 
 
 
     const dataMock = [
-        { name: "COMPRAS", value: compliance, color: "#0080c1" },
-        { name: "VENTAS", value: compromises, color: "#737373" },
-        { name: "INCUMPLIMIENTO DE PAGOS", value: nonCompliance, color: "#444444" },
+        { name: "COMPRAS (BS)", value: buys, color: "#0080c1" },
+        { name: "VENTAS (BS)", value: sells, color: "#737373" },
     ];
 
 
@@ -131,7 +125,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal */}
-            <div className="flex w-full lg:w-[900px] h-auto shadow-xl ">
+            <div className="flex w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-12 ">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
                 <div className="w-1/2 p-6">
@@ -176,7 +170,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
                 <div className="flex flex-col items-start w-1/2 p-0 h-[13rem]">
                     {(user?.role === "FISCAL" || user?.role === "ADMIN") && taxpayerData?.notified === false && (
-                        <div className="w-full flex items-end justify-end">
+                        <div className="flex items-end justify-end w-full">
                             <button
                                 className="px-2 py-1 bg-[#3498db] text-white font-semibold"
                                 onClick={() => handleNotifiedClick(true)}
@@ -187,20 +181,16 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                     )}
 
 
-
-
-
-
                     {/* Sección de bullets */}
-                    <div className="flex sm:flex-col lg:flex-row">
-                        <div className="flex flex-col mb-0 space-y-2 p-4">
+                    <div className="flex pt-0 lg:pt-4 sm:flex-col lg:flex-row">
+                        <div className="flex flex-col p-4 mb-0 space-y-2">
                             <div className="flex items-center">
                                 {/* Circulito Azul */}
                                 <span
                                     className="inline-block w-3 h-3 mr-2 rounded-full"
                                     style={{ backgroundColor: "#0080c1" }}
                                 />
-                                <span className="text-sm">COMPRAS</span>
+                                <span className="text-sm">COMPRAS (BS)</span>
                             </div>
                             <div className="flex items-center">
                                 {/* Circulito Gris */}
@@ -208,15 +198,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                                     className="inline-block w-3 h-3 mr-2 rounded-full"
                                     style={{ backgroundColor: "#737373" }}
                                 />
-                                <span className="text-sm">VENTAS</span>
-                            </div>
-                            <div className="flex items-center">
-                                {/* Circulito gris oscuro */}
-                                {/* <span
-                                className="inline-block w-3 h-3 mr-2 rounded-full"
-                                style={{ backgroundColor: "#444444" }}
-                            /> */}
-                                {/* <span className="text-sm">Incumplimiento de Pagos</span> */}
+                                <span className="text-sm">VENTAS (BS)</span>
                             </div>
                         </div>
 
@@ -224,7 +206,7 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                         {dataMock.some(item => item.value > 0) && (
                             <div className="flex items-center justify-center w-full">
                                 <div className="">
-                                    <PieChart width={300} height={200}>
+                                    <PieChart width={400} height={200}>
                                         <Pie
                                             data={dataMock}
                                             dataKey="value"
@@ -244,8 +226,11 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                             </div>
                         )}
                     </div>
-                    {user?.role === "COORDINATOR" || user?.role === "ADMIN" &&
-                        <div className="w-full flex justify-end items-end gap-2 mt-4 pr-2">
+
+
+
+                    {user?.role === "COORDINATOR" || user?.role === "ADMIN" && taxpayerData?.process == "AF" &&
+                        <div className="flex items-end justify-end w-full gap-2 pr-2 mt-4">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
@@ -260,8 +245,8 @@ export const IndividualStats = ({ events }: IndividualStatsProps) => {
                     }
 
 
-                    {taxpayerData?.fase && (
-                        <div className="mt-2 w-full text-right text-sm italic text-gray-700 pr-2">
+                    {taxpayerData?.fase && taxpayerData.process == "AF" && (
+                        <div className="w-full pr-2 mt-2 text-sm italic text-right text-gray-700">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
                                     FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.

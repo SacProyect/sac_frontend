@@ -47,7 +47,7 @@ const TaxpayerDetail = () => {
 
 	return (
 		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
-			<IndividualStats events={events} />
+			<IndividualStats events={events} IVAReports={taxSummary} />
 			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20 pt-10"}>
 				{options.map((opt) => (
 					<Link
@@ -61,14 +61,14 @@ const TaxpayerDetail = () => {
 					</Link>
 				))}
 			</Group>
-			<div className='w-full space-x-2 flex pb-4 pl-4'>
-				<div className='flex items-center border border-gray-200 pl-2 rounded-md'>
+			<div className='flex w-full pb-4 pl-4 space-x-2'>
+				<div className='flex items-center pl-2 border border-gray-200 rounded-md'>
 					<MdInventory size={15} />
-					<button className='py-1 px-2' onClick={() => setSelectedTable("fine")}>Historial de multas</button>
+					<button className='px-2 py-1' onClick={() => setSelectedTable("fine")}>Historial de multas</button>
 				</div>
-				<div className='flex items-center border border-gray-200 pl-2 rounded-md'>
+				<div className='flex items-center pl-2 border border-gray-200 rounded-md'>
 					<IoDocumentTextOutline size={15} />
-					<button className='py-1 px-2' onClick={() => setSelectedTable("iva")}>Historial de reporte de IVA</button>
+					<button className='px-2 py-1' onClick={() => setSelectedTable("iva")}>Historial de reporte de IVA</button>
 				</div>
 			</div>
 			{selectedTable == "fine" ? (
