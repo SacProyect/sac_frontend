@@ -55,7 +55,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows }) => {
     }, [sortedItems]);
 
     return (
-        <div className="w-full overflow-auto text-sm custom-scroll px-4">
+        <div className="w-full lg:h-[37vh] overflow-auto text-sm custom-scroll px-4">
             <Table
                 aria-label="Resumen de IVA"
                 selectionMode="none"
