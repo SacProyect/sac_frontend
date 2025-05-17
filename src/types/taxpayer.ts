@@ -1,8 +1,9 @@
 import { User } from "./user"
 import { Payment } from "./payment"
+import { IVAReports } from "./IvaReports";
 
 
-export interface Taxpayer{
+export interface Taxpayer {
     id: string,
     providenceNum: number,
     address: string,
@@ -18,7 +19,8 @@ export interface Taxpayer{
     emition_date: string;
     description: string;
     officerName: string;
-    user: User
+    user: User;
+    IVAReports: IVAReports[];
 }
 
 export enum contract_type {

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Control, useForm } from 'react-hook-form';
@@ -10,28 +10,28 @@ import { createIVA } from '../utils/api/taxpayerFunctions';
 
 export interface IvaReportFormData {
     taxpayerId: string;
-    iva: number;
+    iva?: number;
     purchases: number;
     sells: number;
     excess?: number;
     date: string;
 }
 
-interface IvaFormProps {
-    taxpayerId?: string;
-}
 
-function IvaForm({ taxpayerId = "" }: IvaFormProps) {
-    const { user } = useAuth();
+function IvaForm() {
+    const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
+    const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
+    const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
 
-    React.useEffect(() => {
+    useEffect(() => {
         if (!user) {
             navigate("/login");
         }
     }, [user, navigate]);
 
     if (!user) return null;
+
 
     let taxpayerArray: Taxpayer[] = [];
     if (user.role === "ADMIN" || user.role === "FISCAL") {
@@ -49,72 +49,138 @@ function IvaForm({ taxpayerId = "" }: IvaFormProps) {
         control,
         setValue,
         reset,
+        watch,
     } = useForm<IvaReportFormData>({
         mode: "onChange",
         defaultValues: {
             taxpayerId: "",
-            iva: 0,
-            purchases: 0,
-            sells: 0,
             date: "",
         },
     });
 
     const onSubmit = async (data: IvaReportFormData) => {
+        console.log("Submitting data:", data);
+
+        if (data.iva && data.excess) {
+            toast.error("No puede ingresar IVA y excedente al mismo tiempo.");
+            return;
+        }
+
         try {
             const report = await createIVA(data);
             if (report) {
                 reset();
+                refreshUser();
                 toast.success("Reporte creado exitosamente");
             }
-        } catch (e) {
+        } catch (e: any) {
             console.error("Error creating IVA report:", e);
-            toast.error("Error al enviar el formulario");
+            toast.error(e.message);
         }
     };
 
-    const handleMonthChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const selectedMonth = e.target.value;
-        const currentYear = new Date().getFullYear();
-        const isoDate = new Date(`${currentYear}-${selectedMonth}-01`).toISOString();
-        setValue("date", isoDate);
-    };
+    const ivaValue = watch("iva");
+    const excessValue = watch("excess");
+    const dateValue = watch('date');
+
+
+    console.log("TAXPAYERS: " + JSON.stringify(taxpayerArray));
+
+    const taxpayerId = watch("taxpayerId");
+
+    const selectedTaxpayer = taxpayerArray.find(t => t.id === taxpayerId);
+
+    const calculatedExcess =
+        selectedTaxpayer?.IVAReports?.slice().sort(
+            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+        )[0]?.excess || 0;
+
+
+    // Recalcular mes siguiente cuando cambie el contribuyente
+    useEffect(() => {
+        if (!selectedTaxpayer) {
+            setNextAllowedMonth(null);
+            setNextAllowedYear(null);
+            setValue('date', '');
+            return;
+        }
+
+        const sorted = [...(selectedTaxpayer.IVAReports || [])]
+            .sort((a, b) =>
+                new Date(b.date).getTime() - new Date(a.date).getTime()
+            );
+
+        let year: number;
+        let monthNumber: number;
+
+        if (sorted.length === 0) {
+            // Sin reportes: enero del año actual
+            const now = new Date();
+            year = now.getFullYear();
+            monthNumber = 1;
+        } else {
+            // Extraemos mes/año del último reporte desde el string
+            const [yearStr, monthStr] = sorted[0].date.split('-');
+            const lastMonth = parseInt(monthStr, 10); // 1–12
+            year = parseInt(yearStr, 10);
+            monthNumber = lastMonth + 1;
+            if (monthNumber > 12) {
+                monthNumber = 1;
+                year += 1;
+            }
+        }
+
+        setNextAllowedMonth(monthNumber);
+        setNextAllowedYear(year);
+
+        // Creamos un Date en UTC para el primer día de ese mes
+        const isoDate = new Date(Date.UTC(year, monthNumber - 1, 1)).toISOString();
+        // Ejemplo resultante: "2025-05-01T00:00:00.000Z"
+
+        setValue('date', isoDate);
+    }, [selectedTaxpayer, setValue]);
 
     return (
-        <div className="w-full h-full flex items-center justify-center">
+        <div className="flex items-center justify-center w-full h-full lg:h-[100vh]">
             <form
-                onSubmit={handleSubmit(onSubmit)}
-                className="flex flex-col w-[90vw] sm:w-[60vw] md:w-[40vw] h-full lg:[45vw] lg:h-[75vh] bg-white border border-gray-100 rounded-2xl shadow-xl p-8 space-y-6"
+                onSubmit={handleSubmit(onSubmit, (formErrors) => {
+                    console.error("Errores de validación:", formErrors);
+                })}
+                className="flex flex-col w-[90vw] sm:w-[60vw] md:w-[40vw] lg:w-[35vw] bg-white border border-gray-100 rounded-2xl shadow-xl p-8 space-y-6"
             >
-                <h1 className="text-center text-xl font-semibold text-gray-800">Agregar Reporte de IVA</h1>
+                <h1 className="text-xl font-semibold text-center text-gray-800">Agregar Reporte de IVA</h1>
 
-                {taxpayerId === "" && (
-                    <TaxpayerCombobox
-                        name="taxpayerId"
-                        control={control as Control<IvaReportFormData | EventFormData>}
-                        label="Contribuyente"
-                        taxpayers={taxpayerArray}
-                    />
-                )}
+                <TaxpayerCombobox
+                    name="taxpayerId"
+                    control={control as Control<IvaReportFormData | EventFormData>}
+                    label="Contribuyente"
+                    taxpayers={taxpayerArray}
+                />
 
 
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Monto de IVA (BS)</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Monto de IVA (BS)</label>
                     <input
                         type="number"
                         {...register("iva", {
-                            required: "Este campo es obligatorio",
+                            required: excessValue ? false : "Este campo es obligatorio",
                             valueAsNumber: true,
                             min: { value: 0, message: "Debe ser un valor positivo" },
                         })}
                         placeholder="Introduzca el monto de IVA..."
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        disabled={typeof excessValue === "number" && !isNaN(excessValue) && excessValue > 0}
                     />
+                    {typeof excessValue === "number" && !isNaN(excessValue) && excessValue > 0 && (
+                        <p className="mt-1 text-xs text-yellow-600">
+                            Este campo está deshabilitado porque ya se introdujo un excedente de crédito.
+                        </p>
+                    )}
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Compras</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Compras</label>
                     <input
                         type="number"
                         {...register("purchases", {
@@ -122,12 +188,12 @@ function IvaForm({ taxpayerId = "" }: IvaFormProps) {
                             valueAsNumber: true,
                         })}
                         placeholder="Monto de compras..."
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
                 <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Ventas</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Ventas</label>
                     <input
                         type="number"
                         {...register("sells", {
@@ -135,39 +201,57 @@ function IvaForm({ taxpayerId = "" }: IvaFormProps) {
                             valueAsNumber: true,
                         })}
                         placeholder="Monto de ventas..."
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Excedente (BS)</label>
-                    <input
-                        type="number"
-                        {...register("excess")}
-                        placeholder="Monto de excedente (opcional)..."
-                        className="w-full bg-gray-50 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                {(calculatedExcess === 0 || calculatedExcess === undefined) && (
+                    <div>
+                        <label className="block mb-1 text-sm font-medium text-gray-600">Excedente (BS)</label>
+                        <input
+                            type="number"
+                            {...register("excess", {
+                                valueAsNumber: true,
+                            })}
+                            placeholder="Monto de excedente (opcional)..."
+                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-200"
+                            disabled={typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0}
+                        />
+                        {typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0 && (
+                            <p className="mt-1 text-xs text-yellow-600">
+                                Este campo está deshabilitado porque ya se introdujo un monto de IVA.
+                            </p>
+                        )}
+                    </div>
+                )}
 
-                <div>
-                    <input type="hidden" {...register("date", { required: true })} />
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Mes</label>
-                    <select
-                        onChange={handleMonthChange}
-                        className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-                    >
-                        <option value="">Seleccione un mes</option>
-                        {[...Array(12)].map((_, index) => (
-                            <option key={index} value={(index + 1).toString().padStart(2, '0')}>
-                                {new Date(0, index).toLocaleString('es-ES', { month: 'long' })}
-                            </option>
-                        ))}
-                    </select>
-                </div>
+                {calculatedExcess > 0 && taxpayerId !== "" && (
+                    <div>
+                        <p className='text-sm'>Excedente de crédito: {calculatedExcess}</p>
+                    </div>
+                )}
+
+
+                <input
+                    type="hidden"
+                    {...register('date', { required: true })}
+                />
+
+
+                {nextAllowedMonth !== null && nextAllowedYear !== null && (
+                    <p className="mt-1 text-sm text-gray-600">
+                        La fecha del reporte debe ser del mes de: <strong>
+                            {new Date(nextAllowedYear, nextAllowedMonth - 1)
+                                .toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
+                        </strong>
+                    </p>
+                )}
+
+
 
                 <button
                     type="submit"
-                    className="mt-4 w-full bg-blue-500 text-white py-2 rounded-lg text-sm font-medium hover:bg-blue-600 transition"
+                    className="w-full py-2 mt-4 text-sm font-medium text-white transition bg-blue-500 rounded-lg hover:bg-blue-600"
                 >
                     Enviar
                 </button>

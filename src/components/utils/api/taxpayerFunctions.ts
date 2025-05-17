@@ -137,7 +137,7 @@ export const updateFase = async (id: string, fase: string) => {
 	}
 }
 
-export const notifyTaxpayer = async(id: string) => {
+export const notifyTaxpayer = async (id: string) => {
 
 	try {
 		let requestURL = "/taxpayer/notify"
@@ -186,17 +186,23 @@ export const createObservation = async (data: ObservationsForm) => {
 
 export const createIVA = async (data: IvaReportFormData) => {
 	try {
-
-		let requestUrl = "/taxpayer/createIVA"
+		let requestUrl = "/taxpayer/createIVA";
 
 		const response = await apiConnection.post(requestUrl, data);
 
-		return response;
-	} catch (e) {
+		return response.data; // generalmente la data va en response.data
+	} catch (e: any) {
+		// Extraemos el mensaje de error que viene desde backend (por ejemplo, en e.response.data.error)
+		const backendMessage = e.response?.data?.error || e.response?.data || e.message;
+
+		if (backendMessage === "IVA report for this taxpayer and month already exists.") {
+			throw new Error("Ya hay un reporte para este contribuyente en este mes y año");
+		}
+
 		console.error(e);
-		throw new Error("No se pudo agregar el reporte. Por favor, intente de nuevo.")
+		throw new Error("No se pudo agregar el reporte. Por favor, intente de nuevo.");
 	}
-}
+};
 
 export const getObservations = async (taxpayerId: string) => {
 	try {
