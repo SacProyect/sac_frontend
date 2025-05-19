@@ -69,22 +69,25 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     let buys = 0;
     let sells = 0;
+    if (IVAReports && Array.isArray(IVAReports)) {
+        IVAReports.forEach((rep) => {
+            buys += rep.purchases;
+            sells += rep.sells;
+        });
+    }
 
-    IVAReports.forEach((rep) => {
-        buys += rep.purchases;
-        sells += rep.sells
-    })
+    if (events && Array.isArray(events)) {
+        events.forEach((event) => {
+            if (event.type === "FINE") fines += 1;
+        });
+    }
 
-
-    events.forEach((event) => {
-        if (event.type == "FINE") fines += 1;
-    })
 
 
 
     const dataMock = [
-        { name: "COMPRAS (BS)", value: buys, color: "#0080c1" },
-        { name: "VENTAS (BS)", value: sells, color: "#737373" },
+        { name: "COMPRAS (BS)", value: buys > 0 ? buys : 0, color: "#0080c1" },
+        { name: "VENTAS (BS)", value: sells > 0 ? sells : 0, color: "#737373" },
     ];
 
 
@@ -206,7 +209,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         {dataMock.some(item => item.value > 0) && (
                             <div className="flex items-center justify-center w-full">
                                 <div className="">
-                                    <PieChart width={400} height={200}>
+                                    <PieChart width={300} height={200}>
                                         <Pie
                                             data={dataMock}
                                             dataKey="value"

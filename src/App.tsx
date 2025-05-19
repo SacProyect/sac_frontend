@@ -13,6 +13,8 @@ import MainLayout from '@/MainLayout';
 import { lazy, Suspense } from 'react';
 import ContributionsPage from './pages/Contributions/ContributionsPage';
 import { IVAReports } from './types/IvaReports';
+import ReportModal from './components/reports/ReportModal';
+import ReportModalGroups from './components/reports/ReportModalGroups';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
@@ -22,7 +24,7 @@ const TaxpayerForm = lazy(() => import('./components/Taxpayer/TaxpayerForm'));
 const TaxpayerDetail = lazy(() => import('./pages/Taxpayer/TaxpayerDetail'));
 const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"));
 const StatsPage = lazy(() => import("./pages/stats/StatsPage"));
-const ObservationsPage = lazy(()=> import("@/pages/Observations/ObservationsPage"));
+const ObservationsPage = lazy(() => import("@/pages/Observations/ObservationsPage"));
 const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
 const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"))
 
@@ -105,7 +107,7 @@ export const router = createBrowserRouter([
           },
           {
             path: "observations/:taxpayerId?",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Observaciones...</div>} ><ObservationsPage/></Suspense>,
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Observaciones...</div>} ><ObservationsPage /></Suspense>,
           },
           {
             path: "report/errors",
@@ -115,13 +117,17 @@ export const router = createBrowserRouter([
             path: "/stats",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
           },
-          {
-            path: "/gen-reports",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportsPage /></Suspense>
-          },
+          // {
+          //   path: "/gen-reports",
+          //   element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportsPage /></Suspense>
+          // },
           {
             path: "/iva",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de IVA...</div>} ><IvaReport /></Suspense>
+          },
+          {
+            path: "/getGroupReport/:groupId",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de Grupos...</div>} ><ReportModalGroups /></Suspense>
           },
           {
             path: "taxpayer/",
@@ -150,6 +156,56 @@ export const router = createBrowserRouter([
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
+                const events: Event[] = await getTaxpayerEvents(taxpayerId);
+                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
+
+                const fines = await getFineHistory(taxpayerId);
+                const payments = await getPaymentHistory(taxpayerId);
+                const taxSummary = (await getTaxHistory(taxpayerId)).data;
+
+                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+
+                return { events, fines, payments, taxSummary };
+              } catch (error) {
+                console.error(error);
+                return { events: [], fines: [], payments: [], taxSummary: [] };
+              }
+            },
+          },
+          {
+            path: "/gen-reports/:taxpayer?",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportsPage /></Suspense>,
+            loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
+              try {
+                const taxpayerId = params.taxpayer;
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
+                const events: Event[] = await getTaxpayerEvents(taxpayerId);
+                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
+
+                const fines = await getFineHistory(taxpayerId);
+                const payments = await getPaymentHistory(taxpayerId);
+                const taxSummary = (await getTaxHistory(taxpayerId)).data;
+
+                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+
+                return { events, fines, payments, taxSummary };
+              } catch (error) {
+                console.error(error);
+                return { events: [], fines: [], payments: [], taxSummary: [] };
+              }
+            },
+          },
+          {
+            path: "/reports/gen/:taxpayer",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportModal /></Suspense>,
+            loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
+              try {
+
+                const taxpayerId = params.taxpayer;
+
+                console.log("PARAMS:", params);
+                console.log("TAXPAYER ID:", taxpayerId);
                 if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));

@@ -1,38 +1,42 @@
+import { IVAReports } from "@/types/IvaReports";
+
 export interface GroupData {
-    id:            string;
-    name:          string;
+    id: string;
+    name: string;
     coordinatorId: string;
-    created_at:    Date;
-    members:       Member[];
-    collected:     string;
-    totalFines:    string;
+    created_at: Date;
+    members: Member[];
+    collected: string;
+    totalFines: string;
+    totalIva: BigInt;
 }
 
 export interface Member {
-    id:         string;
-    name:       string;
-    role:       string;
-    personId:   number;
-    password:   string;
-    status:     boolean;
+    id: string;
+    name: string;
+    role: string;
+    personId: number;
+    password: string;
+    status: boolean;
     updated_at: Date;
-    groupId:    string;
-    taxpayer:   Taxpayer[];
-    collected:  string;
+    groupId: string;
+    taxpayer: Taxpayer[];
+    collected: string;
 }
 
 export interface Taxpayer {
-    id:            string;
+    id: string;
     providenceNum: number;
-    process:       Process;
-    name:          string;
-    rif:           string;
+    process: Process;
+    name: string;
+    rif: string;
     contract_type: ContractType;
-    status:        boolean;
-    officerId:     string;
-    updated_at:    Date;
-    event:         Event[];
-    payment:       Payment[];
+    status: boolean;
+    officerId: string;
+    updated_at: Date;
+    event: Event[];
+    payment: Payment[];
+    IVAReports: IVAReports[];
 }
 
 export enum ContractType {
@@ -41,15 +45,15 @@ export enum ContractType {
 }
 
 export interface Event {
-    id:          string;
-    date:        Date;
-    amount:      string;
-    type:        Type;
-    status:      boolean;
-    debt:        string;
-    taxpayerId:  string;
-    expires_at:  Date;
-    updated_at:  Date;
+    id: string;
+    date: Date;
+    amount: string;
+    type: Type;
+    status: boolean;
+    debt: string;
+    taxpayerId: string;
+    expires_at: Date;
+    updated_at: Date;
     fineEventId: null | string;
 }
 
@@ -60,11 +64,11 @@ export enum Type {
 }
 
 export interface Payment {
-    id:         string;
-    amount:     string;
-    date:       Date;
-    status:     boolean;
-    eventId:    string;
+    id: string;
+    amount: string;
+    date: Date;
+    status: boolean;
+    eventId: string;
     taxpayerId: string;
     updated_at: Date;
 }
