@@ -2,17 +2,26 @@ import React, { useRef, useState } from 'react'
 import jsPDF from 'jspdf'
 import html2canvas from 'html2canvas'
 import TaxpayerDetailReport from './TaxpayerDetailReport'
+import { IVAReports } from '@/types/IvaReports'
+import { Event } from '@/types/event'
+import { Taxpayer } from '@/types/taxpayer'
+import { Navigate, useLoaderData, useNavigate, useParams } from 'react-router-dom'
+import { Fines } from '@/App'
+import { Payment } from '@/types/payment'
 
-interface ReportModalProps {
-    taxpayer: string
-    onClose: () => void
-}
 
-const ReportModal = ({ taxpayer, onClose }: ReportModalProps) => {
+
+
+const ReportModal = () => {
+    const {taxpayer} = useParams();
+    const { events, fines, payments, taxSummary } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[] }
+
     // Reference to the DOM node we will snapshot
     const reportRef = useRef<HTMLDivElement>(null)
+    
     // Toggle between normal preview and PDF-ready A4 mode
     const [pdfMode, setPdfMode] = useState(false)
+    const navigate = useNavigate();
 
     const handleGeneratePdf = async () => {
         if (!reportRef.current) return
@@ -46,23 +55,24 @@ const ReportModal = ({ taxpayer, onClose }: ReportModalProps) => {
         setPdfMode(false)
     }
 
+    console.log("EVENTS FROM REPORTMODAL: " + JSON.stringify(events))
+    console.log("TAXSUMMARY FROM REPORTMODAL: " + JSON.stringify(taxSummary))
+
     return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
-            <div className="bg-white rounded-md w-11/12 max-w-6xl p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+            <div className="w-11/12 max-w-6xl p-4 bg-white rounded-md">
                 {/* Modal header */}
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex items-center justify-between mb-4">
                     <h2 className="text-xl font-semibold">
-                        Detalle del Contribuyente: {taxpayer}
+                        Detalle del Contribuyente con id: {taxpayer || "No se ha podido obtener el contribuyente"}
                     </h2>
-                    <button onClick={onClose} className="px-4 py-2 bg-red-500 text-white rounded">
-                        Cerrar
-                    </button>
+                    <button className='px-4 py-1 text-white bg-red-500' onClick={()=> navigate("/gen-reports")}>Cerrar</button>
                 </div>
 
                 {/* Preview / snapshot container */}
                 <div
                     ref={reportRef}
-                    className="border border-gray-300 rounded-md p-4 bg-white"
+                    className="p-4 bg-white border border-gray-300 rounded-md"
                     style={{
                         // In PDF mode, force A4 dimensions; otherwise fill parent width
                         width: pdfMode ? '210mm' : '100%',
@@ -72,26 +82,26 @@ const ReportModal = ({ taxpayer, onClose }: ReportModalProps) => {
                     {/* Global style overrides for the snapshot */}
                     <style>
                         {`
-              /* Reset any custom line-height */
-              * { line-height: initial !important; }
-              /* Center button text vertically & horizontally */
-              button {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-              }
+                /* Reset any custom line-height */
+                * { line-height: initial !important; }
+                /* Center button text vertically & horizontally */
+                button {
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                }
             `}
                     </style>
 
                     {/* Pass pdfMode prop so the report shows both tables when needed */}
-                    <TaxpayerDetailReport pdfMode={pdfMode} />
+                    <TaxpayerDetailReport pdfMode={pdfMode} events={events} taxSummary={taxSummary} />
                 </div>
 
                 {/* Generate PDF button */}
                 <div className="flex justify-end mt-4">
                     <button
                         onClick={handleGeneratePdf}
-                        className="px-4 py-2 bg-blue-500 text-white rounded"
+                        className="px-4 py-2 text-white bg-blue-500 rounded"
                     >
                         Generar PDF
                     </button>

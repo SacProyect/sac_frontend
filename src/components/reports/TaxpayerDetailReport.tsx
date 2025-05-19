@@ -1,6 +1,6 @@
 import EventTable from '../../components/Events/EventTable'
 import { Group } from 'react-aria-components'
-import { useParams } from 'react-router-dom'
+import { useLoaderData, useParams } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 // import { useLoaderData } from 'react-router-dom'
 import { Fines } from '../../App'
@@ -15,59 +15,30 @@ import { IoDocumentTextOutline } from "react-icons/io5";
 import { IVAReports } from '@/types/IvaReports'
 import TaxSummaryTable from '@/components/iva/TaxSummaryTable'
 
-// Mocking useLoaderData
-const useLoaderData = () => ({
-    events: [
-        {
-            id: "1",
-            name: "Evento 1",
-            date: "2025-05-08",
-            description: "Descripción del evento 1",
-            amount: 100,
-            type: "FINE" as event_type,
-            status: true,
-            taxpayerId: "123",
-            taxpayer: [],
-            payment: undefined,
-            expires_at: "2025-06-08"
-        },
-        {
-            id: "2",
-            name: "Evento 2",
-            date: "2025-05-07",
-            description: "Descripción del evento 2",
-            amount: 200,
-            type: "FINE" as event_type,
-            status: false,
-            taxpayerId: "124",
-            taxpayer: [],
-            payment: undefined,
-            expires_at: "2025-06-07"
-        },
-    ],
-    fines: { total: 2, amount: 500 },
-    payments: { total: 1, amount: 300 },
-    taxSummary: [
-        { id: "1", description: "IVA Reporte 1", amount: 100, iva: 10, excess: 5, date: "2025-05-01", purchases: 50, sells: 60 },
-        { id: "2", description: "IVA Reporte 2", amount: 200, iva: 20, excess: 10, date: "2025-06-01", purchases: 100, sells: 120 },
-    ],
-});
 
 interface TaxpayerDetailReportProps {
     /** When true, PDF mode is active and both tables should render */
-    pdfMode?: boolean
+    pdfMode?: boolean;
+    events: Event[]
+    taxSummary: IVAReports[]
 }
 
 
 
 // Forward ref so the parent can snapshot this container
 const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProps>(
-    ({ pdfMode = false }, ref) => {
-        const { taxpayer } = useParams<{ taxpayer: string }>()
-        // Mocked loader data for events and IVA summary
-        const { events: initialEvents, taxSummary } = useLoaderData()
-        const [events, setEvents] = useState<Event[]>(initialEvents)
-        const [selectedTable, setSelectedTable] = useState<'fine' | 'iva'>('fine')
+    ({ pdfMode = false, events, taxSummary }, ref) => {
+        // const { taxpayer } = useParams()
+
+
+        const [localEvents, setLocalEvents] = useState<Event[]>(events)
+        const [selectedTable, setSelectedTable] = useState("fine")
+
+
+        console.log("EVENTS FROM TAXPAYERDETAILREPORT: " + JSON.stringify(events))
+        console.log("TAX SUMMARY FROM TAXPAYERDETAILREPORT: " + JSON.stringify(taxSummary))
+        // console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
+        // console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
 
         return (
             <div
@@ -75,21 +46,21 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
                 className="flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full"
             >
                 {/* Summary stats always at top */}
-                <IndividualStats events={events} />
+                <IndividualStats events={localEvents} IVAReports={taxSummary} />
 
                 {/* In preview mode, show toggle buttons */}
                 {!pdfMode && (
-                    <div className="w-full flex space-x-2 pb-4 pl-4 pt-4">
+                    <div className="flex w-full pt-4 pb-4 pl-4 space-x-2">
                         <button
                             onClick={() => setSelectedTable('fine')}
-                            className="flex items-center border border-gray-200 rounded-md py-1 px-2"
+                            className="flex items-center px-2 py-1 border border-gray-200 rounded-md"
                         >
                             {/* You can add the MdInventory icon here */}
                             Historial de multas
                         </button>
                         <button
                             onClick={() => setSelectedTable('iva')}
-                            className="flex items-center border border-gray-200 rounded-md py-1 px-2"
+                            className="flex items-center px-2 py-1 border border-gray-200 rounded-md"
                         >
                             {/* You can add the IoDocumentTextOutline icon here */}
                             Historial de reporte de IVA
@@ -100,16 +71,16 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
                 {/* Render the fines table if in PDF mode always, or in preview when selected */}
                 {(pdfMode || selectedTable === 'fine') && (
                     <div className="w-full overflow-x-auto lg:overflow-x-hidden">
-                        <EventTable rows={events} setRows={setEvents} />
+                        <EventTable rows={localEvents} setRows={setLocalEvents} />
                     </div>
                 )}
 
                 {/* Separator only in PDF mode */}
-                {pdfMode && <div className="my-8 border-t border-gray-300 w-full" />}
+                {pdfMode && <div className="w-full my-8 border-t border-gray-300" />}
 
                 {/* Render the IVA table if in PDF mode always, or in preview when selected */}
                 {(pdfMode || selectedTable === 'iva') && (
-                    <div className="w-full overflow-x-auto lg:overflow-x-hidden flex items-center text-center justify-center">
+                    <div className="flex items-center justify-center w-full overflow-x-auto text-center lg:overflow-x-hidden">
                         <TaxSummaryTable rows={taxSummary} />
                     </div>
                 )}

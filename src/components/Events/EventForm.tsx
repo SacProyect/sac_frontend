@@ -79,6 +79,9 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
     }
 
+    // ✅ Filtrar los contribuyentes con process !== "FP"
+    taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
+
     const {
         register,
         handleSubmit,

@@ -70,7 +70,10 @@ function IvaForm() {
             const report = await createIVA(data);
             if (report) {
                 reset();
-                refreshUser();
+                await refreshUser();
+                setTimeout(() => {
+                    setValue("taxpayerId", data.taxpayerId); // volver a establecer contribuyente
+                }, 500); // esperar un poco antes de restablecer valor para recalcular
                 toast.success("Reporte creado exitosamente");
             }
         } catch (e: any) {
@@ -180,7 +183,7 @@ function IvaForm() {
                 </div>
 
                 <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Compras</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Compras (BS)</label>
                     <input
                         type="number"
                         {...register("purchases", {
@@ -193,7 +196,7 @@ function IvaForm() {
                 </div>
 
                 <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Ventas</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Ventas (BS)</label>
                     <input
                         type="number"
                         {...register("sells", {
