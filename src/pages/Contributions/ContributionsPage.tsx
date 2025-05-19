@@ -66,9 +66,6 @@ function ContributionsPage() {
     }, [startDate, endDate]);
 
 
-
-
-
     return (
         <aside className='lg:w-[82vw] w-full h-full overflow-y-auto'>
             <ContributionsHeader />

@@ -140,7 +140,7 @@ function TaxpayerForm() {
                     <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar Contribuyente</h2>
                     <Form onSubmit={handleSubmit(onSubmit)} className=''>
                         <div className=''>
-                            <Label className=''>Nro. Providencia</Label>
+                            <Label className=''>Nro. Providencia / Nro. Oficio</Label>
                         </div>
                         <TextInput
                             placeholder={"Ingrese el numero de providencia"}
@@ -291,7 +291,7 @@ function TaxpayerForm() {
                         {errors.officerId && <span className="text-sm text-red-600">{errors.officerId.message}</span>}
 
                         {/* Drag and Drop Zone */}
-                        <div className=" pt-4">
+                        <div className="pt-4 ">
                             <div
                                 {...getRootProps()}
                                 className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"

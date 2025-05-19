@@ -1,19 +1,21 @@
 import React, { useEffect, useState } from 'react'
 import { getContributions } from '../utils/api/reportFunctions';
 import toast from 'react-hot-toast';
-import { GroupData } from './ContributionTypes';
+
 import { BiSort, BiSortUp, BiSortDown } from "react-icons/bi";
+import { GroupData } from '../contributions/ContributionTypes';
 
 
-interface ContributionsStatisticsProps {
+interface GroupReportStatisticsProps {
     groupData: GroupData[],
     selectedGroup: string,
     pdfMode?: boolean // <-- nueva prop opcional
+    forceType?: "FP" | "AF" | "VDF";
 }
 
 
-function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: ContributionsStatisticsProps) {
-    const [typeClicked, setTypeClicked] = useState("FP")
+function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forceType }: GroupReportStatisticsProps) {
+    const [typeClicked, setTypeClicked] = useState(forceType || "FP");
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
 
 
@@ -75,7 +77,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                 totalFines,
                 totalCompromises,
                 totalTaxpayers,
-                totalIVA, 
+                totalIVA,
             };
         })
         .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
@@ -134,14 +136,21 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
 
 
     return (
-        <section className=' border border-gray-200 w-full lg:h-[52vh] h-[80vh] rounded-md mb-4 lg:mb-0'>
+        <section
+            className="mb-4 border border-gray-200 rounded-md"
+            style={{
+                width: pdfMode ? '210mm' : '100%',
+                margin: pdfMode ? '0 auto' : undefined,       // <-- esto lo centra
+                maxHeight: pdfMode ? 'none' : undefined,
+                overflow: pdfMode ? 'visible' : undefined,
+            }}
+        >
 
             {/* Section header */}
             {selectedGroupData ? (
                 <>
                     <div className='flex justify-between w-full'>
                         <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {selectedGroupData?.name} - Abril 2025</p>
-                        {/* <button className='font-normal text-gray-500'>Close</button> */}
                     </div>
 
                     {/* Buttons */}
@@ -160,9 +169,16 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
 
 
                     {/* Table */}
-                    <div className="w-full px-4 border-collapse">
+                    <div className="w-full border-collapse">
                         <div className="w-full lg:h-[20rem] h-[24rem] border border-gray-200 rounded-md overflow-y-auto overflow-x-auto ">
-                            <div className="grid w-full grid-cols-10 text-xs" style={{ gridTemplateColumns: 'repeat(10, minmax(160px, 1fr))' }}>
+                            <div
+                                className="grid w-full text-xs"
+                                style={{
+                                    gridTemplateColumns: pdfMode
+                                        ? 'repeat(10, 100px)'
+                                        : 'repeat(10, 139px)',
+                                }}
+                            >
                                 <div className=''>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("name")} className="text-xs">
@@ -176,7 +192,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                                         </div>
                                     ))}
                                 </div>
-                                <div>
+                                {/* <div>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("type")} className="text-xs">Tipo</button>
                                         <SortIcon column="type" />
@@ -186,10 +202,10 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                                             <p>{typeClicked}</p>
                                         </div>
                                     ))}
-                                </div>
+                                </div> */}
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado Multas</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Rec.Multas</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
@@ -200,7 +216,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado IVA</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">IVA</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
@@ -211,7 +227,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado ISLR</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">ISLR</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
@@ -297,4 +313,4 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
     )
 }
 
-export default ContributionsStatistics
+export default GroupReportStatistics

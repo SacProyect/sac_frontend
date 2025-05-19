@@ -20,6 +20,9 @@ export default defineConfig({
     },
   },
   server: {
+    watch: {
+      ignored: ['**/node_modules/**', '**/.git/**'],
+    },
     origin: "https://f7a3-149-88-17-159.ngrok-free.app", // your ngrok URL
     allowedHosts: [
       "f7a3-149-88-17-159.ngrok-free.app"
