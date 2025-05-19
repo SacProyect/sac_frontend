@@ -12,7 +12,7 @@ import { useNavigate } from 'react-router-dom';
 import { contract_type } from '@/types/taxpayer';
 
 function HomePage() {
-    const { user } = useAuth();
+    const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
 
 
@@ -22,6 +22,10 @@ function HomePage() {
         )
         return null;
     }
+
+    useEffect(() => {
+        refreshUser();
+    }, [])
 
     const [taxpayers, setTaxpayers] = useState(user?.taxpayer || [])
 
