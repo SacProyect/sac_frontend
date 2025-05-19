@@ -128,6 +128,9 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     const taxpayerArray: Taxpayer[] = user.taxpayer
 >>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
+    // ✅ Filtrar los contribuyentes con process !== "FP"
+    taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
+
     const {
         register,
         handleSubmit,
