@@ -178,7 +178,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Recaudado IVA:</p>
-                                    <p className='text-xs font-semibold'>{group.totalIva.toString()} Bs</p>
+                                    <p className='text-xs font-semibold'>{group.totalIva?  group.totalIva.toString(): 0} Bs</p>
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Recaudado ISRL:</p>
