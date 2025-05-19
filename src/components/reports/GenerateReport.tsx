@@ -19,6 +19,8 @@ function GenerateReport() {
     const navigate = useNavigate();
     // const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
     const [groupData, setGroupData] = useState<GroupData[]>([]);
+    const [inputValue, setInputValue] = useState("");
+    const [query, setQuery] = useState("");
 
     useEffect(() => {
         if (!user) {
@@ -63,6 +65,28 @@ function GenerateReport() {
         groupData.sort((a, b) => a.name.localeCompare(b.name));
     }
 
+    // Filtrar por nombre, rif o fiscal (user.name)
+    const q = inputValue.trim().toLowerCase();
+    const filteredTaxpayers = taxpayerArray.filter(t => {
+        return (
+            t.name?.toLowerCase().includes(q) ||
+            t.rif?.toLowerCase().includes(q) ||
+            t.user.name.toLowerCase().includes(q)
+        );
+    });
+
+    // Manejar submit de búsqueda
+    const handleSearch = () => {
+        setQuery(inputValue.trim());
+    };
+
+    // Manejar Enter en el input
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+        if (e.key === 'Enter') {
+            handleSearch();
+        }
+    };
+
 
     return (
         <section className='w-full h-full'>
@@ -85,12 +109,15 @@ function GenerateReport() {
                                 <CiSearch size={18} className="text-gray-500" />
                                 <input
                                     type="text"
-                                    placeholder="Buscar por nombre o RIF"
+                                    placeholder="Buscar por nombre, RIF o nombre del FISCAL"
                                     className="flex-1 text-sm placeholder-gray-400 bg-transparent focus:outline-none"
+                                    value={inputValue}
+                                    onChange={e => setInputValue(e.target.value)}
+                                    onKeyDown={handleKeyDown}
                                 />
                             </div>
                             <div className='lg:w-[5%] px-4'>
-                                <button className='px-4 py-1 bg-[#3498DB] text-white'>Buscar</button>
+                                <button className='px-4 py-1 bg-[#3498DB] text-white' onClick={handleSearch}>Buscar</button>
                             </div>
                         </div>
                     </div>
@@ -114,20 +141,14 @@ function GenerateReport() {
                         </div>
 
                         {/* Table Body */}
-                        {taxpayerArray.map((taxpayer) => (
+                        {filteredTaxpayers.map(taxpayer => (
                             <div
                                 key={taxpayer.id}
                                 className='flex w-full px-2 py-2 border-b border-l border-r last:rounded-br-md last:rounded-bl-md'
                             >
-                                <div className='w-1/3'>
-                                    <p className='p-1'>{taxpayer.rif ?? "No encontrado"}</p>
-                                </div>
-                                <div className='w-1/3'>
-                                    <p className='p-1'>{taxpayer.name ?? "No encontrado"}</p>
-                                </div>
-                                <div className='w-1/3'>
-                                    <p className='p-1'>{taxpayer.user.name ?? "No encontrado"}</p>
-                                </div>
+                                <div className='w-1/3'><p className='p-1'>{taxpayer.rif || "No encontrado"}</p></div>
+                                <div className='w-1/3'><p className='p-1'>{taxpayer.name || "No encontrado"}</p></div>
+                                <div className='w-1/3'><p className='p-1'>{taxpayer.user.name || "No encontrado"}</p></div>
                                 <div className='flex justify-end w-1/3'>
                                     <button
                                         className='p-1 px-2 m-0 font-medium border border-gray-200'
