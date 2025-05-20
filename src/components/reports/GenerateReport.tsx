@@ -89,13 +89,12 @@ function GenerateReport() {
 
 
     return (
-        <section className='w-full h-full'>
+        <section className='w-full h-full pb-14 lg:pb-0'>
 
             {/* Header */}
             <div className='pt-4 pl-4'>
                 <h1 className='text-xl text-[#1F2937] font-semibold'>Generar Reportes</h1>
             </div>
-
 
             {/* Container */}
             <div className='px-4 py-4'>
@@ -104,8 +103,9 @@ function GenerateReport() {
                     {/* Search input */}
                     <div className='w-full'>
                         <h2 className='text-gray-500'>Buscar contribuyente</h2>
-                        <div className='flex items-center w-full pt-4'>
-                            <div className='w-[90%] flex items-center gap-2 px-3 py-1 bg-white border rounded-md'>
+                        <div className='flex flex-col items-start w-full gap-2 pt-4 lg:flex-row lg:items-center'>
+
+                            <div className='w-full lg:w-[90%] flex items-center gap-2 px-3 py-1 bg-white border rounded-md'>
                                 <CiSearch size={18} className="text-gray-500" />
                                 <input
                                     type="text"
@@ -116,42 +116,36 @@ function GenerateReport() {
                                     onKeyDown={handleKeyDown}
                                 />
                             </div>
-                            <div className='lg:w-[5%] px-4'>
-                                <button className='px-4 py-1 bg-[#3498DB] text-white' onClick={handleSearch}>Buscar</button>
+
+                            <div className='w-full lg:w-[10%]'>
+                                <button className='w-full px-4 py-1 bg-[#3498DB] text-white' onClick={handleSearch}>Buscar</button>
                             </div>
                         </div>
                     </div>
 
                     {/* Map Filtered Taxpayers */}
                     <div className='w-full h-[48vh] pt-4 overflow-y-auto'>
-                        {/* Table Header */}
-                        <div className='flex items-center w-full px-4 py-1 font-medium bg-gray-200 rounded-tr-md rounded-tl-md'>
-                            <div className='w-1/3'>
-                                <p>RIF</p>
-                            </div>
-                            <div className='w-1/3'>
-                                <p>Nombre</p>
-                            </div>
-                            <div className='w-1/3'>
-                                <p>FISCAL</p>
-                            </div>
-                            <div className='flex justify-end w-1/3'>
-                                <p>Acción</p>
-                            </div>
+
+                        {/* Table Header (only on lg) */}
+                        <div className='items-center hidden w-full px-4 py-1 font-medium bg-gray-200 lg:flex rounded-tr-md rounded-tl-md'>
+                            <div className='w-1/3'><p>RIF</p></div>
+                            <div className='w-1/3'><p>Nombre</p></div>
+                            <div className='w-1/3'><p>FISCAL</p></div>
+                            <div className='flex justify-end w-1/3'><p>Acción</p></div>
                         </div>
 
                         {/* Table Body */}
                         {filteredTaxpayers.map(taxpayer => (
                             <div
                                 key={taxpayer.id}
-                                className='flex w-full px-2 py-2 border-b border-l border-r last:rounded-br-md last:rounded-bl-md'
+                                className='flex flex-col w-full px-2 py-2 border-b border-l border-r lg:flex-row last:rounded-br-md last:rounded-bl-md'
                             >
-                                <div className='w-1/3'><p className='p-1'>{taxpayer.rif || "No encontrado"}</p></div>
-                                <div className='w-1/3'><p className='p-1'>{taxpayer.name || "No encontrado"}</p></div>
-                                <div className='w-1/3'><p className='p-1'>{taxpayer.user.name || "No encontrado"}</p></div>
-                                <div className='flex justify-end w-1/3'>
+                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>RIF: </span>{taxpayer.rif || "No encontrado"}</p></div>
+                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>Nombre: </span>{taxpayer.name || "No encontrado"}</p></div>
+                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>FISCAL: </span>{taxpayer.user.name || "No encontrado"}</p></div>
+                                <div className='flex justify-end w-full lg:w-1/3'>
                                     <button
-                                        className='p-1 px-2 m-0 font-medium border border-gray-200'
+                                        className='p-1 px-2 m-0 text-xs font-medium border border-gray-200 lg:text-sm'
                                         onClick={() => navigate(`/reports/gen/${taxpayer.id}`)}
                                     >
                                         Ver Reporte
@@ -161,23 +155,25 @@ function GenerateReport() {
                         ))}
                     </div>
 
-                    {/* Group Reports Header*/}
+                    {/* Group Reports Header */}
                     <div className='pt-4 space-y-2'>
                         <h2 className='font-semibold text-gray-500'>Reportes por grupo</h2>
                         <p className='text-xs text-gray-500'>Seleccione un grupo para generar un reporte completo</p>
                     </div>
 
                     {/* Generate Group Report */}
-                    <div className='grid w-full grid-cols-3 pt-4 gap-y-2 gap-x-2'>
-
+                    <div className='flex flex-col gap-2 pt-4 lg:grid lg:grid-cols-3 lg:gap-y-2 lg:gap-x-2'>
                         {groupData.map((group) => (
                             <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
-                                <div className='w-[90%] '>
-                                    <p className='font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
+                                <div className='w-[90%]'>
+                                    <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
                                     <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
                                 </div>
                                 <div className='w-[10%] flex items-center'>
-                                    <button className='p-2 text-blue-600 bg-blue-300 rounded-full' onClick={() => navigate(`/getGroupReport/${group.id}`)}>
+                                    <button
+                                        className='p-2 text-blue-600 bg-blue-300 rounded-full'
+                                        onClick={() => navigate(`/getGroupReport/${group.id}`)}
+                                    >
                                         <IoDocumentTextOutline size={15} />
                                     </button>
                                 </div>
@@ -189,6 +185,7 @@ function GenerateReport() {
             </div>
 
         </section>
+
     )
 }
 
