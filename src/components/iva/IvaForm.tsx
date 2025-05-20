@@ -144,7 +144,7 @@ function IvaForm() {
     }, [selectedTaxpayer, setValue]);
 
     return (
-        <div className="flex items-center justify-center w-full h-full lg:h-[100vh]">
+        <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
             <form
                 onSubmit={handleSubmit(onSubmit, (formErrors) => {
                     console.error("Errores de validación:", formErrors);

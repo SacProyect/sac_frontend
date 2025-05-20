@@ -48,35 +48,39 @@ const TaxpayerDetail = () => {
 	return (
 		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
-			<Group className={"mb-8 w-full flex items-center justify-center space-x-1 lg:space-x-20 pt-10"}>
+			<Group className="flex flex-col items-center justify-center w-full pt-10 mb-8 space-y-2 lg:flex-row lg:space-x-20 lg:space-y-0">
 				{options.map((opt) => (
 					<Link
 						to={opt.path}
-						className={`bg-[#3498db] border-none px-4  lg:px-5 py-1 font-light text-center  no-underline   my-1  cursor-pointer  rounded  w- transition  hover:bg-green-500  hover:-translate-y-1`}
+						className="bg-[#3498db] border-none px-4 lg:px-5 py-1 font-light text-center no-underline my-1 cursor-pointer rounded w-auto transition hover:bg-green-500 hover:-translate-y-1"
 						key={opt.name}
 					>
-						<span className='text-xs text-white whitespace-nowrap lg:text-base'>
+						<span className="text-xs text-white whitespace-nowrap lg:text-base">
 							+{opt.name}
 						</span>
 					</Link>
 				))}
 			</Group>
-			<div className='flex w-full pb-4 pl-4 space-x-2'>
-				<div className='flex items-center pl-2 border border-gray-200 rounded-md'>
+			<div className="flex flex-col w-full pb-4 pl-4 pr-4 space-y-2 lg:pr-0 lg:flex-row lg:space-x-2 lg:space-y-0">
+				<div className="flex items-center w-full pl-2 border border-gray-200 rounded-md lg:w-48 lg:pr-0">
 					<MdInventory size={15} />
-					<button className='px-2 py-1' onClick={() => setSelectedTable("fine")}>Historial de multas</button>
+					<button className="w-full px-2 py-1 text-left" onClick={() => setSelectedTable("fine")}>
+						Historial de multas
+					</button>
 				</div>
-				<div className='flex items-center pl-2 border border-gray-200 rounded-md'>
+				<div className="flex items-center w-full pl-2 border border-gray-200 rounded-md lg:w-64 lg:pr-0">
 					<IoDocumentTextOutline size={15} />
-					<button className='px-2 py-1' onClick={() => setSelectedTable("iva")}>Historial de reporte de IVA</button>
+					<button className="w-full px-2 py-1 text-left" onClick={() => setSelectedTable("iva")}>
+						Historial de reporte de IVA
+					</button>
 				</div>
 			</div>
 			{selectedTable == "fine" ? (
-				<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<EventTable rows={events} setRows={setEvents} />
 				</div>
 			) : (
-				<div className='flex items-center justify-center w-full overflow-x-auto lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<TaxSummaryTable rows={taxSummary} />
 				</div>
 			)}

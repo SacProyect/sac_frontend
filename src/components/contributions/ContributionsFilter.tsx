@@ -156,10 +156,10 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 )}
             </div>
             {user.role === "ADMIN" && (
-                <div className='lg:h-64 h-96 pt-4 pr-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
+                <div className='lg:h-64 h-full pt-4 pr-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
                     {groupData.length > 0 ? (
                         groupData.map((group) => (
-                            <div key={group.id} className='w-full pt-2 pb-2 border-2 border-black rounded-lg cursor-pointer lg:w-full h-28 lg:h-full' onClick={() => setSelectedGroup(group.id)}>
+                            <div key={group.id} className='w-full h-full pt-2 border-2 border-black rounded-lg cursor-pointer lg:w-full lg:h-full' onClick={() => setSelectedGroup(group.id)}>
                                 <div className='flex justify-between w-full px-2 space-x-2'>
                                     <div className='w-2/3'>
                                         <p className='text-xs font-semibold'>{group.name}</p>
@@ -192,10 +192,10 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                 </div>
             )}
             {user.role === "COORDINATOR" && (
-                <div className='lg:h-64 h-64 pt-4 pr-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
+                <div className='lg:h-64 h-full pt-4 pr-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-[repeat(5,minmax(120px,1fr))] gap-4 overflow-y-auto custom-scroll'>
                     {groupData.length > 0 ? (
                         groupData.map((group) => (
-                            <div key={group.id} className='w-full pt-2 border-2 border-black rounded-lg cursor-pointer h-28 lg:h-full'>
+                            <div key={group.id} className='w-full h-full pt-2 border-2 border-black rounded-lg cursor-pointer lg:h-full'>
                                 <div className='flex justify-between w-full px-2 space-x-2'>
                                     <div className='w-2/3'>
                                         <p className='text-xs font-semibold'>{group.id}</p>

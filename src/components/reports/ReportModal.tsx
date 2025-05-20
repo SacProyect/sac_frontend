@@ -13,12 +13,12 @@ import { Payment } from '@/types/payment'
 
 
 const ReportModal = () => {
-    const {taxpayer} = useParams();
+    const { taxpayer } = useParams();
     const { events, fines, payments, taxSummary } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[] }
 
     // Reference to the DOM node we will snapshot
     const reportRef = useRef<HTMLDivElement>(null)
-    
+
     // Toggle between normal preview and PDF-ready A4 mode
     const [pdfMode, setPdfMode] = useState(false)
     const navigate = useNavigate();
@@ -59,49 +59,63 @@ const ReportModal = () => {
     console.log("TAXSUMMARY FROM REPORTMODAL: " + JSON.stringify(taxSummary))
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className="w-11/12 max-w-6xl p-4 bg-white rounded-md">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-2 bg-black bg-opacity-50 lg:px-0">
+            <div className="w-full max-w-full p-4 bg-white rounded-md max-h-full overflow-auto lg:w-11/12 lg:max-w-6xl lg:max-h-[90vh]">
+
                 {/* Modal header */}
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold">
+                <div className="flex flex-col items-start justify-between gap-2 mb-4 lg:flex-row lg:items-center lg:gap-0">
+                    <h2 className="text-lg font-semibold lg:text-xl">
                         Detalle del Contribuyente con id: {taxpayer || "No se ha podido obtener el contribuyente"}
                     </h2>
-                    <button className='px-4 py-1 text-white bg-red-500' onClick={()=> navigate("/gen-reports")}>Cerrar</button>
+                    <button
+                        className="w-full px-4 py-2 text-white bg-red-500 rounded lg:w-auto"
+                        onClick={() => navigate("/gen-reports")}
+                    >
+                        Cerrar
+                    </button>
                 </div>
-
-                {/* Preview / snapshot container */}
-                <div
-                    ref={reportRef}
-                    className="p-4 bg-white border border-gray-300 rounded-md"
-                    style={{
-                        // In PDF mode, force A4 dimensions; otherwise fill parent width
-                        width: pdfMode ? '210mm' : '100%',
-                        minHeight: pdfMode ? '297mm' : undefined,
-                    }}
-                >
-                    {/* Global style overrides for the snapshot */}
-                    <style>
-                        {`
-                /* Reset any custom line-height */
-                * { line-height: initial !important; }
-                /* Center button text vertically & horizontally */
-                button {
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                }
-            `}
-                    </style>
-
-                    {/* Pass pdfMode prop so the report shows both tables when needed */}
-                    <TaxpayerDetailReport pdfMode={pdfMode} events={events} taxSummary={taxSummary} />
-                </div>
-
-                {/* Generate PDF button */}
-                <div className="flex justify-end mt-4">
+                {/* Generate PDF button - siempre debajo de todo */}
+                <div className="flex flex-col items-end mt-4 space-y-2 lg:hidden lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
                     <button
                         onClick={handleGeneratePdf}
-                        className="px-4 py-2 text-white bg-blue-500 rounded"
+                        className="w-full px-4 py-2 text-white bg-blue-500 rounded lg:w-auto"
+                    >
+                        Generar PDF
+                    </button>
+                </div>
+
+                {/* Wrapper para borde y contenido del reporte */}
+                <div className="w-full rounded-md lg:border lg:border-gray-400">
+                    <div
+                        ref={reportRef}
+                        className="p-4 bg-white rounded-md"
+                        style={{
+                            width: pdfMode ? '210mm' : '100%',
+                            minHeight: pdfMode ? '297mm' : undefined,
+                            maxHeight: pdfMode ? undefined : '70vh',
+                        }}
+                    >
+                        <style>
+                            {`
+              * { line-height: initial !important; }
+              button {
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+              }
+            `}
+                        </style>
+
+                        {/* Report component */}
+                        <TaxpayerDetailReport pdfMode={pdfMode} events={events} taxSummary={taxSummary} />
+                    </div>
+                </div>
+
+                {/* Generate PDF button - siempre debajo de todo */}
+                <div className="flex-col items-end hidden mt-4 space-y-2 lg:flex lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
+                    <button
+                        onClick={handleGeneratePdf}
+                        className="w-full px-4 py-2 text-white bg-blue-500 rounded lg:w-auto"
                     >
                         Generar PDF
                     </button>
@@ -109,6 +123,7 @@ const ReportModal = () => {
             </div>
         </div>
     )
+
 }
 
 export default ReportModal

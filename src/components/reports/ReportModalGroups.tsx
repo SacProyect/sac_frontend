@@ -75,20 +75,23 @@ const ReportModalGroups = () => {
     const selectedGroup = groupId ?? ''
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-            <div className={`w-11/12 max-w-6xl ${pdfMode ? '' : 'p-4'} bg-white rounded-md`}>
-                <div className="flex items-center justify-between mb-4">
-                    <h2 className="text-xl font-semibold">
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-4 bg-black bg-opacity-50 lg:px-0 lg:py-0">
+            <div className={`w-full max-w-full ${pdfMode ? '' : 'p-4'} bg-white rounded-md overflow-y-auto max-h-[90vh] lg:w-11/12 lg:max-w-6xl`}>
+
+                {/* Encabezado */}
+                <div className="flex flex-col items-start justify-between gap-2 mt-2 mb-4 lg:flex-row lg:items-center lg:gap-0 lg:mt-0">
+                    <h2 className="text-lg font-semibold lg:text-xl">
                         Detalle del Grupo con id: {selectedGroup || 'No se ha podido obtener el grupo'}
                     </h2>
                     <button
-                        className="px-4 py-1 text-white bg-red-500"
+                        className="w-full px-4 py-2 text-white bg-red-500 rounded lg:w-auto"
                         onClick={() => navigate('/gen-reports')}
                     >
                         Cerrar
                     </button>
                 </div>
 
+                {/* Contenedor del reporte */}
                 <div
                     ref={reportRef}
                     className={`${pdfMode ? '' : 'p-4'} bg-white border border-gray-300 rounded-md`}
@@ -133,14 +136,19 @@ const ReportModalGroups = () => {
                     )}
                 </div>
 
-                <div className="flex justify-end mt-4">
-                    <button onClick={handleGeneratePdf} className="px-4 py-2 text-white bg-blue-500 rounded">
+                {/* Botón PDF */}
+                <div className="flex flex-col items-end mt-4 space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
+                    <button
+                        onClick={handleGeneratePdf}
+                        className="w-full px-4 py-2 text-white bg-blue-500 rounded lg:w-auto"
+                    >
                         Generar PDF
                     </button>
                 </div>
             </div>
         </div>
     )
+
 }
 
 export default ReportModalGroups

@@ -127,11 +127,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
-            {/* Contenedor principal */}
-            <div className="flex w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-12 ">
+            {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
+            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-12">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
-                <div className="w-1/2 p-6">
+                <div className="w-full p-6 lg:w-1/2">
                     <h1 className="mb-4 text-xl font-semibold uppercase">
                         Datos del contribuyente
                     </h1>
@@ -168,12 +168,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
                 </div>
 
-
-
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
-                <div className="flex flex-col items-start w-1/2 p-0 h-[13rem]">
+                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem]">
+
                     {(user?.role === "FISCAL" || user?.role === "ADMIN") && taxpayerData?.notified === false && (
-                        <div className="flex items-end justify-end w-full">
+                        <div className="flex items-end justify-end w-full mb-4">
                             <button
                                 className="px-2 py-1 bg-[#3498db] text-white font-semibold"
                                 onClick={() => handleNotifiedClick(true)}
@@ -183,12 +182,12 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
+                    {/* Cambié el contenedor principal de flex row a flex-col en mobile y flex-row en lg */}
+                    <div className="flex flex-col pt-0 lg:flex-row lg:pt-4">
 
-                    {/* Sección de bullets */}
-                    <div className="flex pt-0 lg:pt-4 sm:flex-col lg:flex-row">
-                        <div className="flex flex-col p-4 mb-0 space-y-2">
+                        {/* Bullets arriba en mobile, a la izquierda en lg */}
+                        <div className="flex flex-row p-4 mb-4 space-x-6 lg:flex-col lg:mb-0 lg:space-x-0 lg:space-y-2">
                             <div className="flex items-center">
-                                {/* Circulito Azul */}
                                 <span
                                     className="inline-block w-3 h-3 mr-2 rounded-full"
                                     style={{ backgroundColor: "#0080c1" }}
@@ -196,7 +195,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                 <span className="text-sm">COMPRAS (BS)</span>
                             </div>
                             <div className="flex items-center">
-                                {/* Circulito Gris */}
                                 <span
                                     className="inline-block w-3 h-3 mr-2 rounded-full"
                                     style={{ backgroundColor: "#737373" }}
@@ -205,34 +203,30 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </div>
                         </div>
 
-                        {/* Gráfica estilo pastel */}
+                        {/* Gráfica debajo en mobile, a la derecha en lg */}
                         {dataMock.some(item => item.value > 0) && (
-                            <div className="flex items-center justify-center w-full">
-                                <div className="">
-                                    <PieChart width={300} height={200}>
-                                        <Pie
-                                            data={dataMock}
-                                            dataKey="value"
-                                            nameKey="name"
-                                            cx="50%"
-                                            cy="50%"
-                                            outerRadius={80}
-                                            label
-                                        >
-                                            {dataMock.map((entry, index) => (
-                                                <Cell key={`cell-${index}`} fill={entry.color} />
-                                            ))}
-                                        </Pie>
-                                        <Tooltip />
-                                    </PieChart>
-                                </div>
+                            <div className="flex justify-center w-full lg:w-auto">
+                                <PieChart width={300} height={200}>
+                                    <Pie
+                                        data={dataMock}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={80}
+                                        label
+                                    >
+                                        {dataMock.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
                             </div>
                         )}
                     </div>
 
-
-
-                    {user?.role === "COORDINATOR" || user?.role === "ADMIN" && taxpayerData?.process == "AF" &&
+                    {(user?.role === "COORDINATOR" || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
                         <div className="flex items-end justify-end w-full gap-2 pr-2 mt-4">
                             {fases.map((fase) => (
                                 <button
@@ -247,8 +241,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     }
 
-
-                    {taxpayerData?.fase && taxpayerData.process == "AF" && (
+                    {taxpayerData?.fase && taxpayerData.process === "AF" && (
                         <div className="w-full pr-2 mt-2 text-sm italic text-right text-gray-700">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
@@ -272,7 +265,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             }
                         </div>
                     )}
-
                 </div>
             </div>
         </div>

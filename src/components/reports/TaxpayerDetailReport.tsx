@@ -43,24 +43,24 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
         return (
             <div
                 ref={ref}
-                className="flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full"
+                className="flex flex-col max-w-[46rem] lg:max-w-full  justify-center items-center w-full"
             >
                 {/* Summary stats always at top */}
                 <IndividualStats events={localEvents} IVAReports={taxSummary} />
 
                 {/* In preview mode, show toggle buttons */}
                 {!pdfMode && (
-                    <div className="flex w-full pt-4 pb-4 pl-4 space-x-2">
+                    <div className="flex flex-col w-full pt-4 pb-4 pl-4 space-y-2 lg:flex-row lg:space-x-2 lg:space-y-0">
                         <button
                             onClick={() => setSelectedTable('fine')}
-                            className="flex items-center px-2 py-1 border border-gray-200 rounded-md"
+                            className="flex items-center w-full px-2 py-1 border border-gray-200 rounded-md lg:w-auto"
                         >
                             {/* You can add the MdInventory icon here */}
                             Historial de multas
                         </button>
                         <button
                             onClick={() => setSelectedTable('iva')}
-                            className="flex items-center px-2 py-1 border border-gray-200 rounded-md"
+                            className="flex items-center w-full px-2 py-1 border border-gray-200 rounded-md lg:w-auto"
                         >
                             {/* You can add the IoDocumentTextOutline icon here */}
                             Historial de reporte de IVA
