@@ -21,6 +21,7 @@ function GenerateReport() {
     const [groupData, setGroupData] = useState<GroupData[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [query, setQuery] = useState("");
+    const [isLoadingGroups, setIsLoadingGroups] = useState(true);
 
     useEffect(() => {
         if (!user) {
@@ -29,7 +30,7 @@ function GenerateReport() {
         }
 
         const fetchGroups = async () => {
-
+            setIsLoadingGroups(true); // ⏳ Empieza a cargar
             try {
 
                 const response = await getContributions();
@@ -39,6 +40,8 @@ function GenerateReport() {
             } catch (e) {
                 console.error(e);
                 toast.error("No se pudieron obtener los grupos, por favor, recargue la página e intente de nuevo.")
+            } finally {
+                setIsLoadingGroups(false); // ✅ Finaliza carga
             }
         }
         fetchGroups();
@@ -163,22 +166,28 @@ function GenerateReport() {
 
                     {/* Generate Group Report */}
                     <div className='flex flex-col gap-2 pt-4 lg:grid lg:grid-cols-3 lg:gap-y-2 lg:gap-x-2'>
-                        {groupData.map((group) => (
-                            <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
-                                <div className='w-[90%]'>
-                                    <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
-                                    <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
+                        {isLoadingGroups ? (
+                            <p className="text-sm text-gray-500">Cargando grupos...</p>
+                        ) : groupData.length === 0 ? (
+                            <p className="text-sm text-red-500">No se encontraron grupos.</p>
+                        ) : (
+                            groupData.map((group) => (
+                                <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
+                                    <div className='w-[90%]'>
+                                        <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
+                                        <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
+                                    </div>
+                                    <div className='w-[10%] flex items-center'>
+                                        <button
+                                            className='p-2 text-blue-600 bg-blue-300 rounded-full'
+                                            onClick={() => navigate(`/getGroupReport/${group.id}`)}
+                                        >
+                                            <IoDocumentTextOutline size={15} />
+                                        </button>
+                                    </div>
                                 </div>
-                                <div className='w-[10%] flex items-center'>
-                                    <button
-                                        className='p-2 text-blue-600 bg-blue-300 rounded-full'
-                                        onClick={() => navigate(`/getGroupReport/${group.id}`)}
-                                    >
-                                        <IoDocumentTextOutline size={15} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
+                            ))
+                        )}
                     </div>
 
                 </div>
