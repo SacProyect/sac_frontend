@@ -1,0 +1,181 @@
+import React, { useEffect, useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
+import { Control, useForm } from 'react-hook-form';
+import { Taxpayer } from '@/types/taxpayer';
+import TaxpayerCombobox from '../UI/TaxpayerCombobox';
+import { EventFormData } from '../Events/EventForm';
+import toast from 'react-hot-toast';
+import { createISLR } from '../utils/api/taxpayerFunctions';
+import Decimal from 'decimal.js';
+import { IvaReportFormData } from '../iva/IvaForm';
+
+export interface IslrReportFormData {
+    taxpayerId: string;
+    incomes: string; // ← texto para permitir , o .
+    costs: string;
+    expent: string;
+    emition_date: string;
+}
+
+function IslrForm() {
+    const { user, refreshUser } = useAuth();
+    const navigate = useNavigate();
+    const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
+    const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
+
+    useEffect(() => {
+        if (!user) {
+            navigate("/login");
+        }
+    }, [user, navigate]);
+
+    if (!user) return null;
+
+    let taxpayerArray: Taxpayer[] = [];
+    if (user.role === "ADMIN" || user.role === "FISCAL") {
+        taxpayerArray = user.taxpayer;
+    } else if (user.role === "COORDINATOR") {
+        taxpayerArray = user.coordinatedGroup.members
+            ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || [])
+            : [];
+    }
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+        control,
+        setValue,
+        reset,
+        watch,
+    } = useForm<IslrReportFormData>({
+        mode: "onChange",
+        defaultValues: {
+            taxpayerId: "",
+        },
+    });
+
+    const onSubmit = async (data: IslrReportFormData) => {
+        try {
+            const formattedData = {
+                taxpayerId: data.taxpayerId,
+                incomes: new Decimal(data.incomes.replace(",", ".")).toString(),
+                costs: new Decimal(data.costs.replace(",", ".")).toString(),
+                expent: new Decimal(data.expent.replace(",", ".")).toString(),
+                emition_date: new Date(data.emition_date).toISOString(),
+            };
+
+            console.log("Sending ISLR report:", formattedData);
+            const report = await createISLR(formattedData);
+            if (report) toast.success("Reporte ISLR creado exitosamente");
+            reset();
+            await refreshUser();
+        } catch (e: any) {
+            console.error("Error creating ISLR report:", e);
+            toast.error(e.message || "No se pudo crear el reporte");
+        }
+    };
+
+    return (
+        <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
+            <form
+                onSubmit={handleSubmit(onSubmit, (formErrors) => {
+                    console.error("Errores de validación:", formErrors);
+                })}
+                className="flex flex-col w-[90vw] sm:w-[60vw] md:w-[40vw] lg:w-[35vw] bg-white border border-gray-100 rounded-2xl shadow-xl p-8 space-y-6"
+            >
+                <h1 className="text-xl font-semibold text-center text-gray-800">Agregar Reporte de ISLR</h1>
+
+                <TaxpayerCombobox
+                    name="taxpayerId"
+                    control={control as Control<IslrReportFormData | EventFormData | IvaReportFormData>}
+                    label="Contribuyente"
+                    taxpayers={taxpayerArray}
+                />
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Ingresos (BS)</label>
+                    <input
+                        type="text"
+                        {...register("incomes", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9.,]+$/,
+                                message: "Solo se permiten números, puntos o comas"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(value.replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Ej: 1000.50"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Costos (BS)</label>
+                    <input
+                        type="text"
+                        {...register("costs", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9.,]+$/,
+                                message: "Solo se permiten números, puntos o comas"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(value.replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Ej: 500,75"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Gastos (BS)</label>
+                    <input
+                        type="text"
+                        {...register("expent", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9.,]+$/,
+                                message: "Solo se permiten números, puntos o comas"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(value.replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Ej: 250.00"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Fecha de Emisión</label>
+                    <input
+                        type="date"
+                        {...register("emition_date", {
+                            required: "Este campo es obligatorio",
+                            validate: (value) =>
+                                !isNaN(Date.parse(value)) || "Fecha inválida",
+                        })}
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <button
+                    type="submit"
+                    className="w-full py-2 mt-4 text-sm font-medium text-white transition bg-blue-500 rounded-lg hover:bg-blue-600"
+                >
+                    Enviar
+                </button>
+            </form>
+        </div>
+    );
+}
+
+export default IslrForm;

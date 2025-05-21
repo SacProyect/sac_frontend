@@ -7,6 +7,7 @@ import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { EventFormData } from '../Events/EventForm';
 import toast from 'react-hot-toast';
 import { createIVA } from '../utils/api/taxpayerFunctions';
+import { IslrReportFormData } from '../ISLR/IslrForm';
 
 export interface IvaReportFormData {
     taxpayerId: string;
@@ -155,7 +156,7 @@ function IvaForm() {
 
                 <TaxpayerCombobox
                     name="taxpayerId"
-                    control={control as Control<IvaReportFormData | EventFormData>}
+                    control={control as Control<IvaReportFormData | EventFormData | IslrReportFormData>}
                     label="Contribuyente"
                     taxpayers={taxpayerArray}
                 />

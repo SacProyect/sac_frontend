@@ -26,7 +26,8 @@ const ErrorsReport = lazy(() => import("./components/errors/report/ErrorsReport"
 const StatsPage = lazy(() => import("./pages/stats/StatsPage"));
 const ObservationsPage = lazy(() => import("@/pages/Observations/ObservationsPage"));
 const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
-const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"))
+const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"));
+const IslrReport = lazy(() => import("@/pages/ISLR/IslrReport"));
 
 
 type LoaderData = {
@@ -128,6 +129,10 @@ export const router = createBrowserRouter([
           {
             path: "/getGroupReport/:groupId",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de Grupos...</div>} ><ReportModalGroups /></Suspense>
+          },
+          {
+            path: "/islr",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de ISLR...</div>} ><IslrReport /></Suspense>
           },
           {
             path: "taxpayer/",
