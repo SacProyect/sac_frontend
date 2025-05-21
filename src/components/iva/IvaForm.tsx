@@ -8,6 +8,7 @@ import { EventFormData } from '../Events/EventForm';
 import toast from 'react-hot-toast';
 import { createIVA } from '../utils/api/taxpayerFunctions';
 import { IslrReportFormData } from '../ISLR/IslrForm';
+import Decimal from 'decimal.js';
 
 export interface IvaReportFormData {
     taxpayerId: string;
@@ -16,6 +17,7 @@ export interface IvaReportFormData {
     sells: number;
     excess?: number;
     date: string;
+    paid: string;
 }
 
 
@@ -67,8 +69,10 @@ function IvaForm() {
             return;
         }
 
+        const formattedData = {...data, paid: new Decimal(data.paid.replace(",", ".")).toString(),}
+
         try {
-            const report = await createIVA(data);
+            const report = await createIVA(formattedData);
             if (report) {
                 reset();
                 await refreshUser();
@@ -205,6 +209,26 @@ function IvaForm() {
                             valueAsNumber: true,
                         })}
                         placeholder="Monto de ventas..."
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Recaudado (BS)</label>
+                    <input
+                        type="text"
+                        {...register("paid", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9.,]+$/,
+                                message: "Solo se permiten números, puntos o comas"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(value.replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Ej: 1000.50"
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>
