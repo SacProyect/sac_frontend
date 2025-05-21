@@ -1,24 +1,26 @@
 import React from "react";
 
-export interface FinesStat {
-    paid: number;
-    unpaid: number;
-    compromises: number;
-    fines: number;
+
+export interface CollectionStats {
+    ivaCollected: number;
+    islrCollected: number;
+    finesCollected: number;
+    totalCollected: number;
 }
 
-export const PageTwoStats = ({ finesStats }: { finesStats: FinesStat }) => {
+
+export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
     const getBarWidthPercent = (value: number) =>
-        `${(finesStats ? (value / finesStats.fines) * 100 : 0)}%`;
+        `${stats.totalCollected ? (value / stats.totalCollected) * 100 : 0}%`;
 
     const getPercentage = (value: number) =>
-        `${finesStats ? Math.round((value / finesStats.fines) * 100) : 0}%`;
+        `${stats.totalCollected ? Math.round((value / stats.totalCollected) * 100) : 0}%`;
 
     const bars = [
-        { label: "Cumplimiento", value: finesStats.paid },
-        { label: "Compromisos", value: finesStats.compromises },
-        { label: "Incumplimiento", value: finesStats.unpaid },
-        { label: "Multas", value: finesStats.fines },
+        { label: "IVA", value: stats.ivaCollected },
+        { label: "ISLR", value: stats.islrCollected },
+        { label: "Multas", value: stats.finesCollected },
+        { label: "Total", value: stats.totalCollected }
     ];
 
     return (
@@ -26,7 +28,7 @@ export const PageTwoStats = ({ finesStats }: { finesStats: FinesStat }) => {
             <div className="bg-[#1c1c1b] w-full h-full p-4 flex flex-col justify-between">
                 {/* Title */}
                 <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-2">
-                    <p className="text-white text-center text-lg font-semibold font-inter">
+                    <p className="text-lg font-semibold text-center text-white font-inter">
                         CUMPLIMIENTO DE OBLIGACIONES
                     </p>
                 </div>
@@ -37,18 +39,23 @@ export const PageTwoStats = ({ finesStats }: { finesStats: FinesStat }) => {
                 </p>
 
                 {/* Bars + Percentage Scale */}
-                <div className="relative flex-1 flex flex-col justify-center">
+                <div className="relative flex flex-col justify-center flex-1">
                     {/* Bars */}
                     <div className="space-y-8">
                         {bars.map((bar, index) => (
                             <div key={index} className="flex items-center gap-2">
                                 <span className="text-[#949491] text-xs w-[28%]">{bar.label}</span>
                                 <div className="w-full bg-[#333] rounded-full overflow-hidden h-[20px] relative">
-                                    <div
-                                        className="bg-[#5996ff] h-full text-white text-xs flex justify-center items-center"
-                                        style={{ width: getBarWidthPercent(bar.value) }}
-                                    >
-                                        {bar.value}
+                                    <div className="w-full bg-[#333] rounded-full overflow-hidden h-[20px] relative">
+                                        {/* Background bar with width */}
+                                        <div
+                                            className="bg-[#5996ff] h-full"
+                                            style={{ width: getBarWidthPercent(bar.value) }}
+                                        />
+                                        {/* Centered value, always visible */}
+                                        <span className="absolute inset-0 flex items-center justify-center text-xs text-white">
+                                            {bar.value}
+                                        </span>
                                     </div>
                                 </div>
                                 <span className="text-[#949491] text-xs w-[12%] text-right">
