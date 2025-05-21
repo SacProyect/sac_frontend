@@ -326,6 +326,7 @@ interface EventRow {
 interface EventTableProps {
   rows: EventRow[];
   setRows: React.Dispatch<React.SetStateAction<Event[]>>;
+  pdfMode?: boolean          // <-- nuevo prop
 }
 
 const typeMapping: { [key: string]: string } = {
@@ -335,7 +336,7 @@ const typeMapping: { [key: string]: string } = {
   payment: "PAGO"
 };
 
-const EventTable: React.FC<EventTableProps> = ({ rows, setRows }) => {
+const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
   const [sortDescriptor, setSortDescriptor] = useState<{ column: string, direction: "ascending" | "descending" }>({
     column: "type",
@@ -395,7 +396,19 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows }) => {
 
 
   return (
-    <div className='pl-4 lg:pl-0 flex items-center justify-center max-w-full lg:max-w-full max-h-[24rem] lg:max-h-[25rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base   custom-scroll'>
+    <div
+      className={
+        'pl-4 lg:pl-0 flex items-center justify-center max-w-full ' +
+        (pdfMode
+          ? 'overflow-x-auto text-xs lg:text-base flex-col'
+          : 'max-h-[24rem] lg:max-h-[25rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base'
+        ) +
+        ' custom-scroll'
+      }
+    >
+      {pdfMode && (
+        <p className='py-8 text-lg'>Historial de multas</p>
+      )}
       <Table
         aria-label={"Eventos"}
         selectionMode="multiple"
