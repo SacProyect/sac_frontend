@@ -73,7 +73,7 @@ function IslrForm() {
             await refreshUser();
         } catch (e: any) {
             console.error("Error creating ISLR report:", e);
-            toast.error(e.message || "No se pudo crear el reporte");
+            toast.error(e.message);
         }
     };
 

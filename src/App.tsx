@@ -5,7 +5,7 @@ import HomePage from './pages/Home/HomePage';
 import { getPendingPayments, getTaxpayerEvents } from './components/utils/api/taxpayerFunctions';
 import { createBrowserRouter, LoaderFunctionArgs } from 'react-router-dom';
 import { AuthLayout } from './hooks/useAuth';
-import { getFineHistory, getPaymentHistory, getTaxHistory } from './components/utils/api/reportFunctions';
+import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from './components/utils/api/reportFunctions';
 import { getOfficers } from './components/utils/api/userFunctions';
 import { Event } from './types/event';
 import { Payment } from './types/payment';
@@ -15,6 +15,7 @@ import ContributionsPage from './pages/Contributions/ContributionsPage';
 import { IVAReports } from './types/IvaReports';
 import ReportModal from './components/reports/ReportModal';
 import ReportModalGroups from './components/reports/ReportModalGroups';
+import { ISLRReports } from './types/ISLRReports';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
@@ -35,6 +36,7 @@ type LoaderData = {
   payments: Payment[],
   fines: Fines[],
   taxSummary: IVAReports[],
+  islrReports: ISLRReports[],
 }
 
 export interface Fines {
@@ -131,10 +133,6 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de Grupos...</div>} ><ReportModalGroups /></Suspense>
           },
           {
-            path: "/islr",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de ISLR...</div>} ><IslrReport /></Suspense>
-          },
-          {
             path: "taxpayer/",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes...</div>} >
               <div className='w-full h-full'>
@@ -156,25 +154,30 @@ export const router = createBrowserRouter([
             },
           },
           {
+            path: "/islr",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de ISLR...</div>} ><IslrReport /></Suspense>
+          },
+          {
             path: "taxpayer/:taxpayer?",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Detalles del Contribuyente...</div>} ><TaxpayerDetail /></Suspense>,
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
-                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));
 
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
+                const islrReports = (await getIslrReports(taxpayerId)).data
 
                 console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
-                return { events, fines, payments, taxSummary };
+                return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {
                 console.error(error);
-                return { events: [], fines: [], payments: [], taxSummary: [] };
+                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
               }
             },
           },
@@ -184,20 +187,21 @@ export const router = createBrowserRouter([
             loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
               try {
                 const taxpayerId = params.taxpayer;
-                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));
 
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
+                const islrReports = (await getIslrReports(taxpayerId)).data
 
                 console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
-                return { events, fines, payments, taxSummary };
+                return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {
                 console.error(error);
-                return { events: [], fines: [], payments: [], taxSummary: [] };
+                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
               }
             },
           },
@@ -211,20 +215,21 @@ export const router = createBrowserRouter([
 
                 console.log("PARAMS:", params);
                 console.log("TAXPAYER ID:", taxpayerId);
-                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [] };
+                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));
 
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
+                const islrReports = (await getIslrReports(taxpayerId)).data
 
                 console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
-                return { events, fines, payments, taxSummary };
+                return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {
                 console.error(error);
-                return { events: [], fines: [], payments: [], taxSummary: [] };
+                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
               }
             },
           },

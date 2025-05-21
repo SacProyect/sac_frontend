@@ -8,50 +8,84 @@ import { Taxpayer } from '@/types/taxpayer'
 import { Navigate, useLoaderData, useNavigate, useParams } from 'react-router-dom'
 import { Fines } from '@/App'
 import { Payment } from '@/types/payment'
+import { ISLRReports } from '@/types/ISLRReports'
 
 
 
 
 const ReportModal = () => {
     const { taxpayer } = useParams();
-    const { events, fines, payments, taxSummary } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[] }
+    const { events, fines, payments, taxSummary, islrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
+
+
+    console.log(islrReports);
 
     // Reference to the DOM node we will snapshot
     const reportRef = useRef<HTMLDivElement>(null)
+    const statsRef = useRef<HTMLDivElement>(null)
+    const finesTableRef = useRef<HTMLDivElement>(null)
+    const ivaRef = useRef<HTMLDivElement>(null)
+    const islrRef = useRef<HTMLDivElement>(null)
 
     // Toggle between normal preview and PDF-ready A4 mode
     const [pdfMode, setPdfMode] = useState(false)
     const navigate = useNavigate();
 
     const handleGeneratePdf = async () => {
-        if (!reportRef.current) return
-
-        // 1) Enable PDF mode (renders both tables at A4 dimensions)
+        // 1) Activa pdfMode para que React renderice las 3 secciones
         setPdfMode(true)
-        // Wait one paint cycle so CSS '210mm' takes effect
-        await new Promise(requestAnimationFrame)
+        // 2) Espera un par de frames para que el DOM se actualice
+        await new Promise<void>(resolve =>
+            requestAnimationFrame(() =>
+                requestAnimationFrame(() => resolve())
+            )
+        )
 
-        // 2) Capture the element as a high-resolution canvas
-        const canvas = await html2canvas(reportRef.current, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#fff',
-        })
+        // 3) Ahora sí recogemos los refs
+        if (!statsRef.current || !finesTableRef.current || !ivaRef.current || !islrRef.current) {
+            console.error('Alguna sección no está disponible aún:', {
+                stats: statsRef.current,
+                fines: finesTableRef.current,
+                iva: ivaRef.current,
+                islr: islrRef.current,
+            })
+            return
+        }
 
-        // 3) Convert canvas to PNG
-        const imgData = canvas.toDataURL('image/png')
-
-        // 4) Create an A4 PDF (points: 1/72in)
         const pdf = new jsPDF({ unit: 'pt', format: 'a4', orientation: 'portrait' })
         const pdfWidth = pdf.internal.pageSize.getWidth()
-        const imgProps = pdf.getImageProperties(imgData)
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width
+        const pageHeight = pdf.internal.pageSize.getHeight()
 
-        // 5) Add the image and save
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight)
+        // Función que captura un elemento y lo añade al PDF, partiendo en páginas si hace falta
+        const captureMultiPage = async (el: HTMLElement) => {
+            const canvas = await html2canvas(el, { scale: 2, useCORS: true, backgroundColor: '#fff' })
+            const imgData = canvas.toDataURL('image/png')
+            const { width: imgW, height: imgH } = pdf.getImageProperties(imgData)
+            const renderedHeight = (imgH * pdfWidth) / imgW
+
+            let remainingHeight = renderedHeight
+            let positionY = 0
+
+            // Coloca tantas páginas como haga falta
+            while (remainingHeight > 0) {
+                pdf.addImage(imgData, 'PNG', 0, positionY, pdfWidth, renderedHeight)
+                remainingHeight -= pageHeight
+                positionY -= pageHeight
+                if (remainingHeight > 0) pdf.addPage()
+            }
+        }
+
+        // 4) Captura cada sección en su propia "serie de páginas"
+        await captureMultiPage(statsRef.current)
+        pdf.addPage()
+        await captureMultiPage(finesTableRef.current)
+        pdf.addPage()
+        await captureMultiPage(ivaRef.current)
+        pdf.addPage()
+        await captureMultiPage(islrRef.current)
+
+        // 5) Guarda el PDF
         pdf.save(`Detalle-Contribuyente-${taxpayer}.pdf`)
-
-        // 6) Return to normal preview
         setPdfMode(false)
     }
 
@@ -75,7 +109,7 @@ const ReportModal = () => {
                     </button>
                 </div>
                 {/* Generate PDF button - siempre debajo de todo */}
-                <div className="flex flex-col items-end mt-4 space-y-2 lg:hidden lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
+                <div className="flex flex-col items-end mt-4 space-y-2 lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
                     <button
                         onClick={handleGeneratePdf}
                         className="w-full px-4 py-2 text-white bg-blue-500 rounded lg:w-auto"
@@ -85,7 +119,7 @@ const ReportModal = () => {
                 </div>
 
                 {/* Wrapper para borde y contenido del reporte */}
-                <div className="w-full rounded-md lg:border lg:border-gray-400">
+                <div className="w-full rounded-md">
                     <div
                         ref={reportRef}
                         className="p-4 bg-white rounded-md"
@@ -97,28 +131,27 @@ const ReportModal = () => {
                     >
                         <style>
                             {`
-              * { line-height: initial !important; }
-              button {
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-              }
-            `}
+                            * { line-height: initial !important; }
+                            button {
+                                display: flex !important;
+                                align-items: center !important;
+                                justify-content: center !important;
+                            }
+                            `}
                         </style>
 
                         {/* Report component */}
-                        <TaxpayerDetailReport pdfMode={pdfMode} events={events} taxSummary={taxSummary} />
+                        <TaxpayerDetailReport
+                            islrRef={islrRef}
+                            pdfMode={pdfMode}
+                            events={events}
+                            taxSummary={taxSummary}
+                            statsRef={statsRef}
+                            islrReports={islrReports}
+                            finesRef={finesTableRef}
+                            ivaRef={ivaRef}
+                        />
                     </div>
-                </div>
-
-                {/* Generate PDF button - siempre debajo de todo */}
-                <div className="flex-col items-end hidden mt-4 space-y-2 lg:flex lg:flex-row lg:justify-end lg:space-y-0 lg:space-x-2">
-                    <button
-                        onClick={handleGeneratePdf}
-                        className="w-full px-4 py-2 text-white bg-blue-500 rounded lg:w-auto"
-                    >
-                        Generar PDF
-                    </button>
                 </div>
             </div>
         </div>
