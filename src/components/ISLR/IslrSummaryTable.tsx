@@ -1,28 +1,29 @@
-// src/components/iva/TaxSummaryTable.tsx
+// src/components/islr/ISLRSummaryTable.tsx
 import React, { useMemo, useState } from 'react'
 import { Table, TableBody, Cell } from 'react-aria-components'
 import InfoTableHeader from '../UI/InfoTable/InfoTableHeader'
 import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
 import InfoTableRow from '../UI/InfoTable/InfoTableRow'
-import { IVAReports } from '@/types/IvaReports'
+import { ISLRReports } from '@/types/ISLRReports'
 
 interface Props {
-    rows: IVAReports[]
-    pdfMode?: boolean  
+    rows: ISLRReports[]
+    pdfMode?: boolean
 }
 
-const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
+const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
     const [sortDescriptor, setSortDescriptor] = useState<{
-        column: keyof IVAReports
+        column: keyof ISLRReports
         direction: 'ascending' | 'descending'
-    }>({ column: 'date', direction: 'descending' })
+    }>({ column: 'emition_date', direction: 'descending' })
 
-    const columns: { name: string; id: keyof IVAReports }[] = [
-        { name: 'Fecha', id: 'date' },
-        { name: 'IVA', id: 'iva' },
-        { name: 'Excedente de Crédito', id: 'excess' },
-        { name: 'Compras', id: 'purchases' },
-        { name: 'Ventas', id: 'sells' },
+    const columns: { name: string; id: string }[] = [
+        { name: 'Contribuyente', id: 'taxpayer.name' },
+        { name: 'Tipo', id: 'taxpayer.process' },
+        { name: 'Ingresos', id: 'incomes' },
+        { name: 'Gastos', id: 'expent' },
+        { name: 'Costos', id: 'costs' },
+        { name: 'Fecha de Emisión', id: 'emition_date' },
     ]
 
     const sortedItems = useMemo(() => {
@@ -30,7 +31,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
             let aVal: any = a[sortDescriptor.column]
             let bVal: any = b[sortDescriptor.column]
 
-            if (sortDescriptor.column === 'date') {
+            if (sortDescriptor.column === 'emition_date') {
                 aVal = new Date(aVal).getTime()
                 bVal = new Date(bVal).getTime()
             }
@@ -52,32 +53,32 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         return sortedItems.map((item, index) => ({
             ...item,
             _key: item.id || index.toString(),
-        }));
-    }, [sortedItems]);
+        }))
+    }, [sortedItems])
 
     return (
         <div className="w-full lg:h-[37vh] overflow-auto text-sm custom-scroll px-4">
             {pdfMode && (
-                <p className='py-8 text-lg'>Historial de IVA</p>
+                <p className='py-8 text-lg'>Historial de ISLR</p>
             )}
             <Table
-                aria-label="Resumen de IVA"
+                aria-label="Resumen de ISLR"
                 selectionMode="none"
                 sortDescriptor={sortDescriptor}
                 onSortChange={d =>
                     setSortDescriptor({
-                        column: d.column as keyof IVAReports,
+                        column: d.column as keyof ISLRReports,
                         direction: d.direction,
                     })
                 }
                 className="min-w-full"
             >
                 <InfoTableHeader columns={columns}>
-                    {(col: { name: string; id: keyof IVAReports }) => (
+                    {(col: { name: string; id: string }) => (
                         <InfoTableColumn
                             key={col.id}
                             allowsSorting
-                            isRowHeader={col.id === 'date'}
+                            isRowHeader={col.id === 'emition_date'}
                         >
                             {col.name}
                         </InfoTableColumn>
@@ -85,17 +86,31 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                 </InfoTableHeader>
 
                 <TableBody items={processedItems}>
-                    {(item: IVAReports & { _key: string }) => (
+                    {(item: ISLRReports & { _key: string }) => (
                         <InfoTableRow key={item._key} id={item.id} columns={columns}>
-                            {(col: { name: string; id: keyof IVAReports }) => (
+                            {(col: { name: string; id: string }) => (
                                 <Cell className="px-4 py-2 whitespace-nowrap">
-                                    {col.id === 'date'
-                                        ? new Date(item.date).toLocaleDateString()
-                                        : col.id === 'iva'
-                                            ? `${item.iva} BS`
-                                            : col.id === 'excess'
-                                                ? `${item.excess ?? 0} BS`
-                                                : String(item[col.id])}
+                                    {(() => {
+                                        const { id } = col
+
+                                        if (id === 'emition_date') {
+                                            return new Date(item.emition_date).toLocaleDateString()
+                                        }
+
+                                        if (id === 'incomes' || id === 'expent' || id === 'costs') {
+                                            return `${item[id as keyof ISLRReports]} BS`
+                                        }
+
+                                        if (id === 'taxpayer.name') {
+                                            return item.taxpayer.name
+                                        }
+
+                                        if (id === 'taxpayer.process') {
+                                            return item.taxpayer.process
+                                        }
+
+                                        return String(item[id as keyof ISLRReports] ?? '')
+                                    })()}
                                 </Cell>
                             )}
                         </InfoTableRow>
@@ -106,4 +121,4 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
     )
 }
 
-export default TaxSummaryTable
+export default ISLRSummaryTable

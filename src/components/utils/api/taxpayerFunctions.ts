@@ -214,7 +214,19 @@ export const createISLR = async (data: IslrReportFormData) => {
 
 		return response;
 
-	} catch (e) {
+	} catch (e: any) {
+		const backendMessage: string =
+			e.response?.data?.error ||
+			e.response?.data ||
+			e.message ||
+			''
+
+		if (backendMessage.startsWith('ISLR Report for this taxpayer in:')) {
+			throw new Error(
+				'Error: Ya hay un reporte de ISLR creado este año para este contribuyente'
+			)
+		}
+
 		console.error(e);
 		throw new Error("No se pudo crear el reporte de ISLR, por favor, intente de nuevo.")
 	}

@@ -76,7 +76,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     }, [propRows]);
 
     return (
-        <div className="overflow-x-auto lg:overflow-x-hidden w-[80vw]">
+        <div className="overflow-x-auto h-full lg:overflow-x-hidden w-[80vw] lg:overflow-y-auto lg:h-[83.5vh] custom-scroll">
             <Table
                 aria-label="Contribuyentes"
                 selectionMode="multiple"

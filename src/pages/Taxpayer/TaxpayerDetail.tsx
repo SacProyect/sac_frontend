@@ -14,6 +14,10 @@ import { MdInventory } from "react-icons/md";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { IVAReports } from '@/types/IvaReports'
 import TaxSummaryTable from '@/components/iva/TaxSummaryTable'
+import { ISLRReports } from '@/types/ISLRReports'
+import ISLRSummaryTable from '@/components/ISLR/IslrSummaryTable'
+import { TbReportSearch } from "react-icons/tb";
+
 
 
 
@@ -21,7 +25,7 @@ import TaxSummaryTable from '@/components/iva/TaxSummaryTable'
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-	const { events: initialEvents, fines, payments, taxSummary } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[] }
+	const { events: initialEvents, fines, payments, taxSummary, islrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
 
 	const [events, setEvents] = useState<Event[]>(initialEvents)
 	const [selectedTable, setSelectedTable] = useState("fine")
@@ -74,16 +78,25 @@ const TaxpayerDetail = () => {
 						Historial de reporte de IVA
 					</button>
 				</div>
+				<div className="flex items-center w-full pl-2 border border-gray-200 rounded-md lg:w-64 lg:pr-0">
+					<TbReportSearch size={15} />
+					<button className="w-full px-2 py-1 text-left" onClick={() => setSelectedTable("islr")}>
+						Historial de reporte de ISLR
+					</button>
+				</div>
 			</div>
 			{selectedTable == "fine" ? (
 				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<EventTable rows={events} setRows={setEvents} />
 				</div>
-			) : (
+			) : selectedTable === "iva" ? (
 				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<TaxSummaryTable rows={taxSummary} />
 				</div>
-			)}
+			) : <div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<ISLRSummaryTable rows={islrReports} />
+			</div>
+			}
 		</div>
 	)
 }

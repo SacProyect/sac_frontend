@@ -21,6 +21,8 @@ export default defineConfig({
   },
   server: {
     watch: {
+      usePolling: false,
+  interval: 1000, // 1 segundo
       ignored: ['**/node_modules/**', '**/.git/**'],
     },
     origin: "https://f7a3-149-88-17-159.ngrok-free.app", // your ngrok URL
