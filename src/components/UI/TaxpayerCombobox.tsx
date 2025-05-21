@@ -7,12 +7,13 @@ import { useFilter } from 'react-aria'
 import { Taxpayer } from '../../types/taxpayer'
 import { EventFormData } from '../Events/EventForm'
 import { IvaReportFormData } from '../iva/IvaForm'
+import { IslrReportFormData } from '../ISLR/IslrForm'
 
 
 
 
 interface TaxPayerValues {
-    control: Control<EventFormData | IvaReportFormData>
+    control: Control<EventFormData | IvaReportFormData | IslrReportFormData>
     name: keyof EventFormData;
     label: string;
     taxpayers?: Taxpayer[]

@@ -4,6 +4,7 @@ import { Event } from "../../../types/event";
 import { NewEvent } from "../../Events/EventForm";
 import { ObservationsForm } from "@/components/observations/ObservationsHeader";
 import { IvaReportFormData } from "@/components/iva/IvaForm";
+import { IslrReportFormData } from "@/components/ISLR/IslrForm";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -203,6 +204,21 @@ export const createIVA = async (data: IvaReportFormData) => {
 		throw new Error("No se pudo agregar el reporte. Por favor, intente de nuevo.");
 	}
 };
+
+export const createISLR = async (data: IslrReportFormData) => {
+
+	try {
+		let requestUrl = "/taxpayer/create-islr-report";
+
+		const response = await apiConnection.post(requestUrl, data);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo crear el reporte de ISLR, por favor, intente de nuevo.")
+	}
+}
 
 export const getObservations = async (taxpayerId: string) => {
 	try {
