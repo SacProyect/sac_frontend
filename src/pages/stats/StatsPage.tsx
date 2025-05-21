@@ -1,7 +1,7 @@
-import { GlobalKPIStats, KPIStat } from '@/components/stats/GlobalKpiStats'
+import { GlobalKPIResponse, GlobalKPIStats, KPIStat } from '@/components/stats/GlobalKpiStats'
 import { GroupPerformanceStats } from '@/components/stats/GroupPerformanceStats'
 import PageOneStats, { Stat } from '@/components/stats/PageOneStats'
-import { FinesStat, PageTwoStats } from '@/components/stats/PageTwoStats'
+import { CollectionStats, PageTwoStats } from '@/components/stats/PageTwoStats'
 import { getGlobalKPI, getGlobalPerformance, getGlobalTaxpayerPerformance, getGroupPerformance } from '@/components/utils/api/reportFunctions'
 import { useAuth } from '@/hooks/useAuth'
 import React, { useEffect, useState } from 'react'
@@ -16,9 +16,10 @@ function StatsPage() {
     const navigate = useNavigate();
     const [rawStats, setRawStats] = useState<Stat[]>([]);
     const [loaded, setLoaded] = useState(false);
-    const [taxpayerPerformance, setTaxpayerPerformance] = useState<FinesStat | null>(null);
+    const [taxpayerPerformance, setTaxpayerPerformance] = useState<CollectionStats | null>(null);
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
-    const [globalKpi, setGlobalKpi] = useState<KPIStat[]>([]);
+    const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
+
 
 
 
@@ -27,33 +28,22 @@ function StatsPage() {
         return;
     }
 
-    const monthMap = {
-        January: "Enero",
-        February: "Febrero",
-        March: "Marzo",
-        April: "Abril",
-        May: "Mayo",
-        June: "Junio",
-        July: "Julio",
-        August: "Agosto",
-        September: "Septiembre",
-        October: "Octubre",
-        November: "Noviembre",
-        December: "Diciembre",
-    };
 
     useEffect(() => {
         const fetchStats = async () => {
             try {
                 const stats = await getGlobalPerformance();
 
-                if (stats && typeof stats === "object" && Object.keys(stats).length > 0) {
-                    const parsed: Stat[] = Object.entries(stats).map(([monthEn, values]: any) => ({
-                        month: monthMap[monthEn as keyof typeof monthMap],
-                        paid: values.paid,
-                        total: values.fines,
-                        collected: values.collected,
-                        lastYear: values.lastYear,
+                if (Array.isArray(stats) && stats.length > 0) {
+                    // Ensure all Stat fields are present
+                    const parsed: Stat[] = stats.map((item: any) => ({
+                        month: item.month,
+                        ivaAmount: item.ivaAmount ?? 0,
+                        islrAmount: item.islrAmount ?? 0,
+                        complianceRate: item.complianceRate ?? 0,
+                        globalIndex: item.globalIndex ?? 0,
+                        previousIndex: item.previousIndex ?? null,
+                        percentageChange: item.percentageChange ?? null,
                     }));
 
                     setRawStats(parsed);
@@ -94,14 +84,14 @@ function StatsPage() {
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
-                <div className='  '>
+                <div className=''>
                     <div className='flex lg:flex-row flex-col w-full h-[100vh]  lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
 
                         <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
                             <PageOneStats rawStats={rawStats} />
                         </div>
                         <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {taxpayerPerformance && <PageTwoStats finesStats={taxpayerPerformance} />}
+                            {taxpayerPerformance && <PageTwoStats stats={taxpayerPerformance} />}
                         </div>
                     </div>
                     <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>

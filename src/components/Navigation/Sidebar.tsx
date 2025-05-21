@@ -23,12 +23,12 @@ function Sidebar() {
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
+        { name: "Reporte de ISLR", path: "/islr" },
         // { name: 'Pagos', path: '/payment' },
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
         { name: "Estadísticas", path: "/stats" },
         { name: "Generar Reportes", path: "/gen-reports" },
-        { name: "Reporte de ISLR", path: "/islr" },
 
 
     ] : user.role === "COORDINATOR" ? [
@@ -37,11 +37,11 @@ function Sidebar() {
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
+        { name: "Reporte de ISLR", path: "/islr" },
         // { name: 'Pagos', path: '/payment' },
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
         { name: "Generar Reportes", path: "/gen-reports" },
-        { name: "Reporte de ISLR", path: "/islr" },
 
 
     ] : [
@@ -50,10 +50,10 @@ function Sidebar() {
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
+        { name: "Reporte de ISLR", path: "/islr" },
         // { name: 'Pagos', path: '/payment' },
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Generar Reportes", path: "/gen-reports" },
-        { name: "Reporte de ISLR", path: "/islr" },
 
 
     ]

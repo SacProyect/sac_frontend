@@ -16,6 +16,7 @@ export interface IslrReportFormData {
     costs: string;
     expent: string;
     emition_date: string;
+    paid: string;
 }
 
 function IslrForm() {
@@ -64,6 +65,7 @@ function IslrForm() {
                 costs: new Decimal(data.costs.replace(",", ".")).toString(),
                 expent: new Decimal(data.expent.replace(",", ".")).toString(),
                 emition_date: new Date(data.emition_date).toISOString(),
+                paid: new Decimal(data.paid.replace(",", ".")).toString(),
             };
 
             console.log("Sending ISLR report:", formattedData);
@@ -114,6 +116,7 @@ function IslrForm() {
                     />
                 </div>
 
+
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-600">Costos (BS)</label>
                     <input
@@ -150,6 +153,26 @@ function IslrForm() {
                             }
                         })}
                         placeholder="Ej: 250.00"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
+
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Recaudado (BS)</label>
+                    <input
+                        type="text"
+                        {...register("paid", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9.,]+$/,
+                                message: "Solo se permiten números, puntos o comas"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(value.replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Ej: 1000.50"
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                 </div>

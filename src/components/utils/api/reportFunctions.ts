@@ -139,7 +139,7 @@ export const getGlobalTaxpayerPerformance = async () => {
 export const getGroupPerformance = async () => {
 
 	try {
-		const requestUrl = `reports/group-perfomance`
+		const requestUrl = `reports/group-performance`
 
 		const response = await apiConnection.get(requestUrl)
 
