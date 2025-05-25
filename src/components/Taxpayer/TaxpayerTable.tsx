@@ -75,18 +75,25 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
         };
     }, [visibleCount, rows.length, isLoadingMore]);
 
+
+
     return (
         <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-[80vw] custom-scroll">
             <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
                 <div
-                    className="w-full sticky top-0 z-10 flex bg-[#363F4B] border-b rounded-t-lg items-center text-center
-                lg:min-w-full min-w-max "
+                    className="sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max flex lg:grid"
+                    style={{
+                        // Solo en lg: divide el ancho total disponible en partes iguales
+                        // Usa una columna por cada item en columns[]
+                        gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
+                    }}
                 >
                     {columns.map((col) => (
                         <div
                             key={col.id}
-                            className="lg:flex-1 px-1 pl-4 py-1 font-semibold text-white min-w-[10rem]  lg:min-w-[8rem] lg:max-w-[10rem] lg:px-2 lg:text-center lg:items-center lg:flex"
+                            className="px-1 pl-4 py-1 font-semibold min-w-[10rem] 
+                            lg:min-w-0 lg:px-2 lg:py-2 lg:whitespace-nowrap"
                         >
                             {col.label}
                         </div>
@@ -97,7 +104,11 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                 {visibleRows.map((item) => (
                     <div
                         key={item.id}
-                        className="flex items-center text-center transition-colors border-b hover:bg-blue-50"
+                        className="flex items-center text-center transition-colors hover:bg-blue-50 lg:grid"
+                        style={{
+                            // Igual que el header: mismas columnas
+                            gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
+                        }}
                     >
                         {columns.map((col) => {
                             const value =
@@ -112,8 +123,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                             return (
                                 <div
                                     key={col.id}
-                                    className="flex-1 px-1 pl-4 py-1 break-words whitespace-normal min-w-[10rem] lg:min-w-[5rem]
-                                    lg:max-lg:max-w-[15rem] lg:max-lg:px-2 lg:max-lg:text-center lg:max-lg:items-center lg:max-lg:flex"
+                                    className="px-1 pl-4 py-1 break-words whitespace-normal min-w-[10rem] 
+                                    lg:min-w-0 lg:px-2 lg:py-2 lg:break-words "
                                 >
                                     {value}
                                 </div>
