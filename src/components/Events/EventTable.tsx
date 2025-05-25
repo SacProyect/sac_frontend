@@ -94,7 +94,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
         'pl-4 lg:pl-0 flex items-center justify-center max-w-full ' +
         (pdfMode
           ? 'overflow-x-auto text-xs lg:text-base flex-col'
-          : 'max-h-[24rem] lg:max-h-[21rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base'
+          : 'max-h-[24rem] lg:max-h-[17rem] overflow-x-auto overflow-y-auto lg:overflow-x-hidden text-xs lg:text-base'
         ) +
         ' custom-scroll'
       }
@@ -130,7 +130,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
               <InfoTableRow columns={columns} key={itemKey}>
                 {(column: { name: string; id: string; isRowHeader?: boolean }) =>
                   <Cell
-                    className="px-4 py-4 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white"
+                    className="px-4 py-8 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white"
                   >
                     {
                       column.id === "type" ? (typeMapping[item[column.id]] || item[column.id]) :
