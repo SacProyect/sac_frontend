@@ -1,134 +1,115 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 import TaxpayerTable from '../../components/Taxpayer/TaxpayerTable';
 import { useAuth } from '../../hooks/useAuth';
-import { Input } from 'react-aria-components';
-import { SearchField } from 'react-aria-components';
+import { Input, Label, SearchField } from 'react-aria-components';
 import { Controller, useForm } from 'react-hook-form';
 import { useFilter } from 'react-aria';
-import { Label } from 'react-aria-components';
-import { useEffect } from 'react';
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { contract_type } from '@/types/taxpayer';
+import { contract_type, Taxpayer } from '@/types/taxpayer';
+import { useDebounce } from '@/hooks/useDebounce';
 
 function HomePage() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
 
-
+    // Si no hay usuario, redirige
     if (!user) {
-        navigate(
-            "/login",
-        )
+        navigate("/login");
         return null;
     }
 
+    // Refresca una vez al montar
     useEffect(() => {
         refreshUser();
-    }, [])
+    }, [refreshUser]);
 
-    const [taxpayers, setTaxpayers] = useState(user?.taxpayer || [])
+    // Estado base de taxpayers
+    const [taxpayers, setTaxpayers] = useState<Taxpayer[]>(user.taxpayer || []);
 
-
-
+    // Carga inicial de taxpayers según rol (solo cuando user cambie)
     useEffect(() => {
-        console.log("👤 User loaded:", user);
-
-        if ((user.role === "FISCAL" || user.role === "ADMIN") && user.taxpayer) {
-            console.log("📄 User is FISCAL or ADMIN, taxpayer:", user.taxpayer);
-            setTaxpayers(user.taxpayer);
+        if (user.role === "FISCAL" || user.role === "ADMIN") {
+            setTaxpayers(user.taxpayer || []);
         } else if (user.role === "COORDINATOR") {
-            console.log("👥 User is COORDINATOR");
-
-            if (!user.coordinatedGroup) {
-                console.warn("⚠️ user.coordinatedGroup is undefined or null");
-            } else if (!user.coordinatedGroup.members) {
-                console.log("USER: " + JSON.stringify(user))
-                console.warn("⚠️ user.coordinatedGroup.members is undefined or empty");
-            } else {
-                console.log("✅ Members found:", user.coordinatedGroup.members);
-            }
-
-            const groupTaxpayers = user.coordinatedGroup?.members?.flatMap(
-                (member) => member.taxpayer || []
-            );
-
-            console.log("🧾 Extracted taxpayers from coordinator group:", groupTaxpayers);
-            setTaxpayers(groupTaxpayers || []);
+            const group = user.coordinatedGroup?.members?.flatMap(m => m.taxpayer) || [];
+            setTaxpayers(group);
         }
     }, [user]);
 
-
-
-    const { contains } = useFilter({ sensitivity: "case" })
-    const {
-        control,
-        watch,
-    } = useForm({ defaultValues: { search: '' } })
-    const filterValue = watch('search')
-    const filteredItems = useMemo(() => {
-        return (taxpayers || [])
-            .filter((item) =>
-                contains(
-                    `${item.rif ? item.rif.toLowerCase() : ""} ${item.process ? item.process.toLowerCase() : ""} ${item.name ? item.name.toLowerCase() : ""} ${item.address ? item.address.toLowerCase() : ""}`,
-                    filterValue ? filterValue.toLowerCase() : ""
-                )
-            )
-            .map((item) => {
-                const isCreatedByUser = item.user?.id === user.id;
-
-                let officerName: string = 'Desconocido';
-
-                if (isCreatedByUser || user.role === "FISCAL") {
-                    officerName = user.name;
-                } else if (user.role === 'ADMIN') {
-                    officerName = item.user?.name || 'Desconocido';
-                } else if (user.role === 'COORDINATOR') {
-                    // If the user is a coordinator, match officerId with member.id
-                    const matchedMember = user.coordinatedGroup?.members?.find(
-                        (member) => member.id === item.officerId
-                    );
-                    officerName = matchedMember?.name || 'Desconocido';
-                }
-
-                return {
-                    ...item,
-                    contract_type: item.contract_type == "ORDINARY" ? 'ORDINARIO' as contract_type : 'ESPECIAL' as contract_type,
-                    address: item.address || 'N/A',
-                    officerName,
-                };
+    // Prepara el mapa de officerId -> officerName
+    const officerMap = useMemo<Record<string, string>>(() => {
+        const map: Record<string, string> = {};
+        if (user.role === "FISCAL" || user.role === "ADMIN") {
+            // En estos casos, todos usan el mismo nombre
+            const name = user.name;
+            (taxpayers).forEach(t => { map[t.officerId || ""] = name; });
+        } else if (user.role === "COORDINATOR") {
+            user.coordinatedGroup?.members?.forEach(m => {
+                map[m.id] = m.name;
             });
-    }, [taxpayers, filterValue, user]);
+        }
+        return map;
+    }, [user, taxpayers]);
 
-    // console.log("TAXPAYER INFO HOMEPAGE: " + JSON.stringify(filteredItems))
+    // Preparar filtro
+    const { contains } = useFilter({ sensitivity: "base" });
+    const { control, watch } = useForm({ defaultValues: { search: '' } });
+    const searchValue = watch('search');
+    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 300);
 
+    // Filtrado + enriquecimiento (un solo useMemo)
+    const filteredItems = useMemo(() => {
+        const term = debouncedSearch.trim();
+        return taxpayers
+            .filter(item => {
+                if (!term) return true;
+                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address}`.toLowerCase();
+                return contains(haystack, term);
+            })
+            .map(item => ({
+                ...item,
+                contract_type: item.contract_type === "ORDINARY"
+                    ? 'ORDINARIO' as contract_type
+                    : 'ESPECIAL' as contract_type,
+                address: item.address || 'N/A',
+                officerName:
+                    item.user?.id === user.id || user.role === "FISCAL"
+                        ? user.name
+                        : user.role === "ADMIN"
+                            ? (item.user?.name || 'Desconocido')
+                            : officerMap[item.officerId || ""] || 'Desconocido',
+            }));
+    }, [taxpayers, debouncedSearch, user, contains, officerMap]);
+
+    // Un solo log para ver tamaño de la lista filtrada
+    useEffect(() => {
+        console.log(`📊 Filtered items: ${filteredItems.length}`);
+    }, [filteredItems.length]);
 
     return (
         <div className='flex justify-center w-full lg:pt-8 sm:mt-0'>
             <div className='flex-col items-center justify-center ml-0'>
-                <h2 className="w-full text-2xl font-bold text-center text-black ">Administración</h2>
+                <h2 className="w-full text-2xl font-bold text-center text-black">Administración</h2>
                 <Controller
                     control={control}
                     name='search'
-                    render={({
-                        field: { name, value, onChange, onBlur }
-                    }) => (
+                    render={({ field: { name, value, onChange, onBlur } }) => (
                         <SearchField
                             name={name}
-                            value={value.toLowerCase()}
+                            value={value}
                             onChange={onChange}
                             onBlur={onBlur}
-                            className={"flex flex-col ml-0 lg:ml-4"}
+                            className="flex flex-col ml-0 lg:ml-4"
                         >
                             <Label>Buscar</Label>
                             <Input
-                                className={"w-full lg:w-1/2 p-1 mb-4 border border-[#ccc] rounded-lg bg-slate-50 text-black cursor-pointer"}
-                                onChange={onChange} />
+                                className="w-full lg:w-1/2 p-1 mb-4 border border-[#ccc] rounded-lg bg-slate-50 text-black"
+                                onChange={onChange}
+                            />
                         </SearchField>
                     )}
                 />
-
-                <div className="">
+                <div>
                     <TaxpayerTable propRows={filteredItems} />
                 </div>
             </div>
