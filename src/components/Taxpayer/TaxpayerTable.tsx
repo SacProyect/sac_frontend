@@ -1,206 +1,134 @@
-import React, { useState, useMemo, useEffect, useRef, useCallback } from 'react';
-import { Cell, Table, TableBody } from 'react-aria-components';
-import InfoTableHeader from '../UI/InfoTable/InfoTableHeader';
-import InfoTableColumn from '../UI/InfoTable/InfoTableColumn';
-import InfoTableRow from '../UI/InfoTable/InfoTableRow';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import InfoTableOptMenu from '../UI/InfoTable/InfoTableOptMenu';
 import { Taxpayer } from '../../types/taxpayer';
-
-interface Column {
-    name: string;
-    id: keyof Taxpayer | 'options';
-    isRowHeader?: boolean;
-}
-
-interface SortDescriptor {
-    column: keyof Taxpayer;
-    direction: 'ascending' | 'descending';
-}
 
 interface TaxpayerTableProps {
     propRows: Taxpayer[];
 }
 
-const columnWidths: Record<string, string> = {
-    providenceNum: 'min-w-[8ch] max-w-[12ch] w-[10ch]',
-    process: 'min-w-[4ch] max-w-[10ch] w-[4ch]',
-    name: 'min-w-[12ch] max-w-[20ch] w-[18ch]',
-    rif: 'min-w-[0.5rem] max-w-[1rem] w-[0.5rem]',
-    contract_type: 'min-w-[10ch] max-w-[16ch] w-[14ch]',
-    address: 'min-w-[16ch] max-w-[32ch] w-[28ch]',
-    emition_date: 'min-w-[10ch] max-w-[12ch] w-[11ch]',
-    officerName: 'min-w-[12ch] max-w-[18ch] w-[16ch]',
-    options: 'min-w-[6ch] max-w-[8ch] w-[7ch]',
-};
-
-const styleRif = { minWidth: '0.5rem', maxWidth: '1rem', width: '1rem' };
-
-// Extracted columns constant (no need to recreate every render)
-const columns: Column[] = [
-    { name: 'Nro. Providencia', id: 'providenceNum', isRowHeader: true },
-    { name: 'Procedimiento', id: 'process' },
-    { name: 'Razón Social', id: 'name' },
-    { name: 'RIF', id: 'rif' },
-    { name: 'Tipo de Contribuyente', id: 'contract_type' },
-    { name: 'Dirección', id: 'address' },
-    { name: 'Fecha de Emisión', id: 'emition_date' },
-    { name: 'Fiscal', id: 'officerName' },
-    { name: 'Opciones', id: 'options' },
+const columns = [
+    { label: 'Nro. Providencia', id: 'providenceNum' },
+    { label: 'Procedimiento', id: 'process' },
+    { label: 'Razón Social', id: 'name' },
+    { label: 'RIF', id: 'rif' },
+    { label: 'Tipo de Contribuyente', id: 'contract_type' },
+    { label: 'Dirección', id: 'address' },
+    { label: 'Fecha de Emisión', id: 'emition_date' },
+    { label: 'Fiscal', id: 'officerName' },
+    { label: 'Opciones', id: 'options' },
 ];
 
-// Helper function for cell content
-const getCellContent = (item: Taxpayer, columnId: keyof Taxpayer | 'options') => {
-    if (columnId === 'options') return <InfoTableOptMenu id={item.id} />;
-    if (columnId === 'emition_date')
-        return new Date(item.emition_date).toLocaleDateString();
-    return String(item[columnId as keyof Taxpayer]);
-};
-
 const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
-    const [rows, setRows] = useState(propRows);
+    const [rows, setRows] = useState<Taxpayer[]>([]);
     const [visibleCount, setVisibleCount] = useState(25);
-    const tableContainerRef = useRef<HTMLDivElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
 
-    // Sort descriptor state
-    const [sortDescriptor, setSortDescriptor] = useState<SortDescriptor>({
-        column: 'providenceNum',
-        direction: 'ascending',
-    });
-
-    // Sort rows based on descriptor, memoized
-    const sortedItems = useMemo(() => {
-        return [...rows].sort((a, b) => {
-            const { column, direction } = sortDescriptor;
-            let cmp: number;
-
-            if (column === 'providenceNum') {
-                cmp = Number(a.providenceNum) - Number(b.providenceNum);
-            } else {
-                const fa = String(a[column]);
-                const fb = String(b[column]);
-                cmp = fa.localeCompare(fb);
-            }
-
-            return direction === 'ascending' ? cmp : -cmp;
-        });
-    }, [rows, sortDescriptor]);
-
-    // Visible items for infinite scroll or pagination, memoized
-    const visibleItems = useMemo(() => sortedItems.slice(0, visibleCount), [
-        sortedItems,
-        visibleCount,
-    ]);
-
-    // Reset rows if propRows changes
     useEffect(() => {
-        setRows(propRows);
+        // Ordena las filas por providenceNum
+        const sorted = [...propRows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));
+        setRows(sorted);
     }, [propRows]);
 
-    // Scroll handler to load more rows, debounced with timeout
-    useEffect(() => {
-        const container = tableContainerRef.current;
-        if (!container) return;
+    const visibleRows = useMemo(() => rows.slice(0, visibleCount), [rows, visibleCount]);
 
-        let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+    useEffect(() => {
+        const el = containerRef.current;
+        if (!el) return;
+
+        let debounceTimeout: ReturnType<typeof setTimeout>;
 
         const handleScroll = () => {
-            if (debounceTimer) clearTimeout(debounceTimer);
+            // Debounce para no disparar muchas veces el evento
+            clearTimeout(debounceTimeout);
+            debounceTimeout = setTimeout(() => {
+                if (loadingMoreLock.current || isLoadingMore) return;
 
-            debounceTimer = setTimeout(() => {
-                if (
-                    container.scrollTop + container.clientHeight >=
-                    container.scrollHeight - 10 &&
-                    !isLoadingMore &&
-                    visibleCount < sortedItems.length
-                ) {
+                const scrollTop = el.scrollTop;
+                const scrollHeight = el.scrollHeight;
+                const clientHeight = el.clientHeight;
+
+                // Distancia desde el scroll al final
+                const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
+
+                // Si estamos a menos de 100px del fondo y hay más filas para cargar
+                if (distanceToBottom < 100 && visibleCount < rows.length) {
+                    loadingMoreLock.current = true; // bloqueamos
                     setIsLoadingMore(true);
+
+                    // Simula carga asincrónica
                     setTimeout(() => {
-                        setVisibleCount((prev) =>
-                            Math.min(prev + 25, sortedItems.length)
-                        );
+                        setVisibleCount((prev) => Math.min(prev + 25, rows.length));
                         setIsLoadingMore(false);
-                    }, 600);
+                        loadingMoreLock.current = false; // desbloqueamos
+                    }, 500);
                 }
-            }, 100);
+            }, 150); // 150ms debounce, ajusta si quieres
         };
 
-        container.addEventListener('scroll', handleScroll);
+        el.addEventListener('scroll', handleScroll);
 
         return () => {
-            container.removeEventListener('scroll', handleScroll);
-            if (debounceTimer) clearTimeout(debounceTimer!);
+            clearTimeout(debounceTimeout);
+            el.removeEventListener('scroll', handleScroll);
         };
-    }, [sortedItems.length, visibleCount, isLoadingMore]);
-
-    // Memoized onSortChange handler
-    const onSortChange = useCallback(
-        (d: any) => {
-            setSortDescriptor({
-                column: d.column as keyof Taxpayer,
-                direction: d.direction,
-            });
-        },
-        []
-    );
-
-    // Memoize classes per column to avoid string recreation
-    const classesByColumn = useMemo(() => {
-        return columns.reduce<Record<string, string>>((acc, col) => {
-            acc[col.id] = `px-1 pl-4 py-[4px] text-[12px] break-words whitespace-normal align-middle ${columnWidths[col.id] || ''
-                }`;
-            return acc;
-        }, {});
-    }, []);
+    }, [visibleCount, rows.length, isLoadingMore]);
 
     return (
-        <div
-            className="overflow-x-auto h-full lg:overflow-x-hidden w-[80vw] lg:overflow-y-auto lg:h-[83.5vh] custom-scroll"
-            ref={tableContainerRef}
-        >
-            <Table
-                aria-label="Contribuyentes"
-                selectionMode="multiple"
-                selectionBehavior="replace"
-                sortDescriptor={sortDescriptor}
-                onSortChange={onSortChange}
-                className="min-w-full text-xs table-fixed"
-            >
+        <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-[80vw] custom-scroll">
+            <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
-                <InfoTableHeader columns={columns}>
-                    {(column: Column) => (
-                        <InfoTableColumn
-                            isRowHeader={column.isRowHeader}
-                            allowsSorting={column.id !== 'options'}
+                <div
+                    className="w-full sticky top-0 z-10 flex bg-[#363F4B] border-b rounded-t-lg items-center text-center
+                lg:min-w-full min-w-max "
+                >
+                    {columns.map((col) => (
+                        <div
+                            key={col.id}
+                            className="lg:flex-1 px-1 pl-4 py-1 font-semibold text-white min-w-[10rem]  lg:min-w-[8rem] lg:max-w-[10rem] lg:px-2 lg:text-center lg:items-center lg:flex"
                         >
-                            {column.name}
-                        </InfoTableColumn>
-                    )}
-                </InfoTableHeader>
+                            {col.label}
+                        </div>
+                    ))}
+                </div>
 
                 {/* BODY */}
-                <TableBody items={visibleItems}>
-                    {(item: Taxpayer) => (
-                        <InfoTableRow columns={columns} key={item.id}>
-                            {(column: Column) => (
-                                <Cell
-                                    key={column.id}
-                                    className={classesByColumn[column.id]}
-                                    style={column.id === 'rif' ? styleRif : undefined}
-                                >
-                                    {getCellContent(item, column.id)}
-                                </Cell>
-                            )}
-                        </InfoTableRow>
-                    )}
-                </TableBody>
-            </Table>
+                {visibleRows.map((item) => (
+                    <div
+                        key={item.id}
+                        className="flex items-center text-center transition-colors border-b hover:bg-blue-50"
+                    >
+                        {columns.map((col) => {
+                            const value =
+                                col.id === 'options' ? (
+                                    <InfoTableOptMenu id={item.id} />
+                                ) : col.id === 'emition_date' ? (
+                                    new Date(item.emition_date).toLocaleDateString()
+                                ) : (
+                                    String(item[col.id as keyof Taxpayer])
+                                );
 
-            {isLoadingMore && (
-                <div className="flex justify-center py-2">
-                    <div className="w-5 h-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin" />
-                </div>
-            )}
+                            return (
+                                <div
+                                    key={col.id}
+                                    className="flex-1 px-1 pl-4 py-1 break-words whitespace-normal min-w-[10rem] lg:min-w-[5rem]
+                                    lg:max-lg:max-w-[15rem] lg:max-lg:px-2 lg:max-lg:text-center lg:max-lg:items-center lg:max-lg:flex"
+                                >
+                                    {value}
+                                </div>
+                            );
+                        })}
+                    </div>
+                ))}
+
+                {/* Loader */}
+                {isLoadingMore && (
+                    <div className="flex justify-center py-2">
+                        <div className="w-5 h-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin" />
+                    </div>
+                )}
+            </div>
         </div>
     );
 };
