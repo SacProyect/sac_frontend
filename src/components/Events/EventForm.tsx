@@ -1,4 +1,4 @@
-import React, { useRef } from 'react'
+import { useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth';
 import { Control, useForm } from 'react-hook-form';
 import TextInput from '../UI/TextInput';
@@ -8,12 +8,11 @@ import DateInputUI from '../UI/DateInputUI';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { createEvent, getPendingPayments } from '../utils/api/taxpayerFunctions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import SelectInput, { Item } from '../UI/SelectInput';
+import SelectInput from '../UI/SelectInput';
 import { useCallback, useEffect, useState } from 'react';
-import Alert from '../UI/Alert';
 import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
-import { parseDate, parseDateTime, CalendarDate, parseZonedDateTime } from '@internationalized/date';
+import { parseDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
 import { IvaReportFormData } from '../iva/IvaForm';
 import { IslrReportFormData } from '../ISLR/IslrForm';

@@ -1,13 +1,19 @@
-import { GlobalKPIResponse, GlobalKPIStats, KPIStat } from '@/components/stats/GlobalKpiStats'
-import { GroupPerformanceStats } from '@/components/stats/GroupPerformanceStats'
-import PageOneStats, { Stat } from '@/components/stats/PageOneStats'
-import { CollectionStats, PageTwoStats } from '@/components/stats/PageTwoStats'
+import { GlobalKPIResponse, } from '@/components/stats/GlobalKpiStats'
+
+import { Stat } from '@/components/stats/PageOneStats'
+import { CollectionStats } from '@/components/stats/PageTwoStats'
 import { getGlobalKPI, getGlobalPerformance, getGlobalTaxpayerPerformance, getGroupPerformance } from '@/components/utils/api/reportFunctions'
 import { useAuth } from '@/hooks/useAuth'
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState, lazy, Suspense } from 'react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 import { GroupStat } from "@/components/stats/GroupPerformanceStats"
+
+
+const PageOneStats = lazy(() => import('@/components/stats/PageOneStats'));
+const PageTwoStats = lazy(() => import('@/components/stats/PageTwoStats').then(m => ({ default: m.PageTwoStats })));
+const GroupPerformanceStats = lazy(() => import('@/components/stats/GroupPerformanceStats').then(m => ({ default: m.GroupPerformanceStats })));
+const GlobalKPIStats = lazy(() => import('@/components/stats/GlobalKpiStats').then(m => ({ default: m.GlobalKPIStats })));
 
 
 function StatsPage() {
@@ -35,7 +41,6 @@ function StatsPage() {
                 const stats = await getGlobalPerformance();
 
                 if (Array.isArray(stats) && stats.length > 0) {
-                    // Ensure all Stat fields are present
                     const parsed: Stat[] = stats.map((item: any) => ({
                         month: item.month,
                         ivaAmount: item.ivaAmount ?? 0,
@@ -47,23 +52,11 @@ function StatsPage() {
                     }));
 
                     setRawStats(parsed);
-
-
-                    const taxPerformance = await getGlobalTaxpayerPerformance()
-
-                    setTaxpayerPerformance(taxPerformance)
-
-                    const groupPerformance = await getGroupPerformance()
-
-                    setGroupStats(groupPerformance);
-
-                    const kpi = await getGlobalKPI();
-
-                    setGlobalKpi(kpi);
-
-
+                    setTaxpayerPerformance(await getGlobalTaxpayerPerformance());
+                    setGroupStats(await getGroupPerformance());
+                    setGlobalKpi(await getGlobalKPI());
                 } else {
-                    toast.error("No se encontraron estadísticas para algunos de los gráficos.");
+                    toast.error('No se encontraron estadísticas para algunos de los gráficos.');
                 }
             } catch (e: any) {
                 toast.error(e);
@@ -78,35 +71,48 @@ function StatsPage() {
 
 
     return (
-        <div className='flex flex-col '>
+        <div className='flex flex-col'>
             {!loaded ? (
-                <div className='flex items-center justify-center w-[82vw] h-[100vh] lg:w-[82vw]  lg:h-[100vh]'>
+                <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
-                <div className=''>
-                    <div className='flex lg:flex-row flex-col w-full h-[100vh]  lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
-
+                <div>
+                    <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
                         <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
-                            <PageOneStats rawStats={rawStats} />
+                            <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
+                                <PageOneStats rawStats={rawStats} />
+                            </Suspense>
                         </div>
                         <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {taxpayerPerformance && <PageTwoStats stats={taxpayerPerformance} />}
+                            {taxpayerPerformance && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
+                                    <PageTwoStats stats={taxpayerPerformance} />
+                                </Suspense>
+                            )}
                         </div>
                     </div>
+
                     <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
                         <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {groupStats && <GroupPerformanceStats groupStats={groupStats} />}
+                            {groupStats && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
+                                    <GroupPerformanceStats groupStats={groupStats} />
+                                </Suspense>
+                            )}
                         </div>
-
                         <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {globalKpi && <GlobalKPIStats globalKpi={globalKpi} />}
+                            {globalKpi && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
+                                    <GlobalKPIStats globalKpi={globalKpi} />
+                                </Suspense>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
         </div>
-    )
+    );
 }
 
 
