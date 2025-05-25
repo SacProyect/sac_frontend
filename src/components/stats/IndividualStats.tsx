@@ -27,6 +27,7 @@ interface TaxpayerData {
     description: string,
     fase: string,
     notified: Boolean,
+    culminated: Boolean,
 }
 
 
@@ -124,6 +125,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     }
 
+    console.log("DATA: " + JSON.stringify(taxpayerData))
+
 
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
@@ -166,6 +169,19 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </p>
                         </div>
                     )}
+
+                    {taxpayerData?.culminated === true ? (
+                        <div className="pt-4">
+                            <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                                Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
+                            </p>
+                        </div>
+
+                    ) : (
+                        <div className="pt-4">
+                            <button className="px-4 py-1 text-white bg-[#3498db]">Culminar Procedimiento </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
@@ -182,10 +198,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    {/* Cambié el contenedor principal de flex row a flex-col en mobile y flex-row en lg */}
                     <div className="flex flex-col pt-0 lg:flex-row lg:pt-4">
 
-                        {/* Bullets arriba en mobile, a la izquierda en lg */}
                         <div className="flex flex-row p-4 mb-4 space-x-6 lg:flex-col lg:mb-0 lg:space-x-0 lg:space-y-2">
                             <div className="flex items-center">
                                 <span
@@ -203,7 +217,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </div>
                         </div>
 
-                        {/* Gráfica debajo en mobile, a la derecha en lg */}
                         {dataMock.some(item => item.value > 0) && (
                             <div className="flex justify-center w-full lg:w-auto">
                                 <PieChart width={300} height={200}>
@@ -227,7 +240,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </div>
 
                     {(user?.role === "COORDINATOR" || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
-                        <div className="flex items-end justify-end w-full gap-2 pr-2 mt-4">
+                        <div className="flex items-end justify-end w-full gap-2 pr-14 mt-14">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
@@ -242,7 +255,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     }
 
                     {taxpayerData?.fase && taxpayerData.process === "AF" && (
-                        <div className="w-full pr-2 mt-2 text-sm italic text-right text-gray-700">
+                        <div className="w-full pt-4 mt-2 text-sm italic text-right text-gray-700 pr-14">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
                                     FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.

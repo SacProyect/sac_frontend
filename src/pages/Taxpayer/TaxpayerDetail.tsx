@@ -86,14 +86,14 @@ const TaxpayerDetail = () => {
 				</div>
 			</div>
 			{selectedTable == "fine" ? (
-				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<EventTable rows={events} setRows={setEvents} />
 				</div>
 			) : selectedTable === "iva" ? (
-				<div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					<TaxSummaryTable rows={taxSummary} />
 				</div>
-			) : <div className='flex items-center justify-center w-full h-full pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+			) : <div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 				<ISLRSummaryTable rows={islrReports} />
 			</div>
 			}
