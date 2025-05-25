@@ -55,36 +55,41 @@ function HomePage() {
     const { contains } = useFilter({ sensitivity: "base" });
     const { control, watch } = useForm({ defaultValues: { search: '' } });
     const searchValue = watch('search');
-    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 300);
+    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 400);
 
     // Filtrado + enriquecimiento (un solo useMemo)
     const filteredItems = useMemo(() => {
         const term = debouncedSearch.trim();
+
         return taxpayers
-            .filter(item => {
-                if (!term) return true;
-                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address}`.toLowerCase();
-                return contains(haystack, term);
-            })
-            .map(item => ({
-                ...item,
-                contract_type: item.contract_type === "ORDINARY"
-                    ? 'ORDINARIO' as contract_type
-                    : 'ESPECIAL' as contract_type,
-                address: item.address || 'N/A',
-                officerName:
+            .map(item => {
+                const officerName =
                     item.user?.id === user.id || user.role === "FISCAL"
                         ? user.name
                         : user.role === "ADMIN"
                             ? (item.user?.name || 'Desconocido')
-                            : officerMap[item.officerId || ""] || 'Desconocido',
-            }));
+                            : officerMap[item.officerId || ""] || 'Desconocido';
+
+                return {
+                    ...item,
+                    // keep original contract_type and add a new label
+                    contractTypeLabel: item.contract_type === "ORDINARY" ? 'ORDINARIO' : 'ESPECIAL',
+                    address: item.address || 'N/A',
+                    officerName,
+                };
+            })
+            .filter(item => {
+                if (!term) return true;
+                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.officerName}`.toLowerCase();
+                return contains(haystack, term);
+            });
     }, [taxpayers, debouncedSearch, user, contains, officerMap]);
 
+    
     // Un solo log para ver tamaño de la lista filtrada
-    useEffect(() => {
-        console.log(`📊 Filtered items: ${filteredItems.length}`);
-    }, [filteredItems.length]);
+    // useEffect(() => {
+    //     console.log(`📊 Filtered items: ${filteredItems.length}`);
+    // }, [filteredItems.length]);
 
     return (
         <div className='flex justify-center w-full lg:pt-8 sm:mt-0'>
