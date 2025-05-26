@@ -253,7 +253,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
                             <div className="pt-2">
-                                <p>Hay reportes de reparación asociados.</p>
+                                <p>Descargar acta de Reparación</p>
                             </div>
                         ) : (
                             <div className="pt-2">
