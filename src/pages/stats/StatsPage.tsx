@@ -70,6 +70,7 @@ function StatsPage() {
 
 
 
+
     return (
         <div className='flex flex-col'>
             {!loaded ? (
@@ -77,39 +78,54 @@ function StatsPage() {
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
             ) : (
-                <div>
-                    <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
-                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
-                            <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
-                                <PageOneStats rawStats={rawStats} />
-                            </Suspense>
-                        </div>
-                        <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {taxpayerPerformance && (
-                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
-                                    <PageTwoStats stats={taxpayerPerformance} />
-                                </Suspense>
-                            )}
-                        </div>
+                (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
+                    <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
+                        <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
                     </div>
+                ) : (
+                    <div>
+                        <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
+                            <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
+                                <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
+                                    {rawStats.length > 0 ? (
+                                        <PageOneStats rawStats={rawStats} />
+                                    ) : <p>No hay estadísticas para mostrar</p>
+                                    }
 
-                    <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
-                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {groupStats && (
-                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
-                                    <GroupPerformanceStats groupStats={groupStats} />
                                 </Suspense>
-                            )}
+                            </div>
+                            <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
+                                {taxpayerPerformance && (
+                                    <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
+                                        {taxpayerPerformance !== null ? (
+                                            <PageTwoStats stats={taxpayerPerformance} />
+                                        ) : <p className=''>No hay estadísticas para mostrar</p>}
+                                    </Suspense>
+                                )}
+                            </div>
                         </div>
-                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                            {globalKpi && (
-                                <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
-                                    <GlobalKPIStats globalKpi={globalKpi} />
-                                </Suspense>
-                            )}
+
+                        <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
+                            <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+                                {groupStats && (
+                                    <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
+                                        {groupStats.length > 0 ? (
+                                            <GroupPerformanceStats groupStats={groupStats} />
+                                        ) : <p>No hay estadísticas para mostrar</p>}
+
+                                    </Suspense>
+                                )}
+                            </div>
+                            <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+                                {globalKpi && (
+                                    <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
+                                        <GlobalKPIStats globalKpi={globalKpi} />
+                                    </Suspense>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
+                )
             )}
         </div>
     );
