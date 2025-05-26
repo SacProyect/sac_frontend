@@ -306,23 +306,42 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 }
 
 export const uploadRepairReport = async (taxpayerId: string, file: File) => {
-    try {
-        const formData = new FormData();
-        formData.append("repairReport", file);
+	try {
+		const formData = new FormData();
+		formData.append("repairReport", file);
 
-        // Ajusta la URL y método según tu backend
-        const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
-            headers: {
-                "Content-Type": "multipart/form-data"
-            }
-        });
+		// Ajusta la URL y método según tu backend
+		const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
+			headers: {
+				"Content-Type": "multipart/form-data"
+			}
+		});
 
-        return response.data;
-    } catch (e) {
-        console.error(e);
-        throw new Error("Error subiendo acta de reparación");
-    }
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("Error subiendo acta de reparación");
+	}
 };
+
+export const downloadPdf = async (key: string) => {
+
+	try {
+
+		const requestUrl = '/taxpayer/download-repair-report'
+
+		const response = await apiConnection.get(`${requestUrl}/${key}`);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("Can't generate the download url");
+	}
+
+
+
+}
 
 
 
