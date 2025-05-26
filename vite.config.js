@@ -26,7 +26,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('node_modules')) {
             if (id.includes('react')) return 'vendor_react';
-            if (id.includes('recharts')) return 'vendor_charts';
+            // if (id.includes('recharts')) return 'vendor_charts';
             if (id.includes('jspdf')) return 'vendor_pdf';
             if (id.includes('html2canvas')) return 'vendor_canvas';
           }
