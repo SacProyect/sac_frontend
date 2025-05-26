@@ -1,6 +1,6 @@
 import EventTable from '../../components/Events/EventTable'
 import { Group } from 'react-aria-components'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useLoaderData } from 'react-router-dom'
 import { Fines } from '../../App'
@@ -17,6 +17,7 @@ import TaxSummaryTable from '@/components/iva/TaxSummaryTable'
 import { ISLRReports } from '@/types/ISLRReports'
 import ISLRSummaryTable from '@/components/ISLR/IslrSummaryTable'
 import { TbReportSearch } from "react-icons/tb";
+import { useAuth } from '@/hooks/useAuth'
 
 
 
@@ -27,8 +28,14 @@ const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
 	const { events: initialEvents, fines, payments, taxSummary, islrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
 
-	const [events, setEvents] = useState<Event[]>(initialEvents)
-	const [selectedTable, setSelectedTable] = useState("fine")
+	const [events, setEvents] = useState<Event[]>(initialEvents);
+	const [selectedTable, setSelectedTable] = useState("fine");
+	const { user } = useAuth();
+	const location = useLocation();
+
+	if (!user) {
+		return <Navigate to="/login" state={{ from: location }} replace />;
+	}
 
 
 	console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
@@ -102,7 +109,7 @@ const TaxpayerDetail = () => {
 				{islrReports.length > 0 ? (
 					<ISLRSummaryTable rows={islrReports} />
 				) : "No hay datos para mostrar. Por favor agregue declaraciones de ISLR a este contribuyente para poder ver esta tabla."}
-				
+
 			</div>
 			}
 		</div>

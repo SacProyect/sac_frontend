@@ -45,10 +45,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [faseToChange, setFaseToChange] = useState<string | null>(null);
     const [showFaseModal, setShowFaseModal] = useState(false);
 
-    if (!user) {
-        navigate("/login");
-        return null;
-    }
 
 
     useEffect(() => {
