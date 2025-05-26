@@ -20,6 +20,7 @@ export interface Stat {
 }
 
 const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
+    console.log(JSON.stringify(rawStats));
 
     // Mapear "2025-12" a nombre corto "Dic" (extraemos el mes numérico)
     const getShortMonthName = (monthStr: string) => {
