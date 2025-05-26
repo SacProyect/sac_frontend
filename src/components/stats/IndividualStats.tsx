@@ -42,6 +42,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showModal, setShowModal] = useState(false); // Nuevo estado para mostrar modal
     const [loading, setLoading] = useState(false);
+    const [faseToChange, setFaseToChange] = useState<string | null>(null);
+    const [showFaseModal, setShowFaseModal] = useState(false);
 
     if (!user) {
         navigate("/login");
@@ -92,25 +94,34 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     const dataMock = [
-        { name: "COMPRAS (BS)", value: buys > 0 ? buys : 0, color: "#0080c1" },
-        { name: "VENTAS (BS)", value: sells > 0 ? sells : 0, color: "#737373" },
+        { name: "COMPRAS (BS)", value: buys > 0 ? buys : 1, color: "#0080c1" },
+        { name: "VENTAS (BS)", value: sells > 0 ? sells : 1, color: "#737373" },
     ];
 
 
 
     const fases = ["FASE_1", "FASE_2", "FASE_3", "FASE_4"];
 
-
-    const handleFaseClick = async (fase: string) => {
+    const handleFaseClick = (fase: string) => {
         if (!taxpayer || !fase || taxpayerData?.fase === fase) return;
 
+        setFaseToChange(fase);
+        setShowFaseModal(true); // Mostrar modal de confirmación
+    };
+
+    const confirmFaseChange = async () => {
+        if (!taxpayer || !faseToChange) return;
+
         try {
-            await updateFase(taxpayer, fase);
-            setTaxpayerData(prev => prev ? { ...prev, fase } : prev);
-            toast.success(`Fase actualizada a ${fase}`);
+            await updateFase(taxpayer, faseToChange);
+            setTaxpayerData(prev => prev ? { ...prev, fase: faseToChange } : prev);
+            toast.success(`Fase actualizada a ${faseToChange}`);
         } catch (error) {
             console.error(error);
             toast.error("Error al actualizar la fase");
+        } finally {
+            setShowFaseModal(false);
+            setFaseToChange(null);
         }
     };
 
@@ -192,6 +203,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     };
 
     const handleDownload = async (pdf_url: string) => {
+        if (loading === true) return;
         setLoading(true);
 
         try {
@@ -226,7 +238,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
-            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-12">
+            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-4">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
                 <div className="w-full p-6 lg:w-1/2">
@@ -274,14 +286,14 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
                     ) : (
                         <div className="pt-2">
-                            <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
+                            <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
                         </div>
                     )}
 
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
                             <div className="pt-2">
-                                <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownload(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparación</button>
+                                <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownload(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
                             </div>
                         ) : (
                             <div className="pt-2">
@@ -290,7 +302,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                     className="px-2 py-1 bg-[#3498db] text-white"
                                     onClick={handleUploadClick}
                                 >
-                                    Subir acta de reparación
+                                    Subir acta de reparo
                                 </button>
 
                                 {/* Input file oculto */}
@@ -435,6 +447,40 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
                 </div>
             </div>
+            {showFaseModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="w-full max-w-sm p-6 bg-white shadow-lg rounded-xl">
+                        <h2 className="mb-4 text-lg font-semibold text-center">Confirmar cambio de fase</h2>
+                        <p className="mb-4 text-sm text-gray-700">
+                            ¿Estás seguro de que deseas cambiar la fase de la auditoría fiscal?
+                        </p>
+                        <p className="mb-2 text-sm">
+                            <span className="font-bold">Fase actual:</span> {taxpayerData?.fase.replace("_", " ")}
+                        </p>
+                        <p className="mb-4 text-sm">
+                            <span className="font-bold">Nueva fase:</span> {faseToChange?.replace("_", " ")}
+                        </p>
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                onClick={() => {
+                                    setShowFaseModal(false);
+                                    setFaseToChange(null);
+                                }}
+                                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={confirmFaseChange}
+                                className="px-4 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                            >
+                                Confirmar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
+
     );
 };

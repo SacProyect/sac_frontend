@@ -52,7 +52,7 @@ const TaxpayerDetail = () => {
 	return (
 		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
-			<Group className="flex flex-col items-center justify-center w-full pt-10 mb-8 space-y-2 lg:flex-row lg:space-x-20 lg:space-y-0">
+			<Group className="flex flex-col items-center justify-center w-full pt-10 mb-8 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
 				{options.map((opt) => (
 					<Link
 						to={opt.path}
@@ -87,14 +87,22 @@ const TaxpayerDetail = () => {
 			</div>
 			{selectedTable == "fine" ? (
 				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
-					<EventTable rows={events} setRows={setEvents} />
+					{events.length > 0 ? (
+						<EventTable rows={events} setRows={setEvents} />
+					) : "No hay datos para mostrar. Por favor agregue multas a este contribuyente para poder ver esta tabla."}
 				</div>
 			) : selectedTable === "iva" ? (
 				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
-					<TaxSummaryTable rows={taxSummary} />
+					{taxSummary.length > 0 ? (
+						<TaxSummaryTable rows={taxSummary} />
+					) : "No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla."}
+
 				</div>
 			) : <div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
-				<ISLRSummaryTable rows={islrReports} />
+				{islrReports.length > 0 ? (
+					<ISLRSummaryTable rows={islrReports} />
+				) : "No hay datos para mostrar. Por favor agregue declaraciones de ISLR a este contribuyente para poder ver esta tabla."}
+				
 			</div>
 			}
 		</div>
