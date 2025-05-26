@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 import React from 'react'
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
 import TextInput from '../UI/TextInput';
@@ -10,10 +10,10 @@ import toast from 'react-hot-toast';
 
 function Login() {
     const { register, handleSubmit } = useForm<{ personId: string; password: string }>();
-
-
     const navigate = useNavigate();
     const { login, user } = useAuth()!;
+    const location = useLocation();
+    const from = location.state?.from?.pathname || "/";
 
     const validateLogin = async (data: { personId: string; password: string }) => {
         try {
@@ -33,7 +33,7 @@ function Login() {
 
     useEffect(() => {
         if (user) {
-            navigate("/");
+            navigate(from, { replace: true }); // If the user is already logged in
         }
     }, [user]);
 
