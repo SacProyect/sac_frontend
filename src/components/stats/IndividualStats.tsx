@@ -1,13 +1,14 @@
 import { Fines } from "@/App";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
 import toast from "react-hot-toast";
-import { getTaxpayerData, notifyTaxpayer, updateFase } from "../utils/api/taxpayerFunctions";
+import { getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { IVAReports } from "@/types/IvaReports";
+import { RepairReports } from "@/types/RepairReports";
 
 
 
@@ -28,6 +29,7 @@ interface TaxpayerData {
     fase: string,
     notified: Boolean,
     culminated: Boolean,
+    RepairReports: RepairReports[],
 }
 
 
@@ -37,6 +39,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
     const { user } = useAuth();
     const navigate = useNavigate();
+    const [selectedFile, setSelectedFile] = useState<File | null>(null);
+    const [showModal, setShowModal] = useState(false); // Nuevo estado para mostrar modal
 
     if (!user) {
         navigate("/login");
@@ -109,6 +113,19 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
+    const handleCulminatedClick = async (culminated: boolean) => {
+        if (!taxpayer) return;
+
+        try {
+            await updateCulminated(taxpayer, culminated);
+            setTaxpayerData(prev => prev ? { ...prev, culminated } : prev);
+            toast.success(`Procedimiento culminado de manera exitosa`);
+        } catch (e: any) {
+            console.error(e);
+            toast.error(e?.message || 'Error desconocido al culminar procedimiento');
+        }
+    };
+
     const handleNotifiedClick = async (notified: boolean) => {
         if (!taxpayer) return;
 
@@ -122,8 +139,58 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             console.error(e);
             toast.error("Error al reportar al contribuyente como notificado")
         }
-
     }
+
+    // Referencia al input file oculto
+    const fileInputRef = useRef<HTMLInputElement>(null);
+
+    // Función que se llama al hacer click en el botón "Subir acta de reparación"
+    const handleUploadClick = () => {
+        fileInputRef.current?.click();
+    };
+
+    // Función que se llama al seleccionar archivo
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        if (event.target.files && event.target.files.length > 0) {
+            setSelectedFile(event.target.files[0]);
+            setShowModal(true); // Mostrar modal
+        }
+    };
+
+    // Función para enviar el archivo al backend
+    const handleSendFile = async () => {
+        if (!selectedFile || !taxpayer) {
+            toast.error("No se ha seleccionado archivo o no hay contribuyente.");
+            return;
+        }
+
+        try {
+            await uploadRepairReport(taxpayer, selectedFile);
+            toast.success("Acta de reparación subida correctamente.");
+            setSelectedFile(null);
+
+            // Refrescar datos después de subir
+            const data = await getTaxpayerData(taxpayer);
+            setTaxpayerData(data);
+        } catch (error) {
+            console.error(error);
+            toast.error("Error al subir el acta de reparación.");
+        }
+    };
+
+    // Enviar archivo y cerrar modal
+    const handleConfirmSend = async () => {
+        await handleSendFile();
+        setShowModal(false);
+    };
+
+    // Cancelar subida y cerrar modal
+    const handleCancelSend = () => {
+        setSelectedFile(null);
+        setShowModal(false);
+    };
+
+
 
     console.log("DATA: " + JSON.stringify(taxpayerData))
 
@@ -157,30 +224,90 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
                     {taxpayerData?.notified === true ? (
                         <div>
-                            <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                            <p className="pt-2 text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                 Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
                             </p>
                         </div>
 
                     ) : (
                         <div>
-                            <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                            <p className="pt-2 text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                 Este contribuyente aún no ha sido notificado acerca de su procedimiento.
                             </p>
                         </div>
                     )}
 
                     {taxpayerData?.culminated === true ? (
-                        <div className="pt-4">
-                            <p className="mt-6 text-xs leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                                Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
+                        <div className="pt-2">
+                            <p className=" text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                                Procedimiento Culminado.
                             </p>
                         </div>
 
                     ) : (
-                        <div className="pt-4">
-                            <button className="px-4 py-1 text-white bg-[#3498db]">Culminar Procedimiento </button>
+                        <div className="pt-2">
+                            <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
                         </div>
+                    )}
+
+                    {taxpayerData?.process === "AF" && (
+                        taxpayerData.RepairReports.length > 0 ? (
+                            <div className="pt-2">
+                                <p>Hay reportes de reparación asociados.</p>
+                            </div>
+                        ) : (
+                            <div className="pt-2">
+                                {/* Botón para abrir selector de archivo */}
+                                <button
+                                    className="px-2 py-1 bg-[#3498db] text-white"
+                                    onClick={handleUploadClick}
+                                >
+                                    Subir acta de reparación
+                                </button>
+
+                                {/* Input file oculto */}
+                                <input
+                                    type="file"
+                                    accept=".pdf"         // Solo PDF
+                                    ref={fileInputRef}
+                                    style={{ display: "none" }}
+                                    onChange={handleFileChange}
+                                // No se pone "multiple" para limitar a un solo archivo
+                                />
+
+                                {/* Mostrar archivo seleccionado y botón para enviar */}
+                                {/* Modal */}
+                                {showModal && selectedFile && (
+                                    <div
+                                        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                                        onClick={handleCancelSend} // clic fuera cierra modal
+                                    >
+                                        <div
+                                            className="p-6 bg-white rounded-lg w-80"
+                                            onClick={e => e.stopPropagation()} // evitar cerrar modal al hacer clic dentro
+                                        >
+                                            <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo a Subir</h2>
+                                            <p className="mb-4 break-words">Archivo seleccionado: <strong>{selectedFile.name}</strong></p>
+
+                                            <div className="flex justify-end space-x-4">
+                                                <button
+                                                    className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                                                    onClick={handleConfirmSend}
+                                                >
+                                                    Subir archivo
+                                                </button>
+                                                <button
+                                                    className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                                                    onClick={handleCancelSend}
+                                                >
+                                                    Cancelar
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )
                     )}
                 </div>
 

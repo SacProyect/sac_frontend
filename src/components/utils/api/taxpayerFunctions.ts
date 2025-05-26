@@ -138,6 +138,24 @@ export const updateFase = async (id: string, fase: string) => {
 	}
 }
 
+export const updateCulminated = async (id: string, culminated: boolean) => {
+
+	try {
+
+		let requestUrl = '/taxpayer/update-culminated'
+
+		const response = await apiConnection.put(`${requestUrl}/${id}`, {
+			culminated,
+		});
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("Ha ocurrido un error culminando el procedimiento, por favor, intente de nuevo.")
+	}
+}
+
 export const notifyTaxpayer = async (id: string) => {
 
 	try {
@@ -286,6 +304,25 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 		throw new Error("Ha ocurrido un error");
 	}
 }
+
+export const uploadRepairReport = async (taxpayerId: string, file: File) => {
+    try {
+        const formData = new FormData();
+        formData.append("repairReport", file);
+
+        // Ajusta la URL y método según tu backend
+        const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data"
+            }
+        });
+
+        return response.data;
+    } catch (e) {
+        console.error(e);
+        throw new Error("Error subiendo acta de reparación");
+    }
+};
 
 
 
