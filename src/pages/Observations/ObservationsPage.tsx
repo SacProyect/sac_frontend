@@ -16,7 +16,7 @@ function ObservationsPage() {
 
 
     return (
-        <div className='bg-white'>
+        <div className='w-full bg-white'>
             <ObservationsHeader taxpayerId={taxpayerId} onObservationCreated={handleObservationCreated} />
             <ObservationsSection taxpayerId={taxpayerId} refreshKey={refreshKey} />
         </div>
