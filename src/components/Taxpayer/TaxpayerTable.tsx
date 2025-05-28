@@ -116,6 +116,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                                     <InfoTableOptMenu id={item.id} />
                                 ) : col.id === 'emition_date' ? (
                                     new Date(item.emition_date).toLocaleDateString()
+                                ) : col.id === "contract_type" ? (
+                                    item.contract_type === "ORDINARY" ? "ORDINARIO" : "ESPECIAL"
                                 ) : (
                                     String(item[col.id as keyof Taxpayer])
                                 );
