@@ -80,7 +80,7 @@ function HomePage() {
             })
             .filter(item => {
                 if (!term) return true;
-                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.officerName}`.toLowerCase();
+                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.officerName} ${item.providenceNum}`.toLowerCase();
                 return contains(haystack, term);
             });
     }, [taxpayers, debouncedSearch, user, contains, officerMap]);
