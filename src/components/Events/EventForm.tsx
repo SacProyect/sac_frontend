@@ -16,6 +16,7 @@ import { parseDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
 import { IvaReportFormData } from '../iva/IvaForm';
 import { IslrReportFormData } from '../ISLR/IslrForm';
+import TaxpayerList from '../UI/TaxpayerList';
 
 
 
@@ -299,7 +300,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 {/* Select the taxpayer by it's ID */}
                 {
                     taxpayerId == "" &&
-                    <TaxpayerCombobox name={"taxpayerId"} control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>} label={"Contribuyente"} taxpayers={taxpayerArray} />
+                    <TaxpayerList name={"taxpayerId"} control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>} label={"Contribuyente"} taxpayers={taxpayerArray} />
                 }
 
                 {/* If the type is payment, show the pending payments */}
