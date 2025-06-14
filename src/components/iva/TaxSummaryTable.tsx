@@ -8,7 +8,7 @@ import { IVAReports } from '@/types/IvaReports'
 
 interface Props {
     rows: IVAReports[]
-    pdfMode?: boolean  
+    pdfMode?: boolean
 }
 
 const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
@@ -23,7 +23,10 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         { name: 'Excedente de Crédito', id: 'excess' },
         { name: 'Compras', id: 'purchases' },
         { name: 'Ventas', id: 'sells' },
+        { name: 'Recaudado', id: 'paid' },
     ]
+
+    console.log(rows)
 
     const sortedItems = useMemo(() => {
         return [...rows].sort((a, b) => {

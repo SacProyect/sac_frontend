@@ -7,4 +7,5 @@ export interface IVAReports {
     date: string;
     purchases: number;
     sells: number;
+    paid: number;
 }

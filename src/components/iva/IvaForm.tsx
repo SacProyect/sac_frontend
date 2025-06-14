@@ -26,6 +26,10 @@ function IvaForm() {
     const navigate = useNavigate();
     const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
     const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
+    const [filter, setFilter] = useState('');
+    const [search, setSearch] = useState('');
+    const [selectedId, setSelectedId] = useState('');
+    const [showDropdown, setShowDropdown] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -69,7 +73,7 @@ function IvaForm() {
             return;
         }
 
-        const formattedData = {...data, paid: new Decimal(data.paid.replace(",", ".")).toString(),}
+        const formattedData = { ...data, paid: new Decimal(data.paid.replace(",", ".")).toString(), }
 
         try {
             const report = await createIVA(formattedData);
@@ -148,6 +152,12 @@ function IvaForm() {
         setValue('date', isoDate);
     }, [selectedTaxpayer, setValue]);
 
+    const filteredTaxpayers = taxpayerArray.filter(t =>
+        `${t.name} ${t.rif} ${t.process} ${t.providenceNum}`
+            .toLowerCase()
+            .includes(search.toLowerCase())
+    );
+
     return (
         <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
             <form
@@ -158,12 +168,43 @@ function IvaForm() {
             >
                 <h1 className="text-xl font-semibold text-center text-gray-800">Agregar Reporte de IVA</h1>
 
-                <TaxpayerCombobox
-                    name="taxpayerId"
-                    control={control as Control<IvaReportFormData | EventFormData | IslrReportFormData>}
-                    label="Contribuyente"
-                    taxpayers={taxpayerArray}
-                />
+                <div className="relative">
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Contribuyente</label>
+                    <input
+                        type="text"
+                        placeholder="Buscar contribuyente..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                        onFocus={() => setShowDropdown(true)}
+                        className="w-full px-3 py-2 mb-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <input
+                        type="hidden"
+                        {...register("taxpayerId", { required: "Este campo es obligatorio" })}
+                        value={selectedId}
+                    />
+                    {errors.taxpayerId && (
+                        <p className="mt-1 text-xs text-red-500">{errors.taxpayerId.message}</p>
+                    )}
+                    {showDropdown && filteredTaxpayers.length > 0 && (
+                        <div className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-52">
+                            {filteredTaxpayers.map((t) => (
+                                <div
+                                    key={t.id}
+                                    onClick={() => {
+                                        setSearch(`${t.name} — ${t.process} — ${t.providenceNum}`);
+                                        setValue("taxpayerId", t.id);
+                                        setSelectedId(t.id);
+                                        setShowDropdown(false);
+                                    }}
+                                    className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-500 hover:text-white"
+                                >
+                                    {t.name} — {t.process} — {t.providenceNum}
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
 
 
 
