@@ -104,7 +104,10 @@ function TaxpayerForm() {
             const newTaxpayer = await createTaxpayer(formData);
 
             if (!newTaxpayer.success) {
-                toast.error("No se pudo crear el contribuyente, por favor, intente de nuevo.")
+                console.log("New taxpayer: " + JSON.stringify(newTaxpayer));
+
+                const fullErrorMessage = newTaxpayer.message || "No se pudo crear el contribuyente, por favor, intente de nuevo.";
+                toast.error(fullErrorMessage);
             } else {
                 toast.success("¡Contribuyente creado exitosamente!")
                 setUploadedFiles([]);
@@ -131,6 +134,8 @@ function TaxpayerForm() {
             setUploadedFiles((prevFiles) => [...prevFiles, ...acceptedFiles]);
         },
     });
+
+    const sortedOfficials = [...official].sort((a, b) => a.name.localeCompare(b.name));
 
 
     return (
@@ -271,14 +276,14 @@ function TaxpayerForm() {
                             <SelectInput
                                 control={control}
                                 name={"officerId"}
-                                items={official}
+                                items={sortedOfficials}
                                 label={"Funcionario"}
                             />
                         ) : user.role === "COORDINATOR" ? (
                             <SelectInput
                                 control={control}
                                 name={"officerId"}
-                                items={official}
+                                items={sortedOfficials}
                                 label={"Funcionario"}
                             />
                         ) : (
@@ -318,9 +323,9 @@ function TaxpayerForm() {
 
                             {/* Display Uploaded Files */}
                             {uploadedFiles.length > 0 && (
-                                <div className="h-24 mt-4 space-y-1 ">
+                                <div className="h-10 mt-4 space-y-1 ">
                                     <p className="font-semibold">Archivos subidos:</p>
-                                    <ul className="h-16 space-y-1 overflow-y-auto text-sm text-gray-700">
+                                    <ul className="h-10 space-y-1 overflow-y-auto text-sm text-gray-700">
                                         {uploadedFiles.map((file, index) => (
                                             <li key={index} className="flex items-center space-x-2">
                                                 <span>📄 {file.name}</span>

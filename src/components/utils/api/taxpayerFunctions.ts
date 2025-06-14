@@ -40,21 +40,29 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 			return { success: true, data: response.data };
 		} else {
 			console.error("API ERROR: ", response.status, response.data);
-			return { success: false, message: response.data?.message || "Failed to create taxpayer." };
+			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
 		}
 
 	} catch (error: any) {
 		// Handle Axios errors properly
 		if (error.response) {
 			// Server responded with a status code outside 2xx
-			console.log(error)
-			return { success: false, message: error.response.data?.message || "Server error occurred." };
+			const errorData = error.response.data;
+
+			const msg = typeof errorData?.error === "string"
+				? errorData.error
+				: errorData?.message || "Ocurrió un error.";
+
+			return {
+				success: false,
+				message: msg,
+			};
 		} else if (error.request) {
 			// No response received
-			return { success: false, message: "No response from server. Check your network." };
+			return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
 		} else {
 			// Other unexpected errors
-			return { success: false, message: "Unexpected error occurred. Try again later." };
+			return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
 		}
 	}
 }
