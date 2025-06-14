@@ -44,6 +44,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [loading, setLoading] = useState(false);
     const [faseToChange, setFaseToChange] = useState<string | null>(null);
     const [showFaseModal, setShowFaseModal] = useState(false);
+    const [showCulminatedModal, setShowCulminatedModal] = useState(false);
+    const [showNotifiedModal, setShowNotifiedModal] = useState(false);
 
 
 
@@ -123,31 +125,43 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     const handleCulminatedClick = async (culminated: boolean) => {
         if (!taxpayer) return;
+        setShowCulminatedModal(true);
+    };
+
+    const confirmCulminated = async () => {
+        if (!taxpayer) return;
 
         try {
-            await updateCulminated(taxpayer, culminated);
-            setTaxpayerData(prev => prev ? { ...prev, culminated } : prev);
+            await updateCulminated(taxpayer, true);
+            setTaxpayerData(prev => prev ? { ...prev, culminated: true } : prev);
             toast.success(`Procedimiento culminado de manera exitosa`);
         } catch (e: any) {
             console.error(e);
             toast.error(e?.message || 'Error desconocido al culminar procedimiento');
+        } finally {
+            setShowCulminatedModal(false);
         }
     };
 
     const handleNotifiedClick = async (notified: boolean) => {
         if (!taxpayer) return;
+        setShowNotifiedModal(true);
+    };
+
+    const confirmNotified = async () => {
+        if (!taxpayer) return;
 
         try {
-
             await notifyTaxpayer(taxpayer);
-            setTaxpayerData(prev => prev ? { ...prev, notified } : prev);
+            setTaxpayerData(prev => prev ? { ...prev, notified: true } : prev);
             toast.success("¡Contribuyente reportado como notificado exitosamente!")
-
         } catch (e) {
             console.error(e);
             toast.error("Error al reportar al contribuyente como notificado")
+        } finally {
+            setShowNotifiedModal(false);
         }
-    }
+    };
 
     // Referencia al input file oculto
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -472,6 +486,33 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             >
                                 Confirmar
                             </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+
+            {showCulminatedModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-6 text-center bg-white shadow-lg rounded-xl">
+                        <h2 className="mb-4 text-lg font-semibold text-center text-blue-600">Confirmar Culminación</h2>
+                        <p className="mb-4 text-sm text-gray-700">¿Deseas marcar el procedimiento de este contribuyente como culminado?</p>
+                        <div className="flex justify-end space-x-2">
+                            <button onClick={() => setShowCulminatedModal(false)} className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Cancelar</button>
+                            <button onClick={confirmCulminated} className="px-4 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700">Confirmar</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showNotifiedModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-6 text-center bg-white shadow-lg rounded-xl">
+                        <h2 className="mb-4 text-lg font-semibold text-center text-blue-600">Confirmar Notificación</h2>
+                        <p className="mb-4 text-sm text-gray-700">¿Deseas reportar al contribuyente como notificado?</p>
+                        <div className="flex justify-end space-x-2">
+                            <button onClick={() => setShowNotifiedModal(false)} className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Cancelar</button>
+                            <button onClick={confirmNotified} className="px-4 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700">Confirmar</button>
                         </div>
                     </div>
                 </div>
