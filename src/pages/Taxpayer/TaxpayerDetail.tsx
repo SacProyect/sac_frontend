@@ -93,19 +93,19 @@ const TaxpayerDetail = () => {
 				</div>
 			</div>
 			{selectedTable == "fine" ? (
-				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{events.length > 0 ? (
 						<EventTable rows={events} setRows={setEvents} />
 					) : "No hay datos para mostrar. Por favor agregue multas a este contribuyente para poder ver esta tabla."}
 				</div>
 			) : selectedTable === "iva" ? (
-				<div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{taxSummary.length > 0 ? (
 						<TaxSummaryTable rows={taxSummary} />
 					) : "No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla."}
 
 				</div>
-			) : <div className='flex items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+			) : <div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 				{islrReports.length > 0 ? (
 					<ISLRSummaryTable rows={islrReports} />
 				) : "No hay datos para mostrar. Por favor agregue declaraciones de ISLR a este contribuyente para poder ver esta tabla."}
