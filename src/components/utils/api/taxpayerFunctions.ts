@@ -332,7 +332,7 @@ export const uploadRepairReport = async (taxpayerId: string, file: File) => {
 	}
 };
 
-export const downloadPdf = async (key: string) => {
+export const downloadRepairPdf = async (key: string) => {
 
 	try {
 
@@ -346,9 +346,6 @@ export const downloadPdf = async (key: string) => {
 		console.error(e);
 		throw new Error("Can't generate the download url");
 	}
-
-
-
 }
 
 
