@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
 import toast from "react-hot-toast";
-import { downloadPdf, getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
+import { downloadRepairPdf, getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { IVAReports } from "@/types/IvaReports";
@@ -212,7 +212,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         setShowModal(false);
     };
 
-    const handleDownload = async (pdf_url: string) => {
+    const handleDownloadRepair = async (pdf_url: string) => {
         if (loading === true) return;
         setLoading(true);
 
@@ -220,7 +220,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             // Extraer la key del URL completo
             const key = pdf_url.replace("https://sacbucketgeneral.s3.amazonaws.com/", "");
 
-            const response = await downloadPdf(encodeURIComponent(key));
+            const response = await downloadRepairPdf(encodeURIComponent(key));
 
             // console.log(response);
 
@@ -303,7 +303,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
                             <div className="pt-2">
-                                <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownload(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
+                                <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
                             </div>
                         ) : (
                             <div className="pt-2">
