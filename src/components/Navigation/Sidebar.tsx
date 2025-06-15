@@ -116,7 +116,13 @@ function Sidebar() {
                     <ul>
                         {navOptions.map((opt) => (
                             <li key={opt.name}>
-                                <SidebarButton route={opt.path}>{opt.name}</SidebarButton>
+                                <SidebarButton
+                                    route={opt.path}
+                                    onClick={() => setIsMobileMenuOpen(false)}
+                                >
+                                    {opt.name}
+                                </SidebarButton>
+
                             </li>
                         ))}
                     </ul>
