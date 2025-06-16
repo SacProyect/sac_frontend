@@ -341,7 +341,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </div>
                         )}
 
-                        {user?.role == "ADMIN" && (
+                        {user?.role == "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length > 1 && (
                             <div className="pt-2">
                                 <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
                             </div>
