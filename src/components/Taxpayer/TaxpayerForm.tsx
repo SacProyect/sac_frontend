@@ -83,6 +83,12 @@ function TaxpayerForm() {
 
             if (user.role == "FISCAL") data.officerId = user.id;
 
+            // ✅ Validación frontend: verificar que se haya subido al menos un PDF
+            if (!uploadedFiles || uploadedFiles.length === 0) {
+                toast.error("Debe subir al menos un archivo PDF.");
+                return;
+            }
+
 
             // Adds rif prefix to the rif numeric data
 
@@ -106,18 +112,21 @@ function TaxpayerForm() {
             if (!newTaxpayer.success) {
                 console.log("New taxpayer: " + JSON.stringify(newTaxpayer));
 
-                const fullErrorMessage = newTaxpayer.message || "No se pudo crear el contribuyente, por favor, intente de nuevo.";
-                toast.error(fullErrorMessage);
-            } else {
-                toast.success("¡Contribuyente creado exitosamente!")
-                setUploadedFiles([]);
-                console.log("User before" + JSON.stringify(user))
-                refreshUser()
-                console.log("User after" + JSON.stringify(user))
-                reset()
+                toast.error(newTaxpayer.message || "Error al crear el contribuyente.");
+                return;
+
             }
 
+            // ✅ Éxito
+            toast.success("¡Contribuyente creado exitosamente!")
+            setUploadedFiles([]);
+            console.log("User before" + JSON.stringify(user))
+            refreshUser()
+            console.log("User after" + JSON.stringify(user))
+            reset()
+
         } catch (error) {
+            console.error("Error inesperado en onSubmit:", error);
             toast.error("No se pudo crear el contribuyente, por favor, inténtelo de nuevo.");
         }
     }
