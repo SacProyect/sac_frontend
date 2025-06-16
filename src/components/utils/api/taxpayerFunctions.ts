@@ -348,5 +348,24 @@ export const downloadRepairPdf = async (key: string) => {
 	}
 }
 
+export const downloadInvestigationPdf = async (key: string) => {
+
+	try {
+
+
+		const response = await apiConnection.get(`taxpayer/download-investigation`, {
+			params: { key: encodeURIComponent(key) } 
+		});
+
+		console.log(response);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("Ocurrio un error al descargar, por favor, intente de nuevo")
+	}
+
+}
+
 
 

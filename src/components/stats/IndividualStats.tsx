@@ -3,12 +3,13 @@ import React, { useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
-import toast from "react-hot-toast";
-import { downloadRepairPdf, getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
+import toast, { Toaster } from "react-hot-toast";
+import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { IVAReports } from "@/types/IvaReports";
 import { RepairReports } from "@/types/RepairReports";
+import { InvestigationPdf } from "@/types/investigationPdf";
 
 
 
@@ -30,6 +31,7 @@ interface TaxpayerData {
     notified: Boolean,
     culminated: Boolean,
     RepairReports: RepairReports[],
+    investigation_pdfs: InvestigationPdf[],
 }
 
 
@@ -240,6 +242,43 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
+    const handleDownloadInvestigation = async () => {
+        if (loading) return;
+        setLoading(true);
+
+        const pdfs = taxpayerData?.investigation_pdfs;
+        const pdfsUrl = pdfs?.map((pdf) => pdf.pdf_url);
+
+        try {
+            if (pdfsUrl && pdfsUrl.length > 0) {
+                for (const url of pdfsUrl) {
+                    const key = url.replace("https://sacbucketgeneral.s3.amazonaws.com/", "");
+                    const response = await downloadInvestigationPdf(key);
+                    const signedUrl = response.data;
+
+                    if (signedUrl) {
+                        // Crear enlace de descarga
+                        const link = document.createElement("a");
+                        link.href = signedUrl;
+                        link.download = key.split("/").pop() || "archivo.pdf"; // nombre del archivo
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    } else {
+                        toast.error("No se pudo generar el enlace de descarga");
+                    }
+                }
+            }
+        } catch (error) {
+            console.error("No se pudo obtener la URL firmada", error);
+            toast.error("Error al generar los enlaces de descarga.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
+
 
 
     console.log("DATA: " + JSON.stringify(taxpayerData))
@@ -287,18 +326,27 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    {taxpayerData?.culminated === true ? (
-                        <div className="pt-2">
-                            <p className=" text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                                Procedimiento Culminado.
-                            </p>
-                        </div>
+                    <div className="flex items-center justify-center space-x-2 text-center">
 
-                    ) : (
-                        <div className="pt-2">
-                            <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
-                        </div>
-                    )}
+                        {taxpayerData?.culminated === true ? (
+                            <div className="pt-2">
+                                <p className=" text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                                    Procedimiento Culminado.
+                                </p>
+                            </div>
+
+                        ) : (
+                            <div className="pt-2">
+                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
+                            </div>
+                        )}
+
+                        {user?.role == "ADMIN" && (
+                            <div className="pt-2">
+                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
+                            </div>
+                        )}
+                    </div>
 
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
