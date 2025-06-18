@@ -1,148 +1,200 @@
-// src/components/iva/TaxSummaryTable.tsx
-import React, { useMemo, useState } from 'react'
-import { Table, TableBody, Cell } from 'react-aria-components'
-import InfoTableHeader from '../UI/InfoTable/InfoTableHeader'
-import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
-import InfoTableRow from '../UI/InfoTable/InfoTableRow'
-import { IVAReports } from '@/types/IvaReports'
-import toast from 'react-hot-toast'
-import { deleteIva } from '../utils/api/taxpayerFunctions'
-import { useAuth } from '@/hooks/useAuth'
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { IVAReports } from '@/types/IvaReports';
+import toast from 'react-hot-toast';
+import { deleteIva, updateIva } from '../utils/api/taxpayerFunctions';
+import { useAuth } from '@/hooks/useAuth';
 
 interface Props {
-    rows: IVAReports[]
-    pdfMode?: boolean
+    rows: IVAReports[];
+    pdfMode?: boolean;
 }
 
 const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
+    const [editingRowId, setEditingRowId] = useState<string | null>(null);
+    const [editValues, setEditValues] = useState<Partial<IVAReports>>({});
+    const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
     const { user } = useAuth();
 
-    const [sortDescriptor, setSortDescriptor] = useState<{
-        column: keyof IVAReports
-        direction: 'ascending' | 'descending'
-    }>({ column: 'date', direction: 'descending' })
-
-    const columns: { name: string; id: keyof IVAReports | "options" }[] = [
+    const columns: { name: string; id: keyof IVAReports | 'options' }[] = [
         { name: 'Fecha', id: 'date' },
         { name: 'IVA', id: 'iva' },
         { name: 'Excedente de Crédito', id: 'excess' },
         { name: 'Compras', id: 'purchases' },
         { name: 'Ventas', id: 'sells' },
         { name: 'Recaudado', id: 'paid' },
-        { name: "Acciones", id: "options" },
-    ]
-
-    console.log(rows)
+        { name: 'Acciones', id: 'options' },
+    ];
 
     const sortedItems = useMemo(() => {
-        return [...rows].sort((a, b) => {
-            let aVal: any = a[sortDescriptor.column]
-            let bVal: any = b[sortDescriptor.column]
-
-            if (sortDescriptor.column === 'date') {
-                aVal = new Date(aVal).getTime();
-                bVal = new Date(bVal).getTime();
-            }
-
-            if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortDescriptor.direction === 'ascending'
-                    ? aVal - bVal
-                    : bVal - aVal
-            }
-
-            return (
-                String(aVal ?? '').localeCompare(String(bVal ?? '')) *
-                (sortDescriptor.direction === 'ascending' ? 1 : -1)
-            )
-        })
-    }, [rows, sortDescriptor])
+        return [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    }, [rows]);
 
     const processedItems = useMemo(() => {
-        return sortedItems.map((item, index) => ({
-            ...item,
-            _key: item.id || index.toString(),
-        }));
+        return sortedItems.map((item, index) => ({ ...item, _key: item.id || index.toString() }));
     }, [sortedItems]);
+
+    const toggleMenu = (id: string) => {
+        setActiveMenuId((prev) => (prev === id ? null : id));
+    };
+
+    const handleEdit = (item: IVAReports) => {
+        setEditingRowId(item.id);
+        setEditValues({ ...item });
+        setActiveMenuId(null);
+    };
+
+    const handleInputChange = (field: keyof IVAReports, value: string) => {
+        setEditValues((prev) => ({ ...prev, [field]: value }));
+    };
+
+    const handleSave = async () => {
+        try {
+            if (!editingRowId) return;
+            const payload = { ...editValues };
+            await updateIva(payload);
+            toast.success('Cambios guardados');
+            setEditingRowId(null);
+            setEditValues({});
+        } catch (error) {
+            toast.error('Error al guardar');
+        }
+    };
+
+    const handleCancel = () => {
+        setEditingRowId(null);
+        setEditValues({});
+    };
 
     const confirmDeleteReport = async () => {
         if (!reportIdToDelete) return;
         try {
-            await deleteIva(reportIdToDelete); // ⚠️ Tú importas esta función
-            toast.success("Reporte de IVA eliminado correctamente.");
-            // Si necesitas actualizar los rows desde props, deberías recibir también setRows como prop.
+            await deleteIva(reportIdToDelete);
+            toast.success('Reporte eliminado');
             setReportIdToDelete(null);
         } catch (err: any) {
-            toast.error(`Error al eliminar el reporte de IVA: ${err.message || err}`);
+            toast.error(`Error: ${err.message || err}`);
         }
     };
 
-    return (
-        <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4">
-            {pdfMode && (
-                <p className='py-8 text-lg'>Historial de IVA</p>
-            )}
-            <Table
-                aria-label="Resumen de IVA"
-                selectionMode="none"
-                sortDescriptor={sortDescriptor}
-                onSortChange={d =>
-                    setSortDescriptor({
-                        column: d.column as keyof IVAReports,
-                        direction: d.direction,
-                    })
-                }
-                className="min-w-full"
-            >
-                <InfoTableHeader columns={columns}>
-                    {(col: { name: string; id: keyof IVAReports }) => (
-                        <InfoTableColumn
-                            key={col.id}
-                            allowsSorting
-                            isRowHeader={col.id === 'date'}
-                        >
-                            {col.name}
-                        </InfoTableColumn>
-                    )}
-                </InfoTableHeader>
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            const clickedOutsideAll = Object.values(menuRefs.current).every(
+                (ref) => !ref?.contains(event.target as Node)
+            );
+            if (clickedOutsideAll) {
+                setActiveMenuId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
-                <TableBody items={processedItems}>
-                    {(item: IVAReports & { _key: string }) => (
-                        <InfoTableRow key={item._key} id={item.id} columns={columns}>
-                            {(col: { name: string; id: keyof IVAReports | "options" }) => (
-                                <Cell className="px-4 py-2 whitespace-nowrap">
-                                    {col.id === 'date'
-                                        ? (() => {
-                                            const [y, m, d] = item.date.slice(0, 10).split("-");
+    return (
+        <div className="w-full px-4 overflow-auto text-sm custom-scroll">
+            {pdfMode && <p className="py-8 text-lg">Historial de IVA</p>}
+            <table className="min-w-full text-left border-collapse">
+                <thead className="w-full bg-[#2C3E50]">
+                    <tr>
+                        {columns.map((col, idx) => {
+                            const isFirst = idx === 0;
+                            const isLast = idx === columns.length - 1;
+                            return (
+                                <th
+                                    key={col.id}
+                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''
+                                        } ${isLast ? 'rounded-tr-md' : ''}`}
+                                >
+                                    {col.name}
+                                </th>
+                            );
+                        })}
+                    </tr>
+                </thead>
+                <tbody>
+                    {processedItems.map((item) => (
+                        <tr key={item._key} className="hover:bg-gray-50">
+                            {columns.map((col) => (
+                                <td key={col.id} className="relative px-4 py-2 border-b border-gray-100 whitespace-nowrap">
+                                    {editingRowId === item.id && col.id !== 'options' ? (
+                                        <input
+                                            value={String(editValues[col.id as keyof IVAReports] ?? '')}
+                                            onChange={(e) =>
+                                                handleInputChange(col.id as keyof IVAReports, e.target.value)
+                                            }
+                                            className="w-full px-2 py-1 border border-gray-300 rounded"
+                                        />
+                                    ) : col.id === 'options' ? (
+                                        <div
+                                            className="relative inline-block"
+                                            ref={(el) => {
+                                                menuRefs.current[item.id] = el;
+                                            }}
+                                        >
+                                            <button
+                                                onClick={() => toggleMenu(item.id)}
+                                                className="text-gray-600 hover:text-gray-900"
+                                            >
+                                                ⋮
+                                            </button>
+                                            {activeMenuId === item.id && (
+                                                <div className="absolute right-0 z-50 bg-white border rounded shadow-md top-6">
+                                                    <button
+                                                        onClick={() => handleEdit(item)}
+                                                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                                                    >
+                                                        Editar
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setReportIdToDelete(item.id)}
+                                                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
+                                                    >
+                                                        Eliminar
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : col.id === 'date' ? (
+                                        (() => {
+                                            const [y, m, d] = item.date.slice(0, 10).split('-');
                                             return `${d}/${m}/${y}`;
                                         })()
-                                        : col.id === 'iva'
-                                            ? `${item.iva} BS`
-                                            : col.id === 'excess'
-                                                ? `${item.excess ?? 0} BS`
-                                                : col.id === 'options'
-                                                    ? (
-                                                        !pdfMode && (
-                                                            <button
-                                                                onClick={() => setReportIdToDelete(item.id)}
-                                                                className="text-red-600 hover:underline"
-                                                            >
-                                                                Eliminar
-                                                            </button>
-                                                        )
-                                                    )
-                                                    : String(item[col.id])}
-                                </Cell>
-                            )}
-                        </InfoTableRow>
-                    )}
-                </TableBody>
-            </Table>
-            {reportIdToDelete && user && user.role === "ADMIN" && (
+                                    ) : (
+                                        String(item[col.id as keyof IVAReports])
+                                    )}
+                                </td>
+                            ))}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            {editingRowId && (
+                <div className="flex justify-end gap-4 mt-4">
+                    <button
+                        onClick={handleSave}
+                        className="px-4 py-2 text-sm text-white bg-green-600 rounded hover:bg-green-700"
+                    >
+                        Guardar cambios
+                    </button>
+                    <button
+                        onClick={handleCancel}
+                        className="px-4 py-2 text-sm border border-gray-400 rounded hover:bg-gray-100"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            )}
+
+            {reportIdToDelete && user?.role === 'ADMIN' && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="max-w-sm p-6 text-center bg-white rounded shadow-md">
                         <p className="mb-4 text-sm">
-                            ¿Está seguro que desea eliminar el reporte con ID: <strong>{reportIdToDelete}</strong>?
+                            ¿Está seguro que desea eliminar el reporte con ID:{' '}
+                            <strong>{reportIdToDelete}</strong>?
                         </p>
                         <div className="flex justify-center gap-4 mt-4">
                             <button
@@ -162,7 +214,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                 </div>
             )}
         </div>
-    )
-}
+    );
+};
 
-export default TaxSummaryTable
+export default TaxSummaryTable;

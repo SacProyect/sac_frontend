@@ -8,4 +8,5 @@ export interface IVAReports {
     purchases: number;
     sells: number;
     paid: number;
+    taxpayerId?: string;
 }
