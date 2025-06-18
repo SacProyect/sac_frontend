@@ -8,8 +8,9 @@ import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
 import InfoTableRow from '../UI/InfoTable/InfoTableRow'
 import { Cell } from 'react-aria-components'
 import toast from 'react-hot-toast'
-import { updateFinePayment } from '../utils/api/taxpayerFunctions'
+import { deleteEvent, updateFinePayment } from '../utils/api/taxpayerFunctions'
 import { Event } from '@/types/event'
+import { useAuth } from '@/hooks/useAuth'
 
 
 interface EventRow {
@@ -36,6 +37,11 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     direction: "ascending"
   })
 
+  const [eventIdToDelete, setEventIdToDelete] = useState<string | null>(null);
+  const { user } = useAuth();
+
+
+
 
   const columns = [
     { name: "tipo", id: "type", isRowHeader: true },
@@ -44,6 +50,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     { name: "Fecha", id: "date" },
     { name: "Motivo", id: "description" },
     { name: "Estado", id: "debt" },
+    { name: "Acciones", id: "options" },
   ]
 
   const sortedItems = useMemo(() => {
@@ -86,6 +93,24 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
       return false;
     }
   };
+
+  const handleDeleteEvent = (id: string) => {
+    setEventIdToDelete(id);
+  };
+
+  const confirmDeleteEvent = async () => {
+    if (!eventIdToDelete) return;
+
+    try {
+      await deleteEvent(eventIdToDelete.split('_')[0]); // importa manualmente esta función
+      toast.success("Evento eliminado correctamente.");
+      setRows(prev => prev.filter(row => row.id !== eventIdToDelete));
+      setEventIdToDelete(null);
+    } catch (error: any) {
+      toast.error(`Error al eliminar el evento: ${error.message || error}`);
+    }
+  };
+
 
 
   return (
@@ -130,41 +155,51 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
               <InfoTableRow columns={columns} key={itemKey}>
                 {(column: { name: string; id: string; isRowHeader?: boolean }) =>
                   <Cell
-                    className="px-4 py-8 whitespace-normal break-words max-w-[64rem] focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white"
+                    className=" px-4 lg:px-2 py-8 text-xs max-w-[20rem] truncate whitespace-normal break-words focus-visible:outline focus-visible:outline-2 focus-visible:outline-slate-600 focus-visible:-outline-offset-4 group-selected:focus-visible:outline-white"
                   >
                     {
                       column.id === "type" ? (typeMapping[item[column.id]] || item[column.id]) :
-                        column.id === "date" ? new Date(item.date).toLocaleDateString() :
-                          column.id === "amount" ? `${item[column.id]} Bs` :
-                            column.id === "description" ? (item.description || "") :
-                              column.id === "debt" ? (
-                                item.type === "FINE" ? (
-                                  <select
-                                    value={currentStatus}
-                                    onChange={async (e) => {
-                                      const value = e.target.value as "paid" | "not_paid";
-                                      const [rawId] = item.id.split('_'); // Gets only the UUID before '_FINE'
-                                      const success = await handlePaymentChange(rawId, value);
-                                      if (success) {
-                                        // Just update the rows directly, no need for the statusMap anymore
-                                        setRows(prevRows =>
-                                          prevRows.map(row =>
-                                            row.id.startsWith(item.id) ? { ...row, debt: value === "paid" ? 0 : 1 } : row
-                                          )
-                                        );
-                                      }
-                                    }}
-                                    className={`rounded px-2 py-1 text-xs text-white
+                        column.id === "options" ? (
+                          !pdfMode && user && user?.role === "ADMIN" && (
+                            <button
+                              onClick={() => handleDeleteEvent(item.id)}
+                              className="text-red-600 hover:underline"
+                            >
+                              Eliminar
+                            </button>
+                          )
+                        ) :
+                          column.id === "date" ? new Date(item.date).toLocaleDateString() :
+                            column.id === "amount" ? `${item[column.id]} Bs` :
+                              column.id === "description" ? (item.description || "") :
+                                column.id === "debt" ? (
+                                  item.type === "FINE" ? (
+                                    <select
+                                      value={currentStatus}
+                                      onChange={async (e) => {
+                                        const value = e.target.value as "paid" | "not_paid";
+                                        const [rawId] = item.id.split('_'); // Gets only the UUID before '_FINE'
+                                        const success = await handlePaymentChange(rawId, value);
+                                        if (success) {
+                                          // Just update the rows directly, no need for the statusMap anymore
+                                          setRows(prevRows =>
+                                            prevRows.map(row =>
+                                              row.id.startsWith(item.id) ? { ...row, debt: value === "paid" ? 0 : 1 } : row
+                                            )
+                                          );
+                                        }
+                                      }}
+                                      className={`rounded px-2 py-1 text-xs text-white
                                     ${currentStatus === 'not_paid' ? 'bg-red-600' : 'bg-green-600'}
                                     `}
-                                  >
-                                    <option value="not_paid" className="text-white bg-red-600">No pagada</option>
-                                    <option value="paid" className="text-white bg-green-600">Pagada</option>
-                                  </select>
-                                ) : (
-                                  <span className="text-gray-700">—</span> // or show nothing, or the debt value
-                                )
-                              ) : item[column.id]
+                                    >
+                                      <option value="not_paid" className="text-white bg-red-600">No pagada</option>
+                                      <option value="paid" className="text-white bg-green-600">Pagada</option>
+                                    </select>
+                                  ) : (
+                                    <span className="text-gray-700">—</span> // or show nothing, or the debt value
+                                  )
+                                ) : item[column.id]
                     }
                   </Cell>
                 }
@@ -173,6 +208,30 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
           }}
         </TableBody>
       </Table>
+
+      {eventIdToDelete && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="max-w-sm p-6 text-center bg-white rounded shadow-md">
+            <p className="mb-4 text-sm">
+              ¿Está seguro que desea eliminar el evento con ID: <strong>{eventIdToDelete}</strong>?
+            </p>
+            <div className="flex justify-center gap-4 mt-4">
+              <button
+                onClick={confirmDeleteEvent}
+                className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+              >
+                Confirmar
+              </button>
+              <button
+                onClick={() => setEventIdToDelete(null)}
+                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

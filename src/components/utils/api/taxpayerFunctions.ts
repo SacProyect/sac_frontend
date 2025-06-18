@@ -367,5 +367,46 @@ export const downloadInvestigationPdf = async (key: string) => {
 
 }
 
+export const deleteEvent = async (id: string) => {
+
+	try {
+
+		let requestURL = "/taxpayer/event"
+
+		const response = await apiConnection.delete(`${requestURL}/${id}`);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo eliminar, por favor, intente de nuevo.")
+	}
+}
+
+export const deleteIva = async (id: string) => {
+	try {
+		let requestURL = "/taxpayer/delete-iva"
+
+		const response = await apiConnection.delete(`${requestURL}/${id}`);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo eliminar el reporte de iva")
+	}
+}
+
+export const deleteISLR = async (id: string) => {
+	try {
+		let requestURL = "/taxpayer/delete-islr"
+
+		const response = await apiConnection.delete(`${requestURL}/${id}`);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo borrar el reporte de ISLR.")
+	}
+}
 
 

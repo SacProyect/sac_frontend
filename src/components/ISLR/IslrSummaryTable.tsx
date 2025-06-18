@@ -5,6 +5,9 @@ import InfoTableHeader from '../UI/InfoTable/InfoTableHeader'
 import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
 import InfoTableRow from '../UI/InfoTable/InfoTableRow'
 import { ISLRReports } from '@/types/ISLRReports'
+import toast from 'react-hot-toast'
+import { useAuth } from '@/hooks/useAuth'
+import { deleteISLR } from '../utils/api/taxpayerFunctions'
 
 interface Props {
     rows: ISLRReports[]
@@ -12,6 +15,8 @@ interface Props {
 }
 
 const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
+    const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null)
+    const { user, refreshUser } = useAuth();
     const [sortDescriptor, setSortDescriptor] = useState<{
         column: keyof ISLRReports
         direction: 'ascending' | 'descending'
@@ -24,6 +29,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         { name: 'Gastos', id: 'expent' },
         { name: 'Costos', id: 'costs' },
         { name: 'Fecha de Emisión', id: 'emition_date' },
+        { name: 'Acciones', id: 'options' },
     ]
 
     const sortedItems = useMemo(() => {
@@ -55,6 +61,18 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
             _key: item.id || index.toString(),
         }))
     }, [sortedItems])
+
+    const confirmDelete = async () => {
+        if (!reportIdToDelete) return
+        try {
+            await deleteISLR(reportIdToDelete);
+            toast.success("Reporte de ISLR eliminado correctamente.");
+            setReportIdToDelete(null);
+            refreshUser();
+        } catch (err: any) {
+            toast.error(`Error al eliminar: ${err.message || err}`);
+        }
+    }
 
     return (
         <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4">
@@ -109,6 +127,18 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                                             return item.taxpayer.process
                                         }
 
+
+                                        if (id === 'options') {
+                                            return !pdfMode && user?.role === "ADMIN" ? (
+                                                <button
+                                                    onClick={() => setReportIdToDelete(item.id)}
+                                                    className="text-red-600 hover:underline"
+                                                >
+                                                    Eliminar
+                                                </button>
+                                            ) : null
+                                        }
+
                                         return String(item[id as keyof ISLRReports] ?? '')
                                     })()}
                                 </Cell>
@@ -117,6 +147,29 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                     )}
                 </TableBody>
             </Table>
+            {reportIdToDelete && user && user.role === "ADMIN" && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="max-w-sm p-6 text-center bg-white rounded shadow-md">
+                        <p className="mb-4 text-sm">
+                            ¿Está seguro que desea eliminar el reporte con ID: <strong>{reportIdToDelete}</strong>?
+                        </p>
+                        <div className="flex justify-center gap-4 mt-4">
+                            <button
+                                onClick={confirmDelete}
+                                className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700"
+                            >
+                                Confirmar
+                            </button>
+                            <button
+                                onClick={() => setReportIdToDelete(null)}
+                                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                            >
+                                Cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }
