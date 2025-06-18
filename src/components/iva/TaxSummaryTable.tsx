@@ -127,7 +127,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                                             }
                                             className="w-full px-2 py-1 border border-gray-300 rounded"
                                         />
-                                    ) : col.id === 'options' ? (
+                                    ) : col.id === 'options' && user && user.role === "ADMIN" ? (
                                         <div
                                             className="relative inline-block"
                                             ref={(el) => {
