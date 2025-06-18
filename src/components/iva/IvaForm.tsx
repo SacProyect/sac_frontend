@@ -39,6 +39,10 @@ function IvaForm() {
 
     if (!user) return null;
 
+    useEffect(() => {
+        refreshUser();
+    }, [])
+
 
     let taxpayerArray: Taxpayer[] = [];
     if (user.role === "ADMIN" || user.role === "FISCAL") {
