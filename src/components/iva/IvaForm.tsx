@@ -42,6 +42,10 @@ function IvaForm() {
 
     if (!user) return null;
 
+    useEffect(() => {
+        refreshUser();
+    }, [])
+
 
     useEffect(() => {
         const fetchTaxpayers = async () => {
