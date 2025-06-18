@@ -14,9 +14,9 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Partial<IVAReports>>({});
-    const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-    const { user } = useAuth();
+    const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
 
+    const { user } = useAuth();
     const columns: { name: string; id: keyof IVAReports | 'options' }[] = [
         { name: 'Fecha', id: 'date' },
         { name: 'IVA', id: 'iva' },
@@ -35,8 +35,21 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         return sortedItems.map((item, index) => ({ ...item, _key: item.id || index.toString() }));
     }, [sortedItems]);
 
-    const toggleMenu = (id: string) => {
-        setActiveMenuId((prev) => (prev === id ? null : id));
+    const toggleMenu = (id: string, buttonRef: HTMLButtonElement | null) => {
+        if (activeMenuId === id) {
+            setActiveMenuId(null);
+            return;
+        }
+
+        if (buttonRef) {
+            const rect = buttonRef.getBoundingClientRect();
+            setDropdownPos({
+                top: rect.bottom + 4,
+                left: rect.right - 160,
+            });
+        }
+
+        setActiveMenuId(id);
     };
 
     const handleEdit = (item: IVAReports) => {
@@ -57,7 +70,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
             toast.success('Cambios guardados');
             setEditingRowId(null);
             setEditValues({});
-        } catch (error) {
+        } catch {
             toast.error('Error al guardar');
         }
     };
@@ -79,18 +92,13 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
     };
 
     useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            const clickedOutsideAll = Object.values(menuRefs.current).every(
-                (ref) => !ref?.contains(event.target as Node)
-            );
-            if (clickedOutsideAll) {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (!(e.target as HTMLElement)?.closest('.menu-dropdown')) {
                 setActiveMenuId(null);
             }
         };
         document.addEventListener('mousedown', handleClickOutside);
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     return (
@@ -105,8 +113,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                             return (
                                 <th
                                     key={col.id}
-                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''
-                                        } ${isLast ? 'rounded-tr-md' : ''}`}
+                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
                                 >
                                     {col.name}
                                 </th>
@@ -117,60 +124,69 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                 <tbody>
                     {processedItems.map((item) => (
                         <tr key={item._key} className="hover:bg-gray-50">
-                            {columns.map((col) => (
-                                <td key={col.id} className="relative px-4 py-2 border-b border-gray-100 whitespace-nowrap">
-                                    {editingRowId === item.id && col.id !== 'options' ? (
-                                        <input
-                                            value={String(editValues[col.id as keyof IVAReports] ?? '')}
-                                            onChange={(e) =>
-                                                handleInputChange(col.id as keyof IVAReports, e.target.value)
-                                            }
-                                            className="w-full px-2 py-1 border border-gray-300 rounded"
-                                        />
-                                    ) : col.id === 'options' && user && user.role === "ADMIN" ? (
-                                        <div
-                                            className="relative inline-block"
-                                            ref={(el) => {
-                                                menuRefs.current[item.id] = el;
-                                            }}
-                                        >
-                                            <button
-                                                onClick={() => toggleMenu(item.id)}
-                                                className="text-gray-600 hover:text-gray-900"
-                                            >
-                                                ⋮
-                                            </button>
-                                            {activeMenuId === item.id && (
-                                                <div className="absolute right-0 z-50 bg-white border rounded shadow-md top-6">
-                                                    <button
-                                                        onClick={() => handleEdit(item)}
-                                                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
-                                                    >
-                                                        Editar
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setReportIdToDelete(item.id)}
-                                                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
-                                                    >
-                                                        Eliminar
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    ) : col.id === 'date' ? (
-                                        (() => {
-                                            const [y, m, d] = item.date.slice(0, 10).split('-');
-                                            return `${d}/${m}/${y}`;
-                                        })()
-                                    ) : (
-                                        String(item[col.id as keyof IVAReports])
-                                    )}
-                                </td>
-                            ))}
+                            {columns.map((col) => {
+                                const buttonRef = useRef<HTMLButtonElement | null>(null);
+                                return (
+                                    <td key={col.id} className="relative px-4 py-2 border-b border-gray-100 whitespace-nowrap">
+                                        {editingRowId === item.id && col.id !== 'options' ? (
+                                            <input
+                                                value={String(editValues[col.id as keyof IVAReports] ?? '')}
+                                                onChange={(e) => handleInputChange(col.id as keyof IVAReports, e.target.value)}
+                                                className="w-full px-2 py-1 border border-gray-300 rounded"
+                                            />
+                                        ) : col.id === 'options' && user?.role === 'ADMIN' ? (
+                                            <div className="relative inline-block">
+                                                <button
+                                                    ref={buttonRef}
+                                                    onClick={() => toggleMenu(item.id, buttonRef.current)}
+                                                    className="text-gray-600 hover:text-gray-900"
+                                                >
+                                                    ⋮
+                                                </button>
+                                            </div>
+                                        ) : col.id === 'date' ? (
+                                            (() => {
+                                                const [y, m, d] = item.date.slice(0, 10).split('-');
+                                                return `${d}/${m}/${y}`;
+                                            })()
+                                        ) : (
+                                            String(item[col.id as keyof IVAReports])
+                                        )}
+                                    </td>
+                                );
+                            })}
                         </tr>
                     ))}
                 </tbody>
             </table>
+
+            {activeMenuId && dropdownPos && (
+                <div
+                    className="fixed z-[9999] w-40 bg-white border border-gray-200 rounded-md shadow-lg menu-dropdown"
+                    style={{ top: dropdownPos.top, left: dropdownPos.left }}
+                >
+                    <button
+                        onClick={() => {
+                            const row = rows.find(r => r.id === activeMenuId);
+                            if (row) {
+                                handleEdit(row);
+                            }
+                        }}
+                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                    >
+                        Editar
+                    </button>
+                    <button
+                        onClick={() => {
+                            setReportIdToDelete(activeMenuId);
+                            setActiveMenuId(null);
+                        }}
+                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
+                    >
+                        Eliminar
+                    </button>
+                </div>
+            )}
 
             {editingRowId && (
                 <div className="flex justify-end gap-4 mt-4">
