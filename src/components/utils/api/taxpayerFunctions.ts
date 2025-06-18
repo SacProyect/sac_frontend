@@ -5,6 +5,7 @@ import { NewEvent } from "../../Events/EventForm";
 import { ObservationsForm } from "@/components/observations/ObservationsHeader";
 import { IvaReportFormData } from "@/components/iva/IvaForm";
 import { IslrReportFormData } from "@/components/ISLR/IslrForm";
+import { IVAReports } from "@/types/IvaReports";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -196,6 +197,21 @@ export const updateFinePayment = async (id: string, status: "paid" | "not_paid")
 	}
 }
 
+export const updateIva = async (payload: Partial<IVAReports>) => {
+	try {
+		if (!payload.id) throw new Error("ID requerido para actualizar el reporte");
+
+		const requestURL = "/taxpayer/updateIva";
+
+		const response = await apiConnection.put(`${requestURL}/${payload.id}`, payload);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo actualizar el reporte de IVA.");
+	}
+};
+
 
 export const createObservation = async (data: ObservationsForm) => {
 	try {
@@ -354,7 +370,7 @@ export const downloadInvestigationPdf = async (key: string) => {
 
 
 		const response = await apiConnection.get(`taxpayer/download-investigation`, {
-			params: { key: encodeURIComponent(key) } 
+			params: { key: encodeURIComponent(key) }
 		});
 
 		console.log(response);
