@@ -12,12 +12,12 @@ import Decimal from 'decimal.js';
 
 export interface IvaReportFormData {
     taxpayerId: string;
-    iva?: number;
-    purchases: number;
-    sells: number;
-    excess?: number;
+    iva?: Decimal;
+    purchases: Decimal;
+    sells: Decimal;
+    excess?: Decimal;
     date: string;
-    paid: string;
+    paid: Decimal;
 }
 
 
@@ -72,21 +72,33 @@ function IvaForm() {
     const onSubmit = async (data: IvaReportFormData) => {
         console.log("Submitting data:", data);
 
-        if (data.iva && data.excess) {
-            toast.error("No puede ingresar IVA y excedente al mismo tiempo.");
-            return;
-        }
-
-        const formattedData = { ...data, paid: new Decimal(data.paid.replace(",", ".")).toString(), }
+        // if (data.iva && data.excess) {
+        //     toast.error("No puede ingresar IVA y excedente al mismo tiempo.");
+        //     return;
+        // }
 
         try {
+            const formattedData = {
+                taxpayerId: data.taxpayerId,
+                date: data.date,
+                iva: data.iva !== undefined && data.iva !== null
+                    ? new Decimal(String(data.iva).replace(",", "."))
+                    : undefined,
+                purchases: new Decimal(String(data.purchases).replace(",", ".")),
+                sells: new Decimal(String(data.sells).replace(",", ".")),
+                paid: new Decimal(String(data.paid).replace(",", ".")),
+                excess: data.excess !== undefined && data.excess !== null
+                    ? new Decimal(String(data.excess).replace(",", "."))
+                    : undefined,
+            };
+
             const report = await createIVA(formattedData);
             if (report) {
                 reset();
                 await refreshUser();
                 setTimeout(() => {
-                    setValue("taxpayerId", data.taxpayerId); // volver a establecer contribuyente
-                }, 500); // esperar un poco antes de restablecer valor para recalcular
+                    setValue("taxpayerId", data.taxpayerId);
+                }, 500);
                 toast.success("Reporte creado exitosamente");
             }
         } catch (e: any) {
@@ -106,10 +118,10 @@ function IvaForm() {
 
     const selectedTaxpayer = taxpayerArray.find(t => t.id === taxpayerId);
 
-    const calculatedExcess =
-        selectedTaxpayer?.IVAReports?.slice().sort(
-            (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-        )[0]?.excess || 0;
+    // const calculatedExcess =
+    //     selectedTaxpayer?.IVAReports?.slice().sort(
+    //         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+    //     )[0]?.excess || 0;
 
 
     // Recalcular mes siguiente cuando cambie el contribuyente
@@ -215,43 +227,55 @@ function IvaForm() {
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-600">Monto de IVA (BS)</label>
                     <input
-                        type="number"
+                        type="text"
                         {...register("iva", {
                             required: excessValue ? false : "Este campo es obligatorio",
-                            valueAsNumber: true,
-                            min: { value: 0, message: "Debe ser un valor positivo" },
+                            pattern: {
+                                value: /^[0-9]+([.,][0-9]{1,2})?$/, // acepta decimales con punto o coma
+                                message: "Debe ser un número válido, use punto o coma como decimal",
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(String(value).replace(",", "."));
+                                if (isNaN(parsed) || parsed < 0) return "Debe ser un número positivo";
+                                return true;
+                            }
                         })}
                         placeholder="Introduzca el monto de IVA..."
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        disabled={typeof excessValue === "number" && !isNaN(excessValue) && excessValue > 0}
                     />
-                    {typeof excessValue === "number" && !isNaN(excessValue) && excessValue > 0 && (
-                        <p className="mt-1 text-xs text-yellow-600">
-                            Este campo está deshabilitado porque ya se introdujo un excedente de crédito.
-                        </p>
-                    )}
                 </div>
 
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Compras (BS)</label>
-                    <input
-                        type="number"
-                        {...register("purchases", {
-                            required: "Este campo es obligatorio",
-                            valueAsNumber: true,
-                        })}
-                        placeholder="Monto de compras..."
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
+                <input
+                    type="text"
+                    {...register("purchases", {
+                        required: "Este campo es obligatorio",
+                        pattern: {
+                            value: /^[0-9]+([.,][0-9]{1,2})?$/,
+                            message: "Debe ser un número válido con punto o coma decimal"
+                        },
+                        validate: (value) => {
+                            const parsed = parseFloat(String(value).replace(",", "."));
+                            return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                        }
+                    })}
+                    placeholder="Monto de compras..."
+                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
 
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-600">Ventas (BS)</label>
                     <input
-                        type="number"
+                        type="text"
                         {...register("sells", {
                             required: "Este campo es obligatorio",
-                            valueAsNumber: true,
+                            pattern: {
+                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
+                                message: "Debe ser un número válido con punto o coma decimal"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(String(value).replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
                         })}
                         placeholder="Monto de ventas..."
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -269,7 +293,7 @@ function IvaForm() {
                                 message: "Solo se permiten números, puntos o comas"
                             },
                             validate: (value) => {
-                                const parsed = parseFloat(value.replace(",", "."));
+                                const parsed = parseFloat(String(value).replace(",", "."));
                                 return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
                             }
                         })}
@@ -278,31 +302,31 @@ function IvaForm() {
                     />
                 </div>
 
-                {(calculatedExcess === 0 || calculatedExcess === undefined) && (
-                    <div>
-                        <label className="block mb-1 text-sm font-medium text-gray-600">Excedente (BS)</label>
-                        <input
-                            type="number"
-                            {...register("excess", {
-                                valueAsNumber: true,
-                            })}
-                            placeholder="Monto de excedente (opcional)..."
-                            className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-200"
-                            disabled={typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0}
-                        />
-                        {typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0 && (
-                            <p className="mt-1 text-xs text-yellow-600">
-                                Este campo está deshabilitado porque ya se introdujo un monto de IVA.
-                            </p>
-                        )}
-                    </div>
-                )}
-
-                {calculatedExcess > 0 && taxpayerId !== "" && (
-                    <div>
-                        <p className='text-sm'>Excedente de crédito: {calculatedExcess}</p>
-                    </div>
-                )}
+                <div>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Excedente (BS)</label>
+                    <input
+                        type="text"
+                        {...register("excess", {
+                            pattern: {
+                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
+                                message: "Debe ser un número válido con punto o coma decimal"
+                            },
+                            validate: (value) => {
+                                if (!value) return true;
+                                const parsed = parseFloat(String(value).replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Monto de excedente (opcional)..."
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-200"
+                    />
+                    {/* // disabled={typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0} */}
+                    {/* {typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0 && (
+                        <p className="mt-1 text-xs text-yellow-600">
+                            Este campo está deshabilitado porque ya se introdujo un monto de IVA.
+                        </p>
+                    )} */}
+                </div>
 
 
                 <input
