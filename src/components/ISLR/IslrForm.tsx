@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Control, useForm } from 'react-hook-form';
@@ -22,8 +22,8 @@ export interface IslrReportFormData {
 function IslrForm() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
-    const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
-    const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
+    const [filter, setFilter] = useState('');
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -79,6 +79,12 @@ function IslrForm() {
         }
     };
 
+    const filteredTaxpayers = useMemo(() => {
+        return taxpayerArray.filter(t =>
+            `${t.providenceNum} ${t.process} ${t.rif} ${t.name}`.toLowerCase().includes(filter.toLowerCase())
+        );
+    }, [taxpayerArray, filter]);
+
     return (
         <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
             <form
@@ -89,12 +95,42 @@ function IslrForm() {
             >
                 <h1 className="text-xl font-semibold text-center text-gray-800">Agregar Reporte de ISLR</h1>
 
-                <TaxpayerCombobox
-                    name="taxpayerId"
-                    control={control as Control<IslrReportFormData | EventFormData | IvaReportFormData>}
-                    label="Contribuyente"
-                    taxpayers={taxpayerArray}
-                />
+                <div className="relative">
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Buscar Contribuyente</label>
+                    <input
+                        type="text"
+                        value={filter}
+                        onChange={(e) => setFilter(e.target.value)}
+                        onFocus={() => setShowSuggestions(true)}
+                        placeholder="Buscar por nombre, RIF o número de providencia"
+                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    {showSuggestions && (
+                        <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg max-h-60">
+                            {filteredTaxpayers.length > 0 ? (
+                                filteredTaxpayers.map((t) => (
+                                    <div
+                                        key={t.id}
+                                        onClick={() => {
+                                            setValue("taxpayerId", t.id);
+                                            setFilter(t.name); // ← aquí antes lo borrabas con setFilter('')
+                                            setShowSuggestions(false);
+                                        }}
+                                        className={`px-4 py-2 text-sm cursor-pointer transition-all hover:bg-blue-100 ${watch("taxpayerId") === t.id ? "bg-blue-200" : ""
+                                            }`}
+                                    >
+                                        <div className="font-semibold">{t.name}</div>
+                                        <div className="text-xs text-gray-500">{t.rif} — {t.process}</div>
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="px-4 py-2 text-sm text-gray-500">No se encontraron resultados</div>
+                            )}
+                        </div>
+                    )}
+                </div>
+                <input type="hidden" {...register("taxpayerId", { required: "Este campo es obligatorio" })} />
+
 
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-600">Ingresos (BS)</label>
