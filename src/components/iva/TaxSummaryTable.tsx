@@ -138,7 +138,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                 onChange={(e) => handleInputChange(col.id as keyof IVAReports, e.target.value)}
                                                 className="w-full px-2 py-1 border border-gray-300 rounded"
                                             />
-                                        ) : col.id === 'options' && user?.role === 'ADMIN' ? (
+                                        ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
                                             <div className="relative inline-block">
                                                 <button
                                                     ref={buttonRef}
