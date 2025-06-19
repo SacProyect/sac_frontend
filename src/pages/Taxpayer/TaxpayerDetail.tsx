@@ -26,9 +26,11 @@ import { useAuth } from '@/hooks/useAuth'
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-	const { events: initialEvents, fines, payments, taxSummary, islrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
+	const { events: initialEvents, fines, payments, taxSummary: initialTaxSummary, islrReports: initialIslrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
 
 	const [events, setEvents] = useState<Event[]>(initialEvents);
+	const [taxSummary, setTaxSummary] = useState<IVAReports[]>(initialTaxSummary);
+	const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
 	const [selectedTable, setSelectedTable] = useState("fine");
 	const { user } = useAuth();
 	const location = useLocation();
@@ -101,13 +103,13 @@ const TaxpayerDetail = () => {
 			) : selectedTable === "iva" ? (
 				<div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{taxSummary.length > 0 ? (
-						<TaxSummaryTable rows={taxSummary} />
+						<TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
 					) : "No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla."}
 
 				</div>
 			) : <div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 				{islrReports.length > 0 ? (
-					<ISLRSummaryTable rows={islrReports} />
+					<ISLRSummaryTable rows={islrReports} setRows={setIslrReports} />
 				) : "No hay datos para mostrar. Por favor agregue declaraciones de ISLR a este contribuyente para poder ver esta tabla."}
 
 			</div>
