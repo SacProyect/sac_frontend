@@ -140,7 +140,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                       value={String(editValues[col.id as keyof Event] ?? '')}
                       onChange={e => handleInputChange(col.id as keyof Event, e.target.value)}
                     />
-                  ) : col.id === 'options' && user?.role === 'ADMIN' ? (
+                  ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
                     <div className="relative inline-block" ref={el => { menuRefs.current[row.id] = el; }}>
                       <button onClick={() => toggleMenu(row.id)} className="text-gray-600 hover:text-gray-900">⋮</button>
                       {activeMenuId === row.id && (
