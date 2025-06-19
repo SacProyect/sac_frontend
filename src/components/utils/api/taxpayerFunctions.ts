@@ -212,6 +212,26 @@ export const updateIva = async (payload: Partial<IVAReports>) => {
 	}
 };
 
+export const updateEvent = async (payload: Partial<Event>) => {
+	console.log(payload);
+
+	try {
+		if (!payload.id) throw new Error("ID requerido para actualizar el reporte");
+
+		let requestUrl = "/taxpayer";
+
+		const response = await apiConnection.put(
+			`${requestUrl}/${payload.type?.toLowerCase()}/${payload.id}`,
+			payload // ✅ Enviar el cuerpo aquí
+		);
+
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo modificar. Intente de nuevo.");
+	}
+};
+
 
 export const createObservation = async (data: ObservationsForm) => {
 	try {

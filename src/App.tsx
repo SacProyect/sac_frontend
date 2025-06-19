@@ -165,7 +165,7 @@ export const router = createBrowserRouter([
                 const taxpayerId = params.taxpayer;
                 if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
-                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
+                events.forEach((event) => (event.id = `${event.id}`));
 
                 const fines = await getFineHistory(taxpayerId);
                 const payments = await getPaymentHistory(taxpayerId);
