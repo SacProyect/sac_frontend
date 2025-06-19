@@ -2,7 +2,7 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Event } from '@/types/event';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
-import { deleteEvent, updateIva } from '../utils/api/taxpayerFunctions';
+import { deleteEvent, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
 
 interface EventTableProps {
   rows: Event[];
@@ -25,6 +25,10 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   const [editValues, setEditValues] = useState<Partial<Event>>({});
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [pendingStatusChange, setPendingStatusChange] = useState<{
+    id: string;
+    newStatus: "paid" | "not_paid";
+  } | null>(null);
   const { user } = useAuth();
 
   const columns = [
@@ -55,7 +59,10 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   const handleSave = async () => {
     if (!editingRowId) return;
     try {
-      // await updateIva({ ...editValues });
+      const cleanId = editingRowId;
+      const { taxpayer, taxpayerId, type, date, ...sanitizedPayload } = editValues;
+      const updatedEvent = await updateEvent({ ...sanitizedPayload, id: cleanId });
+      setRows(prev => prev.map(row => row.id === cleanId ? { ...row, ...updatedEvent } : row));
       toast.success('Evento actualizado');
       setEditingRowId(null);
       setEditValues({});
@@ -93,6 +100,22 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handlePaymentChange = async (id: string, newStatus: "paid" | "not_paid"): Promise<boolean> => {
+    try {
+      await updateFinePayment(id, newStatus);
+      toast.success("Estado de pago actualizado.");
+      setRows(prevRows =>
+        prevRows.map(row =>
+          row.id.startsWith(id) ? { ...row, debt: newStatus === "paid" ? 0 : 1 } : row
+        )
+      );
+      return true;
+    } catch {
+      toast.error("Error actualizando el pago de la multa.");
+      return false;
+    }
+  };
+
   return (
     <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
       {pdfMode && <p className="py-4 text-lg">Historial de Multas</p>}
@@ -100,11 +123,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
         <thead className="text-white bg-[#2C3E50]">
           <tr>
             {columns.map((col, index) => (
-              <th
-                key={col.id}
-                className={`px-4 py-2 font-semibold ${index === 0 ? 'rounded-tl-md' : index === columns.length - 1 ? 'rounded-tr-md' : ''
-                  }`}
-              >
+              <th key={col.id} className={`px-4 py-2 font-semibold ${index === 0 ? 'rounded-tl-md' : index === columns.length - 1 ? 'rounded-tr-md' : ''}`}>
                 {col.label}
               </th>
             ))}
@@ -115,20 +134,15 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
             <tr key={row.id} className="border-b hover:bg-gray-100">
               {columns.map(col => (
                 <td key={col.id} className="relative px-4 py-2">
-                  {editingRowId === row.id && col.id !== 'options' ? (
+                  {editingRowId === row.id && col.id !== 'options' && !['type', 'taxpayer', 'date', "debt"].includes(col.id) ? (
                     <input
                       className="w-full px-2 py-1 border rounded"
                       value={String(editValues[col.id as keyof Event] ?? '')}
                       onChange={e => handleInputChange(col.id as keyof Event, e.target.value)}
                     />
                   ) : col.id === 'options' && user?.role === 'ADMIN' ? (
-                    <div
-                      className="relative inline-block"
-                      ref={el => { menuRefs.current[row.id] = el; }}
-                    >
-                      <button onClick={() => toggleMenu(row.id)} className="text-gray-600 hover:text-gray-900">
-                        ⋮
-                      </button>
+                    <div className="relative inline-block" ref={el => { menuRefs.current[row.id] = el; }}>
+                      <button onClick={() => toggleMenu(row.id)} className="text-gray-600 hover:text-gray-900">⋮</button>
                       {activeMenuId === row.id && (
                         <div className="fixed z-50 mt-1 bg-white border rounded shadow-md">
                           <button
@@ -160,7 +174,24 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                   ) : col.id === 'amount' ? (
                     `${row.amount} Bs`
                   ) : col.id === 'debt' ? (
-                    (row.debt ?? 0) > 0 ? 'No pagada' : 'Pagada'
+                    row.type === "FINE" ? (
+                      <select
+                        value={(row.debt ?? 0) > 0 ? "not_paid" : "paid"}
+                        onClick={(e) => e.stopPropagation()}
+                        onChange={(e) => {
+                          const selected = e.target.value as "paid" | "not_paid";
+                          if (selected !== ((row.debt ?? 0) > 0 ? "not_paid" : "paid")) {
+                            setPendingStatusChange({ id: row.id, newStatus: selected });
+                          }
+                        }}
+                        className={`rounded px-2 py-1 text-xs text-white cursor-pointer ${(row.debt ?? 0) > 0 ? 'bg-red-600' : 'bg-green-600'}`}
+                      >
+                        <option value="not_paid" className="text-white bg-red-600">No pagada</option>
+                        <option value="paid" className="text-white bg-green-600">Pagada</option>
+                      </select>
+                    ) : (
+                      (row.debt ?? 0) > 0 ? 'No pagada' : 'Pagada'
+                    )
                   ) : (
                     String(row[col.id as keyof Event])
                   )}
@@ -191,6 +222,34 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                 Confirmar
               </button>
               <button onClick={() => setEventIdToDelete(null)} className="px-4 py-2 border rounded">
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {pendingStatusChange && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+          <div className="w-full max-w-sm p-6 bg-white rounded-md shadow-xl">
+            <p className="mb-4 text-center text-gray-800">
+              ¿Confirmas cambiar el estado a <strong>{pendingStatusChange.newStatus === "paid" ? "Pagada" : "No pagada"}</strong>?
+            </p>
+            <div className="flex justify-center gap-4">
+              <button
+                className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                onClick={async () => {
+                  const { id, newStatus } = pendingStatusChange;
+                  const success = await handlePaymentChange(id, newStatus);
+                  if (success) setPendingStatusChange(null);
+                }}
+              >
+                Confirmar
+              </button>
+              <button
+                className="px-4 py-2 border rounded"
+                onClick={() => setPendingStatusChange(null)}
+              >
                 Cancelar
               </button>
             </div>
