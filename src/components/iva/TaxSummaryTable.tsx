@@ -7,9 +7,10 @@ import { useAuth } from '@/hooks/useAuth';
 interface Props {
     rows: IVAReports[];
     pdfMode?: boolean;
+    setRows: React.Dispatch<React.SetStateAction<IVAReports[]>>;
 }
 
-const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
+const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
@@ -67,6 +68,9 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
             if (!editingRowId) return;
             const payload = { ...editValues };
             await updateIva(payload);
+
+            setRows(prev => prev.map(row => row.id === editingRowId ? { ...row, ...editValues } : row))
+
             toast.success('Cambios guardados');
             setEditingRowId(null);
             setEditValues({});
