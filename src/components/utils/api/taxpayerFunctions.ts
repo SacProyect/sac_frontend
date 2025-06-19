@@ -6,6 +6,7 @@ import { ObservationsForm } from "@/components/observations/ObservationsHeader";
 import { IvaReportFormData } from "@/components/iva/IvaForm";
 import { IslrReportFormData } from "@/components/ISLR/IslrForm";
 import { IVAReports } from "@/types/IvaReports";
+import { ISLRReports } from "@/types/ISLRReports";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -231,6 +232,27 @@ export const updateEvent = async (payload: Partial<Event>) => {
 		throw new Error("No se pudo modificar. Intente de nuevo.");
 	}
 };
+
+export const updateIslrReport = async (id: string, input: Partial<ISLRReports>) => {
+
+
+	try {
+
+		let requestURL = "/taxpayer/update-islr"
+
+		const response = await apiConnection.put(`${requestURL}/${id}`,
+			input
+		)
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo actualizar el reporte de ISLR, intente de nuevo.")
+	}
+
+
+}
 
 
 export const createObservation = async (data: ObservationsForm) => {
