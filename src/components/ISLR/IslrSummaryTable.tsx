@@ -1,26 +1,27 @@
-// src/components/islr/ISLRSummaryTable.tsx
-import React, { useMemo, useState } from 'react'
-import { Table, TableBody, Cell } from 'react-aria-components'
-import InfoTableHeader from '../UI/InfoTable/InfoTableHeader'
-import InfoTableColumn from '../UI/InfoTable/InfoTableColumn'
-import InfoTableRow from '../UI/InfoTable/InfoTableRow'
-import { ISLRReports } from '@/types/ISLRReports'
-import toast from 'react-hot-toast'
-import { useAuth } from '@/hooks/useAuth'
-import { deleteISLR } from '../utils/api/taxpayerFunctions'
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { ISLRReports } from '@/types/ISLRReports';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { deleteISLR, updateIslrReport } from '../utils/api/taxpayerFunctions';
 
 interface Props {
-    rows: ISLRReports[]
-    pdfMode?: boolean
+    rows: ISLRReports[];
+    pdfMode?: boolean;
 }
 
 const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
-    const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null)
+    const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
+    const [rowEditingId, setRowEditingId] = useState<string | null>(null);
+    const [editValues, setEditValues] = useState<Partial<ISLRReports>>({});
+    const [showActionsMenu, setShowActionsMenu] = useState(false);
+    const menuRef = useRef<HTMLDivElement | null>(null);
+
+
     const { user, refreshUser } = useAuth();
     const [sortDescriptor, setSortDescriptor] = useState<{
-        column: keyof ISLRReports
-        direction: 'ascending' | 'descending'
-    }>({ column: 'emition_date', direction: 'descending' })
+        column: keyof ISLRReports;
+        direction: 'ascending' | 'descending';
+    }>({ column: 'emition_date', direction: 'descending' });
 
     const columns: { name: string; id: string }[] = [
         { name: 'Contribuyente', id: 'taxpayer.name' },
@@ -30,40 +31,31 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         { name: 'Costos', id: 'costs' },
         { name: 'Fecha de Emisión', id: 'emition_date' },
         { name: 'Acciones', id: 'options' },
-    ]
+    ];
 
     const sortedItems = useMemo(() => {
         return [...rows].sort((a, b) => {
-            let aVal: any = a[sortDescriptor.column]
-            let bVal: any = b[sortDescriptor.column]
+            let aVal: any = a[sortDescriptor.column];
+            let bVal: any = b[sortDescriptor.column];
 
             if (sortDescriptor.column === 'emition_date') {
-                aVal = new Date(aVal).getTime()
-                bVal = new Date(bVal).getTime()
+                aVal = new Date(aVal).getTime();
+                bVal = new Date(bVal).getTime();
             }
 
             if (typeof aVal === 'number' && typeof bVal === 'number') {
-                return sortDescriptor.direction === 'ascending'
-                    ? aVal - bVal
-                    : bVal - aVal
+                return sortDescriptor.direction === 'ascending' ? aVal - bVal : bVal - aVal;
             }
 
             return (
                 String(aVal ?? '').localeCompare(String(bVal ?? '')) *
                 (sortDescriptor.direction === 'ascending' ? 1 : -1)
-            )
-        })
-    }, [rows, sortDescriptor])
-
-    const processedItems = useMemo(() => {
-        return sortedItems.map((item, index) => ({
-            ...item,
-            _key: item.id || index.toString(),
-        }))
-    }, [sortedItems])
+            );
+        });
+    }, [rows, sortDescriptor]);
 
     const confirmDelete = async () => {
-        if (!reportIdToDelete) return
+        if (!reportIdToDelete) return;
         try {
             await deleteISLR(reportIdToDelete);
             toast.success("Reporte de ISLR eliminado correctamente.");
@@ -72,82 +64,153 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
         } catch (err: any) {
             toast.error(`Error al eliminar: ${err.message || err}`);
         }
-    }
+    };
+
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setShowActionsMenu(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
+    const handleSaveEdit = async () => {
+        if (!rowEditingId) return;
+        try {
+            const formattedValues = Object.fromEntries(
+                Object.entries(editValues).filter(([key]) => key !== 'id' && key !== 'emition_date' && key !== 'updatedAt' && key !== 'taxpayer' && key !== 'taxpayerId').map(([key, value]) => [key, Number(String(value).replace(',', '.'))])
+            );
+
+            console.log(formattedValues);
+
+            await updateIslrReport(rowEditingId, formattedValues);
+            toast.success("Reporte actualizado correctamente.");
+            setRowEditingId(null);
+            setEditValues({});
+            refreshUser();
+        } catch (err: any) {
+            toast.error(`Error al guardar: ${err.message || err}`);
+        }
+    };
 
     return (
         <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4">
-            {pdfMode && (
-                <p className='py-8 text-lg'>Historial de ISLR</p>
-            )}
-            <Table
-                aria-label="Resumen de ISLR"
-                selectionMode="none"
-                sortDescriptor={sortDescriptor}
-                onSortChange={d =>
-                    setSortDescriptor({
-                        column: d.column as keyof ISLRReports,
-                        direction: d.direction,
-                    })
-                }
-                className="min-w-full"
-            >
-                <InfoTableHeader columns={columns}>
-                    {(col: { name: string; id: string }) => (
-                        <InfoTableColumn
-                            key={col.id}
-                            allowsSorting
-                            isRowHeader={col.id === 'emition_date'}
-                        >
-                            {col.name}
-                        </InfoTableColumn>
-                    )}
-                </InfoTableHeader>
+            {pdfMode && <p className='py-8 text-lg'>Historial de ISLR</p>}
+            <table className="min-w-full border-collapse table-auto">
+                <thead className="w-full bg-[#2C3E50]">
+                    <tr>
+                        {columns.map((col, idx) => {
+                            const isFirst = idx === 0;
+                            const isLast = idx === columns.length - 1;
+                            return (
+                                <th
+                                    key={col.id}
+                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
+                                >
+                                    {col.name}
+                                </th>
+                            );
+                        })}
+                    </tr>
+                </thead>
+                <tbody>
+                    {sortedItems.map((item, index) => (
+                        <tr key={item.id || index} className="border-b hover:bg-gray-100">
+                            {columns.map(col => {
+                                const id = col.id;
+                                let value: React.ReactNode;
 
-                <TableBody items={processedItems}>
-                    {(item: ISLRReports & { _key: string }) => (
-                        <InfoTableRow key={item._key} id={item.id} columns={columns}>
-                            {(col: { name: string; id: string }) => (
-                                <Cell className="px-4 py-2 whitespace-nowrap">
-                                    {(() => {
-                                        const { id } = col
-
-                                        if (id === 'emition_date') {
-                                            return new Date(item.emition_date).toLocaleDateString()
-                                        }
-
-                                        if (id === 'incomes' || id === 'expent' || id === 'costs') {
-                                            return `${item[id as keyof ISLRReports]} BS`
-                                        }
-
-                                        if (id === 'taxpayer.name') {
-                                            return item.taxpayer.name
-                                        }
-
-                                        if (id === 'taxpayer.process') {
-                                            return item.taxpayer.process
-                                        }
-
-
-                                        if (id === 'options') {
-                                            return !pdfMode && user?.role === "ADMIN" ? (
-                                                <button
-                                                    onClick={() => setReportIdToDelete(item.id)}
-                                                    className="text-red-600 hover:underline"
-                                                >
-                                                    Eliminar
+                                if (id === 'emition_date') {
+                                    value = new Date(item.emition_date).toLocaleDateString();
+                                } else if (id === 'incomes' || id === 'expent' || id === 'costs') {
+                                    value = rowEditingId === item.id ? (
+                                        <input
+                                            type="text"
+                                            inputMode="decimal"
+                                            className="w-full px-2 py-1 border rounded"
+                                            value={String(editValues[id as keyof ISLRReports] ?? '')}
+                                            onChange={(e) => {
+                                                const rawValue = e.target.value.replace(',', '.'); // convierte coma en punto
+                                                if (/^\d*\.?\d*$/.test(rawValue)) { // permite solo números y un punto
+                                                    setEditValues(prev => ({
+                                                        ...prev,
+                                                        [id]: rawValue // guardamos como string por ahora
+                                                    }));
+                                                }
+                                            }}
+                                        />
+                                    ) : (
+                                        `${item[id as keyof ISLRReports]} BS`
+                                    );
+                                } else if (id === 'taxpayer.name') {
+                                    value = item.taxpayer.name;
+                                } else if (id === 'taxpayer.process') {
+                                    value = item.taxpayer.process;
+                                } else if (id === 'options') {
+                                    value =
+                                        !pdfMode && user?.role === "ADMIN" ? (
+                                            <div className='relative'>
+                                                <button onClick={() => setShowActionsMenu(!showActionsMenu)}>
+                                                    ⋮
                                                 </button>
-                                            ) : null
-                                        }
+                                                {showActionsMenu && (
+                                                    <div ref={menuRef} className='absolute flex flex-col bg-white rounded-md top-8'>
+                                                        <button onClick={() => {
+                                                            setRowEditingId(item.id);
+                                                            setEditValues(item);
+                                                        }}>Modificar</button>
+                                                        <button onClick={() => setReportIdToDelete(item.id)}
+                                                            className="text-red-600 hover:underline"
+                                                        >
+                                                            Eliminar
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
 
-                                        return String(item[id as keyof ISLRReports] ?? '')
-                                    })()}
-                                </Cell>
-                            )}
-                        </InfoTableRow>
-                    )}
-                </TableBody>
-            </Table>
-            {reportIdToDelete && user && user.role === "ADMIN" && (
+                                        ) : null;
+                                } else {
+                                    value = String(item[id as keyof ISLRReports] ?? '');
+                                }
+
+                                return (
+                                    <td key={id} className="px-4 py-2 whitespace-nowrap">
+                                        {value}
+                                    </td>
+                                );
+                            })}
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+
+            {rowEditingId && (
+                <div className="flex justify-end gap-2 mt-4">
+                    <button
+                        onClick={handleSaveEdit}
+                        className="px-4 py-2 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                    >
+                        Guardar
+                    </button>
+                    <button
+                        onClick={() => {
+                            setRowEditingId(null);
+                            setEditValues({});
+                        }}
+                        className="px-4 py-2 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                    >
+                        Cancelar
+                    </button>
+                </div>
+            )}
+
+            {reportIdToDelete && user?.role === "ADMIN" && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
                     <div className="max-w-sm p-6 text-center bg-white rounded shadow-md">
                         <p className="mb-4 text-sm">
@@ -170,8 +233,9 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode }) => {
                     </div>
                 </div>
             )}
-        </div>
-    )
-}
 
-export default ISLRSummaryTable
+        </div>
+    );
+};
+
+export default ISLRSummaryTable;
