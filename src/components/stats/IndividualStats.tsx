@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { IVAReports } from "@/types/IvaReports";
 import { RepairReports } from "@/types/RepairReports";
 import { InvestigationPdf } from "@/types/investigationPdf";
+import { User } from "@/types/user";
 
 
 
@@ -33,6 +34,7 @@ interface TaxpayerData {
     RepairReports: RepairReports[],
     officerId: string,
     investigation_pdfs: InvestigationPdf[],
+    user: User,
 }
 
 
@@ -80,8 +82,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     let sells = 0;
     if (IVAReports && Array.isArray(IVAReports)) {
         IVAReports.forEach((rep) => {
-            buys += rep.purchases;
-            sells += rep.sells;
+            buys += Number(rep.purchases) || 0;
+            sells += Number(rep.sells) || 0;
         });
     }
 
@@ -90,8 +92,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             if (event.type === "FINE") fines += 1;
         });
     }
-
-
 
 
     const dataMock = [
@@ -279,6 +279,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     };
 
 
+
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
@@ -321,7 +322,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className={`flex items-center ${user?.role === "FISCAL" ? "justify-start" : "justify-center"} space-x-2 text-center`}>
+                    <div className={`flex items-center ${user?.role !== "ADMIN" ? "justify-start" : "justify-center"} space-x-2 text-center`}>
 
                         {taxpayerData?.culminated === true ? (
                             <div className="pt-2">
@@ -330,7 +331,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                 </p>
                             </div>
                         ) : (
-                            user?.id === taxpayerData?.officerId && (
+                            user?.role === "FISCAL" && user?.id === taxpayerData?.officerId || user?.role === "COORDINATOR" && user.id === taxpayerData?.user?.group?.coordinatorId || user?.role === "ADMIN" && (
                                 <div className="pt-2">
                                     <button
                                         className="px-2 py-1 text-white bg-[#3498db]"
@@ -454,7 +455,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                         nameKey="name"
                                         cx="50%"
                                         cy="50%"
-                                        outerRadius={80}
+                                        outerRadius={50}
                                         label
                                     >
                                         {dataMock.map((entry, index) => (
@@ -467,7 +468,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         )}
                     </div>
 
-                    {(user?.role === "COORDINATOR" || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
+                    {(user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id) && taxpayerData?.process === "AF" &&
                         <div className="flex items-end justify-end w-full gap-2 pr-14 mt-14">
                             {fases.map((fase) => (
                                 <button

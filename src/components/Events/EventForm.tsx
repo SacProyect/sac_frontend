@@ -79,8 +79,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     } else if (user.role === "FISCAL") {
         taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
+        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
     }
+
+
 
     // ✅ Filtrar los contribuyentes con process !== "FP"
     taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
@@ -349,24 +351,26 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 <>
                     <Label className="text-black">Monto en BS:</Label>
 
-                    <TextInput
-                        placeholder={'3500...'}
-                        type='number'
-                        register={{
-                            ...register("amount", {
-                                required: "Campo Obligatorio",
-                                min: {
-                                    value: 0,
-                                    message: "El monto no puede ser negativo"
-                                },
-                                ...(type !== "fine" && {
-                                    max: {
-                                        value: selectedPayment?.debt ?? Infinity,
-                                        message: `El monto no puede ser mayor a ${selectedPayment?.debt}`,
-                                    },
-                                }),
-                            })
-                        }}
+                    <input
+                        type="text"
+                        inputMode="decimal"
+                        placeholder="3500..."
+                        {...register("amount", {
+                            required: "Campo Obligatorio",
+                            validate: (num: number) => {
+                                if (isNaN(num)) return "Debe ser un número válido";
+                                if (num < 0) return "El monto no puede ser negativo";
+                                if (type !== "fine" && selectedPayment && num > (selectedPayment.debt ?? Infinity)) {
+                                    return `El monto no puede ser mayor a ${selectedPayment.debt}`;
+                                }
+                                return true;
+                            },
+                            setValueAs: (value: string | number) => {
+                                const normalized = String(value).replace(/,/g, ".");
+                                return parseFloat(normalized);
+                            },
+                        })}
+                        className="w-full h-12 px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
                     />
                 </>
 
