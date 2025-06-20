@@ -133,22 +133,24 @@ function GenerateReport() {
 
                         {/* Table Header (only on lg) */}
                         <div className='items-center hidden w-full px-4 py-1 font-medium bg-gray-200 lg:flex rounded-tr-md rounded-tl-md'>
-                            <div className='w-1/3'><p>RIF</p></div>
-                            <div className='w-1/3'><p>Nombre</p></div>
-                            <div className='w-1/3'><p>FISCAL</p></div>
-                            <div className='flex justify-end w-1/3'><p>Acción</p></div>
+                            <div className='w-[120px]'><p>RIF</p></div>
+                            <div className='w-[120px]'><p>Fecha</p></div>
+                            <div className='w-[420px]'><p>Nombre</p></div> {/* que se expanda más */}
+                            <div className='w-[150px]'><p>FISCAL</p></div>
+                            <div className='w-[100px] flex justify-end'><p>Acción</p></div>
                         </div>
 
                         {/* Table Body */}
                         {filteredTaxpayers.map(taxpayer => (
                             <div
                                 key={taxpayer.id}
-                                className='flex flex-col w-full px-2 py-2 border-b border-l border-r lg:flex-row last:rounded-br-md last:rounded-bl-md'
+                                className='flex flex-col w-full px-4 py-2 border-b border-l border-r lg:flex-row last:rounded-br-md last:rounded-bl-md'
                             >
-                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>RIF: </span>{taxpayer.rif || "No encontrado"}</p></div>
-                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>Nombre: </span>{taxpayer.name || "No encontrado"}</p></div>
-                                <div className='w-full lg:w-1/3'><p className='p-1 text-xs lg:text-sm'><span className='font-semibold lg:hidden'>FISCAL: </span>{taxpayer.user.name || "No encontrado"}</p></div>
-                                <div className='flex justify-end w-full lg:w-1/3'>
+                                <div className='w-[120px]'><p>{taxpayer.rif}</p></div>
+                                <div className='w-[120px]'><p>{taxpayer.emition_date.slice(0, 10)}</p></div>
+                                <div className='w-[420px]'><p>{taxpayer.name}</p></div>
+                                <div className='w-[150px]'><p>{taxpayer.user.name}</p></div>
+                                <div className='flex justify-end w-full lg:w-[120px]'>
                                     <button
                                         className='p-1 px-2 m-0 text-xs font-medium border border-gray-200 lg:text-sm'
                                         onClick={() => navigate(`/reports/gen/${taxpayer.id}`)}
