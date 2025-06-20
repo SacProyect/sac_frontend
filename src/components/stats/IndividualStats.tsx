@@ -31,6 +31,7 @@ interface TaxpayerData {
     notified: Boolean,
     culminated: Boolean,
     RepairReports: RepairReports[],
+    officerId: string,
     investigation_pdfs: InvestigationPdf[],
 }
 
@@ -278,12 +279,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     };
 
 
-
-
-
-    console.log("DATA: " + JSON.stringify(taxpayerData))
-
-
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
@@ -326,19 +321,25 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className="flex items-center justify-center space-x-2 text-center">
+                    <div className={`flex items-center ${user?.role === "FISCAL" ? "justify-start" : "justify-center"} space-x-2 text-center`}>
 
                         {taxpayerData?.culminated === true ? (
                             <div className="pt-2">
-                                <p className=" text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                                <p className="text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                     Procedimiento Culminado.
                                 </p>
                             </div>
-
                         ) : (
-                            <div className="pt-2">
-                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleCulminatedClick(true)}>Culminar Procedimiento </button>
-                            </div>
+                            user?.id === taxpayerData?.officerId && (
+                                <div className="pt-2">
+                                    <button
+                                        className="px-2 py-1 text-white bg-[#3498db]"
+                                        onClick={() => handleCulminatedClick(true)}
+                                    >
+                                        Culminar Procedimiento
+                                    </button>
+                                </div>
+                            )
                         )}
 
                         {user?.role == "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length > 1 && (
@@ -354,57 +355,59 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                 <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
                             </div>
                         ) : (
-                            <div className="pt-2">
-                                {/* Botón para abrir selector de archivo */}
-                                <button
-                                    className="px-2 py-1 bg-[#3498db] text-white"
-                                    onClick={handleUploadClick}
-                                >
-                                    Subir acta de reparo
-                                </button>
-
-                                {/* Input file oculto */}
-                                <input
-                                    type="file"
-                                    accept=".pdf"         // Solo PDF
-                                    ref={fileInputRef}
-                                    style={{ display: "none" }}
-                                    onChange={handleFileChange}
-                                // No se pone "multiple" para limitar a un solo archivo
-                                />
-
-                                {/* Mostrar archivo seleccionado y botón para enviar */}
-                                {/* Modal */}
-                                {showModal && selectedFile && (
-                                    <div
-                                        className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                                        onClick={handleCancelSend} // clic fuera cierra modal
+                            user && taxpayerData.officerId === user.id && (
+                                <div className="pt-2">
+                                    {/* Botón para abrir selector de archivo */}
+                                    <button
+                                        className="px-2 py-1 bg-[#3498db] text-white"
+                                        onClick={handleUploadClick}
                                     >
-                                        <div
-                                            className="p-6 bg-white rounded-lg w-80"
-                                            onClick={e => e.stopPropagation()} // evitar cerrar modal al hacer clic dentro
-                                        >
-                                            <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo a Subir</h2>
-                                            <p className="mb-4 break-words">Archivo seleccionado: <strong>{selectedFile.name}</strong></p>
+                                        Subir acta de reparo
+                                    </button>
 
-                                            <div className="flex justify-end space-x-4">
-                                                <button
-                                                    className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
-                                                    onClick={handleConfirmSend}
-                                                >
-                                                    Subir archivo
-                                                </button>
-                                                <button
-                                                    className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
-                                                    onClick={handleCancelSend}
-                                                >
-                                                    Cancelar
-                                                </button>
+                                    {/* Input file oculto */}
+                                    <input
+                                        type="file"
+                                        accept=".pdf"         // Solo PDF
+                                        ref={fileInputRef}
+                                        style={{ display: "none" }}
+                                        onChange={handleFileChange}
+                                    // No se pone "multiple" para limitar a un solo archivo
+                                    />
+
+                                    {/* Mostrar archivo seleccionado y botón para enviar */}
+                                    {/* Modal */}
+                                    {showModal && selectedFile && (
+                                        <div
+                                            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+                                            onClick={handleCancelSend} // clic fuera cierra modal
+                                        >
+                                            <div
+                                                className="p-6 bg-white rounded-lg w-80"
+                                                onClick={e => e.stopPropagation()} // evitar cerrar modal al hacer clic dentro
+                                            >
+                                                <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo a Subir</h2>
+                                                <p className="mb-4 break-words">Archivo seleccionado: <strong>{selectedFile.name}</strong></p>
+
+                                                <div className="flex justify-end space-x-4">
+                                                    <button
+                                                        className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                                                        onClick={handleConfirmSend}
+                                                    >
+                                                        Subir archivo
+                                                    </button>
+                                                    <button
+                                                        className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                                                        onClick={handleCancelSend}
+                                                    >
+                                                        Cancelar
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            )
                         )
                     )}
                 </div>
@@ -412,7 +415,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
                 <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem]">
 
-                    {(user?.role === "FISCAL" || user?.role === "ADMIN") && taxpayerData?.notified === false && (
+                    {(user?.role === "FISCAL" && taxpayerData?.officerId === user.id || user?.role === "ADMIN") && taxpayerData?.notified === false && (
                         <div className="flex items-end justify-end w-full mb-4">
                             <button
                                 className="px-2 py-1 bg-[#3498db] text-white font-semibold"
