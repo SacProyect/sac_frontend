@@ -40,9 +40,7 @@ function IslrForm() {
     } else if (user.role === "FISCAL") {
         taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.coordinatedGroup.members
-            ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || [])
-            : [];
+        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
     }
 
     const {

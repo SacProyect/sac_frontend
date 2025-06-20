@@ -26,7 +26,6 @@ function IvaForm() {
     const navigate = useNavigate();
     const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
     const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
-    const [filter, setFilter] = useState('');
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
@@ -51,9 +50,7 @@ function IvaForm() {
     } else if (user.role === "FISCAL") {
         taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.coordinatedGroup.members
-            ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || [])
-            : [];
+        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
     }
 
     const {
@@ -74,11 +71,6 @@ function IvaForm() {
 
     const onSubmit = async (data: IvaReportFormData) => {
         console.log("Submitting data:", data);
-
-        // if (data.iva && data.excess) {
-        //     toast.error("No puede ingresar IVA y excedente al mismo tiempo.");
-        //     return;
-        // }
 
         try {
             const formattedData = {
@@ -120,11 +112,6 @@ function IvaForm() {
     const taxpayerId = watch("taxpayerId");
 
     const selectedTaxpayer = taxpayerArray.find(t => t.id === taxpayerId);
-
-    // const calculatedExcess =
-    //     selectedTaxpayer?.IVAReports?.slice().sort(
-    //         (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-    //     )[0]?.excess || 0;
 
 
     // Recalcular mes siguiente cuando cambie el contribuyente
@@ -262,22 +249,25 @@ function IvaForm() {
                     />
                 </div>
 
-                <input
-                    type="text"
-                    {...register("purchases", {
-                        required: "Este campo es obligatorio",
-                        pattern: {
-                            value: /^[0-9]+([.,][0-9]{1,2})?$/,
-                            message: "Debe ser un número válido con punto o coma decimal"
-                        },
-                        validate: (value) => {
-                            const parsed = parseFloat(String(value).replace(",", "."));
-                            return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                        }
-                    })}
-                    placeholder="Monto de compras..."
-                    className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+                <div>
+                    <p className="block mb-0 text-sm font-medium text-gray-600">Compras (BS)</p>
+                    <input
+                        type="text"
+                        {...register("purchases", {
+                            required: "Este campo es obligatorio",
+                            pattern: {
+                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
+                                message: "Debe ser un número válido con punto o coma decimal"
+                            },
+                            validate: (value) => {
+                                const parsed = parseFloat(String(value).replace(",", "."));
+                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
+                            }
+                        })}
+                        placeholder="Monto de compras..."
+                        className="w-full px-3 py-2 mt-0 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                </div>
 
                 <div>
                     <label className="block mb-1 text-sm font-medium text-gray-600">Ventas (BS)</label>

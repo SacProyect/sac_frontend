@@ -1,3 +1,4 @@
+import { Group } from "./group"
 import { Taxpayer } from "./taxpayer"
 
 
@@ -11,6 +12,7 @@ export interface User {
     status: boolean,
     taxpayer: Taxpayer[],
     coordinatedGroup: CoordinatedGroup,
+    group: Group,
 }
 
 export interface CoordinatedGroup {
