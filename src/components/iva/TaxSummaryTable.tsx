@@ -3,6 +3,7 @@ import { IVAReports } from '@/types/IvaReports';
 import toast from 'react-hot-toast';
 import { deleteIva, updateIva } from '../utils/api/taxpayerFunctions';
 import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface Props {
     rows: IVAReports[];
@@ -16,17 +17,44 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Partial<IVAReports>>({});
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+    const navigate = useNavigate();
 
     const { user } = useAuth();
-    const columns: { name: string; id: keyof IVAReports | 'options' }[] = [
-        { name: 'Fecha', id: 'date' },
-        { name: 'IVA', id: 'iva' },
-        { name: 'Excedente de Crédito', id: 'excess' },
-        { name: 'Compras', id: 'purchases' },
-        { name: 'Ventas', id: 'sells' },
-        { name: 'Recaudado', id: 'paid' },
-        { name: 'Acciones', id: 'options' },
-    ];
+    if (!user) {
+        navigate("/login");
+        return;
+    }
+
+    let columns: { name: string; id: keyof IVAReports | 'options' }[];
+
+    if (user.role === "FISCAL" || user.role === "COORDINATOR" || user.role === "SUPERVISOR") {
+        columns = [
+            { name: 'Fecha', id: 'date' },
+            { name: 'IVA', id: 'iva' },
+            { name: 'Excedente de Crédito', id: 'excess' },
+            { name: 'Compras', id: 'purchases' },
+            { name: 'Ventas', id: 'sells' },
+            { name: 'Recaudado', id: 'paid' },
+        ];
+    } else if (user.role === "ADMIN") {
+        columns = [
+            { name: 'Fecha', id: 'date' },
+            { name: 'IVA', id: 'iva' },
+            { name: 'Excedente de Crédito', id: 'excess' },
+            { name: 'Compras', id: 'purchases' },
+            { name: 'Ventas', id: 'sells' },
+            { name: 'Recaudado', id: 'paid' },
+            { name: 'Acciones', id: 'options' },
+        ];
+    } else {
+        columns = [
+
+        ]
+    }
+
+
+
+
 
     const sortedItems = useMemo(() => {
         return [...rows].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());

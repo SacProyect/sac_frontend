@@ -62,17 +62,31 @@ const TaxpayerDetail = () => {
 		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
 			<Group className="flex flex-col items-center justify-center w-full pt-10 mb-8 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
-				{options.map((opt) => (
-					<Link
-						to={opt.path}
-						className="bg-[#3498db] border-none px-4 lg:px-5 py-1 font-light text-center no-underline my-1 cursor-pointer rounded w-auto transition hover:bg-green-500 hover:-translate-y-1"
-						key={opt.name}
-					>
-						<span className="text-xs text-white whitespace-nowrap lg:text-base">
-							+{opt.name}
-						</span>
-					</Link>
-				))}
+				{(() => {
+					// Encuentra el contribuyente con el ID de la URL
+					const matchedTaxpayer = user?.taxpayer?.find(t => t.id === taxpayer);
+
+					// Verifica si el officerId coincide con el user.id
+					const canSeeAllOptions =
+						user.role === "ADMIN" || (matchedTaxpayer && matchedTaxpayer.officerId === user.id);
+
+					// Si puede ver todo, muestra todas las opciones
+					const filteredOptions = canSeeAllOptions
+						? options
+						: options.filter(opt => opt.name === 'Observaciones');
+
+					return filteredOptions.map(opt => (
+						<Link
+							to={opt.path}
+							key={opt.name}
+							className="bg-[#3498db] border-none px-4 lg:px-5 py-1 font-light text-center no-underline my-1 cursor-pointer rounded w-auto transition hover:bg-green-500 hover:-translate-y-1"
+						>
+							<span className="text-xs text-white whitespace-nowrap lg:text-base">
+								+{opt.name}
+							</span>
+						</Link>
+					));
+				})()}
 			</Group>
 			<div className="flex flex-col w-full pb-4 pl-4 pr-4 space-y-2 lg:pr-0 lg:flex-row lg:space-x-2 lg:space-y-0">
 				<div className="flex items-center w-full pl-2 border border-gray-200 rounded-md lg:w-48 lg:pr-0">

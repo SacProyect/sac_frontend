@@ -39,7 +39,9 @@ function GenerateReport() {
 
             } catch (e) {
                 console.error(e);
-                toast.error("No se pudieron obtener los grupos, por favor, recargue la página e intente de nuevo.")
+                if (user.role !== "FISCAL") {
+                    toast.error("No se pudieron obtener los grupos, por favor, recargue la página e intente de nuevo.")
+                }
             } finally {
                 setIsLoadingGroups(false); // ✅ Finaliza carga
             }
@@ -159,36 +161,41 @@ function GenerateReport() {
                     </div>
 
                     {/* Group Reports Header */}
-                    <div className='pt-4 space-y-2'>
-                        <h2 className='font-semibold text-gray-500'>Reportes por grupo</h2>
-                        <p className='text-xs text-gray-500'>Seleccione un grupo para generar un reporte completo</p>
-                    </div>
+                    {user.role !== "FISCAL" && (
+                        <>
+                            <div className='pt-4 space-y-2'>
+                                <h2 className='font-semibold text-gray-500'>Reportes por grupo</h2>
+                                <p className='text-xs text-gray-500'>Seleccione un grupo para generar un reporte completo</p>
+                            </div>
 
-                    {/* Generate Group Report */}
-                    <div className='flex flex-col gap-2 pt-4 lg:grid lg:grid-cols-3 lg:gap-y-2 lg:gap-x-2'>
-                        {isLoadingGroups ? (
-                            <p className="text-sm text-gray-500">Cargando grupos...</p>
-                        ) : groupData.length === 0 ? (
-                            <p className="text-sm text-red-500">No se encontraron grupos.</p>
-                        ) : (
-                            groupData.map((group) => (
-                                <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
-                                    <div className='w-[90%]'>
-                                        <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
-                                        <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
-                                    </div>
-                                    <div className='w-[10%] flex items-center'>
-                                        <button
-                                            className='p-2 text-blue-600 bg-blue-300 rounded-full'
-                                            onClick={() => navigate(`/getGroupReport/${group.id}`)}
-                                        >
-                                            <IoDocumentTextOutline size={15} />
-                                        </button>
-                                    </div>
-                                </div>
-                            ))
-                        )}
-                    </div>
+                            {/* Generate Group Report */}
+                            <div className='flex flex-col gap-2 pt-4 lg:grid lg:grid-cols-3 lg:gap-y-2 lg:gap-x-2'>
+                                {isLoadingGroups ? (
+                                    <p className="text-sm text-gray-500">Cargando grupos...</p>
+                                ) : groupData.length === 0 ? (
+                                    <p className="text-sm text-red-500">No se encontraron grupos.</p>
+                                ) : (
+                                    groupData.map((group) => (
+                                        <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
+                                            <div className='w-[90%]'>
+                                                <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
+                                                <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
+                                            </div>
+                                            <div className='w-[10%] flex items-center'>
+                                                <button
+                                                    className='p-2 text-blue-600 bg-blue-300 rounded-full'
+                                                    onClick={() => navigate(`/getGroupReport/${group.id}`)}
+                                                >
+                                                    <IoDocumentTextOutline size={15} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))
+                                )}
+                            </div>
+                        </>
+                    )}
+
 
                 </div>
             </div>

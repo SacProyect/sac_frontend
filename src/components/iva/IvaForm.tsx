@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Control, useForm } from 'react-hook-form';
@@ -30,6 +30,7 @@ function IvaForm() {
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!user) {
@@ -45,8 +46,10 @@ function IvaForm() {
 
 
     let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN" || user.role === "FISCAL") {
+    if (user.role === "ADMIN") {
         taxpayerArray = user.taxpayer;
+    } else if (user.role === "FISCAL") {
+        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
         taxpayerArray = user.coordinatedGroup.members
             ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || [])
@@ -174,6 +177,20 @@ function IvaForm() {
             .includes(search.toLowerCase())
     );
 
+    const handleClickOutside = (event: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            setShowDropdown(false);
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
         <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
             <form
@@ -203,7 +220,7 @@ function IvaForm() {
                         <p className="mt-1 text-xs text-red-500">{errors.taxpayerId.message}</p>
                     )}
                     {showDropdown && filteredTaxpayers.length > 0 && (
-                        <div className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-52">
+                        <div ref={menuRef} className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-52">
                             {filteredTaxpayers.map((t) => (
                                 <div
                                     key={t.id}

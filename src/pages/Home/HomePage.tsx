@@ -36,6 +36,7 @@ function HomePage() {
         }
     }, [user]);
 
+
     // Prepara el mapa de officerId -> officerName
     const officerMap = useMemo<Record<string, string>>(() => {
         const map: Record<string, string> = {};
@@ -85,7 +86,7 @@ function HomePage() {
             });
     }, [taxpayers, debouncedSearch, user, contains, officerMap]);
 
-    
+
     // Un solo log para ver tamaño de la lista filtrada
     // useEffect(() => {
     //     console.log(`📊 Filtered items: ${filteredItems.length}`);

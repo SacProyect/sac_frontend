@@ -31,15 +31,18 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   } | null>(null);
   const { user } = useAuth();
 
-  const columns = [
+  let columns = [
     { label: "Tipo", id: "type" },
     { label: "Contribuyente", id: "taxpayer" },
     { label: "Monto", id: "amount" },
     { label: "Fecha", id: "date" },
     { label: "Motivo", id: "description" },
     { label: "Estado", id: "debt" },
-    { label: "Acciones", id: "options" },
   ];
+
+  columns = user?.role === 'ADMIN'
+    ? [...columns, { label: "Acciones", id: "options" }]
+    : columns;
 
   const sortedRows = useMemo(() => {
     return [...rows].sort((a, b) => {
@@ -116,6 +119,8 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     }
   };
 
+  console.log(JSON.stringify(rows));
+
   return (
     <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
       {pdfMode && <p className="py-4 text-lg">Historial de Multas</p>}
@@ -175,20 +180,24 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                     `${row.amount} Bs`
                   ) : col.id === 'debt' ? (
                     row.type === "FINE" ? (
-                      <select
-                        value={(row.debt ?? 0) > 0 ? "not_paid" : "paid"}
-                        onClick={(e) => e.stopPropagation()}
-                        onChange={(e) => {
-                          const selected = e.target.value as "paid" | "not_paid";
-                          if (selected !== ((row.debt ?? 0) > 0 ? "not_paid" : "paid")) {
-                            setPendingStatusChange({ id: row.id, newStatus: selected });
-                          }
-                        }}
-                        className={`rounded px-2 py-1 text-xs text-white cursor-pointer ${(row.debt ?? 0) > 0 ? 'bg-red-600' : 'bg-green-600'}`}
-                      >
-                        <option value="not_paid" className="text-white bg-red-600">No pagada</option>
-                        <option value="paid" className="text-white bg-green-600">Pagada</option>
-                      </select>
+                      user?.role === "ADMIN" ||
+                        (user?.role === "FISCAL" &&
+                          user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) ? (
+                        <select
+                          value={(row.debt ?? 0) > 0 ? "not_paid" : "paid"}
+                          onClick={(e) => e.stopPropagation()}
+                          onChange={(e) => {
+                            const selected = e.target.value as "paid" | "not_paid";
+                            if (selected !== ((row.debt ?? 0) > 0 ? "not_paid" : "paid")) {
+                              setPendingStatusChange({ id: row.id, newStatus: selected });
+                            }
+                          }}
+                          className={`rounded px-2 py-1 text-xs text-white cursor-pointer ${(row.debt ?? 0) > 0 ? 'bg-red-600' : 'bg-green-600'}`}
+                        >
+                          <option value="not_paid" className="text-white bg-red-600">No pagada</option>
+                          <option value="paid" className="text-white bg-green-600">Pagada</option>
+                        </select>
+                      ) : ((row.debt ?? 0) > 0 ? 'No pagada' : 'Pagada')
                     ) : (
                       (row.debt ?? 0) > 0 ? 'No pagada' : 'Pagada'
                     )

@@ -74,8 +74,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     // console.log("Taxpayer Id receive in event form: " + taxpayerId)
 
     let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN" || user.role === "FISCAL") {
+    if (user.role === "ADMIN") {
         taxpayerArray = user.taxpayer;
+    } else if (user.role === "FISCAL") {
+        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
         taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
     }

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Control, useForm } from 'react-hook-form';
@@ -24,6 +24,7 @@ function IslrForm() {
     const navigate = useNavigate();
     const [filter, setFilter] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         if (!user) {
@@ -34,8 +35,10 @@ function IslrForm() {
     if (!user) return null;
 
     let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN" || user.role === "FISCAL") {
+    if (user.role === "ADMIN") {
         taxpayerArray = user.taxpayer;
+    } else if (user.role === "FISCAL") {
+        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
         taxpayerArray = user.coordinatedGroup.members
             ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || [])
@@ -85,6 +88,20 @@ function IslrForm() {
         );
     }, [taxpayerArray, filter]);
 
+    const handleClickOutside = (event: MouseEvent) => {
+        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+            setShowSuggestions(false);
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener('mousedown', handleClickOutside);
+
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
+
     return (
         <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
             <form
@@ -106,7 +123,7 @@ function IslrForm() {
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                     {showSuggestions && (
-                        <div className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg max-h-60">
+                        <div ref={menuRef} className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg max-h-60">
                             {filteredTaxpayers.length > 0 ? (
                                 filteredTaxpayers.map((t) => (
                                     <div
