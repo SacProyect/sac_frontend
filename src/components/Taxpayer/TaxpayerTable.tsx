@@ -14,7 +14,7 @@ const columns = [
     { label: 'Tipo de Contribuyente', id: 'contract_type' },
     { label: 'Dirección', id: 'address' },
     { label: 'Fecha de Emisión', id: 'emition_date' },
-    { label: 'Fiscal', id: 'officerName' },
+    { label: 'Fiscal', id: 'user.name' },
     { label: 'Opciones', id: 'options' },
 ];
 
@@ -24,6 +24,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
+
+    console.log(propRows)
 
     useEffect(() => {
         // Ordena las filas por providenceNum
@@ -118,6 +120,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                                     new Date(item.emition_date).toLocaleDateString()
                                 ) : col.id === "contract_type" ? (
                                     item.contract_type === "ORDINARY" ? "ORDINARIO" : "ESPECIAL"
+                                ) : col.id === 'user.name' ? (
+                                    item.user?.name ?? '—'
                                 ) : (
                                     String(item[col.id as keyof Taxpayer])
                                 );
