@@ -28,11 +28,8 @@ function HomePage() {
 
     // Carga inicial de taxpayers según rol (solo cuando user cambie)
     useEffect(() => {
-        if (user.role === "FISCAL" || user.role === "ADMIN") {
+        if (user.role === "FISCAL" || user.role === "ADMIN" || user.role === "COORDINATOR" || user.role === "SUPERVISOR") {
             setTaxpayers(user.taxpayer || []);
-        } else if (user.role === "COORDINATOR") {
-            const group = user.coordinatedGroup?.members?.flatMap(m => m.taxpayer) || [];
-            setTaxpayers(group);
         }
     }, [user]);
 
@@ -81,7 +78,7 @@ function HomePage() {
             })
             .filter(item => {
                 if (!term) return true;
-                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.officerName} ${item.providenceNum}`.toLowerCase();
+                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.user.name} ${item.providenceNum}`.toLowerCase();
                 return contains(haystack, term);
             });
     }, [taxpayers, debouncedSearch, user, contains, officerMap]);
