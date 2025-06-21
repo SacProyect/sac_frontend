@@ -63,7 +63,7 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
 
     const getAvailableYears = () => {
         const currentYear = new Date().getFullYear();
-        return Array.from({ length: currentYear - startYear + 1 }, (_, i) => startYear + i);
+        return [currentYear];
     };
 
     const getAvailableMonths = (year: number) => {
@@ -170,19 +170,19 @@ function ContributionsFilter({ groupData, setSelectedGroup, setStartDate, setEnd
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Recaudado Multas:</p>
-                                    <p className='text-xs font-semibold'>{group.collected} Bs</p>
+                                    <p className='text-xs font-semibold'>{group.collected ? group.collected : 0} Bs</p>
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Multas:</p>
-                                    <p className='text-xs font-semibold'>{group.totalFines}</p>
+                                    <p className='text-xs font-semibold'>{group.totalFines ? group.totalFines : 0}</p>
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Recaudado IVA:</p>
-                                    <p className='text-xs font-semibold'>{group.totalIva?  group.totalIva.toString(): 0} Bs</p>
+                                    <p className='text-xs font-semibold'>{group.totalIva ? group.totalIva.toString() : 0} Bs</p>
                                 </div>
                                 <div className='flex justify-between px-2 pt-2'>
                                     <p className='text-xs '>Recaudado ISRL:</p>
-                                    <p className='text-xs font-semibold'>{group.collected} Bs</p>
+                                    <p className='text-xs font-semibold'>{group.totalIslr ? group.totalIslr.toString() : 0} Bs</p>
                                 </div>
                             </div>
                         ))

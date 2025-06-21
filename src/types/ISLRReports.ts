@@ -8,7 +8,8 @@ export interface ISLRReports {
     expent: Decimal;
     emition_date: Date;
     taxpayerId: string;
-    taxpayer:  TaxpayerReduced
+    taxpayer:  TaxpayerReduced;
+    paid: Decimal;
 }
 
 export interface TaxpayerReduced {
