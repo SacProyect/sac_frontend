@@ -1,95 +1,40 @@
-import React, { useEffect, useState } from 'react'
-import { getContributions } from '../utils/api/reportFunctions';
-import toast from 'react-hot-toast';
-
+import { GroupRecordProcess, GroupRecordsApiResponse } from '@/types/groupRecords';
+import { useState } from 'react'
 import { BiSort, BiSortUp, BiSortDown } from "react-icons/bi";
-import { GroupData } from '../contributions/ContributionTypes';
 
-
-interface GroupReportStatisticsProps {
-    groupData: GroupData[],
-    selectedGroup: string,
-    pdfMode?: boolean // <-- nueva prop opcional
-    forceType?: "FP" | "AF" | "VDF";
+type GroupReportStatisticsProps = {
+    groupData: GroupRecordsApiResponse | null;
+    selectedGroup: string;
+    pdfMode: boolean;
+    forceType?: 'FP' | 'AF' | 'VDF';
 }
 
+type RecordType = GroupRecordsApiResponse['records'][number];
 
-function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forceType }: GroupReportStatisticsProps) {
-    const [typeClicked, setTypeClicked] = useState(forceType || "FP");
+function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupReportStatisticsProps) {
+    const [typeClicked, setTypeClicked] = useState<GroupRecordProcess>(forceType || "FP");
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
 
-
-    // Filter the statistics to show based on the selected group
-    const groupStatistics = groupData.filter((group) => {
-        return group.id == selectedGroup
-    })
-
-    const selectedGroupData = groupStatistics.length > 0 ? groupStatistics[0] : null;
-
-
-    // Selected data based on process type inside of taxpayers
-    const selectedData = selectedGroupData?.members
-        ?.map((member) => {
-            // Filter taxpayers based on the selected type
-            const filteredTaxpayers = member.taxpayer.filter(
-                (taxpayer) => !typeClicked || taxpayer.process === typeClicked
-            );
-
-            // Sum up payments only for the filtered taxpayers
-            const totalCollected = filteredTaxpayers.reduce((memberSum, taxpayer) => {
-                const taxpayerTotal = taxpayer.payment.reduce(
-                    (sum, pay) => sum + Number(pay.amount),
-                    0
-                );
-                return memberSum + taxpayerTotal;
-            }, 0);
-
-            const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
-                return warningSum + taxpayer.event.filter(event => event.type === "WARNING").length;
-            }, 0);
-
-            const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
-                return finesSum + taxpayer.event.filter(event => event.type === "FINE").length;
-            }, 0);
-
-            const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
-                return compromisesSum + taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length;
-            }, 0);
-
-
-            const totalTaxpayers = filteredTaxpayers.length;
-
-
-            // ✅ Nuevo cálculo del total IVA
-            const totalIVA = filteredTaxpayers.reduce((ivaSum, taxpayer) => {
-                const taxpayerIVA = taxpayer.IVAReports?.reduce(
-                    (sum, report) => sum + Number(report.iva || 0),
-                    0
-                ) || 0;
-                return ivaSum + taxpayerIVA;
-            }, 0);
-
-            return {
-                ...member,
-                taxpayer: filteredTaxpayers, // Keep only the filtered taxpayers
-                totalCollected, // Store the total collected amount
-                totalWarnings,
-                totalFines,
-                totalCompromises,
-                totalTaxpayers,
-                totalIVA,
-            };
-        })
-        .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
-
+    // Filter records by process type
+    const selectedData = groupData?.records
+        ?.filter((record: RecordType) => !typeClicked || record.process === typeClicked)
+        .map((record: RecordType) => ({
+            ...record,
+            totalCollected: Number(record.collectedFines ?? 0),
+            totalIVA: Number(record.collectedIVA ?? 0),
+            totalISLR: Number(record.collectedISLR ?? 0),
+            totalWarnings: record.warnings ?? 0,
+            totalFines: record.fines ?? 0,
+            totalCompromises: record.compromises ?? 0,
+            totalTaxpayers: record.taxpayers ?? 0,
+            name: record.fiscal.name ?? 0,
+        }));
 
     // Handle the sorting of each column
     const handleSort = (key: string) => {
         setMultiSortConfig((prev) => {
             const currentDirection = prev[key];
             let newDirection: 'asc' | 'desc' | null;
-
-            // If the column is already sorted, toggle its direction
             if (currentDirection === 'asc') {
                 newDirection = 'desc';
             } else if (currentDirection === 'desc') {
@@ -97,36 +42,28 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
             } else {
                 newDirection = 'asc';
             }
-
             return {
-                ...prev, // Keep existing sorting for other columns
-                [key]: newDirection, // Update the clicked column only
+                ...prev,
+                [key]: newDirection,
             };
         });
     };
 
-
     // Sort selectedData based on sortConfig
     const sortedData = selectedData ? [...selectedData].sort((a, b) => {
         const sortKeys = Object.keys(multiSortConfig).filter((key) => multiSortConfig[key]);
-
         for (let key of sortKeys) {
             const direction = multiSortConfig[key];
             const valueA = a[key as keyof typeof a];
             const valueB = b[key as keyof typeof b];
-
             const valA = typeof valueA === "number" ? valueA : valueA?.toString().toLowerCase();
             const valB = typeof valueB === "number" ? valueB : valueB?.toString().toLowerCase();
-
             if (valA < valB) return direction === 'asc' ? -1 : 1;
             if (valA > valB) return direction === 'asc' ? 1 : -1;
         }
-
         return 0;
     }) : [];
 
-
-    // Icon to sort each column of the table
     const SortIcon = ({ column }: { column: string }) => {
         const direction = multiSortConfig[column];
         if (!direction) return <BiSort />;
@@ -134,26 +71,21 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
         return <BiSortDown />;
     };
 
-
     return (
         <section
             className="mb-4 border border-gray-200 rounded-md"
             style={{
                 width: pdfMode ? '210mm' : '100%',
-                margin: pdfMode ? '0 auto' : undefined,       // <-- esto lo centra
+                margin: pdfMode ? '0 auto' : undefined,
                 maxHeight: pdfMode ? 'none' : undefined,
                 overflow: pdfMode ? 'visible' : undefined,
             }}
         >
-
-            {/* Section header */}
-            {selectedGroupData ? (
+            {groupData ? (
                 <>
                     <div className='flex justify-between w-full'>
-                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {selectedGroupData?.name} - Abril 2025</p>
+                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {groupData.groupName} - Abril 2025</p>
                     </div>
-
-                    {/* Buttons */}
                     <div className='grid w-full grid-cols-3 px-4 py-4 text-center'>
                         <div className={`w-full rounded-l-md`} >
                             <button className={`w-full ${typeClicked == "FP" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("FP")}>FP</button>
@@ -165,10 +97,6 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                             <button className={`w-full ${typeClicked == "VDF" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("VDF")}>VDF</button>
                         </div>
                     </div>
-
-
-
-                    {/* Table */}
                     <div className="w-full border-collapse">
                         <div className="w-full lg:h-[20rem] h-[24rem] border border-gray-200 rounded-md overflow-y-auto overflow-x-auto ">
                             <div
@@ -179,60 +107,49 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                                         : 'repeat(10, 139px)',
                                 }}
                             >
-                                <div className=''>
+                                <div>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("name")} className="text-xs">
                                             Fiscal
                                         </button>
                                         <SortIcon column="name" />
                                     </div>
-                                    {sortedData?.map((data) => (
-                                        <div className='flex flex-col items-center w-full py-2 bg-gray-200 border-t-2 border-gray-300'>
-                                            <p className=''>{data.name}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className='flex flex-col items-center w-full py-2 bg-gray-200 border-t-2 border-gray-300'>
+                                            <p>{data.name}</p>
                                         </div>
                                     ))}
                                 </div>
-                                {/* <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("type")} className="text-xs">Tipo</button>
-                                        <SortIcon column="type" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{typeClicked}</p>
-                                        </div>
-                                    ))}
-                                </div> */}
                                 <div>
                                     <div className="flex items-center justify-center">
                                         <button onClick={() => handleSort("totalCollected")} className="text-xs">Rec.Multas</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{data.totalCollected}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">IVA</button>
-                                        <SortIcon column="totalCollected" />
+                                        <button onClick={() => handleSort("totalIVA")} className="text-xs">IVA</button>
+                                        <SortIcon column="totalIVA" />
                                     </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
                                             <p>{data.totalIVA}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">ISLR</button>
-                                        <SortIcon column="totalCollected" />
+                                        <button onClick={() => handleSort("totalISLR")} className="text-xs">ISLR</button>
+                                        <SortIcon column="totalISLR" />
                                     </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCollected}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                            <p>{data.totalISLR}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -241,9 +158,9 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                                         <button onClick={() => handleSort("totalWarnings")} className="text-xs">Avisos</button>
                                         <SortIcon column="totalWarnings" />
                                     </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalWarnings}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                            <p>{data.totalWarnings}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -252,9 +169,9 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                                         <button onClick={() => handleSort("totalFines")} className="text-xs">Multas</button>
                                         <SortIcon column="totalFines" />
                                     </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalFines}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                            <p>{data.totalFines}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -263,9 +180,9 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                                         <button onClick={() => handleSort("totalCompromises")}>Compromisos</button>
                                         <SortIcon column="totalCompromises" />
                                     </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalCompromises}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                            <p>{data.totalCompromises}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -276,22 +193,20 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                                             <SortIcon column="totalTaxpayers" />
                                         </div>
                                     </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p className="text-xs">{member.totalTaxpayers}</p>
+                                    {sortedData?.map((data, idx) => (
+                                        <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
+                                            <p className="text-xs">{data.totalTaxpayers}</p>
                                         </div>
                                     ))}
                                 </div>
                             </div>
                         </div>
                     </div>
-
-                    {/* Under the table */}
                     <div className='flex justify-between px-6 pt-1 '>
-                        <div className=''>
-                            <p className='text-gray-600'>Cantidad de fiscales muestreados en procedimiento {typeClicked}: {selectedData?.length}</p>
+                        <div>
+                            <p className='text-gray-600'>Cantidad de fiscales muestreados en procedimiento {typeClicked}: {sortedData?.length ?? 0}</p>
                         </div>
-                        <div className=''>
+                        <div>
                             <p className='text-gray-600'>*Deslice hacia abajo para ver la lista completa*</p>
                         </div>
                     </div>
@@ -301,14 +216,6 @@ function GroupReportStatistics({ groupData, selectedGroup, pdfMode = false, forc
                     <p className='pt-4 pl-4 text-2xl'>Seleccione un grupo por favor</p>
                 </div>
             )}
-
-
-
-
-
-
-
-
         </section>
     )
 }

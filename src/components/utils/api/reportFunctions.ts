@@ -1,11 +1,19 @@
 import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./apiConnection";
+import { GroupData } from "@/components/contributions/ContributionTypes";
+import { GroupRecordsApiResponse } from "@/types/groupRecords";
 
 
 interface ContributionsInput {
 	id?: string,
 	startDate?: string,
 	endDate?: string
+}
+
+export interface GroupRecordsInput {
+	id: string
+	year: number
+	month?: number
 }
 
 
@@ -105,8 +113,20 @@ export const getContributions = async (data?: ContributionsInput) => {
 		console.error(e)
 		throw e;
 	}
-
 }
+
+export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRecordsApiResponse> => {
+    try {
+        const requestUrl = `reports/get-group-records`
+        const response = await apiConnection.get(requestUrl, { params: data });
+        return response.data as GroupRecordsApiResponse;
+    } catch (e) {
+        console.error('Error al obtener group records:', e)
+        throw e
+    }
+}
+
+
 
 export const getGlobalPerformance = async () => {
 	try {

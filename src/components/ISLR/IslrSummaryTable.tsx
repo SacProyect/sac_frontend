@@ -30,6 +30,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
         { name: 'Ingresos', id: 'incomes' },
         { name: 'Gastos', id: 'expent' },
         { name: 'Costos', id: 'costs' },
+        { name: 'Recaudado', id: 'paid' },
         { name: 'Fecha de Emisión', id: 'emition_date' },
         { name: 'Acciones', id: 'options' },
     ];
@@ -155,6 +156,8 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                     value = item.taxpayer.name;
                                 } else if (id === 'taxpayer.process') {
                                     value = item.taxpayer.process;
+                                } else if (id === 'paid') {
+                                    value = `${item.paid} BS`;
                                 } else if (id === 'options') {
                                     value =
                                         !pdfMode && user?.role === "ADMIN" ? (

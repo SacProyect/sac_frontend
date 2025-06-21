@@ -61,10 +61,10 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
             // ✅ Nuevo cálculo del total IVA
             const totalIVA = filteredTaxpayers.reduce((ivaSum, taxpayer) => {
                 const taxpayerIVA = taxpayer.IVAReports?.reduce(
-                    (sum, report) => sum + Number(report.iva || 0),
+                    (sum, report) => sum + Number(report.paid || 0),
                     0
                 ) || 0;
-                return ivaSum + taxpayerIVA;
+                return (ivaSum + taxpayerIVA);
             }, 0);
 
             return {
@@ -75,7 +75,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
                 totalFines,
                 totalCompromises,
                 totalTaxpayers,
-                totalIVA, 
+                totalIVA: parseFloat(totalIVA.toFixed(2)),
             };
         })
         .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter

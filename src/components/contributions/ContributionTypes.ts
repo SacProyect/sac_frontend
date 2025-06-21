@@ -1,4 +1,5 @@
 import { IVAReports } from "@/types/IvaReports";
+import Decimal from "decimal.js";
 
 export interface GroupData {
     id: string;
@@ -8,7 +9,8 @@ export interface GroupData {
     members: Member[];
     collected: string;
     totalFines: string;
-    totalIva: BigInt;
+    totalIva: Decimal;
+    totalIslr: Decimal;
 }
 
 export interface Member {
