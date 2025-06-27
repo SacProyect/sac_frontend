@@ -11,6 +11,7 @@ import { IVAReports } from "@/types/IvaReports";
 import { RepairReports } from "@/types/RepairReports";
 import { InvestigationPdf } from "@/types/investigationPdf";
 import { User } from "@/types/user";
+import Decimal from "decimal.js";
 
 
 
@@ -35,6 +36,7 @@ interface TaxpayerData {
     officerId: string,
     investigation_pdfs: InvestigationPdf[],
     user: User,
+    IVAReports: IVAReports[],
 }
 
 
@@ -278,6 +280,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
+    console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
+
 
 
     return (
@@ -305,6 +309,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Multas registradas:</span> {fines ? fines : "No se pudo cargar la información"}</p>
+                        <p><span className="font-bold">Excedente de crédito actual:</span> {taxpayerData?.IVAReports[0].excess ? taxpayerData.IVAReports[0].excess.toString() : "No se pudo cargar la información"}</p>
                     </div>
 
                     {taxpayerData?.notified === true ? (
