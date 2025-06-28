@@ -61,7 +61,7 @@ const TaxpayerDetail = () => {
 	return (
 		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
-			<Group className="flex flex-col items-center justify-center w-full pt-10 mb-8 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
+			<Group className="flex flex-col items-center justify-center w-full pt-4 mb-4 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
 				{(() => {
 					// Encuentra el contribuyente con el ID de la URL
 					const matchedTaxpayer = user?.taxpayer?.find(t => t.id === taxpayer);
@@ -88,7 +88,7 @@ const TaxpayerDetail = () => {
 					));
 				})()}
 			</Group>
-			<div className="flex flex-col w-full pb-4 pl-4 pr-4 space-y-2 lg:pr-0 lg:flex-row lg:space-x-2 lg:space-y-0">
+			<div className="flex flex-col w-full pb-2 pl-4 pr-4 space-y-2 lg:pr-0 lg:flex-row lg:space-x-2 lg:space-y-0">
 				<div className="flex items-center w-full pl-2 border border-gray-200 rounded-md lg:w-48 lg:pr-0">
 					<MdInventory size={15} />
 					<button className="w-full px-2 py-1 text-left" onClick={() => setSelectedTable("fine")}>
@@ -109,19 +109,19 @@ const TaxpayerDetail = () => {
 				</div>
 			</div>
 			{selectedTable == "fine" ? (
-				<div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex text-center items-center justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{events.length > 0 ? (
 						<EventTable rows={events} setRows={setEvents} />
 					) : "No hay datos para mostrar. Por favor agregue multas a este contribuyente para poder ver esta tabla."}
 				</div>
 			) : selectedTable === "iva" ? (
-				<div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex text-center items-center justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{taxSummary.length > 0 ? (
 						<TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
 					) : "No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla."}
 
 				</div>
-			) : <div className='flex text-center items-center justify-center w-full h-full lg:h-[30vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+			) : <div className='flex text-center items-center justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 				{islrReports.length > 0 ? (
 					<ISLRSummaryTable rows={islrReports} setRows={setIslrReports} />
 				) : "No hay datos para mostrar. Por favor agregue declaraciones de ISLR a este contribuyente para poder ver esta tabla."}
