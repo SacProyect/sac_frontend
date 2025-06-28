@@ -47,7 +47,7 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 
 export const getIslrReports = async (taxpayerId: string) => {
 
-	try { 
+	try {
 		let requestURL = `taxpayer/get-islr`;
 
 		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
@@ -90,7 +90,7 @@ export const createError = async (data: FormData) => {
 		}));
 
 		return response;
-	} catch (e : any) {
+	} catch (e: any) {
 		console.error("Upload failed:", e?.response?.data || e.message);
 		throw new Error("Error sending the report");
 	}
@@ -115,15 +115,26 @@ export const getContributions = async (data?: ContributionsInput) => {
 	}
 }
 
+export const getIndividualIvaReport = async (id: string | undefined) => {
+	try {
+		const requestUrl = `reports/individual-iva-report`
+		const response = await apiConnection.get(`${requestUrl}/${id}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el reporte de iva individual:', e)
+		throw e
+	}
+}
+
 export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRecordsApiResponse> => {
-    try {
-        const requestUrl = `reports/get-group-records`
-        const response = await apiConnection.get(requestUrl, { params: data });
-        return response.data as GroupRecordsApiResponse;
-    } catch (e) {
-        console.error('Error al obtener group records:', e)
-        throw e
-    }
+	try {
+		const requestUrl = `reports/get-group-records`
+		const response = await apiConnection.get(requestUrl, { params: data });
+		return response.data as GroupRecordsApiResponse;
+	} catch (e) {
+		console.error('Error al obtener group records:', e)
+		throw e
+	}
 }
 
 

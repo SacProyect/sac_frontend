@@ -1,6 +1,6 @@
 import { Fines } from "@/App";
 import React, { useEffect, useRef, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip } from "recharts";
+import { PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
 import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
 import toast, { Toaster } from "react-hot-toast";
@@ -12,6 +12,7 @@ import { RepairReports } from "@/types/RepairReports";
 import { InvestigationPdf } from "@/types/investigationPdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
+import { getIndividualIvaReport } from "../utils/api/reportFunctions";
 
 
 
@@ -53,6 +54,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showFaseModal, setShowFaseModal] = useState(false);
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
+    const [lineChartData, setLineChartData] = useState<{ month: string; variationFromPrevious: number }[]>([])
 
 
 
@@ -282,12 +284,47 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
+    // const lineChartData = [
+    //     { month: "ene", variation: 10 },
+    //     { month: "feb", variation: 200 },
+    //     { month: "mar", variation: 5 },
+    //     { month: "abr", variation: -3 },
+    //     { month: "may", variation: 8 },
+    //     { month: "jun", variation: 11 },
+    //     { month: "jul", variation: 9 },
+    //     { month: "ago", variation: -2 },
+    //     { month: "sep", variation: 4 },
+    //     { month: "oct", variation: 7 },
+    //     { month: "nov", variation: 6 },
+    //     { month: "dic", variation: 13 }
+    // ];
+
+    // Get the Monthly Variation of IVA for the taxpayer
+    useEffect(() => {
+        const fecthLineChartData = async () => {
+            try {
+                const response = await getIndividualIvaReport(taxpayer) as Record<string, { variationFromPrevious: string }>;
+
+                const dataArray = Object.entries(response).map(([month, value]) => ({
+                    month,
+                    variationFromPrevious: parseFloat(value.variationFromPrevious) // Quita el % y lo convierte a número
+                }));
+
+                setLineChartData(dataArray);
+            } catch (e) {
+                console.error(e);
+                toast.error("Ha ocurrido un error obteniendo el rendimiento mensual")
+            }
+        }
+        fecthLineChartData()
+    }, [])
+
 
 
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
-            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full shadow-xl pb-0 lg:pb-4">
+            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full lg:h-[60vh] shadow-xl pb-0 lg:pb-4">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
                 <div className="w-full p-6 lg:w-1/2">
@@ -327,7 +364,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className={`flex items-center ${user?.role !== "ADMIN" ? "justify-start" : "justify-center"} space-x-2 text-center`}>
+                    <div className={`flex items-center ${user?.role !== "ADMIN" ? "justify-start" : "justify-center"} space-x-4 text-center`}>
 
                         {taxpayerData?.culminated === true ? (
                             <div className="pt-2">
@@ -348,17 +385,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             )
                         )}
 
-                        {user?.role == "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length > 1 && (
+                        {user?.role === "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length >= 1 && (
                             <div className="pt-2">
                                 <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
                             </div>
                         )}
+
                     </div>
 
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
-                            <div className="pt-2">
-                                <button className="px-4 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
+                            <div className="pt-2 ">
+                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
                             </div>
                         ) : (
                             user && taxpayerData.officerId === user.id && (
@@ -416,65 +454,9 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             )
                         )
                     )}
-                </div>
 
-                {/* Columna Derecha - Bullets + Gráfica Pastel */}
-                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem]">
-
-                    {(user?.role === "FISCAL" && taxpayerData?.officerId === user.id || user?.role === "ADMIN") && taxpayerData?.notified === false && (
-                        <div className="flex items-end justify-end w-full mb-4">
-                            <button
-                                className="px-2 py-1 bg-[#3498db] text-white font-semibold"
-                                onClick={() => handleNotifiedClick(true)}
-                            >
-                                Reportar como notificado
-                            </button>
-                        </div>
-                    )}
-
-                    <div className="flex flex-col pt-0 lg:flex-row lg:pt-4">
-
-                        <div className="flex flex-row p-4 mb-4 space-x-6 lg:flex-col lg:mb-0 lg:space-x-0 lg:space-y-2">
-                            <div className="flex items-center">
-                                <span
-                                    className="inline-block w-3 h-3 mr-2 rounded-full"
-                                    style={{ backgroundColor: "#0080c1" }}
-                                />
-                                <span className="text-sm">COMPRAS (BS)</span>
-                            </div>
-                            <div className="flex items-center">
-                                <span
-                                    className="inline-block w-3 h-3 mr-2 rounded-full"
-                                    style={{ backgroundColor: "#737373" }}
-                                />
-                                <span className="text-sm">VENTAS (BS)</span>
-                            </div>
-                        </div>
-
-                        {dataMock.some(item => item.value > 0) && (
-                            <div className="flex justify-center w-full lg:w-auto">
-                                <PieChart width={300} height={200}>
-                                    <Pie
-                                        data={dataMock}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        outerRadius={50}
-                                        label
-                                    >
-                                        {dataMock.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip />
-                                </PieChart>
-                            </div>
-                        )}
-                    </div>
-
-                    {(user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id) && taxpayerData?.process === "AF" &&
-                        <div className="flex items-end justify-end w-full gap-2 pr-14 mt-14">
+                    {(user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
+                        <div className="flex items-end justify-around w-full gap-2 pr-14 mt-14 lg:mt-4">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
@@ -489,7 +471,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     }
 
                     {taxpayerData?.fase && taxpayerData.process === "AF" && (
-                        <div className="w-full pt-4 mt-2 text-sm italic text-right text-gray-700 pr-14">
+                        <div className="w-full pt-4 mt-2 text-sm italic text-left text-gray-700 pr-14 lg:pr-0">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
                                     FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
@@ -512,6 +494,72 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             }
                         </div>
                     )}
+                </div>
+
+                {/* Columna Derecha - Bullets + Gráfica Pastel */}
+                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem]">
+
+                    <div className="flex flex-row flex-wrap items-center justify-between w-full gap-2 px-2 py-1">
+                        {/* Botón de notificación */}
+                        {(user?.role === "FISCAL" && taxpayerData?.officerId === user.id || user?.role === "ADMIN") && !taxpayerData?.notified && (
+                            <button
+                                className="px-3 py-1 bg-[#3498db] text-white text-sm font-medium rounded"
+                                onClick={() => handleNotifiedClick(true)}
+                            >
+                                Reportar como notificado
+                            </button>
+                        )}
+
+                        {/* Leyenda de compras y ventas */}
+                        <div className="flex flex-row items-center gap-4 text-sm">
+                            <div className="flex items-center">
+                                <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#0080c1" }} />
+                                COMPRAS (BS)
+                            </div>
+                            <div className="flex items-center">
+                                <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#737373" }} />
+                                VENTAS (BS)
+                            </div>
+                        </div>
+                    </div>
+
+                    {dataMock.some(item => item.value > 0) && (
+                        <div className="flex justify-center w-full lg:w-auto">
+                            <PieChart width={300} height={200}>
+                                <Pie
+                                    data={dataMock}
+                                    dataKey="value"
+                                    nameKey="name"
+                                    cx="50%"
+                                    cy="50%"
+                                    outerRadius={50}
+                                    label
+                                >
+                                    {dataMock.map((entry, index) => (
+                                        <Cell key={`cell-${index}`} fill={entry.color} />
+                                    ))}
+                                </Pie>
+                                <Tooltip />
+                            </PieChart>
+                        </div>
+                    )}
+
+                    <div className="w-full px-4 mt-6 lg:mt-4">
+                        <h3 className="mb-2 text-sm font-semibold text-center">
+                            Variación de rendimiento mensual
+                        </h3>
+                        <ResponsiveContainer width={430} height={240}>
+                            <LineChart data={lineChartData}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis dataKey="month" fontSize={10} />
+                                <YAxis fontSize={10} />
+                                <Tooltip />
+                                <Line type="monotone" dataKey="variationFromPrevious" stroke="#3498db" strokeWidth={2} dot={{ r: 3 }} />
+                            </LineChart>
+                        </ResponsiveContainer>
+                    </div>
+
+
                 </div>
             </div>
             {showFaseModal && (
