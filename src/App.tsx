@@ -29,6 +29,8 @@ const ObservationsPage = lazy(() => import("@/pages/Observations/ObservationsPag
 const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
 const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"));
 const IslrReport = lazy(() => import("@/pages/ISLR/IslrReport"));
+const TaxpayerCensus = lazy(() => import("@/pages/Census/CensusPage"));
+const CensusTable = lazy(() => import("@/pages/CensusTable/CensusTablePage"));
 
 
 type LoaderData = {
@@ -75,6 +77,10 @@ export const router = createBrowserRouter([
           {
             path: "/contributions",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de contribuciones...</div>} > <ContributionsPage /> </Suspense>,
+          },
+          {
+            path: "/show-census",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white'>Cargando Página de censo...</div>} > <CensusTable /> </Suspense>,
           },
           {
             path: "payment_compromise/:taxpayerId?",
@@ -137,6 +143,27 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes...</div>} >
               <div className='w-full h-full'>
                 <TaxpayerForm />
+              </div>
+            </Suspense>,
+            loader: async () => {
+              try {
+                const response = await getOfficers();
+                return response.map((item: { id: number; name: string; personId: string }) => ({
+                  value: item.id,
+                  name: `${item.name} C.I.:${item.personId}`,
+                  id: item.id,
+                }));
+              } catch (error) {
+                console.error("No se pudieron obtener los funcionarios: " + error);
+                return [];
+              }
+            },
+          },
+          {
+            path: "census/",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Formulario de Contribuyentes Para Censo...</div>} >
+              <div className='w-full h-full'>
+                <TaxpayerCensus />
               </div>
             </Suspense>,
             loader: async () => {

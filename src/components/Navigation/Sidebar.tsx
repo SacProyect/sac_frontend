@@ -19,7 +19,9 @@ function Sidebar() {
 
     const navOptions = user.role === "ADMIN" ? [
         { name: 'Inicio', path: '/' },
-        { name: 'Contribuyentes', path: '/taxpayer' },
+        { name: 'Tabla Censo', path: '/show-census' },
+        { name: 'Actuaciones', path: '/taxpayer' },
+        { name: 'Censo', path: '/census' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
@@ -33,7 +35,9 @@ function Sidebar() {
 
     ] : user.role === "COORDINATOR" ? [
         { name: 'Inicio', path: '/' },
-        { name: 'Contribuyentes', path: '/taxpayer' },
+        { name: 'Tabla Censo', path: '/show-census' },
+        { name: 'Actuaciones', path: '/taxpayer' },
+        { name: 'Censo', path: '/census' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
@@ -46,7 +50,9 @@ function Sidebar() {
 
     ] : [
         { name: 'Inicio', path: '/' },
-        { name: 'Contribuyentes', path: '/taxpayer' },
+        { name: 'Tabla Censo', path: '/show-census' },
+        { name: 'Actuaciones', path: '/taxpayer' },
+        { name: 'Censo', path: '/census' },
         { name: 'Avisos', path: '/warning' },
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
