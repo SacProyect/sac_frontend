@@ -104,7 +104,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     };
 
     return (
-        <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4">
+        <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4 lg:pt-8">
             {pdfMode && <p className='py-8 text-lg'>Historial de ISLR</p>}
             <table className="min-w-full border-collapse table-auto">
                 <thead className="w-full bg-[#2C3E50]">
