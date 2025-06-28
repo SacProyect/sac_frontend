@@ -149,7 +149,7 @@ function TaxpayerForm() {
 
     return (
         <>
-            <div className=' flex items-center justify-center text-xs lg:max-h-[80vh] sm:max-h-full'>
+            <div className='flex items-center justify-center text-xs  lg:h-full sm:max-h-full'>
                 <FormContainer>
                     <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar Contribuyente</h2>
                     <Form onSubmit={handleSubmit(onSubmit)} className=''>
