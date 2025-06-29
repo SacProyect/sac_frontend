@@ -5,12 +5,22 @@ export interface GroupData {
     id: string;
     name: string;
     coordinatorId: string;
-    created_at: Date;
-    members: Member[];
+    created_at: string; // puede mantenerse como string (ISO) si no parseas a Date
+    members: Member[]; // no lo usas directamente aún
     collected: string;
     totalFines: string;
-    totalIva: Decimal;
-    totalIslr: Decimal;
+    totalIva: string;
+    totalIslr: string;
+    supervisorsStats: SupervisorsStat[];
+}
+
+export interface SupervisorsStat {
+    supervisorId: string;
+    totalCollected: string;
+    collectedIva: string;
+    collectedISLR: string;
+    collectedFines: string;
+    totalFines: string;
 }
 
 export interface Member {
@@ -24,6 +34,7 @@ export interface Member {
     groupId: string;
     taxpayer: Taxpayer[];
     collected: string;
+    supervisorId?: string;
 }
 
 export interface Taxpayer {

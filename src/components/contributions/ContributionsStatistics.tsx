@@ -9,49 +9,52 @@ interface ContributionsStatisticsProps {
     groupData: GroupData[],
     selectedGroup: string,
     pdfMode?: boolean // <-- nueva prop opcional
+    selectedSupervisorId: string | null;
 }
 
 
-function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: ContributionsStatisticsProps) {
+function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, selectedSupervisorId }: ContributionsStatisticsProps) {
     const [typeClicked, setTypeClicked] = useState("FP")
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
+    const [groupId, supervisorId] = selectedGroup.split("_");
 
 
     // Filter the statistics to show based on the selected group
-    const groupStatistics = groupData.filter((group) => {
-        return group.id == selectedGroup
-    })
-
+    const groupStatistics = groupData.filter((group) => group.id === selectedGroup);
     const selectedGroupData = groupStatistics.length > 0 ? groupStatistics[0] : null;
 
 
     // Selected data based on process type inside of taxpayers
     const selectedData = selectedGroupData?.members
-        ?.map((member) => {
+        ?.filter((member) => {
+            // Si hay filtro por supervisor, solo tomar los que coinciden
+            if (!selectedSupervisorId) return true;
+            return member.supervisorId === selectedSupervisorId;
+        }).map((member) => {
             // Filter taxpayers based on the selected type
             const filteredTaxpayers = member.taxpayer.filter(
                 (taxpayer) => !typeClicked || taxpayer.process === typeClicked
             );
 
             // Sum up payments only for the filtered taxpayers
-            const totalCollected = filteredTaxpayers.reduce((memberSum, taxpayer) => {
-                const taxpayerTotal = taxpayer.payment.reduce(
+            const totalCollected = filteredTaxpayers ? filteredTaxpayers.reduce((memberSum, taxpayer) => {
+                const taxpayerTotal = (taxpayer.payment ?? []).reduce(
                     (sum, pay) => sum + Number(pay.amount),
                     0
                 );
                 return memberSum + taxpayerTotal;
-            }, 0);
+            }, 0) : 0;
 
             const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
-                return warningSum + taxpayer.event.filter(event => event.type === "WARNING").length;
+                return warningSum + (taxpayer.event?.filter(event => event.type === "WARNING").length ?? 0);
             }, 0);
 
             const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
-                return finesSum + taxpayer.event.filter(event => event.type === "FINE").length;
+                return finesSum + (taxpayer.event.filter(event => event.type === "FINE").length ?? 0);
             }, 0);
 
             const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
-                return compromisesSum + taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length;
+                return compromisesSum + (taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length ?? 0);
             }, 0);
 
 
@@ -113,8 +116,12 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
             const valueA = a[key as keyof typeof a];
             const valueB = b[key as keyof typeof b];
 
-            const valA = typeof valueA === "number" ? valueA : valueA?.toString().toLowerCase();
-            const valB = typeof valueB === "number" ? valueB : valueB?.toString().toLowerCase();
+            const valA = typeof valueA === "number"
+                ? valueA
+                : (valueA?.toString().toLowerCase() ?? "");
+            const valB = typeof valueB === "number"
+                ? valueB
+                : (valueB?.toString().toLowerCase() ?? "");
 
             if (valA < valB) return direction === 'asc' ? -1 : 1;
             if (valA > valB) return direction === 'asc' ? 1 : -1;
@@ -131,6 +138,8 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false }: 
         if (direction === 'asc') return <BiSortUp />;
         return <BiSortDown />;
     };
+
+
 
 
     return (
