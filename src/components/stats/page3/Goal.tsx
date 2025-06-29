@@ -1,17 +1,40 @@
+import { getExpectedAmount } from '@/components/utils/api/reportFunctions';
+import { ExpectedGoal } from '@/types/stats';
 import { BarChart3, TrendingDown, TrendingUp } from 'lucide-react'
-import React from 'react'
+import { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 
 
 
 
 
 function Goal() {
+    const [expectedGoal, setExpectedGoal] = useState<ExpectedGoal>();
 
+    useEffect(() => {
+        const fetchExpectedGoal = async () => {
+
+            try {
+                const response = await getExpectedAmount();
+
+                setExpectedGoal(response.data);
+
+            } catch (e) {
+                toast.error("No se pudo obtener la meta esperada.")
+            }
+        };
+        fetchExpectedGoal();
+
+
+    }, [])
+
+    if (!expectedGoal) return <div>Loading...</div>;
 
     const recaudacionComparacion = {
-        esperada: 15750000,
-        real: 12890000,
-        diferencia: -18.16,
+        esperada: expectedGoal?.totalExpected,
+        real: expectedGoal?.totalPaid,
+        diferencia: expectedGoal?.difference,
+        deficit: expectedGoal?.percentage,
     }
 
     const formatCurrency = (amount: number) => {
@@ -53,9 +76,9 @@ function Goal() {
                 {/* INDICADOR DE DIFERENCIA */}
                 <div className="px-4 py-2 text-center border shadow-lg bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30">
                     <div className="mb-1 text-3xl font-black text-white">
-                        {recaudacionComparacion.diferencia.toFixed(1)}%
+                        {recaudacionComparacion.deficit.toFixed(1)}%
                     </div>
-                    <div className="text-sm font-medium text-red-100">DÉFICIT</div>
+                    <p className="text-sm font-medium text-red-100">{recaudacionComparacion.deficit < 0 ? "DÉFICIT" : "SUPERAVIT"}</p>
                 </div>
 
                 {/* RECAUDACIÓN REAL */}
