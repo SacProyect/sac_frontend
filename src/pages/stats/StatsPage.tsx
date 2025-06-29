@@ -14,6 +14,7 @@ import { useNavigate } from 'react-router-dom';
 import { GroupStat } from '@/components/stats/GroupPerformanceStats';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import StatisticsPage2 from './StatsPage2';
+import StatisticsPage3 from './StatsPage3';
 
 const PageOneStats = lazy(() => import('@/components/stats/GlobalPerfomance'));
 const PageTwoStats = lazy(() => import('@/components/stats/GlobalTaxpayerPerformance').then(m => ({ default: m.PageTwoStats })));
@@ -113,6 +114,15 @@ function StatsPage() {
                 <>
                     <StatisticsPage2 />
                 </>
+            )
+        }
+
+        if (currentPage === 3) {
+            return (
+                <div className="w-full lg:w-[82vw] lg:h-[90.2vh] flex flex-col bg-[#1c1c1b] text-white">
+                    <StatisticsPage3 />
+                </div>
+
             )
         }
 

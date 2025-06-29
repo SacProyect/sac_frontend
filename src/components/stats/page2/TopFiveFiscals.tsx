@@ -1,57 +1,48 @@
+import { getTopFiveByGroup } from '@/components/utils/api/reportFunctions';
+import { TopFiveFiscalsByGroup } from '@/types/stats'
 import { Download, Users } from 'lucide-react'
-import React from 'react'
-
-
-const fiscalesByGroup = {
-    "Grupo 1": [
-        { name: "Carlos Mendoza", total: 285000 },
-        { name: "Ana Beltrán", total: 245000 },
-        { name: "Jorge Salinas", total: 235000 },
-        { name: "Mónica Reyes", total: 225000 },
-        { name: "Ridivo Campos", total: 215000 },
-    ],
-    "Grupo 2": [
-        { name: "Sofía Castillo", total: 272000 },
-        { name: "Pablo Núñez", total: 242000 },
-        { name: "Carla Medina", total: 232000 },
-        { name: "Héctor Ramos", total: 222000 },
-        { name: "Natalia Flores", total: 212000 },
-    ],
-    "Grupo 3": [
-        { name: "Fernando Jiménez", total: 265000 },
-        { name: "Alejandra Soto", total: 238000 },
-        { name: "Rodrigo Aguilar", total: 228000 },
-        { name: "Daniela Paredes", total: 218000 },
-        { name: "Esteban Cortés", total: 208000 },
-    ],
-    "Grupo 4": [
-        { name: "Lucía Ramírez", total: 258000 },
-        { name: "Gonzalo Mendez", total: 235000 },
-        { name: "Paola Vásquez", total: 225000 },
-        { name: "Iván Rojas", total: 215000 },
-        { name: "Gabriela Luna", total: 205000 },
-    ],
-    "Grupo 5": [
-        { name: "Diego Vargas", total: 251000 },
-        { name: "Mariana Espinoza", total: 232000 },
-        { name: "Óscar Fuentes", total: 222000 },
-        { name: "Valeria Ibarra", total: 212000 },
-        { name: "Tomás Sandoval", total: 202000 },
-    ],
-    "Grupo 6": [
-        { name: "Valentina Cruz", total: 244000 },
-        { name: "Nicolás Herrera", total: 228000 },
-        { name: "Renata Morales", total: 218000 },
-        { name: "Maximiliano Peña", total: 208000 },
-        { name: "Constanza Ruiz", total: 198000 },
-    ],
-}
-
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
 
 
 
 
 function TopFiveFiscals() {
+    const [fiscalsByGroup, setFiscalsByGroup] = useState<TopFiveFiscalsByGroup[]>();
+
+    useEffect(() => {
+        const fetchTopFiveByGroup = async () => {
+            try {
+                const response = await getTopFiveByGroup();
+
+                const dataObject = response.data;
+
+                // Transformar y ordenar
+                const transformedData = Object.entries(dataObject)
+                    .map(([groupName, fiscals]: any) => {
+                        const parsedFiscals = fiscals.map((f: any) => ({
+                            name: f.name,
+                            total: Number(f.totalCollected),
+                        }));
+
+                        const groupTotal = parsedFiscals.reduce((acc: number, f: any) => acc + f.total, 0);
+
+                        return {
+                            name: groupName,
+                            fiscals: parsedFiscals,
+                            totalCollected: groupTotal,
+                        };
+                    })
+                    .sort((a, b) => b.totalCollected - a.totalCollected); // Orden descendente
+
+                setFiscalsByGroup(transformedData);
+            } catch (e) {
+                toast.error("No se pudieron obtener los mejores fiscales de cada grupo.");
+            }
+        };
+
+        fetchTopFiveByGroup();
+    }, []);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -90,21 +81,21 @@ function TopFiveFiscals() {
                 <div>
                     <div id="fiscales-grupo-table" className="h-[285px] overflow-y-auto custom-scroll p-4 ">
                         <div className="space-y-4 lg:pb-8">
-                            {Object.entries(fiscalesByGroup).map(([groupName, fiscales]) => (
-                                <div key={groupName} className="border border-[#3a3a39] rounded-lg p-4">
-                                    <h3 className="mb-3 font-semibold text-purple-400">{groupName}</h3>
+                            {fiscalsByGroup?.map((group, index) => (
+                                <div key={index} className="border border-[#3a3a39] rounded-lg p-4">
+                                    <h3 className="mb-3 font-semibold text-purple-400">{group.name}</h3>
                                     <div className="space-y-2">
-                                        {fiscales.map((fiscal, index) => (
+                                        {group.fiscals.map((fiscal: any, i: number) => (
                                             <div
-                                                key={index}
+                                                key={i}
                                                 className="flex items-center justify-between py-2 px-3 bg-[#1a1a19] rounded-md"
                                             >
                                                 <div className="flex items-center gap-3">
                                                     <div
-                                                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${index === 0 ? "bg-purple-600 text-white" : "bg-gray-600 text-white"
+                                                        className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${i === 0 ? "bg-purple-600 text-white" : "bg-gray-600 text-white"
                                                             }`}
                                                     >
-                                                        {index + 1}
+                                                        {i + 1}
                                                     </div>
                                                     <span className="font-medium">{fiscal.name}</span>
                                                 </div>

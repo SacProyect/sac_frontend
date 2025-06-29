@@ -1,23 +1,31 @@
+import { getTopFiscals } from '@/components/utils/api/reportFunctions'
+import { TopFiscals } from '@/types/stats'
 import { Download, TrendingUp } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
-const topFiscales = [
-    { name: "Carlos Mendoza", total: 285000, iva: 165000, islr: 95000, multas: 25000 },
-    { name: "Sofía Castillo", total: 272000, iva: 158000, islr: 89000, multas: 25000 },
-    { name: "Fernando Jiménez", total: 265000, iva: 152000, islr: 88000, multas: 25000 },
-    { name: "Lucía Ramírez", total: 258000, iva: 148000, islr: 85000, multas: 25000 },
-    { name: "Diego Vargas", total: 251000, iva: 145000, islr: 81000, multas: 25000 },
-    { name: "Valentina Cruz", total: 244000, iva: 142000, islr: 77000, multas: 25000 },
-    { name: "Andrés Moreno", total: 237000, iva: 138000, islr: 74000, multas: 25000 },
-    { name: "Isabella Guerrero", total: 230000, iva: 135000, islr: 70000, multas: 25000 },
-    { name: "Sebastián Peña", total: 223000, iva: 132000, islr: 66000, multas: 25000 },
-    { name: "Camila Ortiz", total: 216000, iva: 128000, islr: 63000, multas: 25000 },
-    { name: "Mateo Delgado", total: 209000, iva: 125000, islr: 59000, multas: 25000 },
-    { name: "Emilia Santos", total: 202000, iva: 122000, islr: 55000, multas: 25000 },
-]
+
 
 
 function TopFiscal() {
+    const [topFiscals, setTopFiscals] = useState<TopFiscals[]>();
+
+    useEffect(() => {
+        const fetchFiscals = async () => {
+
+            try {
+
+                const response = await getTopFiscals();
+
+                setTopFiscals(response.data);
+
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener el top de fiscales.")
+            }
+        }
+        fetchFiscals()
+    }, [])
 
 
 
@@ -59,7 +67,7 @@ function TopFiscal() {
                 <div>
                     <div id="fiscales-table" className="h-[400px] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
-                            {topFiscales.map((fiscal, index) => (
+                            {topFiscals && topFiscals?.map((fiscal, index) => (
                                 <div
                                     key={index}
                                     className={`border rounded-lg p-3 ${index === 0
@@ -87,12 +95,12 @@ function TopFiscal() {
                                             </div>
                                             <span className="font-medium">{fiscal.name}</span>
                                         </div>
-                                        <span className="font-bold text-green-400">{formatCurrency(fiscal.total)}</span>
+                                        <span className="font-bold text-green-400">{formatCurrency(Number(fiscal.total))}</span>
                                     </div>
                                     <div className="grid grid-cols-3 gap-2 text-sm text-gray-400 ml-11">
-                                        <div>IVA: {formatCurrency(fiscal.iva)}</div>
-                                        <div>ISLR: {formatCurrency(fiscal.islr)}</div>
-                                        <div>Multas: {formatCurrency(fiscal.multas)}</div>
+                                        <p className='text-xs'>IVA: {formatCurrency(Number(fiscal.collectedIva))}</p>
+                                        <p className='text-xs'>ISLR: {formatCurrency(Number(fiscal.collectedIslr))}</p>
+                                        <p className='text-xs'>Multas: {formatCurrency(Number(fiscal.collectedFines))}</p>
                                     </div>
                                 </div>
                             ))}
