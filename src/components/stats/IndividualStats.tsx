@@ -4,7 +4,7 @@ import { PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis, YAxis, CartesianG
 import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
 import toast, { Toaster } from "react-hot-toast";
-import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
+import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { IVAReports } from "@/types/IvaReports";
@@ -54,7 +54,10 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showFaseModal, setShowFaseModal] = useState(false);
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
-    const [lineChartData, setLineChartData] = useState<{ month: string; variationFromPrevious: number }[]>([])
+    const [lineChartData, setLineChartData] = useState<{ month: string; variationFromPrevious: number }[]>([]);
+    const [showIndexModal, setShowIndexModal] = useState(false);
+    const [newIndexIva, setNewIndexIva] = useState("");
+
 
 
 
@@ -284,20 +287,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
-    // const lineChartData = [
-    //     { month: "ene", variation: 10 },
-    //     { month: "feb", variation: 200 },
-    //     { month: "mar", variation: 5 },
-    //     { month: "abr", variation: -3 },
-    //     { month: "may", variation: 8 },
-    //     { month: "jun", variation: 11 },
-    //     { month: "jul", variation: 9 },
-    //     { month: "ago", variation: -2 },
-    //     { month: "sep", variation: 4 },
-    //     { month: "oct", variation: 7 },
-    //     { month: "nov", variation: 6 },
-    //     { month: "dic", variation: 13 }
-    // ];
 
     // Get the Monthly Variation of IVA for the taxpayer
     useEffect(() => {
@@ -318,6 +307,22 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
         fecthLineChartData()
     }, [])
+
+    const submitNewIndexIva = async () => {
+        if (!taxpayer || !newIndexIva) return;
+
+        try {
+            await modifyIndividualIndexIva(new Decimal(newIndexIva), taxpayer);
+            toast.success("Índice de IVA actualizado exitosamente.");
+            setShowIndexModal(false);
+
+            const updatedData = await getTaxpayerData(taxpayer);
+            setTaxpayerData(updatedData);
+        } catch (e) {
+            console.error(e);
+            toast.error("Error al modificar el índice IVA");
+        }
+    };
 
 
 
@@ -346,7 +351,12 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Multas registradas:</span> {fines ? fines : "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">Excedente de crédito actual:</span> {taxpayerData?.IVAReports[0].excess ? taxpayerData.IVAReports[0].excess.toString() : "No se pudo cargar la información"}</p>
+                        <p>
+                            <span className="font-bold">Excedente de crédito actual:</span>{" "}
+                            {taxpayerData?.IVAReports?.[0]?.excess != null
+                                ? taxpayerData.IVAReports[0].excess.toString()
+                                : "No se pudo cargar la información"}
+                        </p>
                     </div>
 
                     {taxpayerData?.notified === true ? (
@@ -455,6 +465,17 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         )
                     )}
 
+                    {user?.role === "COORDINATOR" && (
+                        <div className="pt-2">
+                            <button
+                                className="px-2 py-1 text-white bg-[#3498db]"
+                                onClick={() => setShowIndexModal(true)}
+                            >
+                                Modificar índice IVA
+                            </button>
+                        </div>
+                    )}
+
                     {(user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
                         <div className="flex items-end justify-around w-full gap-2 pr-14 mt-14 lg:mt-4">
                             {fases.map((fase) => (
@@ -514,11 +535,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         <div className="flex flex-row items-center gap-4 text-sm">
                             <div className="flex items-center">
                                 <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#0080c1" }} />
-                                COMPRAS (BS)
+                                COMPRAS (BS.S)
                             </div>
                             <div className="flex items-center">
                                 <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#737373" }} />
-                                VENTAS (BS)
+                                VENTAS (BS.S)
                             </div>
                         </div>
                     </div>
@@ -622,6 +643,37 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </div>
                 </div>
             )}
+
+            {showIndexModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
+                    <div className="w-full max-w-sm p-6 bg-white shadow-lg rounded-xl">
+                        <h2 className="mb-4 text-lg font-semibold text-center">Modificar índice IVA</h2>
+                        <input
+                            type="number"
+                            step="0.01"
+                            placeholder="Nuevo monto IVA"
+                            value={newIndexIva}
+                            onChange={(e) => setNewIndexIva(e.target.value)}
+                            className="w-full px-3 py-2 mb-4 border rounded"
+                        />
+                        <div className="flex justify-end space-x-2">
+                            <button
+                                onClick={() => setShowIndexModal(false)}
+                                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                            >
+                                Cancelar
+                            </button>
+                            <button
+                                onClick={submitNewIndexIva}
+                                className="px-4 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                            >
+                                Actualizar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
 
     );
