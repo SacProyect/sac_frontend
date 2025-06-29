@@ -8,6 +8,7 @@ interface ContributionsInput {
 	id?: string,
 	startDate?: string,
 	endDate?: string
+	supervisorId?: string,
 }
 
 export interface GroupRecordsInput {

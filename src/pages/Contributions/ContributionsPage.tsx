@@ -20,6 +20,7 @@ function ContributionsPage() {
     const [selectedGroup, setSelectedGroup] = useState<string>("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
+    const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null)
 
 
     useEffect(() => {
@@ -42,6 +43,11 @@ function ContributionsPage() {
                 if (hasValidDates) {
                     query.startDate = startDate;
                     query.endDate = endDate;
+
+                }
+
+                if (selectedSupervisorId) {
+                    query.supervisorId = selectedSupervisorId
                 }
 
                 if (user.role === "ADMIN") {
@@ -69,9 +75,15 @@ function ContributionsPage() {
     return (
         <aside className='lg:w-[82vw] w-full h-full overflow-y-auto'>
             <ContributionsHeader />
-            <ContributionsFilter groupData={groupData} setSelectedGroup={setSelectedGroup} setStartDate={setStartDate} setEndDate={setEndDate} />
+            <ContributionsFilter
+                groupData={groupData}
+                setStartDate={setStartDate}
+                setEndDate={setEndDate}
+                setSelectedGroup={setSelectedGroup}
+                setSelectedSupervisorId={setSelectedSupervisorId}
+            />
             <div className='pt-8 pb-16 pl-8 pr-4 lg:pb-0'>
-                <ContributionsStatistics groupData={groupData} selectedGroup={selectedGroup} />
+                <ContributionsStatistics groupData={groupData} selectedGroup={selectedGroup} selectedSupervisorId={selectedSupervisorId} />
             </div>
         </aside>
     )
