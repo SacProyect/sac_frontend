@@ -52,3 +52,12 @@ export interface High {
     totalFines: string;
     totalCollected: string;
 }
+
+export interface ExpectedGoal {
+    totalReports: number;
+    totalExpected: number;
+    totalPaid: number;
+    difference: number;
+    percentage: number;
+    status: string;
+}
