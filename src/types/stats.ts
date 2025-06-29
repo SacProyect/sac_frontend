@@ -69,3 +69,12 @@ export interface ExpectedGoal {
     status: string;
     compliance: number;
 }
+
+export interface ExpectedGoal {
+    totalReports: number;
+    totalExpected: number;
+    totalPaid: number;
+    difference: number;
+    percentage: number;
+    status: string;
+}
