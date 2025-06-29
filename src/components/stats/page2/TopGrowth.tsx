@@ -4,18 +4,6 @@ import { Download, TrendingUp } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 
 
-// const coordinatorGrowth = [
-//     { name: "Coordinador Grupo 4", group: "Grupo 4", currentMonth: 1250000, previousMonth: 1050000, growth: 19.05 },
-//     { name: "Coordinador Grupo 2", group: "Grupo 2", currentMonth: 1180000, previousMonth: 1020000, growth: 15.69 },
-//     { name: "Coordinador Grupo 6", group: "Grupo 6", currentMonth: 1150000, previousMonth: 1000000, growth: 15.0 },
-//     { name: "Coordinador Grupo 1", group: "Grupo 1", currentMonth: 1120000, previousMonth: 980000, growth: 14.29 },
-//     { name: "Coordinador Grupo 5", group: "Grupo 5", currentMonth: 1090000, previousMonth: 960000, growth: 13.54 },
-//     { name: "Coordinador Grupo 3", group: "Grupo 3", currentMonth: 1060000, previousMonth: 940000, growth: 12.77 },
-// ]
-
-
-
-
 function TopGrowth() {
     const [coordinatorGrowth, setCoordinatorGrowth] = useState<BestGrowth[]>([]);
 
@@ -26,7 +14,7 @@ function TopGrowth() {
 
                 const transformed = response.data
                     .map((item: any) => ({
-                        coordinatorName: `Coordinador ${item.groupName}`,
+                        coordinatorName: `Coordinador: ${item.coordinatorName}`,
                         groupName: item.groupName,
                         currentMonth: Number(item.currentMonth),
                         previousMonth: Number(item.previousMonth),
@@ -55,12 +43,100 @@ function TopGrowth() {
     }
 
     const downloadPDF = (tableId: string, fileName: string) => {
-        // Función para descargar como PDF (implementación básica)
-        const element = document.getElementById(tableId)
-        if (element) {
-            window.print()
-        }
-    }
+        if (!coordinatorGrowth.length) return;
+
+        const format = (amount: number) =>
+            new Intl.NumberFormat("es-VE", {
+                style: "currency",
+                currency: "VES",
+                minimumFractionDigits: 0,
+            }).format(amount);
+
+        const tablesHTML = coordinatorGrowth.map((c) => `
+                <div class="group-block">
+                    <h2 class="group-title">${c.groupName}</h2>
+                    <p class="coordinator-name"><strong>Coordinador:</strong> ${c.coordinatorName}</p>
+                    <p class="growth">📈 <strong>Crecimiento:</strong> ${c.growthPercentage.toFixed(2)}%</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Mes Anterior</th>
+                                <th>Mes Actual</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${format(Number(c.previousMonth))}</td>
+                                <td>${format(Number(c.currentMonth))}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `).join("<br>");
+
+        const win = window.open("", "_blank");
+        if (!win) return;
+
+        win.document.write(`
+                <html>
+                <head>
+                    <title>${fileName}</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 40px;
+                            background: white;
+                            color: black;
+                        }
+                        .header {
+                            font-size: 22px;
+                            font-weight: 700;
+                            text-align: center;
+                            margin-bottom: 30px;
+                            color: #2f855a;
+                            text-transform: uppercase;
+                        }
+                        .group-title {
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin-bottom: 4px;
+                            color: #319795;
+                        }
+                        .coordinator-name, .growth {
+                            margin: 4px 0;
+                            font-size: 14px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 14px;
+                            margin-top: 10px;
+                            margin-bottom: 25px;
+                        }
+                        th, td {
+                            border: 1px solid #ccc;
+                            padding: 10px;
+                            text-align: center;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                            color: #333;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+                    ${tablesHTML}
+                </body>
+                </html>
+            `);
+        win.document.close();
+        win.print();
+    };
 
 
     return (
@@ -72,12 +148,12 @@ function TopGrowth() {
                         Coordinadores - Crecimiento Mensual
                     </div>
                     <div className='pt-4'>
-                        <div
+                        <button
                             onClick={() => downloadPDF("coordinador-table", "coordinadores-crecimiento.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div>
