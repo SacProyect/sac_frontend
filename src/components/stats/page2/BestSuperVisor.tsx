@@ -87,12 +87,112 @@ function BestSuperVisor() {
     }
 
     const downloadPDF = (tableId: string, fileName: string) => {
-        // Función para descargar como PDF (implementación básica)
-        const element = document.getElementById(tableId)
-        if (element) {
-            window.print()
-        }
-    }
+        if (!supervisorData.length) return;
+
+        const format = (val: number | string) =>
+            new Intl.NumberFormat("es-VE", {
+                style: "currency",
+                currency: "VES",
+                minimumFractionDigits: 0,
+            }).format(Number(val));
+
+        let htmlTables = supervisorData
+            .map(group => {
+                const best = group.supervisors.find(s => s.name === group.best);
+                const worst = group.supervisors.find(s => s.name === group.worse);
+
+                const row = (label: string, s?: any, color = "#111") => `
+                <tr>
+                    <td><strong style="color:${color}">${label}</strong></td>
+                    <td>${s?.name || "-"}</td>
+                    <td>${format(s?.collectedIva || 0)}</td>
+                    <td>${format(s?.collectedIslr || 0)}</td>
+                    <td>${format(s?.collectedFines || 0)}</td>
+                    <td>${format(s?.total || 0)}</td>
+                </tr>`;
+
+                return `
+                <div class="group-table">
+                    <h2>${group.name}</h2>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Cargo</th>
+                                <th>Nombre</th>
+                                <th>IVA</th>
+                                <th>ISLR</th>
+                                <th>Multas</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${row("Mejor Supervisor", best, "#2f855a")}
+                            ${row("Menor Supervisor", worst, "#c53030")}
+                        </tbody>
+                    </table>
+                </div>`;
+            })
+            .join("<br/>");
+
+        const win = window.open("", "_blank");
+        if (!win) return;
+
+        win.document.write(`
+        <html>
+        <head>
+        <title>${fileName}</title>
+        <style>
+            body {
+                font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                margin: 40px;
+                background: white;
+                color: black;
+            }
+            .header {
+                font-size: 22px;
+                font-weight: 700;
+                text-align: center;
+                margin-bottom: 30px;
+                color: #2b6cb0;
+                text-transform: uppercase;
+            }
+            .group-table {
+                margin-bottom: 40px;
+            }
+            h2 {
+                font-size: 18px;
+                color: #2c5282;
+                margin-bottom: 10px;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                font-size: 14px;
+            }
+            th, td {
+                border: 1px solid #ccc;
+                padding: 10px;
+                text-align: center;
+            }
+            th {
+                background-color: #f7fafc;
+                font-weight: bold;
+                color: #333;
+            }
+            tr:nth-child(even) {
+                background-color: #f9f9f9;
+            }
+        </style>
+        </head>
+        <body>
+            <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+            ${htmlTables}
+        </body>
+        </html>
+    `);
+        win.document.close();
+        win.print();
+    };
 
 
     return (
@@ -104,12 +204,12 @@ function BestSuperVisor() {
                         Mejor Supervisor por Grupos
                     </div>
                     <div className='pt-4'>
-                        <div
+                        <button
                             onClick={() => downloadPDF("supervisor-table", "supervisores-por-grupo.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div>
