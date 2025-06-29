@@ -38,12 +38,91 @@ function TopFiscal() {
     }
 
     const downloadPDF = (tableId: string, fileName: string) => {
-        // Función para descargar como PDF (implementación básica)
-        const element = document.getElementById(tableId)
-        if (element) {
-            window.print()
-        }
-    }
+        if (!topFiscals?.length) return;
+
+        const format = (val: number | string) =>
+            new Intl.NumberFormat("es-VE", {
+                style: "currency",
+                currency: "VES",
+                minimumFractionDigits: 0,
+            }).format(Number(val));
+
+        const tableRows = topFiscals.map((f, index) => `
+            <tr>
+                <td>${index + 1}</td>
+                <td>${f.name}</td>
+                <td>${format(f.collectedIva)}</td>
+                <td>${format(f.collectedIslr)}</td>
+                <td>${format(f.collectedFines)}</td>
+                <td>${format(f.total)}</td>
+            </tr>`).join('');
+
+        const win = window.open("", "_blank");
+        if (!win) return;
+
+        win.document.write(`
+            <html>
+            <head>
+            <title>${fileName}</title>
+            <style>
+                body {
+                    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                    margin: 40px;
+                    background: white;
+                    color: black;
+                }
+                .header {
+                    font-size: 22px;
+                    font-weight: 700;
+                    text-align: center;
+                    margin-bottom: 30px;
+                    color: #2b6cb0;
+                    text-transform: uppercase;
+                }
+                table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    font-size: 14px;
+                }
+                th, td {
+                    border: 1px solid #ccc;
+                    padding: 10px;
+                    text-align: center;
+                }
+                th {
+                    background-color: #f7fafc;
+                    font-weight: bold;
+                    color: #333;
+                }
+                tr:nth-child(even) {
+                    background-color: #f9f9f9;
+                }
+            </style>
+            </head>
+            <body>
+                <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Nombre</th>
+                            <th>IVA</th>
+                            <th>ISLR</th>
+                            <th>Multas</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${tableRows}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `);
+        win.document.close();
+        win.print();
+    };
+
 
 
 
@@ -56,12 +135,12 @@ function TopFiscal() {
                         Top Fiscales - Ranking General
                     </div>
                     <div className='pt-4'>
-                        <div
+                        <button
                             onClick={() => downloadPDF("fiscales-table", "top-fiscales-general.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4 rounded-md" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div>
