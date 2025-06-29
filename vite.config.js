@@ -5,11 +5,10 @@ import react from '@vitejs/plugin-react'
 import dotenv from 'dotenv'
 import path from "path"
 import { qrcode } from 'vite-plugin-qrcode';
-import { visualizer } from 'rollup-plugin-visualizer'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  plugins: [react(), qrcode(), visualizer({ open: true })],
+  plugins: [react(), qrcode()],
   // base: process.env.VITE_BASE_PATH || '/react-vite-deploy',
   define: {
     // env variable from .env file

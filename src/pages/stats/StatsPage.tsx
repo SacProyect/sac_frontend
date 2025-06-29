@@ -1,23 +1,26 @@
-import { GlobalKPIResponse, } from '@/components/stats/GlobalKpiStats'
+import { GlobalKPIResponse } from '@/components/stats/GlobalKpiStats';
+import { Stat } from '@/components/stats/GlobalPerfomance';
+import { CollectionStats } from '@/components/stats/GlobalTaxpayerPerformance';
+import {
+    getGlobalKPI,
+    getGlobalPerformance,
+    getGlobalTaxpayerPerformance,
+    getGroupPerformance,
+} from '@/components/utils/api/reportFunctions';
+import { useAuth } from '@/hooks/useAuth';
+import { useEffect, useState, lazy, Suspense } from 'react';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { GroupStat } from '@/components/stats/GroupPerformanceStats';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import StatisticsPage2 from './StatsPage2';
 
-import { Stat } from '@/components/stats/PageOneStats'
-import { CollectionStats } from '@/components/stats/PageTwoStats'
-import { getGlobalKPI, getGlobalPerformance, getGlobalTaxpayerPerformance, getGroupPerformance } from '@/components/utils/api/reportFunctions'
-import { useAuth } from '@/hooks/useAuth'
-import { useEffect, useState, lazy, Suspense } from 'react'
-import toast from 'react-hot-toast'
-import { useNavigate } from 'react-router-dom'
-import { GroupStat } from "@/components/stats/GroupPerformanceStats"
-
-
-const PageOneStats = lazy(() => import('@/components/stats/PageOneStats'));
-const PageTwoStats = lazy(() => import('@/components/stats/PageTwoStats').then(m => ({ default: m.PageTwoStats })));
+const PageOneStats = lazy(() => import('@/components/stats/GlobalPerfomance'));
+const PageTwoStats = lazy(() => import('@/components/stats/GlobalTaxpayerPerformance').then(m => ({ default: m.PageTwoStats })));
 const GroupPerformanceStats = lazy(() => import('@/components/stats/GroupPerformanceStats').then(m => ({ default: m.GroupPerformanceStats })));
 const GlobalKPIStats = lazy(() => import('@/components/stats/GlobalKpiStats').then(m => ({ default: m.GlobalKPIStats })));
 
-
 function StatsPage() {
-
     const { user } = useAuth();
     const navigate = useNavigate();
     const [rawStats, setRawStats] = useState<Stat[]>([]);
@@ -26,14 +29,12 @@ function StatsPage() {
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
     const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
 
+    const [currentPage, setCurrentPage] = useState(1);
 
-
-
-    if (!user || user.role !== "ADMIN") {
-        navigate("/login");
+    if (!user || user.role !== 'ADMIN') {
+        navigate('/login');
         return;
     }
-
 
     useEffect(() => {
         const fetchStats = async () => {
@@ -68,69 +69,102 @@ function StatsPage() {
         fetchStats();
     }, []);
 
+    const renderPage = () => {
+        if (currentPage === 1) {
+            return (
+                <>
+                    <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[40.15vh] bg-[#1c1c1b]'>
+                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
+                            <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
+                                {rawStats.length > 0 ? <PageOneStats rawStats={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
+                            </Suspense>
+                        </div>
+                        <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
+                            {taxpayerPerformance && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
+                                    {taxpayerPerformance !== null ? <PageTwoStats stats={taxpayerPerformance} /> : <p>No hay estadísticas para mostrar</p>}
+                                </Suspense>
+                            )}
+                        </div>
+                    </div>
 
+                    <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
+                        <div className='w-full h-[70vh] lg:w-[44vw] lg:h-[50vh]'>
+                            {groupStats && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
+                                    {groupStats.length > 0 ? <GroupPerformanceStats groupStats={groupStats} /> : <p>No hay estadísticas para mostrar</p>}
+                                </Suspense>
+                            )}
+                        </div>
+                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+                            {globalKpi && (
+                                <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
+                                    <GlobalKPIStats globalKpi={globalKpi} />
+                                </Suspense>
+                            )}
+                        </div>
+                    </div>
+                </>
+            );
+        }
 
+        if (currentPage === 2) {
+            return (
+                <>
+                    <StatisticsPage2 />
+                </>
+            )
+        }
+
+        return (
+            <div className='w-full lg:w-[82vw] lg:h-[90.2vh] flex items-center justify-center text-white text-2xl'>
+                Página {currentPage} - Próximamente más estadísticas...
+            </div>
+        );
+    };
+
+    const totalPages = 3;
 
     return (
-        <div className='flex flex-col'>
+        <div className='flex flex-col '>
             {!loaded ? (
                 <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
                     <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
                 </div>
+            ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
+                <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
+                    <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
+                </div>
             ) : (
-                (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
-                    <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
-                        <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
+                <>
+                    {renderPage()}
+                    <div className="justify-center hidden py-6 space-x-4 lg:flex bg-[#1c1c1b]">
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
+                        >
+                            <ChevronLeft className="w-4 h-4" /> Anterior
+                        </button>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => setCurrentPage(index + 1)}
+                                className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+                        <button
+                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
+                        >
+                            Siguiente <ChevronRight className="w-4 h-4" />
+                        </button>
                     </div>
-                ) : (
-                    <div>
-                        <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[50vh] bg-[#1c1c1b]'>
-                            <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
-                                <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
-                                    {rawStats.length > 0 ? (
-                                        <PageOneStats rawStats={rawStats} />
-                                    ) : <p>No hay estadísticas para mostrar</p>
-                                    }
-
-                                </Suspense>
-                            </div>
-                            <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
-                                {taxpayerPerformance && (
-                                    <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
-                                        {taxpayerPerformance !== null ? (
-                                            <PageTwoStats stats={taxpayerPerformance} />
-                                        ) : <p className=''>No hay estadísticas para mostrar</p>}
-                                    </Suspense>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
-                            <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                                {groupStats && (
-                                    <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
-                                        {groupStats.length > 0 ? (
-                                            <GroupPerformanceStats groupStats={groupStats} />
-                                        ) : <p>No hay estadísticas para mostrar</p>}
-
-                                    </Suspense>
-                                )}
-                            </div>
-                            <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
-                                {globalKpi && (
-                                    <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
-                                        <GlobalKPIStats globalKpi={globalKpi} />
-                                    </Suspense>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                )
+                </>
             )}
         </div>
     );
 }
 
-
-
-export default StatsPage
+export default StatsPage;
