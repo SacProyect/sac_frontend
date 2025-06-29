@@ -93,7 +93,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
     const xDomainMax = maxValue * 1.1;
 
     return (
-        <div className="flex justify-center items-center w-full h-full max-w-full max-h-full lg:max-w-[41vw] lg:max-h-[50vh]">
+        <div className="flex justify-center items-center w-full h-full max-w-full max-h-full lg:max-w-[40vw] lg:max-h-[50vh]">
             <div className="w-full h-full bg-[#1c1c1b] p-0 flex flex-col overflow-hidden">
                 {/* Título */}
                 <div className="flex items-center justify-center pt-4 mb-1 text-xl font-semibold text-center text-white font-inter">

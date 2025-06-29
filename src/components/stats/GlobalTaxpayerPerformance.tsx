@@ -24,7 +24,7 @@ export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
     ];
 
     return (
-        <div className="w-full lg:w-[41vw] h-full lg:h-[50vh] pt-16 lg:pt-0">
+        <div className="w-full lg:w-[41vw] h-full lg:h-[40vh] pt-16 lg:pt-0">
             <div className="bg-[#1c1c1b] w-full h-full p-4 flex flex-col justify-between">
                 {/* Title */}
                 <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-2">
@@ -66,7 +66,7 @@ export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
                     </div>
 
                     {/* Percentage Scale */}
-                    <div className="absolute bottom-0 lg:bottom-8 left-[20%] right-[14%] lg:left-[22%] lg:right-[16%] flex justify-between text-[#808584] text-[11px] font-inter">
+                    <div className="absolute bottom-0 lg:-bottom-4 left-[20%] right-[14%] lg:left-[22%] lg:right-[16%] flex justify-between text-[#808584] text-[11px] font-inter">
                         {[...Array(11)].map((_, i) => (
                             <span key={i} className="w-[1px] text-center">
                                 {i * 10}%
