@@ -48,6 +48,24 @@ export const createIndexIva = async (input: CreateIndexIva) => {
 
 }
 
+export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId: string) => {
+
+	try {
+
+		const requestURL = '/taxpayer/modify-individual-index-iva';
+
+		const response = await apiConnection.put(`${requestURL}/${taxpayerId}`, {
+			newIndexIva: newIndexIva.toString(),
+		});
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo modificar el índice de IVA.")
+	}
+}
+
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
