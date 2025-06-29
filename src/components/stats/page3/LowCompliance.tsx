@@ -125,25 +125,85 @@ function LowCompliance({ data }: LowComplianceProps) {
             // Crear una nueva ventana para imprimir solo la tabla específica
             const printWindow = window.open("", "_blank")
             if (printWindow) {
-                const tableContent = element.innerHTML
+                const tableRows = data.map((contribuyente, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${contribuyente.name}</td>
+                        <td>${contribuyente.rif}</td>
+                        <td>${contribuyente.compliance}%</td>
+                        <td>${formatCurrency(Number(contribuyente.totalIVA))}</td>
+                        <td>${formatCurrency(Number(contribuyente.totalISLR))}</td>
+                        <td>${formatCurrency(Number(contribuyente.totalFines))}</td>
+                        <td>${formatCurrency(Number(contribuyente.totalCollected))}</td>
+                    </tr>
+                    `).join('');
+
                 printWindow.document.write(`
-            <html>
-            <head>
-                <title>${fileName}</title>
-                <style>
-                body { font-family: Arial, sans-serif; margin: 20px; background: white; color: black; }
-                table { width: 100%; border-collapse: collapse; }
-                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                th { background-color: #f2f2f2; }
-                .header { margin-bottom: 20px; font-size: 18px; font-weight: bold; }
-                </style>
-            </head>
-            <body>
-                <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
-                ${tableContent}
-            </body>
-            </html>
-        `)
+                    <html>
+                    <head>
+                        <title>${fileName}</title>
+                        <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 40px;
+                            background: #fff;
+                            color: #111;
+                        }
+                        .header {
+                            margin-bottom: 30px;
+                            font-size: 22px;
+                            font-weight: 700;
+                            text-align: center;
+                            text-transform: uppercase;
+                            color: #2b6cb0;
+                        }
+                        .table-wrapper {
+                            padding: 0 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 14px;
+                        }
+                        th, td {
+                            padding: 10px;
+                            border: 1px solid #ccc;
+                            text-align: center;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            color: #333;
+                            font-weight: 600;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>RIF</th>
+                                        <th>% Cumplimiento</th>
+                                        <th>IVA</th>
+                                        <th>ISLR</th>
+                                        <th>Multas</th>
+                                        <th>Total Pagado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </body>
+                    </html>
+                `);
                 printWindow.document.close()
                 printWindow.print()
             }
