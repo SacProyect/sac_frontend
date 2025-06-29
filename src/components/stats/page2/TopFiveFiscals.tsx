@@ -53,12 +53,101 @@ function TopFiveFiscals() {
     }
 
     const downloadPDF = (tableId: string, fileName: string) => {
-        // Función para descargar como PDF (implementación básica)
-        const element = document.getElementById(tableId)
-        if (element) {
-            window.print()
-        }
-    }
+        if (!fiscalsByGroup?.length) return;
+
+        const format = (val: number | string) =>
+            new Intl.NumberFormat("es-VE", {
+                style: "currency",
+                currency: "VES",
+                minimumFractionDigits: 0,
+            }).format(Number(val));
+
+        const tablesHTML = fiscalsByGroup.map((group) => {
+            const rows = group.fiscals.map((fiscal, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${fiscal.name}</td>
+                        <td>${format(fiscal.total)}</td>
+                    </tr>
+                `).join("");
+
+            return `
+                    <div class="group-table">
+                        <h2 class="group-title">${group.name}</h2>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Nombre</th>
+                                    <th>Total Recaudado</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${rows}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+        }).join("<br>");
+
+        const win = window.open("", "_blank");
+        if (!win) return;
+
+        win.document.write(`
+                <html>
+                <head>
+                    <title>${fileName}</title>
+                    <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 40px;
+                            background: white;
+                            color: black;
+                        }
+                        .header {
+                            font-size: 22px;
+                            font-weight: 700;
+                            text-align: center;
+                            margin-bottom: 30px;
+                            color: #6b46c1;
+                            text-transform: uppercase;
+                        }
+                        .group-title {
+                            font-size: 18px;
+                            font-weight: 600;
+                            margin-bottom: 8px;
+                            color: #4c51bf;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 14px;
+                            margin-bottom: 25px;
+                        }
+                        th, td {
+                            border: 1px solid #ccc;
+                            padding: 10px;
+                            text-align: center;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            font-weight: bold;
+                            color: #333;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+                    ${tablesHTML}
+                </body>
+                </html>
+            `);
+        win.document.close();
+        win.print();
+    };
 
 
     return (
@@ -70,12 +159,12 @@ function TopFiveFiscals() {
                         Top 5 Fiscales por Grupo
                     </div>
                     <div className='pt-4'>
-                        <div
+                        <button
                             onClick={() => downloadPDF("fiscales-grupo-table", "top-fiscales-por-grupo.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4 rounded-md" />
-                        </div>
+                        </button>
                     </div>
                 </div>
                 <div>
