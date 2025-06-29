@@ -58,7 +58,84 @@ export const getIslrReports = async (taxpayerId: string) => {
 		console.error(e);
 		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
 	}
+}
 
+export const getBestSupervisors = async () => {
+	try {
+		let requestURL = 'reports/get-best-supervisor-by-group'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los mejores supervisores por grupo.")
+	}
+}
+
+export const getTopFiscals = async () => {
+	try {
+		let requestURL = 'reports/get-top-fiscals'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los mejores fiscales.")
+	}
+}
+
+export const getTopFiveByGroup = async () => {
+	try {
+		let requestURL = 'reports/get-top-five-by-group'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los mejores fiscales por grupo.")
+	}
+}
+
+export const getMonthlyGrowth = async () => {
+	try {
+		let requestURL = 'reports/get-monthly-growth'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener el crecimiento por grupo mensual de coordinadores.")
+	}
+}
+
+export const getTaxpayersCompliance = async () => {
+	try {
+		let requestURL = 'reports/get-taxpayers-compliance'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los cumplimientos.")
+	}
+}
+
+export const getExpectedAmount= async () => {
+	try {
+		let requestURL = 'reports/get-expected-amount'
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener el recaudado esperado.")
+	}
 }
 
 export const getTaxHistory = async (taxpayerId: string) => {
