@@ -7,6 +7,7 @@ import { IvaReportFormData } from "@/components/iva/IvaForm";
 import { IslrReportFormData } from "@/components/ISLR/IslrForm";
 import { IVAReports } from "@/types/IvaReports";
 import { ISLRReports } from "@/types/ISLRReports";
+import Decimal from "decimal.js";
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -21,7 +22,31 @@ interface UpdateObservationPayload {
 	description: string;
 }
 
+type CreateIndexIva = {
+	ordinaryAmount: Decimal,
+	specialAmount: Decimal,
+}
 
+export const createIndexIva = async (input: CreateIndexIva) => {
+
+	try {
+
+		let requestURL = '/taxpayer/create-index-iva';
+
+
+		const response = await apiConnection.post(requestURL, {
+			ordinaryAmount: Number(input.ordinaryAmount),
+			specialAmount: Number(input.specialAmount),
+		})
+
+		return response;
+
+	} catch (e) {
+		throw new Error("No se pudieron actualizar los registros de índice de iva.")
+	}
+
+
+}
 
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
