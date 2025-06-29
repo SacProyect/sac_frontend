@@ -36,3 +36,19 @@ export interface BestGrowth {
     growthPercentage: number;
     coordinatorName: string;
 }
+
+export interface ComplianceData {
+    high: High[];
+    medium: High[];
+    low: High[];
+}
+
+export interface High {
+    name: string;
+    rif: string;
+    compliance: number;
+    totalIVA: string;
+    totalISLR: string;
+    totalFines: string;
+    totalCollected: string;
+}

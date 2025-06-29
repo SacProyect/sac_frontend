@@ -1,3 +1,4 @@
+import { High } from '@/types/stats'
 import { Download, TrendingDown } from 'lucide-react'
 import React from 'react'
 
@@ -100,10 +101,12 @@ const contribuyentesBajo = [
 
 
 
+interface LowComplianceProps {
+    data: High[]
+}
 
 
-
-function LowCompliance() {
+function LowCompliance({ data }: LowComplianceProps) {
 
 
 
@@ -169,7 +172,7 @@ function LowCompliance() {
                 <div className="pt-0">
                     <div id="bajo-cumplimiento-table" className="h-[380px] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
-                            {contribuyentesBajo.map((contribuyente, index) => (
+                            {data.map((contribuyente, index) => (
                                 <div
                                     key={index}
                                     className={`border rounded-lg p-3 ${index < 3 ? "border-red-500 bg-red-900/20" : "border-[#3a3a39] bg-[#1a1a19]"
@@ -184,12 +187,12 @@ function LowCompliance() {
                                                 {index + 1}
                                             </div>
                                             <div>
-                                                <div className="text-sm font-medium">{contribuyente.nombre}</div>
+                                                <div className="text-sm font-medium">{contribuyente.name}</div>
                                                 <div className="text-xs text-gray-400">{contribuyente.rif}</div>
                                             </div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-lg font-bold text-red-400">{contribuyente.cumplimiento}%</div>
+                                            <div className="text-lg font-bold text-red-400">{contribuyente.compliance}%</div>
                                             <div className="text-xs text-gray-400">Cumplimiento</div>
                                         </div>
                                     </div>
@@ -197,20 +200,20 @@ function LowCompliance() {
                                     <div className="grid grid-cols-4 gap-2 text-xs">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">IVA</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(contribuyente.iva)}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(Number(contribuyente.totalIVA))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">ISLR</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(contribuyente.islr)}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(Number(contribuyente.totalISLR))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Multas</div>
-                                            <div className="font-bold text-red-400 text-[10px]">{formatCurrency(contribuyente.multas)}</div>
+                                            <div className="font-bold text-red-400 text-[10px]">{formatCurrency(Number(contribuyente.totalFines))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Total</div>
                                             <div className="font-bold text-red-400 text-[10px]">
-                                                {formatCurrency(contribuyente.totalPagado)}
+                                                {formatCurrency(Number(contribuyente.totalCollected))}
                                             </div>
                                         </div>
                                     </div>
