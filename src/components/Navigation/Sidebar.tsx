@@ -58,6 +58,7 @@ function Sidebar() {
         { name: 'Multas', path: '/fine' },
         { name: 'Reporte IVA', path: '/iva' },
         { name: "Reporte de ISLR", path: "/islr" },
+        { name: "Estadísticas", path: "/fiscal-stats" },
         // { name: 'Pagos', path: '/payment' },
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Generar Reportes", path: "/gen-reports" },

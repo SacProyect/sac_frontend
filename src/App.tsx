@@ -32,6 +32,7 @@ const IslrReport = lazy(() => import("@/pages/ISLR/IslrReport"));
 const TaxpayerCensus = lazy(() => import("@/pages/Census/CensusPage"));
 const CensusTable = lazy(() => import("@/pages/CensusTable/CensusTablePage"));
 const IndexIva = lazy(() => import("@/pages/index-iva/IndexIva"));
+const FiscalStats = lazy(() => import("@/pages/fiscal-stats/FiscalStatsPage"));
 
 
 type LoaderData = {
@@ -126,6 +127,10 @@ export const router = createBrowserRouter([
           {
             path: "/stats",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
+          },
+          {
+            path: "/fiscal-stats",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><FiscalStats /></Suspense>
           },
           {
             path: "/index-iva",

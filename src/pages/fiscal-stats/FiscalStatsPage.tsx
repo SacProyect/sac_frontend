@@ -1,0 +1,80 @@
+"use client"
+import { useState } from "react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
+import FiscalStatsPage1 from "./FiscalStatsPage1"
+import FiscalStatsPage2 from "./FiscalStatsPage2"
+
+
+export default function FiscalStatsPage() {
+    const [currentPage, setCurrentPage] = useState(1)
+    const totalPages = 2
+
+    const goToPage = (page: number) => {
+        if (page >= 1 && page <= totalPages) {
+            setCurrentPage(page)
+        }
+    }
+
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1)
+        }
+    }
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1)
+        }
+    }
+
+    const renderPageContent = () => {
+        switch (currentPage) {
+            case 1:
+                return <FiscalStatsPage1 />
+            case 2:
+                return <FiscalStatsPage2 />
+            default:
+                return null
+        }
+    }
+
+    return (
+        <div className="w-full lg:w-[82vw] lg:h-[100vh] flex flex-col bg-[#1c1c1b] text-white">
+            {/* Contenido principal */}
+            <div className="flex-1">{renderPageContent()}</div>
+
+            {/* Paginación */}
+            <div className="flex items-center justify-center gap-2 h-full bg-[#1c1c1b]">
+                <button
+                    onClick={prevPage}
+                    disabled={currentPage === 1}
+                    className="text-white hover:bg-[#3a3a39] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    <ChevronLeft className="w-4 h-4 mr-1" />
+                    Anterior
+                </button>
+
+                {[1, 2].map((page) => (
+                    <button
+                        key={page}
+                        onClick={() => goToPage(page)}
+                        className={
+                            currentPage === page ? "bg-blue-600 hover:bg-blue-700 text-white" : "text-white hover:bg-[#3a3a39]"
+                        }
+                    >
+                        {page}
+                    </button>
+                ))}
+
+                <button
+                    onClick={nextPage}
+                    disabled={currentPage === totalPages}
+                    className="text-white hover:bg-[#3a3a39] disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                    Siguiente
+                    <ChevronRight className="w-4 h-4 ml-1" />
+                </button>
+            </div>
+        </div>
+    )
+}
