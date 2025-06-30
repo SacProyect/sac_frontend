@@ -1,4 +1,5 @@
 "use client"
+import { FiscalInfo } from "@/types/reports"
 import { Download, TrendingUp, TrendingDown, Users, BarChart3, User } from "lucide-react"
 
 
@@ -119,7 +120,11 @@ const downloadPDF = (tableId: string, fileName: string) => {
     }
 }
 
-export default function FiscalStatsPage2() {
+interface FiscalStatsPage2Props {
+    fiscalData: FiscalInfo
+}
+
+export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) {
     return (
         <div className="flex flex-col w-full h-full gap-4 p-4 overflow-hidden">
             {/* Fila superior - 2 estadísticas */}
@@ -131,21 +136,21 @@ export default function FiscalStatsPage2() {
                             <User className="w-8 h-8 text-white" />
                         </div>
                         <div>
-                            <h1 className="text-2xl font-bold text-white">{fiscalInfo.name}</h1>
-                            <p className="text-blue-300">ID: {fiscalInfo.id}</p>
+                            <h1 className="text-2xl font-bold text-white">{fiscalData.fiscalName}</h1>
+                            <p className="text-blue-300">ID: {fiscalData.fiscalId}</p>
                         </div>
                     </div>
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
-                            <div className="text-2xl font-bold text-green-400">{fiscalInfo.totalTaxpayers}</div>
+                            <div className="text-2xl font-bold text-green-400">{fiscalData.totalTaxpayers}</div>
                             <div className="text-xs text-gray-400">Total Contribuyentes</div>
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-yellow-400">{fiscalInfo.activeProcesses}</div>
+                            <div className="text-2xl font-bold text-yellow-400">{fiscalData.totalProcess}</div>
                             <div className="text-xs text-gray-400">Procesos Activos</div>
                         </div>
                         <div>
-                            <div className="text-2xl font-bold text-blue-400">{fiscalInfo.completedProcesses}</div>
+                            <div className="text-2xl font-bold text-blue-400">{fiscalData.totalCompleted}</div>
                             <div className="text-xs text-gray-400">Completados</div>
                         </div>
                     </div>

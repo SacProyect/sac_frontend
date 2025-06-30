@@ -1,12 +1,41 @@
 "use client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import FiscalStatsPage1 from "./FiscalStatsPage1"
 import FiscalStatsPage2 from "./FiscalStatsPage2"
+import { useAuth } from "@/hooks/useAuth"
+import { getFiscalInfo } from "@/components/utils/api/reportFunctions"
+import { useNavigate } from "react-router-dom"
+import toast from "react-hot-toast"
+import { FiscalInfo } from "@/types/reports"
 
 
 export default function FiscalStatsPage() {
-    const [currentPage, setCurrentPage] = useState(1)
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) {
+        navigate('/login')
+        return;
+    }
+    const [currentPage, setCurrentPage] = useState(1);
+    const [fiscalInfo, setFiscalInfo] = useState<FiscalInfo>();
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getFiscalInfo(user.id);
+
+                setFiscalInfo(response);
+
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener la información del fiscal.")
+            }
+        }
+        fetchData();
+    }, [])
+
     const totalPages = 2
 
     const goToPage = (page: number) => {
@@ -28,11 +57,15 @@ export default function FiscalStatsPage() {
     }
 
     const renderPageContent = () => {
+        if (!fiscalInfo) {
+            return <div>Loading...</div>
+        }
+
         switch (currentPage) {
             case 1:
-                return <FiscalStatsPage1 />
+                return <FiscalStatsPage1 fiscalData={fiscalInfo} />
             case 2:
-                return <FiscalStatsPage2 />
+                return <FiscalStatsPage2 fiscalData={fiscalInfo} />
             default:
                 return null
         }
