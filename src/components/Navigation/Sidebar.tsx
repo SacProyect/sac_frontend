@@ -79,8 +79,8 @@ function Sidebar() {
             <div className="hidden w-[18vw] h-[100vh] p-4 text-gray-100 bg-gray-800 rounded-r-lg lg:block">
                 <div className="flex flex-col w-full h-full">
                     <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
-                        <p className="text-lg">{user.name}</p>
-                        <p className="text-md">{user.role === "COORDINATOR" ? "COORDINADOR" : user.role}</p>
+                        <p className="text-xs">{user.name}</p>
+                        <p className="text-xs">{user.role === "COORDINATOR" ? "COORDINADOR" : user.role}</p>
                         <div className="absolute z-20 hidden p-2 bg-gray-900 rounded-lg group-hover:block w-max min-w-40 -translate-x-1/4">
                             <p>Cédula: {user.personId}</p>
                             <NegativeButton onClick={handleLogout}>

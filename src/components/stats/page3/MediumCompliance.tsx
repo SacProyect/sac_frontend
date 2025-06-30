@@ -119,7 +119,7 @@ function MediumCompliance({ data }: MediumComplianceProps) {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
+            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[40vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <AlertTriangle className="w-4 h-4 text-yellow-500" />
@@ -135,7 +135,7 @@ function MediumCompliance({ data }: MediumComplianceProps) {
                     </div>
                 </div>
                 <div className="pt-0">
-                    <div id="medio-cumplimiento-table" className="h-[300px] overflow-y-auto custom-scroll p-4">
+                    <div id="medio-cumplimiento-table" className="h-[300px] lg:h-[30vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
                             {data.map((contribuyente, index) => (
                                 <div key={index} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-3">

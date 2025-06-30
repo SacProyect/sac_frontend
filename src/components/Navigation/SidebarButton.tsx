@@ -16,7 +16,7 @@ function SidebarButton({ children, route, onClick }: SidebarButtonProps) {
                 bg-[#3498db]
                 border-none 
                 px-4
-                py-2
+                lg:py-1
                 font-light
                 text-center 
                 no-underline 

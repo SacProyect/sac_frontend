@@ -83,7 +83,7 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
             {/* Title and Description */}
             <div className="mb-4 text-center">
                 <div className="w-full lg:w-[36vw] border border-[#b7c0cd] bg-[#292d33] rounded-md">
-                    <h1 className="font-semibold text-sm lg:text-[18.5px] py-3 px-4 text-white font-inter whitespace-nowrap">
+                    <h1 className="font-semibold text-sm lg:text-sm py-2 px-4 text-white font-inter whitespace-nowrap">
                         RENDIMIENTO GLOBAL
                     </h1>
                 </div>

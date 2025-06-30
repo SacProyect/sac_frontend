@@ -41,9 +41,9 @@ export default function StatisticsPage3() {
 
 
     return (
-        <div className="flex flex-col  gap-4 p-4">
+        <div className="flex flex-col  gap-4 p-4 lg:w-[82vw] lg:h-[90.2vh]">
             {/* Fila superior - 2 estadísticas */}
-            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 ">
                 {/* Estadística 1: Contribuyentes con Mayor Cumplimiento */}
                 <BetterCompliance data={highCompliance} />
 
