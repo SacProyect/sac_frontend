@@ -23,3 +23,18 @@ export interface TaxpayersList {
     culminated: boolean;
     process: taxpayer_process;
 }
+
+export interface FiscalMonthlyCollect {
+    month: string;
+    iva: number;
+    islr: number;
+    fines: number;
+    total: number;
+}
+
+export interface FiscalMonthlyGrowth {
+    month: string;
+    currentCollected: number;
+    previousCollected: number;
+    variation: number;
+}

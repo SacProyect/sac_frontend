@@ -1,3 +1,4 @@
+import { FiscalInfo } from '@/types/reports'
 import { AlertCircle, Download } from 'lucide-react'
 import React from 'react'
 
@@ -41,9 +42,12 @@ const fiscalInfo = {
 }
 
 
+interface ComplianceByProcessProps {
+    fiscalInfo: FiscalInfo
+}
 
 
-function ComplianceByProcess() {
+function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
 
 
 
@@ -138,8 +142,8 @@ function ComplianceByProcess() {
           <body>
             <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
             <div class="fiscal-info">
-              <strong>Fiscal:</strong> ${fiscalInfo.name} | 
-              <strong>ID:</strong> ${fiscalInfo.id} | 
+              <strong>Fiscal:</strong> ${fiscalInfo.fiscalName} | 
+              <strong>ID:</strong> ${fiscalInfo.fiscalId} | 
               <strong>Total Contribuyentes:</strong> ${fiscalInfo.totalTaxpayers}
             </div>
             ${tableContent}

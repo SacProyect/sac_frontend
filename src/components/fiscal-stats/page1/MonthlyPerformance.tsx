@@ -1,44 +1,42 @@
+import { getFiscalMonthlyPerformance } from '@/components/utils/api/reportFunctions';
+import { useAuth } from '@/hooks/useAuth';
+import { FiscalInfo, FiscalMonthlyGrowth } from '@/types/reports'
 import { Download, FileText } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
 
-// Datos simulados basados en el modelo taxpayer
-const fiscalInfo = {
-    name: "Carlos Mendoza",
-    id: "FISC-001",
-    totalTaxpayers: 45,
-    activeProcesses: 12,
-    completedProcesses: 33,
+
+
+interface MonthlyPerformanceProps {
+    fiscalInfo: FiscalInfo
 }
 
+function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
+    const [monthlyGrowth, setMonthlyGrowth] = useState<FiscalMonthlyGrowth[]>();
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
-const evolucionMensual = [
-    {
-        mes: "Enero",
-        rendimiento: 1455000,
-        rendimientoAnterior: 1320000,
-        cambio: 10.23,
-        tendencia: "positiva",
-    },
-    {
-        mes: "Febrero",
-        rendimiento: 1595000,
-        rendimientoAnterior: 1455000,
-        cambio: 9.62,
-        tendencia: "positiva",
-    },
-    {
-        mes: "Marzo",
-        rendimiento: 1380000,
-        rendimientoAnterior: 1595000,
-        cambio: -13.48,
-        tendencia: "negativa",
-    },
-]
+    if (!user) {
+        navigate('/login')
+        return;
+    }
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getFiscalMonthlyPerformance(user.id);
 
+                setMonthlyGrowth(response);
 
-function MonthlyPerformance() {
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener la información del fiscal.")
+            }
+        }
+        fetchData();
+    }, [])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -124,8 +122,8 @@ function MonthlyPerformance() {
           <body>
             <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
             <div class="fiscal-info">
-              <strong>Fiscal:</strong> ${fiscalInfo.name} | 
-              <strong>ID:</strong> ${fiscalInfo.id} | 
+              <strong>Fiscal:</strong> ${fiscalInfo.fiscalName} | 
+              <strong>ID:</strong> ${fiscalInfo.fiscalId} | 
               <strong>Total Contribuyentes:</strong> ${fiscalInfo.totalTaxpayers}
             </div>
             ${tableContent}
@@ -159,31 +157,31 @@ function MonthlyPerformance() {
                 <div className="pt-0">
                     <div id="evolucion-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
                         <div className="space-y-3">
-                            {evolucionMensual.map((mes, index) => (
+                            {monthlyGrowth && monthlyGrowth.map((month, index) => (
                                 <div
-                                    key={mes.mes}
-                                    className={`border rounded-lg p-3 ${mes.tendencia === "positiva" ? "border-green-500 bg-green-900/20" : "border-red-500 bg-red-900/20"
+                                    key={month.month}
+                                    className={`border rounded-lg p-3 ${month.variation >= 0 ? "border-green-500 bg-green-900/20" : "border-red-500 bg-red-900/20"
                                         }`}
                                 >
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
                                             <div
-                                                className={`w-6 h-6 rounded-full flex items-center justify-center ${mes.tendencia === "positiva" ? "bg-green-500" : "bg-red-500"
+                                                className={`w-6 h-6 rounded-full flex items-center justify-center ${month.variation >= 0 ? "bg-green-500" : "bg-red-500"
                                                     }`}
                                             >
                                                 <span className="text-xs font-bold text-white">
-                                                    {mes.tendencia === "positiva" ? "↑" : "↓"}
+                                                    {month.variation >= 0 ? "↑" : "↓"}
                                                 </span>
                                             </div>
-                                            <span className="text-sm font-medium">{mes.mes}</span>
+                                            <span className="text-sm font-medium">{month.month}</span>
                                         </div>
                                         <div className="text-right">
                                             <div
-                                                className={`text-lg font-bold ${mes.tendencia === "positiva" ? "text-green-400" : "text-red-400"
+                                                className={`text-lg font-bold ${month.variation >= 0 ? "text-green-400" : "text-red-400"
                                                     }`}
                                             >
-                                                {mes.cambio > 0 ? "+" : ""}
-                                                {mes.cambio.toFixed(1)}%
+                                                {month.variation >= 0 ? "+" : ""}
+                                                {month.variation.toFixed(1)}%
                                             </div>
                                             <div className="text-xs text-gray-400">Cambio</div>
                                         </div>
@@ -192,15 +190,15 @@ function MonthlyPerformance() {
                                     <div className="grid grid-cols-2 gap-2 text-xs">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Anterior</div>
-                                            <div className="text-xs font-bold">{formatCurrency(mes.rendimientoAnterior)}</div>
+                                            <div className="text-xs font-bold">{formatCurrency(month.previousCollected)}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Actual</div>
                                             <div
-                                                className={`font-bold text-xs ${mes.tendencia === "positiva" ? "text-green-400" : "text-red-400"
+                                                className={`font-bold text-xs ${month.variation >= 0 ? "text-green-400" : "text-red-400"
                                                     }`}
                                             >
-                                                {formatCurrency(mes.rendimiento)}
+                                                {formatCurrency(month.currentCollected)}
                                             </div>
                                         </div>
                                     </div>
@@ -209,9 +207,9 @@ function MonthlyPerformance() {
                                     <div className="mt-2">
                                         <div className="w-full bg-gray-700 rounded-full h-1.5">
                                             <div
-                                                className={`h-1.5 rounded-full transition-all duration-300 ${mes.tendencia === "positiva" ? "bg-green-500" : "bg-red-500"
+                                                className={`h-1.5 rounded-full transition-all duration-300 ${month.variation >= 0 ? "bg-green-500" : "bg-red-500"
                                                     }`}
-                                                style={{ width: `${Math.min(Math.abs(mes.cambio) * 3, 100)}%` }}
+                                                style={{ width: `${Math.min(Math.abs(month.variation) * 3, 100)}%` }}
                                             ></div>
                                         </div>
                                     </div>
