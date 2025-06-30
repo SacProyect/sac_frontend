@@ -213,6 +213,83 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 		console.error('Error al obtener group records:', e)
 		throw e
 	}
+};
+
+export const getFiscalInfo = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-info`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el reporte de iva individual:', e)
+		throw e
+	}
+};
+
+export const getFiscalTaxpayers = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-taxpayers`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el reporte de contribuyentes:', e)
+		throw e
+	}
+};
+
+export const getFiscalMonthlyCollect = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-monthly-collect`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el reporte de recaudado mensual:', e)
+		throw e
+	}
+};
+
+export const getFiscalMonthlyPerformance = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-monthly-performance`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el reporte mensual de rendimiento:', e)
+		throw e
+	}
+};
+
+export const getFiscalComplianceByProcess = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-compliance-by-process`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el cumplimiento por proceso:', e)
+		throw e
+	}
+};
+
+export const getFiscalTaxpayerCompliance = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-taxpayer-compliance`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el cumplimiento:', e)
+		throw e
+	}
+};
+
+export const getFiscalCollectAnalisis = async (fiscalId : string) => {
+	try {
+		const requestUrl = `reports/get-fiscal-collect-analisis`
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el analisis', e)
+		throw e
+	}
 }
 
 

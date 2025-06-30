@@ -1,0 +1,75 @@
+import ComplianceByProcess from "@/components/fiscal-stats/page1/ComplianceByProcess"
+import MonthlyCollect from "@/components/fiscal-stats/page1/MonthlyCollect"
+import MonthlyPerformance from "@/components/fiscal-stats/page1/MonthlyPerformance"
+import TaxpayerList from "@/components/fiscal-stats/page1/TaxpayerList"
+import { Download, User, DollarSign, FileText, Calendar, Building, MapPin, AlertCircle, Badge } from "lucide-react"
+
+
+// Datos simulados basados en el modelo taxpayer
+const fiscalInfo = {
+  name: "Carlos Mendoza",
+  id: "FISC-001",
+  totalTaxpayers: 45,
+  activeProcesses: 12,
+  completedProcesses: 33,
+}
+
+
+
+
+
+export default function FiscalStatsPage1() {
+
+  return (
+    <div className="flex flex-col w-full h-full gap-4 p-4 overflow-hidden">
+      {/* Header del Fiscal */}
+      <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
+              <User className="w-8 h-8 text-white" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-white">{fiscalInfo.name}</h1>
+              <p className="text-blue-300">ID: {fiscalInfo.id}</p>
+            </div>
+          </div>
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <div className="text-2xl font-bold text-green-400">{fiscalInfo.totalTaxpayers}</div>
+              <div className="text-xs text-gray-400">Total Contribuyentes</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-yellow-400">{fiscalInfo.activeProcesses}</div>
+              <div className="text-xs text-gray-400">Procesos Activos</div>
+            </div>
+            <div>
+              <div className="text-2xl font-bold text-blue-400">{fiscalInfo.completedProcesses}</div>
+              <div className="text-xs text-gray-400">Completados</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Fila superior - 2 estadísticas */}
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Estadística 1: Lista de Contribuyentes */}
+        <TaxpayerList />
+
+        {/* Estadística 2: Recaudación Mensual */}
+        <MonthlyCollect />
+      </div>
+
+      {/* Fila inferior - 2 estadísticas */}
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+        {/* Estadística 3: Evolución Mensual del Rendimiento */}
+        <MonthlyPerformance />
+
+
+        {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
+        <ComplianceByProcess />
+
+      </div>
+    </div>
+  )
+}
