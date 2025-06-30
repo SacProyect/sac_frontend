@@ -122,7 +122,7 @@ interface FiscalStatsPage2Props {
 
 export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) {
     return (
-        <div className="lg:flex flex-col w-full gap-4 p-4 overflow-hidden ">
+        <div className="lg:flex flex-col w-full gap-4 p-4 overflow-hidden lg:h-[92vh]">
             {/* Fila superior - 2 estadísticas */}
 
             <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl hidden lg:block">
