@@ -332,7 +332,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full lg:h-[60vh] shadow-xl pb-0 lg:pb-4">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
-                <div className="w-full p-6 lg:w-1/2">
+                <div className="w-full lg:p-4 lg:w-1/2">
                     <h1 className="mb-4 text-xl font-semibold uppercase">
                         Datos del contribuyente
                     </h1>
@@ -545,31 +545,33 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </div>
 
                     {dataMock.some(item => item.value > 0) && (
-                        <div className="flex justify-center w-full lg:w-auto">
-                            <PieChart width={300} height={200}>
-                                <Pie
-                                    data={dataMock}
-                                    dataKey="value"
-                                    nameKey="name"
-                                    cx="50%"
-                                    cy="50%"
-                                    outerRadius={50}
-                                    label
-                                >
-                                    {dataMock.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.color} />
-                                    ))}
-                                </Pie>
-                                <Tooltip />
-                            </PieChart>
+                        <div className="flex justify-center items-center w-full h-full lg:w-[30vw] lg:h-[20vh]">
+                            <ResponsiveContainer width="100%" height="100%" aspect={2}>
+                                <PieChart>
+                                    <Pie
+                                        data={dataMock}
+                                        dataKey="value"
+                                        nameKey="name"
+                                        cx="50%"
+                                        cy="50%"
+                                        outerRadius={50}
+                                        label
+                                    >
+                                        {dataMock.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.color} />
+                                        ))}
+                                    </Pie>
+                                    <Tooltip />
+                                </PieChart>
+                            </ResponsiveContainer>
                         </div>
                     )}
 
-                    <div className="w-full lg:px-4 mt-6 md:mt-0 lg:mt-4 md:h-[20vh]">
+                    <div className="w-full lg:px-4 mt-6 md:mt-0 lg:mt-4 md:h-[20vh] h-full">
                         <h3 className="mb-2 text-sm font-semibold text-center">
                             Variación de rendimiento mensual
                         </h3>
-                        <ResponsiveContainer width="100%" height="90%">
+                        <ResponsiveContainer width="100%" height="90%" aspect={2}>
                             <LineChart data={lineChartData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" fontSize={10} />
