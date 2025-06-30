@@ -139,7 +139,7 @@ function LowCompliance() {
     return (
         <>
 
-            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
+            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[35vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <TrendingDown className="w-4 h-4 text-red-500" />
@@ -155,7 +155,7 @@ function LowCompliance() {
                     </div>
                 </div>
                 <div className="pt-0">
-                    <div id="bajo-cumplimiento-fiscal-table" className="h-[280px] overflow-y-auto custom-scroll p-4">
+                    <div id="bajo-cumplimiento-fiscal-table" className="h-[280px] lg:h-[25vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
                             {compliance && compliance.map((taxpayer, index) => (
                                 <div
@@ -182,7 +182,7 @@ function LowCompliance() {
                                         </div>
                                     </div>
                                     <div className="bg-[#2a2a29] rounded-md p-2">
-                                        <div className="mb-1 text-xs text-gray-400">Total totalCollected</div>
+                                        <div className="mb-1 text-xs text-gray-400">Total Recaudado</div>
                                         <div className="font-bold text-red-400">{formatCurrency(taxpayer.totalCollected)}</div>
                                     </div>
                                 </div>

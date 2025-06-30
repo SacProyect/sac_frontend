@@ -107,7 +107,7 @@ function CollectAnalisis() {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
+            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[35vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <BarChart3 className="w-4 h-4 text-purple-500" />
@@ -123,13 +123,10 @@ function CollectAnalisis() {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div
-                        id="eficiencia-fiscal-table"
-                        className="h-[280px] flex flex-col justify-center space-y-2 overflow-hidden p-4"
-                    >
+                    <div id="eficiencia-fiscal-table" className="h-[280px] lg:h-[25vh] flex flex-col justify-center space-y-2 overflow-hidden p-4 overflow-y-auto">
                         {/* Total General */}
-                        <div className="p-3 border rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 border-purple-500/50">
-                            <div className="text-center">
+                        <div className="p-3 border rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 border-purple-500/50 lg:mt-24">
+                            <div className="text-center ">
                                 <div className="mb-1 text-xl font-bold text-purple-400">
                                     {formatCurrency(Number(analisis?.totalCollected))}
                                 </div>
@@ -181,14 +178,14 @@ function CollectAnalisis() {
 
                         {/* Información Adicional */}
                         <div className="bg-[#1a1a19] rounded-md p-2 border border-gray-600/30">
-                            <div className="grid grid-cols-2 gap-3 text-xs text-center">
-                                <div>
-                                    <div className="text-xs font-medium text-red-400">taxpayers con Multas</div>
+                            <div className="grid grid-cols-2 gap-0 text-xs text-center">
+                                <div className=''>
+                                    <div className="text-xs font-medium text-red-400">Contribuyentes con Multas</div>
                                     <div className="text-lg font-bold text-white">{analisis?.taxpayersWithFines}</div>
                                 </div>
-                                <div>
+                                <div className=''>
                                     <div className="text-xs font-medium text-green-400">Mayor Recaudador</div>
-                                    <div className="text-xs font-bold text-white truncate">{analisis?.taxpayerWithMostCollected.name}</div>
+                                    <p className="text-xs font-bold text-white ">{analisis?.taxpayerWithMostCollected?.name ? analisis?.taxpayerWithMostCollected?.name : "No se encontró"}</p>
                                 </div>
                             </div>
                         </div>

@@ -15,7 +15,7 @@ interface FiscalStatsPage1Props {
 export default function FiscalStatsPage1({ fiscalData }: FiscalStatsPage1Props) {
 
   return (
-    <div className="flex flex-col w-full  gap-4 p-4 overflow-hidden">
+    <div className="flex flex-col w-full  gap-4 p-4 overflow-hidden h-full lg:h-[90.2vh]">
       {/* Header del Fiscal */}
       <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl">
         <div className="flex flex-col lg:flex-row items-center justify-center text-center lg:justify-between">

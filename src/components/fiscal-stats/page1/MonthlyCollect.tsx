@@ -152,7 +152,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
+            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[40vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <DollarSign className="w-4 h-4 text-green-500" />
@@ -168,7 +168,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="recaudacion-mensual-table" className="h-[280px] overflow-y-auto custom-scroll p-4">
+                    <div id="recaudacion-mensual-table" className=" lg:h-[30vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-4">
                             {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">

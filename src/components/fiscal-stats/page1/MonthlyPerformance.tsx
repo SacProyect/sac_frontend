@@ -139,7 +139,7 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
+            <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[40vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <FileText className="w-4 h-4 text-purple-500" />
@@ -155,8 +155,8 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="evolucion-table" className="h-[280px] overflow-y-auto custom-scroll p-4">
-                        <div className="space-y-3">
+                    <div id="evolucion-table" className="h-[280px] lg:h-[30vh] overflow-y-auto custom-scroll p-4">
+                        <div className="space-y-3 lg:pb-14">
                             {monthlyGrowth && monthlyGrowth.map((month, index) => (
                                 <div
                                     key={month.month}

@@ -76,7 +76,7 @@ export default function FiscalStatsPage() {
             </div>
 
             {/* Paginación solo en lg */}
-            <div className="hidden lg:flex items-center justify-center gap-2 py-4 bg-[#1c1c1b]">
+            <div className="hidden lg:flex items-center justify-center gap-2 py-2 bg-[#1c1c1b]">
                 <button
                     onClick={prevPage}
                     disabled={currentPage === 1}
