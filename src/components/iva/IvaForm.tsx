@@ -82,7 +82,7 @@ function IvaForm() {
                 purchases: new Decimal(String(data.purchases).replace(",", ".")),
                 sells: new Decimal(String(data.sells).replace(",", ".")),
                 paid: new Decimal(String(data.paid).replace(",", ".")),
-                excess: data.excess !== undefined && data.excess !== null
+                excess: data.excess && String(data.excess).trim() !== ""
                     ? new Decimal(String(data.excess).replace(",", "."))
                     : undefined,
             };

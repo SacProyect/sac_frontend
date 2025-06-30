@@ -8,37 +8,6 @@ import { useNavigate } from 'react-router-dom'
 
 
 
-
-const procedimientoStats = [
-    {
-        tipo: "FP",
-        nombre: "Fiscalización Parcial",
-        descripcion: "Revisión específica de tributos",
-        esperado: 850000,
-        recaudado: 765000,
-        cumplimiento: 90.0,
-    },
-    {
-        tipo: "AF",
-        nombre: "Auditoría Fiscal",
-        descripcion: "Revisión integral de contribuyente",
-        esperado: 1200000,
-        recaudado: 980000,
-        cumplimiento: 81.7,
-    },
-    {
-        tipo: "VDF",
-        nombre: "Verificación de Datos Fiscales",
-        descripcion: "Validación de información tributaria",
-        esperado: 450000,
-        recaudado: 285000,
-        cumplimiento: 63.3,
-    },
-]
-
-
-
-
 interface ComplianceByProcessProps {
     fiscalInfo: FiscalInfo
 }
