@@ -158,14 +158,14 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                         <DollarSign className="w-4 h-4 text-green-500" />
                         Recaudación Mensual
                     </div>
-                    <div className="lg:pt-4 lg:pr-4">
+                    {/* <div className="lg:pt-4 lg:pr-4">
                         <button
                             onClick={() => downloadPDF("recaudacion-mensual-table", "recaudacion-mensual.pdf")}
                             className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
                         >
                             <Download className="w-3 h-3" />
                         </button>
-                    </div>
+                    </div> */}
                 </div>
                 <div className="pt-0">
                     <div id="recaudacion-mensual-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
