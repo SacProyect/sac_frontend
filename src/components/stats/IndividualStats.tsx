@@ -565,11 +565,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className="w-full px-4 mt-6 lg:mt-4">
+                    <div className="w-full lg:px-4 mt-6 lg:mt-4 ">
                         <h3 className="mb-2 text-sm font-semibold text-center">
                             Variación de rendimiento mensual
                         </h3>
-                        <ResponsiveContainer width={430} height={240}>
+                        <ResponsiveContainer width="100%" height={240}>
                             <LineChart data={lineChartData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" fontSize={10} />
