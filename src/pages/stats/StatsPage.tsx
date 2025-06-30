@@ -131,6 +131,12 @@ function StatsPage() {
                             </div>
                         ) : (<></>)}
                     </div>
+
+                    {/* Solo visible en mobile: renderizar página 2 y 3 directamente debajo */}
+                    <div className="block lg:hidden bg-[#1c1c1b] text-white">
+                        <StatisticsPage2 />
+                        <StatisticsPage3 />
+                    </div>
                 </>
             );
         }
