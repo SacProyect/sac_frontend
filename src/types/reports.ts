@@ -47,3 +47,11 @@ export interface ProcessCompliance {
     recaudado: number;
     cumplimiento: number;
 }
+
+export interface ComplianceInterface {
+    name:           string;
+    rif:            string;
+    totalCollected: number;
+    complianceRate: number;
+}
+

@@ -272,7 +272,7 @@ export const getFiscalComplianceByProcess = async (fiscalId : string) => {
 
 export const getFiscalTaxpayerCompliance = async (fiscalId : string) => {
 	try {
-		const requestUrl = `reports/get-fiscal-taxpayer-compliance`
+		const requestUrl = `reports/get-fiscal-compliance`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
 		return response.data;
 	} catch (e) {

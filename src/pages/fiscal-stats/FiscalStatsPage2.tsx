@@ -1,40 +1,35 @@
 "use client"
+import HighCompliance from "@/components/fiscal-stats/page2/HighCompliance"
+import LowCompliance from "@/components/fiscal-stats/page2/LowCompliance"
+import MediumCompliance from "@/components/fiscal-stats/page2/MediumCompliance"
 import { FiscalInfo } from "@/types/reports"
 import { Download, TrendingUp, TrendingDown, Users, BarChart3, User } from "lucide-react"
 
 
 // Datos simulados para la página 2
-const altoCumplimiento = [
-    { name: "Empresa ABC C.A.", rif: "J-12345678-9", cumplimiento: 98.5, recaudado: 730000 },
-    { name: "Corporación XYZ S.A.", rif: "J-87654321-0", cumplimiento: 97.2, recaudado: 615000 },
-    { name: "Industrias DEF C.A.", rif: "J-11223344-5", cumplimiento: 96.8, recaudado: 525000 },
-    { name: "Tecnología MNO S.A.", rif: "J-44556677-8", cumplimiento: 95.2, recaudado: 310000 },
-    { name: "Construcción PQR C.A.", rif: "J-33445566-2", cumplimiento: 94.8, recaudado: 290000 },
-]
+// const altoCumplimiento = [
+//     { name: "Empresa ABC C.A.", rif: "J-12345678-9", cumplimiento: 98.5, recaudado: 730000 },
+//     { name: "Corporación XYZ S.A.", rif: "J-87654321-0", cumplimiento: 97.2, recaudado: 615000 },
+//     { name: "Industrias DEF C.A.", rif: "J-11223344-5", cumplimiento: 96.8, recaudado: 525000 },
+//     { name: "Tecnología MNO S.A.", rif: "J-44556677-8", cumplimiento: 95.2, recaudado: 310000 },
+//     { name: "Construcción PQR C.A.", rif: "J-33445566-2", cumplimiento: 94.8, recaudado: 290000 },
+// ]
 
-const medioCumplimiento = [
-    { name: "Comercial GHI S.A.", rif: "J-55667788-1", cumplimiento: 78.5, recaudado: 475000 },
-    { name: "Servicios JKL C.A.", rif: "J-99887766-3", cumplimiento: 76.2, recaudado: 400000 },
-    { name: "Alimentos STU S.A.", rif: "J-22334455-6", cumplimiento: 74.8, recaudado: 275000 },
-    { name: "Textiles VWX C.A.", rif: "J-66778899-4", cumplimiento: 72.1, recaudado: 220000 },
-    { name: "Farmacia YZ S.A.", rif: "J-77889900-7", cumplimiento: 70.5, recaudado: 180000 },
-]
+// const medioCumplimiento = [
+//     { name: "Comercial GHI S.A.", rif: "J-55667788-1", cumplimiento: 78.5, recaudado: 475000 },
+//     { name: "Servicios JKL C.A.", rif: "J-99887766-3", cumplimiento: 76.2, recaudado: 400000 },
+//     { name: "Alimentos STU S.A.", rif: "J-22334455-6", cumplimiento: 74.8, recaudado: 275000 },
+//     { name: "Textiles VWX C.A.", rif: "J-66778899-4", cumplimiento: 72.1, recaudado: 220000 },
+//     { name: "Farmacia YZ S.A.", rif: "J-77889900-7", cumplimiento: 70.5, recaudado: 180000 },
+// ]
 
-const bajoCumplimiento = [
-    { name: "Empresa Baja A C.A.", rif: "J-11111111-1", cumplimiento: 45.2, recaudado: 150000 },
-    { name: "Comercial Baja B S.A.", rif: "J-22222222-2", cumplimiento: 42.8, recaudado: 120000 },
-    { name: "Servicios Baja C C.A.", rif: "J-33333333-3", cumplimiento: 40.5, recaudado: 95000 },
-    { name: "Industria Baja D S.A.", rif: "J-44444444-4", cumplimiento: 38.1, recaudado: 80000 },
-    { name: "Construcción Baja E C.A.", rif: "J-55555555-5", cumplimiento: 35.7, recaudado: 65000 },
-]
-
-const fiscalInfo = {
-    name: "Carlos Mendoza",
-    id: "FISC-001",
-    totalTaxpayers: 45,
-    activeProcesses: 12,
-    completedProcesses: 33,
-}
+// const bajoCumplimiento = [
+//     { name: "Empresa Baja A C.A.", rif: "J-11111111-1", cumplimiento: 45.2, recaudado: 150000 },
+//     { name: "Comercial Baja B S.A.", rif: "J-22222222-2", cumplimiento: 42.8, recaudado: 120000 },
+//     { name: "Servicios Baja C C.A.", rif: "J-33333333-3", cumplimiento: 40.5, recaudado: 95000 },
+//     { name: "Industria Baja D S.A.", rif: "J-44444444-4", cumplimiento: 38.1, recaudado: 80000 },
+//     { name: "Construcción Baja E C.A.", rif: "J-55555555-5", cumplimiento: 35.7, recaudado: 65000 },
+// ]
 
 const analisisRecaudacion = {
     totalIVA: 2450000,
@@ -44,7 +39,7 @@ const analisisRecaudacion = {
     promedioIVA: 306250,
     promedioISLR: 197500,
     promedioMultas: 35625,
-    contribuyentesConMultas: 5,
+    taxpayersConMultas: 5,
     mayorRecaudador: "Empresa ABC C.A.",
     menorRecaudador: "Construcción Baja E C.A.",
 }
@@ -143,7 +138,7 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                             <div className="text-2xl font-bold text-green-400">{fiscalData.totalTaxpayers}</div>
-                            <div className="text-xs text-gray-400">Total Contribuyentes</div>
+                            <div className="text-xs text-gray-400">Total taxpayers</div>
                         </div>
                         <div>
                             <div className="text-2xl font-bold text-yellow-400">{fiscalData.totalProcess}</div>
@@ -158,162 +153,16 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
             </div>
             <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* Estadística 1: Alto Cumplimiento */}
-                <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
-                    <div className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
-                            <TrendingUp className="w-4 h-4 text-green-500" />
-                            Alto Cumplimiento (&gt;90%)
-                        </div>
-                        <div className="lg:pr-4 lg:pt-4">
-                            <button
-                                onClick={() => downloadPDF("alto-cumplimiento-fiscal-table", "alto-cumplimiento-fiscal.pdf")}
-                                className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
-                            >
-                                <Download className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="pt-0">
-                        <div id="alto-cumplimiento-fiscal-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
-                            <div className="space-y-2">
-                                {altoCumplimiento.map((contribuyente, index) => (
-                                    <div
-                                        key={index}
-                                        className={`border rounded-lg p-3 ${index === 0 ? "border-green-500 bg-green-900/20" : "border-[#3a3a39] bg-[#1a1a19]"
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${index === 0 ? "bg-green-500 text-black" : "bg-blue-600 text-white"
-                                                        }`}
-                                                >
-                                                    {index + 1}
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium">{contribuyente.name}</div>
-                                                    <div className="text-xs text-gray-400">{contribuyente.rif}</div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-lg font-bold text-green-400">{contribuyente.cumplimiento}%</div>
-                                                <div className="text-xs text-gray-400">Cumplimiento</div>
-                                            </div>
-                                        </div>
-                                        <div className="bg-[#2a2a29] rounded-md p-2">
-                                            <div className="mb-1 text-xs text-gray-400">Total Recaudado</div>
-                                            <div className="font-bold text-green-400">{formatCurrency(contribuyente.recaudado)}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <HighCompliance />
 
                 {/* Estadística 2: Medio Cumplimiento */}
-                <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
-                    <div className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
-                            <Users className="w-4 h-4 text-yellow-500" />
-                            Medio Cumplimiento (60-90%)
-                        </div>
-                        <div className="lg:pr-4 lg:pt-4">
-                            <button
-                                onClick={() => downloadPDF("medio-cumplimiento-fiscal-table", "medio-cumplimiento-fiscal.pdf")}
-                                className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
-                            >
-                                <Download className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="pt-0">
-                        <div id="medio-cumplimiento-fiscal-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
-                            <div className="space-y-2">
-                                {medioCumplimiento.map((contribuyente, index) => (
-                                    <div key={index} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-3">
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div className="flex items-center justify-center w-6 h-6 text-xs font-bold text-black bg-yellow-600 rounded-full">
-                                                    {index + 1}
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium">{contribuyente.name}</div>
-                                                    <div className="text-xs text-gray-400">{contribuyente.rif}</div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-lg font-bold text-yellow-400">{contribuyente.cumplimiento}%</div>
-                                                <div className="text-xs text-gray-400">Cumplimiento</div>
-                                            </div>
-                                        </div>
-                                        <div className="bg-[#2a2a29] rounded-md p-2">
-                                            <div className="mb-1 text-xs text-gray-400">Total Recaudado</div>
-                                            <div className="font-bold text-yellow-400">{formatCurrency(contribuyente.recaudado)}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <MediumCompliance />
             </div>
 
             {/* Fila inferior - 2 estadísticas */}
             <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                 {/* Estadística 3: Bajo Cumplimiento */}
-                <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
-                    <div className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
-                            <TrendingDown className="w-4 h-4 text-red-500" />
-                            Bajo Cumplimiento (&lt;60%)
-                        </div>
-                        <div className="lg:pr-4 lg:pt-4">
-                            <button
-                                onClick={() => downloadPDF("bajo-cumplimiento-fiscal-table", "bajo-cumplimiento-fiscal.pdf")}
-                                className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
-                            >
-                                <Download className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="pt-0">
-                        <div id="bajo-cumplimiento-fiscal-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
-                            <div className="space-y-2">
-                                {bajoCumplimiento.map((contribuyente, index) => (
-                                    <div
-                                        key={index}
-                                        className={`border rounded-lg p-3 ${index === 0 ? "border-red-500 bg-red-900/20" : "border-[#3a3a39] bg-[#1a1a19]"
-                                            }`}
-                                    >
-                                        <div className="flex items-center justify-between mb-2">
-                                            <div className="flex items-center gap-2">
-                                                <div
-                                                    className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${index === 0 ? "bg-red-500 text-white" : "bg-gray-600 text-white"
-                                                        }`}
-                                                >
-                                                    {index + 1}
-                                                </div>
-                                                <div>
-                                                    <div className="text-sm font-medium">{contribuyente.name}</div>
-                                                    <div className="text-xs text-gray-400">{contribuyente.rif}</div>
-                                                </div>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-lg font-bold text-red-400">{contribuyente.cumplimiento}%</div>
-                                                <div className="text-xs text-gray-400">Cumplimiento</div>
-                                            </div>
-                                        </div>
-                                        <div className="bg-[#2a2a29] rounded-md p-2">
-                                            <div className="mb-1 text-xs text-gray-400">Total Recaudado</div>
-                                            <div className="font-bold text-red-400">{formatCurrency(contribuyente.recaudado)}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <LowCompliance />
 
                 {/* Estadística 4: Eficiencia del Fiscal */}
                 <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
@@ -392,8 +241,8 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                             <div className="bg-[#1a1a19] rounded-md p-2 border border-gray-600/30">
                                 <div className="grid grid-cols-2 gap-3 text-xs text-center">
                                     <div>
-                                        <div className="text-xs font-medium text-red-400">Contribuyentes con Multas</div>
-                                        <div className="text-lg font-bold text-white">{analisisRecaudacion.contribuyentesConMultas}</div>
+                                        <div className="text-xs font-medium text-red-400">taxpayers con Multas</div>
+                                        <div className="text-lg font-bold text-white">{analisisRecaudacion.taxpayersConMultas}</div>
                                     </div>
                                     <div>
                                         <div className="text-xs font-medium text-green-400">Mayor Recaudador</div>
