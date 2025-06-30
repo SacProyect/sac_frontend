@@ -6,15 +6,6 @@ import { FiscalInfo } from "@/types/reports"
 import { Download, User, DollarSign, FileText, Calendar, Building, MapPin, AlertCircle, Badge } from "lucide-react"
 
 
-// Datos simulados basados en el modelo taxpayer
-const fiscalInfo = {
-  name: "Carlos Mendoza",
-  id: "FISC-001",
-  totalTaxpayers: 45,
-  activeProcesses: 12,
-  completedProcesses: 33,
-}
-
 
 interface FiscalStatsPage1Props {
   fiscalData: FiscalInfo
@@ -57,7 +48,7 @@ export default function FiscalStatsPage1({ fiscalData }: FiscalStatsPage1Props) 
       {/* Fila superior - 2 estadísticas */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Estadística 1: Lista de Contribuyentes */}
-        <TaxpayerList />
+        <TaxpayerList fiscalInfo={fiscalData} />
 
         {/* Estadística 2: Recaudación Mensual */}
         <MonthlyCollect />

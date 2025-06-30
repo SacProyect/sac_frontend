@@ -1,6 +1,6 @@
 import { getFiscalTaxpayers } from "@/components/utils/api/reportFunctions";
 import { useAuth } from "@/hooks/useAuth";
-import { TaxpayersList } from "@/types/reports";
+import { FiscalInfo, TaxpayersList } from "@/types/reports";
 import { Building, Calendar, Download, MapPin } from "lucide-react"
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -8,16 +8,19 @@ import { useNavigate } from "react-router-dom";
 
 
 // Datos simulados basados en el modelo taxpayer
-const fiscalInfo = {
-    name: "Carlos Mendoza",
-    id: "FISC-001",
-    totalTaxpayers: 45,
-    activeProcesses: 12,
-    completedProcesses: 33,
+// const fiscalInfo = {
+//     name: "Carlos Mendoza",
+//     id: "FISC-001",
+//     totalTaxpayers: 45,
+//     activeProcesses: 12,
+//     completedProcesses: 33,
+// }
+
+interface TaxpayerListProps {
+    fiscalInfo: FiscalInfo
 }
 
-
-function TaxpayerList() {
+function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
     const [taxpayersList, setTaxpayersList] = useState<TaxpayersList[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -143,8 +146,8 @@ function TaxpayerList() {
           <body>
             <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
             <div class="fiscal-info">
-              <strong>Fiscal:</strong> ${fiscalInfo.name} | 
-              <strong>ID:</strong> ${fiscalInfo.id} | 
+              <strong>Fiscal:</strong> ${fiscalInfo.fiscalName} | 
+              <strong>ID:</strong> ${fiscalInfo.fiscalId} | 
               <strong>Total Contribuyentes:</strong> ${fiscalInfo.totalTaxpayers}
             </div>
             ${tableContent}
