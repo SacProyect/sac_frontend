@@ -38,3 +38,12 @@ export interface FiscalMonthlyGrowth {
     previousCollected: number;
     variation: number;
 }
+
+export interface ProcessCompliance {
+    tipo: string;
+    nombre: string;
+    descripcion: string;
+    esperado: number;
+    recaudado: number;
+    cumplimiento: number;
+}

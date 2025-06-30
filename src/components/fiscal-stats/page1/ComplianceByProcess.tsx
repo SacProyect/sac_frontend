@@ -1,6 +1,10 @@
-import { FiscalInfo } from '@/types/reports'
+import { getFiscalComplianceByProcess } from '@/components/utils/api/reportFunctions'
+import { useAuth } from '@/hooks/useAuth'
+import { FiscalInfo, ProcessCompliance } from '@/types/reports'
 import { AlertCircle, Download } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
+import { useNavigate } from 'react-router-dom'
 
 
 
@@ -32,14 +36,7 @@ const procedimientoStats = [
     },
 ]
 
-// Datos simulados basados en el modelo taxpayer
-const fiscalInfo = {
-    name: "Carlos Mendoza",
-    id: "FISC-001",
-    totalTaxpayers: 45,
-    activeProcesses: 12,
-    completedProcesses: 33,
-}
+
 
 
 interface ComplianceByProcessProps {
@@ -49,6 +46,65 @@ interface ComplianceByProcessProps {
 
 function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
 
+
+    const [compliance, setCompliance] = useState<ProcessCompliance[]>([]);
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) {
+        navigate('/login')
+        return;
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getFiscalComplianceByProcess(user.id);
+
+                const newStats = [
+                    {
+                        tipo: "FP",
+                        nombre: "Firma Personal",
+                        descripcion: "Revisión específica de tributos",
+                        esperado: parseFloat(response.expectedFP),
+                        recaudado: parseFloat(response.collectedFP),
+                        cumplimiento:
+                            parseFloat(response.expectedFP) === 0
+                                ? 0
+                                : (parseFloat(response.collectedFP) / parseFloat(response.expectedFP)) * 100,
+                    },
+                    {
+                        tipo: "AF",
+                        nombre: "Auditoría Fiscal",
+                        descripcion: "Revisión integral de contribuyente",
+                        esperado: parseFloat(response.expectedAF),
+                        recaudado: parseFloat(response.collectedAF),
+                        cumplimiento:
+                            parseFloat(response.expectedAF) === 0
+                                ? 0
+                                : (parseFloat(response.collectedAF) / parseFloat(response.expectedAF)) * 100,
+                    },
+                    {
+                        tipo: "VDF",
+                        nombre: "Verificación de Deberes Formales",
+                        descripcion: "Validación de información tributaria",
+                        esperado: parseFloat(response.expectedVDF),
+                        recaudado: parseFloat(response.collectedVDF),
+                        cumplimiento:
+                            parseFloat(response.expectedVDF) === 0
+                                ? 0
+                                : (parseFloat(response.collectedVDF) / parseFloat(response.expectedVDF)) * 100,
+                    },
+                ];
+
+                setCompliance(newStats);
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener la información del fiscal.");
+            }
+        };
+        fetchData();
+    }, []);
 
 
 
@@ -180,7 +236,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
                 <div className="pt-0">
                     <div id="cumplimiento-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4 ">
                         <div className="space-y-3">
-                            {procedimientoStats.map((proc, index) => (
+                            {compliance && compliance.map((proc, index) => (
                                 <div
                                     key={proc.tipo}
                                     className={`border rounded-lg p-3 ${proc.cumplimiento >= 90
