@@ -101,7 +101,7 @@ function HomePage() {
                         control={control}
                         name='search'
                         render={({ field: { name, value, onChange, onBlur } }) => (
-                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 min-w-[200px]">
+                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 min-w-[200px] px-2 lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Buscar</Label>
                                 <Input
                                     className="w-full p-2 text-black transition bg-white border border-gray-300 shadow-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -116,7 +116,7 @@ function HomePage() {
                         control={control}
                         name='year'
                         render={({ field }) => (
-                            <div className="min-w-[140px]">
+                            <div className="min-w-[140px] px-2 lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Año</Label>
                                 <select
                                     {...field}
@@ -131,7 +131,7 @@ function HomePage() {
                     />
                 </div>
 
-                <div className="w-full overflow-x-auto">
+                <div className="w-full overflow-x-auto pl-2 lg:pl-0">
                     <TaxpayerTable propRows={filteredItems} />
                 </div>
             </div>

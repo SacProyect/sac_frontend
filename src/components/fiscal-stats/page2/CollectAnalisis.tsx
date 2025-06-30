@@ -109,7 +109,7 @@ function CollectAnalisis() {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
+                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <BarChart3 className="w-4 h-4 text-purple-500" />
                         Análisis de Recaudación
                     </div>

@@ -80,7 +80,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
 
 
     return (
-        <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-[80vw] custom-scroll">
+        <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-full lg:w-[80vw] custom-scroll">
             <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
                 <div

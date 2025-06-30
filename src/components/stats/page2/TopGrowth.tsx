@@ -142,8 +142,8 @@ function TopGrowth() {
     return (
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white">
-                <div className="flex flex-row items-center justify-between pb-4 lg:pr-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-semibold lg:pt-4 lg:pl-4">
+                <div className="flex flex-row items-center justify-between pb-4 pr-4">
+                    <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
                         <TrendingUp className="w-5 h-5 text-green-500" />
                         Coordinadores - Crecimiento Mensual
                     </div>
@@ -179,7 +179,7 @@ function TopGrowth() {
                                             </div>
                                         </div>
                                         <div className={`text-right ${index === 0 ? "text-green-400" : "text-blue-400"}`}>
-                                            <div className="text-xl font-bold">+{coordinator.growthPercentage.toFixed(2)}%</div>
+                                            <div className="text-xl font-bold">{coordinator.growthPercentage.toFixed(2)}%</div>
                                             <div className="text-sm">Crecimiento</div>
                                         </div>
                                     </div>

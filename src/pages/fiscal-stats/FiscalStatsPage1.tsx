@@ -15,10 +15,10 @@ interface FiscalStatsPage1Props {
 export default function FiscalStatsPage1({ fiscalData }: FiscalStatsPage1Props) {
 
   return (
-    <div className="flex flex-col w-full h-full gap-4 p-4 overflow-hidden">
+    <div className="flex flex-col w-full  gap-4 p-4 overflow-hidden">
       {/* Header del Fiscal */}
       <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col lg:flex-row items-center justify-center text-center lg:justify-between">
           <div className="flex items-center gap-4">
             <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
               <User className="w-8 h-8 text-white" />
@@ -31,7 +31,7 @@ export default function FiscalStatsPage1({ fiscalData }: FiscalStatsPage1Props) 
           <div className="grid grid-cols-3 gap-4 text-center">
             <div>
               <div className="text-2xl font-bold text-green-400">{fiscalData.totalTaxpayers}</div>
-              <div className="text-xs text-gray-400">Total Contribuyentes</div>
+              <div className="text-xs text-gray-400">Contribuyentes</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-yellow-400">{fiscalData.totalProcess}</div>

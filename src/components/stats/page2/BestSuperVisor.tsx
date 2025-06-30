@@ -198,8 +198,8 @@ function BestSuperVisor() {
     return (
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white ">
-                <div className="flex flex-row items-center justify-between pb-4 lg:pr-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-semibold lg:pt-4 lg:pl-4">
+                <div className="flex flex-row items-center justify-between pb-4 pr-4">
+                    <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
                         <Trophy className="w-5 h-5 text-yellow-500" />
                         Mejor Supervisor por Grupos
                     </div>
@@ -225,7 +225,7 @@ function BestSuperVisor() {
                                             <Award className="w-4 h-4 text-green-400" />
                                             <span className="font-medium text-green-400">Mejor: {group.best}</span>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-2 text-sm">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
                                             <div>
                                                 <span className="text-gray-400">IVA:</span>
                                                 <div className="text-xs font-medium">{formatCurrency(Number(group.supervisors.find(s => s.name === group.best)?.collectedIva || 0))}</div>
@@ -250,7 +250,7 @@ function BestSuperVisor() {
                                         <div className="flex items-center gap-2 mb-2">
                                             <span className="font-medium text-red-400">Menor: {group.worse}</span>
                                         </div>
-                                        <div className="grid grid-cols-4 gap-2 text-sm">
+                                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-sm">
                                             <div>
                                                 <span className="text-gray-400">IVA:</span>
                                                 <div className="text-xs font-medium">{formatCurrency(Number(group.supervisors.find(s => s.name === group.worse)?.collectedIva || 0))}</div>

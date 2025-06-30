@@ -23,7 +23,7 @@ function CensusTablePage() {
 
 
     return (
-        <div>
+        <div className=''>
             <TaxpayerCensusTable propRows={taxpayersCensus} />
         </div>
     )

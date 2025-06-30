@@ -98,12 +98,12 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
           placeholder="Buscar..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 mb-4 border border-gray-300 rounded md:max-w-full lg:max-w-lg"
+          className="w-full p-2 mb-4 border border-gray-300 rounded lg:max-w-lg"
         />
       </div>
 
-      <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-[80vw] custom-scroll lg:pl-4">
-        <div className="flex flex-col min-w-full text-xs">
+      <div ref={containerRef} className="overflow-auto h-[70vh] w-[100vw] lg:h-[83.5vh] lg:w-[80vw] custom-scroll lg:pl-4">
+        <div className="flex flex-col lg:min-w-full text-xs">
           <div
             className="sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max flex lg:grid"
             style={{ gridTemplateColumns: `repeat(${columns.length}, 0.8fr)` }}

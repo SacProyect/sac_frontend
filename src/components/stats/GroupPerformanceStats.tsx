@@ -40,7 +40,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
     };
 
     return (
-        <div className="w-full lg:w-[42vw] h-full lg:h-[40vh] pt-16 lg:pt-0">
+        <div className="w-full lg:w-[42vw] h-full lg:h-[40vh] pt-32 lg:pt-0">
             <div className="bg-[#1c1c1b] p-4 w-full h-[50vh] flex flex-col">
                 <div className="mb-2 text-xl font-semibold text-center text-white font-inter">
                     <div className="flex justify-center">
@@ -66,7 +66,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 <div className="text-[#7ca7ff] text-xs w-full lg:w-[100px] text-center lg:text-left">
                                     Multas pagadas
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#5996ff] rounded-full"
                                         style={{ width: getBarWidth(group.totalPaidFines, totalPaid) }}
@@ -82,7 +82,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 <div className="text-[#7cffcc] text-xs w-full lg:w-[100px] text-center lg:text-left">
                                     Recaudado Multas
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#42f5c5] rounded-full"
                                         style={{ width: getBarWidth(group.totalPaidAmount, totalCollected) }}
@@ -98,7 +98,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 <div className="text-[#ffd27f] text-xs w-full lg:w-[100px] text-center lg:text-left">
                                     IVA recaudado
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#ffc74d] rounded-full"
                                         style={{ width: getBarWidth(group.totalIvaCollected, totalIva), minWidth: "2px" }}
@@ -114,7 +114,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 <div className="text-[#ff8d8d] text-xs w-full lg:w-[100px] text-center lg:text-left">
                                     ISLR recaudado
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#ff6b6b] rounded-full"
                                         style={{ width: getBarWidth(group.totalIslrCollected, totalIslr) }}

@@ -108,7 +108,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
                     Esta gráfica muestra indicadores clave de rendimiento como recaudación total, promedio de excedente fiscal, porcentaje de contribuyentes con multas, tasa de crecimiento y morosidad.
                 </p>
                 {/* Gráfico */}
-                <div className="flex-1 min-h-0">
+                <div className="flex-1 min-h-0 pr-4 lg:pr-0">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             layout="vertical"
