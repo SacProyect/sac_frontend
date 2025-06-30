@@ -190,7 +190,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
+                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <AlertCircle className="w-4 h-4 text-yellow-500" />% Cumplimiento por Procedimiento
                     </div>
                     {/* <div className="lg:pt-4 lg:pr-4">
@@ -203,7 +203,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="cumplimiento-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4 ">
+                    <div id="cumplimiento-table" className="h-[280px] overflow-y-auto custom-scroll p-4 ">
                         <div className="space-y-3">
                             {compliance && compliance.map((proc, index) => (
                                 <div

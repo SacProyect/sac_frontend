@@ -122,10 +122,10 @@ interface FiscalStatsPage2Props {
 
 export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) {
     return (
-        <div className="flex flex-col w-full h-full gap-4 p-4 overflow-hidden">
+        <div className="lg:flex flex-col w-full gap-4 p-4 overflow-hidden ">
             {/* Fila superior - 2 estadísticas */}
 
-            <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl">
+            <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl hidden lg:block">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
@@ -139,7 +139,7 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                     <div className="grid grid-cols-3 gap-4 text-center">
                         <div>
                             <div className="text-2xl font-bold text-green-400">{fiscalData.totalTaxpayers}</div>
-                            <div className="text-xs text-gray-400">Total taxpayers</div>
+                            <div className="text-xs text-gray-400">Contribuyentes</div>
                         </div>
                         <div>
                             <div className="text-2xl font-bold text-yellow-400">{fiscalData.totalProcess}</div>
@@ -152,21 +152,23 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                     </div>
                 </div>
             </div>
-            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
-                {/* Estadística 1: Alto Cumplimiento */}
-                <HighCompliance />
+            <div className="gap-4 flex flex-col">
+                <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+                    {/* Estadística 1: Alto Cumplimiento */}
+                    <HighCompliance />
 
-                {/* Estadística 2: Medio Cumplimiento */}
-                <MediumCompliance />
-            </div>
+                    {/* Estadística 2: Medio Cumplimiento */}
+                    <MediumCompliance />
+                </div>
 
-            {/* Fila inferior - 2 estadísticas */}
-            <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
-                {/* Estadística 3: Bajo Cumplimiento */}
-                <LowCompliance />
+                {/* Fila inferior - 2 estadísticas */}
+                <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+                    {/* Estadística 3: Bajo Cumplimiento */}
+                    <LowCompliance />
 
-                {/* Estadística 4: Eficiencia del Fiscal */}
-                <CollectAnalisis />
+                    {/* Estadística 4: Eficiencia del Fiscal */}
+                    <CollectAnalisis />
+                </div>
             </div>
         </div>
     )

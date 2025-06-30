@@ -152,9 +152,9 @@ function TopFiveFiscals() {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white h-[40vh]">
-                <div className="flex flex-row items-center justify-between pb-4 lg:pr-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-semibold lg:pt-4 lg:pl-4">
+            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white h-[60vh] lg:h-[40vh]">
+                <div className="flex flex-row items-center justify-between pb-4 pr-4">
+                    <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
                         <Users className="w-5 h-5 text-purple-500" />
                         Top 5 Fiscales por Grupo
                     </div>
@@ -168,7 +168,7 @@ function TopFiveFiscals() {
                     </div>
                 </div>
                 <div>
-                    <div id="fiscales-grupo-table" className="h-[285px] overflow-y-auto custom-scroll p-4 ">
+                    <div id="fiscales-grupo-table" className="lg:h-[285px] h-[48vh] overflow-y-auto custom-scroll p-4 ">
                         <div className="space-y-4 lg:pb-8">
                             {fiscalsByGroup?.map((group, index) => (
                                 <div key={index} className="border border-[#3a3a39] rounded-lg p-4">

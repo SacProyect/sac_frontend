@@ -121,11 +121,11 @@ function MediumCompliance({ data }: MediumComplianceProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
+                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <AlertTriangle className="w-4 h-4 text-yellow-500" />
                         Contribuyentes - Cumplimiento Medio
                     </div>
-                    <div className='lg:pr-4 lg:pt-4'>
+                    <div className='pr-4 pt-4'>
                         <button
                             onClick={() => downloadPDF("medio-cumplimiento-table", "contribuyentes-medio-cumplimiento.pdf")}
                             className="flex items-center justify-center px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
@@ -155,7 +155,7 @@ function MediumCompliance({ data }: MediumComplianceProps) {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-4 gap-2 text-xs">
+                                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">IVA</div>
                                             <div className="font-bold text-[10px]">{formatCurrency(Number(contribuyente.totalIVA))}</div>

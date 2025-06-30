@@ -154,7 +154,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
+                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <DollarSign className="w-4 h-4 text-green-500" />
                         Recaudación Mensual
                     </div>
@@ -168,7 +168,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="recaudacion-mensual-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
+                    <div id="recaudacion-mensual-table" className="h-[280px] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-4">
                             {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">
@@ -180,7 +180,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
                                         <div className="p-3 text-center border rounded-md bg-blue-900/30 border-blue-700/30">
                                             <div className="mb-1 text-xs text-blue-300">IVA</div>
                                             <div className="text-sm font-bold text-blue-400">{formatCurrency(month.iva)}</div>

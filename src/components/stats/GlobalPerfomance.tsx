@@ -79,7 +79,7 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full lg:w-[41vw] h-[42vh] bg-[#1c1c1b] pb-8 pt-8 lg:pt-4 text-white font-inter">
+        <div className="flex flex-col items-center w-full lg:w-[41vw] h-[60vh] lg:h-[42vh] bg-[#1c1c1b] pb-8 pt-8 lg:pt-4 text-white font-inter">
             {/* Title and Description */}
             <div className="mb-4 text-center">
                 <div className="w-full lg:w-[36vw] border border-[#b7c0cd] bg-[#292d33] rounded-md">

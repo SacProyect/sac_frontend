@@ -157,7 +157,7 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
+                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
                         <Building className="w-4 h-4 text-blue-500" />
                         Contribuyentes Asignados
                     </div>
@@ -171,7 +171,7 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="contribuyentes-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
+                    <div id="contribuyentes-table" className="lg:h-[280px] h-[39vh]  overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
                             {taxpayersList && taxpayersList.map((taxpayer, index) => (
                                 <div key={taxpayer.id} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-3">
@@ -195,12 +195,12 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
 
                                     <div className="flex items-center gap-2 mb-2">
                                         {taxpayer.process === "AF" && (
-                                            <p className={`${getFaseColor(taxpayer.fase)} text-white text-xs rounded-full px-2`}>{taxpayer.fase}</p>
+                                            <p className={`${getFaseColor(taxpayer.fase)} text-white text-xs rounded-full px-2`}>{taxpayer.fase.replace("_", " ")}</p>
                                         )}
                                         {taxpayer.culminated && <p className="px-2 text-xs text-white bg-green-600 rounded-full">CULMINADO</p>}
                                     </div>
 
-                                    <div className="grid grid-cols-3 gap-2 text-xs">
+                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-2 text-xs">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">IVA</div>
                                             <div className="font-bold text-[10px]">{formatCurrency(Number(taxpayer.collectedIva))}</div>
