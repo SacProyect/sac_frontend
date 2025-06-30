@@ -1,25 +1,54 @@
+import { getFiscalMonthlyCollect } from '@/components/utils/api/reportFunctions';
+import { useAuth } from '@/hooks/useAuth';
+import { FiscalInfo, FiscalMonthlyCollect } from '@/types/reports'
 import { DollarSign, Download } from 'lucide-react'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
+import { date } from 'zod';
 
 
-// Datos simulados basados en el modelo taxpayer
-const fiscalInfo = {
-    name: "Carlos Mendoza",
-    id: "FISC-001",
-    totalTaxpayers: 45,
-    activeProcesses: 12,
-    completedProcesses: 33,
+interface MonthlyCollectProps {
+    fiscalInfo: FiscalInfo
 }
 
-const monthlyStats = [
-    { month: "Enero", iva: 850000, islr: 520000, multas: 85000, total: 1455000 },
-    { month: "Febrero", iva: 920000, islr: 580000, multas: 95000, total: 1595000 },
-    { month: "Marzo", iva: 780000, islr: 480000, multas: 120000, total: 1380000 },
-]
+function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
+    const [monthlyStats, setMonthlyStats] = useState<FiscalMonthlyCollect[]>();
+    const { user } = useAuth();
+    const navigate = useNavigate();
 
+    if (!user) {
+        navigate('/login')
+        return;
+    }
 
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getFiscalMonthlyCollect(user.id);
 
-function MonthlyCollect() {
+                const months = [
+                    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+                    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+                ];
+
+                const parsed = months.map((month) => ({
+                    month,
+                    iva: response[month]?.iva ?? 0,
+                    islr: response[month]?.islr ?? 0,
+                    fines: response[month]?.fines ?? 0,
+                    total: response[month]?.total ?? 0,
+                }));
+
+                setMonthlyStats(parsed);
+
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener la información del recaudado mensual.")
+            }
+        }
+        fetchData();
+    }, [])
 
 
     const downloadPDF = (tableId: string, fileName: string) => {
@@ -97,8 +126,8 @@ function MonthlyCollect() {
           <body>
             <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
             <div class="fiscal-info">
-              <strong>Fiscal:</strong> ${fiscalInfo.name} | 
-              <strong>ID:</strong> ${fiscalInfo.id} | 
+              <strong>Fiscal:</strong> ${fiscalInfo.fiscalName} | 
+              <strong>ID:</strong> ${fiscalInfo.fiscalId} | 
               <strong>Total Contribuyentes:</strong> ${fiscalInfo.totalTaxpayers}
             </div>
             ${tableContent}
@@ -141,10 +170,10 @@ function MonthlyCollect() {
                 <div className="pt-0">
                     <div id="recaudacion-mensual-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
                         <div className="space-y-4">
-                            {monthlyStats.map((month, index) => (
+                            {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-blue-400">{month.month} 2024</h3>
+                                        <h3 className="text-lg font-semibold text-blue-400">{month.month} {new Date(Date.now()).getFullYear().toString()}</h3>
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-green-400">{formatCurrency(month.total)}</div>
                                             <div className="text-xs text-gray-400">Total Recaudado</div>
@@ -162,7 +191,7 @@ function MonthlyCollect() {
                                         </div>
                                         <div className="p-3 text-center border rounded-md bg-orange-900/30 border-orange-700/30">
                                             <div className="mb-1 text-xs text-orange-300">Multas</div>
-                                            <div className="text-sm font-bold text-orange-400">{formatCurrency(month.multas)}</div>
+                                            <div className="text-sm font-bold text-orange-400">{formatCurrency(month.fines)}</div>
                                         </div>
                                     </div>
 
@@ -173,7 +202,7 @@ function MonthlyCollect() {
                                             <div className="bg-purple-500" style={{ width: `${(month.islr / month.total) * 100}%` }}></div>
                                             <div
                                                 className="bg-orange-500"
-                                                style={{ width: `${(month.multas / month.total) * 100}%` }}
+                                                style={{ width: `${(month.fines / month.total) * 100}%` }}
                                             ></div>
                                         </div>
                                     </div>

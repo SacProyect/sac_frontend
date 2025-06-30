@@ -51,17 +51,17 @@ export default function FiscalStatsPage1({ fiscalData }: FiscalStatsPage1Props) 
         <TaxpayerList fiscalInfo={fiscalData} />
 
         {/* Estadística 2: Recaudación Mensual */}
-        <MonthlyCollect />
+        <MonthlyCollect fiscalInfo={fiscalData} />
       </div>
 
       {/* Fila inferior - 2 estadísticas */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Estadística 3: Evolución Mensual del Rendimiento */}
-        <MonthlyPerformance />
+        <MonthlyPerformance fiscalInfo={fiscalData} />
 
 
         {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
-        <ComplianceByProcess />
+        <ComplianceByProcess fiscalInfo={fiscalData} />
 
       </div>
     </div>
