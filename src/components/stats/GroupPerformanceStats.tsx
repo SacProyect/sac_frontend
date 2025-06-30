@@ -44,7 +44,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
             <div className="bg-[#1c1c1b] p-4 w-full h-[50vh] flex flex-col">
                 <div className="mb-2 text-xl font-semibold text-center text-white font-inter">
                     <div className="flex justify-center">
-                        <p className="w-full lg:w-96 bg-[#292d33] border border-[#b7c0cd] py-1 rounded-md text-[14px]">
+                        <p className="w-full lg:w-96 bg-[#292d33] border border-[#b7c0cd] py-1 rounded-md text-[14px] lg:text-sm">
                             RENDIMIENTO POR GRUPO
                         </p>
                     </div>

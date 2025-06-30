@@ -98,7 +98,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
                 {/* Título */}
                 <div className="flex items-center justify-center pt-4 mb-1 text-xl font-semibold text-center text-white font-inter">
                     <div className="w-[90vw] lg:w-[35vw] border border-[#b7c0cd] bg-[#292d33] rounded-md px-2 py-1">
-                        <p className="text-[14px] font-semibold text-white text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                        <p className="text-[14px] lg:text-sm font-semibold text-white text-center whitespace-nowrap overflow-hidden text-ellipsis">
                             INDICADORES GLOBALES DE RENDIMIENTO
                         </p>
                     </div>

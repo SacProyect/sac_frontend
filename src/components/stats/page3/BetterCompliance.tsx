@@ -129,7 +129,7 @@ function BetterCompliance({ data }: BetterComplianceProps) {
                     </div>
                 </div>
                 <div className="pt-0">
-                    <div id="alto-cumplimiento-table" className="lg:h-[280px] h-[53vh] overflow-y-auto custom-scroll p-4">
+                    <div id="alto-cumplimiento-table" className="lg:h-[30vh] h-[53vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
                             {data.map((contribuyente, index) => (
                                 <div

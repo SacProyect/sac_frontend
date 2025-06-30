@@ -75,7 +75,7 @@ function StatsPage() {
             return (
                 <>
                     <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[40.15vh] bg-[#1c1c1b]'>
-                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh]'>
+                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh] xl:h-[50vh]'>
                             <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
                                 {rawStats.length > 0 ? <PageOneStats rawStats={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
                             </Suspense>
@@ -154,7 +154,7 @@ function StatsPage() {
             ) : (
                 <>
                     {renderPage()}
-                    <div className="justify-center hidden py-6 space-x-4 lg:flex bg-[#1c1c1b]">
+                    <div className="justify-center hidden py-4 space-x-4 lg:flex bg-[#1c1c1b]">
                         <button
                             onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                             className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"

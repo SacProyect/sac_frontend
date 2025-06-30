@@ -128,7 +128,7 @@ function TopFiscal() {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white">
+            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white lg:h-[50vh]">
                 <div className="flex flex-row items-center justify-between pb-4 pr-4">
                     <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
                         <TrendingUp className="w-5 h-5 text-blue-500" />
@@ -144,7 +144,7 @@ function TopFiscal() {
                     </div>
                 </div>
                 <div>
-                    <div id="fiscales-table" className="h-[400px] overflow-y-auto custom-scroll p-4">
+                    <div id="fiscales-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-2">
                             {topFiscals && topFiscals?.map((fiscal, index) => (
                                 <div

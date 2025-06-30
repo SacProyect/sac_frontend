@@ -48,19 +48,19 @@ function Goal() {
 
 
     return (
-        <div className="bg-[#2a2a29] border-[#3a3a39] text-white p-4 rounded-xl space-y-6">
+        <div className="bg-[#2a2a29] border-[#3a3a39] text-white p-4 rounded-xl space-y-6 lg:h-[50vh]">
             <div className="flex items-center gap-2 text-base font-semibold">
                 <BarChart3 className="w-4 h-4 text-purple-500" />
                 Recaudación Real vs Esperada
             </div>
 
-            <div className="h-full space-y-4">
+            <div className="h-full lg:h-[40vh] space-y-4">
                 {/* META ESPERADA */}
                 <div className="p-2 border bg-gradient-to-r from-blue-600/20 to-blue-400/20 border-blue-500/50 rounded-xl">
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="mb-1 text-xs font-medium text-blue-300">META ESPERADA</div>
-                            <div className="text-2xl font-bold text-blue-400">
+                            <div className="text-lg font-bold text-blue-400">
                                 {formatCurrency(recaudacionComparacion.esperada)}
                             </div>
                         </div>
@@ -68,14 +68,14 @@ function Goal() {
                             <TrendingUp className="w-6 h-6 text-white" />
                         </div>
                     </div>
-                    <div className="h-2 mt-3 rounded-full bg-blue-900/30">
+                    {/* <div className="h-2 mt-3 rounded-full bg-blue-900/30">
                         <div className="w-full h-2 bg-blue-500 rounded-full" />
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* INDICADOR DE DIFERENCIA */}
-                <div className="px-4 py-2 text-center border shadow-lg bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30">
-                    <div className="mb-1 text-3xl font-black text-white">
+                <div className="px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30">
+                    <div className="mb-1 text-xl font-black text-white">
                         {recaudacionComparacion.deficit.toFixed(1)}%
                     </div>
                     <p className="text-sm font-medium text-red-100">{recaudacionComparacion.deficit < 0 ? "DÉFICIT" : "SUPERAVIT"}</p>
@@ -86,7 +86,7 @@ function Goal() {
                     <div className="flex items-center justify-between">
                         <div>
                             <div className="mb-1 text-xs font-medium text-red-300">RECAUDACIÓN REAL</div>
-                            <div className="text-2xl font-bold text-red-400">
+                            <div className="text-xl font-bold text-red-400">
                                 {formatCurrency(recaudacionComparacion.real)}
                             </div>
                         </div>
@@ -94,14 +94,14 @@ function Goal() {
                             <TrendingDown className="w-6 h-6 text-white" />
                         </div>
                     </div>
-                    <div className="h-2 mt-3 rounded-full bg-red-900/30">
+                    {/* <div className="h-2 mt-3 rounded-full bg-red-900/30">
                         <div
                             className="h-2 transition-all duration-1000 bg-red-500 rounded-full"
                             style={{
                                 width: `${(recaudacionComparacion.real / recaudacionComparacion.esperada) * 100}%`,
                             }}
                         />
-                    </div>
+                    </div> */}
                 </div>
 
                 {/* INFORMACIÓN ADICIONAL */}

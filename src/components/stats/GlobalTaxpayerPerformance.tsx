@@ -27,15 +27,15 @@ export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
         <div className="w-full lg:w-[41vw] h-full lg:h-[40vh] pt-16 lg:pt-0">
             <div className="bg-[#1c1c1b] w-full h-full p-4 flex flex-col justify-between">
                 {/* Title */}
-                <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-2">
-                    <p className="text-lg font-semibold text-center text-white font-inter">
+                <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-1">
+                    <p className="text-base font-semibold text-center text-white font-inter">
                         CUMPLIMIENTO DE OBLIGACIONES
                     </p>
                 </div>
 
                 {/* Description */}
-                <p className="text-[11px] md:text-xs text-[#838382] font-inter text-center leading-5 pt-8">
-                    A continuación, se puede observar la tasa y total de los contribuyentes registrados que han realizado a tiempo sus pagos, cuáles se han ido a compromiso de pago y cuáles no han cumplido. Asimismo, se presenta el porcentaje de contribuyentes multados.
+                <p className="text-[11px] md:text-xs lg:text-xs text-[#838382] font-inter text-center leading-5 lg:py-1">
+                    A continuación, se puede observar la tasa y total de los contribuyentes registrados que han realizado a tiempo sus pagos, cuáles se han ido a compromiso de pago y cuáles no han cumplido.
                 </p>
 
                 {/* Bars + Percentage Scale */}

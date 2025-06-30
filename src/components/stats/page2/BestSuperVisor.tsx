@@ -197,7 +197,7 @@ function BestSuperVisor() {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white ">
+            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white lg:h-[50vh]">
                 <div className="flex flex-row items-center justify-between pb-4 pr-4">
                     <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
                         <Trophy className="w-5 h-5 text-yellow-500" />
@@ -213,7 +213,7 @@ function BestSuperVisor() {
                     </div>
                 </div>
                 <div>
-                    <div id="supervisor-table" className="h-[400px] overflow-y-auto custom-scroll p-4">
+                    <div id="supervisor-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-4">
                             {supervisorData && supervisorData?.map((group, index) => (
                                 <div key={index} className="border border-[#3a3a39] rounded-lg p-4">
