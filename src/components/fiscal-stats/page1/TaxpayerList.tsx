@@ -7,14 +7,6 @@ import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 
-// Datos simulados basados en el modelo taxpayer
-// const fiscalInfo = {
-//     name: "Carlos Mendoza",
-//     id: "FISC-001",
-//     totalTaxpayers: 45,
-//     activeProcesses: 12,
-//     completedProcesses: 33,
-// }
 
 interface TaxpayerListProps {
     fiscalInfo: FiscalInfo
