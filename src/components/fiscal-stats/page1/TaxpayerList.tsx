@@ -1,4 +1,10 @@
+import { getFiscalTaxpayers } from "@/components/utils/api/reportFunctions";
+import { useAuth } from "@/hooks/useAuth";
+import { TaxpayersList } from "@/types/reports";
 import { Building, Calendar, Download, MapPin } from "lucide-react"
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
+import { useNavigate } from "react-router-dom";
 
 
 // Datos simulados basados en el modelo taxpayer
@@ -11,154 +17,30 @@ const fiscalInfo = {
 }
 
 
-const taxpayersData = [
-    {
-        id: "tp-001",
-        name: "Empresa ABC C.A.",
-        rif: "J-12345678-9",
-        providenceNum: 2024001,
-        address: "Av. Libertador, Caracas",
-        process: "FISCALIZACION",
-        contract_type: "ORDINARY",
-        status: true,
-        fase: "FASE_3",
-        notified: true,
-        culminated: false,
-        emition_date: "2024-01-15",
-        iva: 450000,
-        islr: 280000,
-        multas: 0,
-        totalRecaudado: 730000,
-    },
-    {
-        id: "tp-002",
-        name: "Corporación XYZ S.A.",
-        rif: "J-87654321-0",
-        providenceNum: 2024002,
-        address: "Centro Comercial, Valencia",
-        process: "DETERMINACION",
-        contract_type: "SPECIAL",
-        status: true,
-        fase: "FASE_2",
-        notified: true,
-        culminated: true,
-        emition_date: "2024-02-10",
-        iva: 380000,
-        islr: 220000,
-        multas: 15000,
-        totalRecaudado: 615000,
-    },
-    {
-        id: "tp-003",
-        name: "Industrias DEF C.A.",
-        rif: "J-11223344-5",
-        providenceNum: 2024003,
-        address: "Zona Industrial, Maracay",
-        process: "VERIFICACION",
-        contract_type: "ORDINARY",
-        status: true,
-        fase: "FASE_1",
-        notified: false,
-        culminated: false,
-        emition_date: "2024-03-05",
-        iva: 320000,
-        islr: 180000,
-        multas: 25000,
-        totalRecaudado: 525000,
-    },
-    {
-        id: "tp-004",
-        name: "Comercial GHI S.A.",
-        rif: "J-55667788-1",
-        providenceNum: 2024004,
-        address: "Centro Ciudad, Barquisimeto",
-        process: "FISCALIZACION",
-        contract_type: "ORDINARY",
-        status: false,
-        fase: "FASE_3",
-        notified: true,
-        culminated: false,
-        emition_date: "2024-01-20",
-        iva: 280000,
-        islr: 150000,
-        multas: 45000,
-        totalRecaudado: 475000,
-    },
-    {
-        id: "tp-005",
-        name: "Servicios JKL C.A.",
-        rif: "J-99887766-3",
-        providenceNum: 2024005,
-        address: "Av. Principal, Maracaibo",
-        process: "DETERMINACION",
-        contract_type: "SPECIAL",
-        status: true,
-        fase: "FASE_2",
-        notified: true,
-        culminated: true,
-        emition_date: "2024-02-28",
-        iva: 250000,
-        islr: 120000,
-        multas: 30000,
-        totalRecaudado: 400000,
-    },
-    {
-        id: "tp-006",
-        name: "Tecnología MNO S.A.",
-        rif: "J-44556677-8",
-        providenceNum: 2024006,
-        address: "Parque Tecnológico, Caracas",
-        process: "VERIFICACION",
-        contract_type: "ORDINARY",
-        status: true,
-        fase: "FASE_1",
-        notified: false,
-        culminated: false,
-        emition_date: "2024-03-15",
-        iva: 200000,
-        islr: 100000,
-        multas: 10000,
-        totalRecaudado: 310000,
-    },
-    {
-        id: "tp-007",
-        name: "Construcción PQR C.A.",
-        rif: "J-33445566-2",
-        providenceNum: 2024007,
-        address: "Sector Industrial, Valencia",
-        process: "FISCALIZACION",
-        contract_type: "ORDINARY",
-        status: true,
-        fase: "FASE_3",
-        notified: true,
-        culminated: false,
-        emition_date: "2024-01-08",
-        iva: 180000,
-        islr: 90000,
-        multas: 20000,
-        totalRecaudado: 290000,
-    },
-    {
-        id: "tp-008",
-        name: "Alimentos STU S.A.",
-        rif: "J-22334455-6",
-        providenceNum: 2024008,
-        address: "Zona Comercial, Barquisimeto",
-        process: "DETERMINACION",
-        contract_type: "SPECIAL",
-        status: true,
-        fase: "FASE_2",
-        notified: true,
-        culminated: true,
-        emition_date: "2024-02-14",
-        iva: 160000,
-        islr: 80000,
-        multas: 35000,
-        totalRecaudado: 275000,
-    },
-]
-
 function TaxpayerList() {
+    const [taxpayersList, setTaxpayersList] = useState<TaxpayersList[]>();
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) {
+        navigate('/login')
+        return;
+    }
+
+    useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = await getFiscalTaxpayers(user.id);
+
+                setTaxpayersList(response);
+
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudo obtener la información del fiscal.")
+            }
+        }
+        fetchData();
+    }, [])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -296,7 +178,7 @@ function TaxpayerList() {
                 <div className="pt-0">
                     <div id="contribuyentes-table" className="h-[280px] overflow-y-auto custom-scroll lg:p-4">
                         <div className="space-y-2">
-                            {taxpayersData.map((taxpayer, index) => (
+                            {taxpayersList && taxpayersList.map((taxpayer, index) => (
                                 <div key={taxpayer.id} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-3">
                                     <div className="flex items-center justify-between mb-2">
                                         <div className="flex items-center gap-2">
@@ -310,29 +192,31 @@ function TaxpayerList() {
                                         </div>
                                         <div className="text-right">
                                             <div className="text-sm font-bold text-green-400">
-                                                {formatCurrency(taxpayer.totalRecaudado)}
+                                                {formatCurrency(Number(taxpayer.totalCollected))}
                                             </div>
                                             <div className="text-xs text-gray-400">Total</div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center gap-2 mb-2">
-                                        <p className={`${getFaseColor(taxpayer.fase)} text-white text-xs rounded-full px-2`}>{taxpayer.fase}</p>
+                                        {taxpayer.process === "AF" && (
+                                            <p className={`${getFaseColor(taxpayer.fase)} text-white text-xs rounded-full px-2`}>{taxpayer.fase}</p>
+                                        )}
                                         {taxpayer.culminated && <p className="px-2 text-xs text-white bg-green-600 rounded-full">CULMINADO</p>}
                                     </div>
 
                                     <div className="grid grid-cols-3 gap-2 text-xs">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">IVA</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(taxpayer.iva)}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(Number(taxpayer.collectedIva))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">ISLR</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(taxpayer.islr)}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(Number(taxpayer.collectedIslr))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Multas</div>
-                                            <div className="font-bold text-orange-400 text-[10px]">{formatCurrency(taxpayer.multas)}</div>
+                                            <div className="font-bold text-orange-400 text-[10px]">{formatCurrency(Number(taxpayer.collectedFines))}</div>
                                         </div>
                                     </div>
 
@@ -340,7 +224,7 @@ function TaxpayerList() {
                                         <MapPin className="w-3 h-3" />
                                         <span>{taxpayer.address}</span>
                                         <Calendar className="w-3 h-3 ml-2" />
-                                        <span>{formatDate(taxpayer.emition_date)}</span>
+                                        <span>{formatDate(taxpayer.emition_date.toString())}</span>
                                     </div>
                                 </div>
                             ))}

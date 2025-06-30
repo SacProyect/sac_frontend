@@ -1,3 +1,4 @@
+import { taxpayer_process } from "./taxpayer";
 
 export type FiscalInfo = {
     fiscalName: string;
@@ -6,4 +7,19 @@ export type FiscalInfo = {
     totalProcess: number;
     totalCompleted: number;
     totalNotified: number;
+}
+
+export interface TaxpayersList {
+    id: string;
+    name: string;
+    address: string;
+    emition_date: Date;
+    rif: string;
+    fase: string;
+    collectedIva: string;
+    collectedIslr: string;
+    collectedFines: string;
+    totalCollected: string;
+    culminated: boolean;
+    process: taxpayer_process;
 }
