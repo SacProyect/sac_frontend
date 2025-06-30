@@ -1,4 +1,5 @@
 "use client"
+import CollectAnalisis from "@/components/fiscal-stats/page2/CollectAnalisis"
 import HighCompliance from "@/components/fiscal-stats/page2/HighCompliance"
 import LowCompliance from "@/components/fiscal-stats/page2/LowCompliance"
 import MediumCompliance from "@/components/fiscal-stats/page2/MediumCompliance"
@@ -165,94 +166,7 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                 <LowCompliance />
 
                 {/* Estadística 4: Eficiencia del Fiscal */}
-                <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl">
-                    <div className="flex flex-row items-center justify-between pb-3">
-                        <div className="flex items-center gap-2 text-base font-semibold lg:pl-4 lg:pt-4">
-                            <BarChart3 className="w-4 h-4 text-purple-500" />
-                            Análisis de Recaudación
-                        </div>
-                        <div className="lg:pr-4 lg:pt-4">
-                            <button
-                                onClick={() => downloadPDF("eficiencia-fiscal-table", "eficiencia-fiscal.pdf")}
-                                className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
-                            >
-                                <Download className="w-3 h-3" />
-                            </button>
-                        </div>
-                    </div>
-                    <div className="pt-0">
-                        <div
-                            id="eficiencia-fiscal-table"
-                            className="h-[280px] flex flex-col justify-center space-y-2 overflow-hidden p-4"
-                        >
-                            {/* Total General */}
-                            <div className="p-3 border rounded-lg bg-gradient-to-r from-purple-600/20 to-blue-600/20 border-purple-500/50">
-                                <div className="text-center">
-                                    <div className="mb-1 text-xl font-bold text-purple-400">
-                                        {formatCurrency(analisisRecaudacion.totalGeneral)}
-                                    </div>
-                                    <div className="text-xs text-purple-300">Total Recaudado</div>
-                                </div>
-                            </div>
-
-                            {/* Desglose por Tipo */}
-                            <div className="grid grid-cols-3 gap-2 ">
-                                <div className="bg-[#1a1a19] border border-blue-600/30 rounded-md p-2 text-center">
-                                    <div className="text-sm font-bold text-blue-400">{formatCurrency(analisisRecaudacion.totalIVA)}</div>
-                                    <div className="text-xs text-blue-300">Total IVA</div>
-                                </div>
-                                <div className="bg-[#1a1a19] border border-purple-600/30 rounded-md p-2 text-center">
-                                    <div className="text-sm font-bold text-purple-400">
-                                        {formatCurrency(analisisRecaudacion.totalISLR)}
-                                    </div>
-                                    <div className="text-xs text-purple-300">Total ISLR</div>
-                                </div>
-                                <div className="bg-[#1a1a19] border border-orange-600/30 rounded-md p-2 text-center">
-                                    <div className="text-sm font-bold text-orange-400">
-                                        {formatCurrency(analisisRecaudacion.totalMultas)}
-                                    </div>
-                                    <div className="text-xs text-orange-300">Total Multas</div>
-                                </div>
-                            </div>
-
-                            {/* Promedios */}
-                            <div className="grid grid-cols-3 gap-2">
-                                <div className="bg-[#1a1a19] border border-blue-600/30 rounded-md p-2 text-center">
-                                    <div className="text-xs font-bold text-blue-400">
-                                        {formatCurrency(analisisRecaudacion.promedioIVA)}
-                                    </div>
-                                    <div className="text-xs text-blue-300">Prom. IVA</div>
-                                </div>
-                                <div className="bg-[#1a1a19] border border-purple-600/30 rounded-md p-2 text-center">
-                                    <div className="text-xs font-bold text-purple-400">
-                                        {formatCurrency(analisisRecaudacion.promedioISLR)}
-                                    </div>
-                                    <div className="text-xs text-purple-300">Prom. ISLR</div>
-                                </div>
-                                <div className="bg-[#1a1a19] border border-orange-600/30 rounded-md p-2 text-center">
-                                    <div className="text-xs font-bold text-orange-400">
-                                        {formatCurrency(analisisRecaudacion.promedioMultas)}
-                                    </div>
-                                    <div className="text-xs text-orange-300">Prom. Multas</div>
-                                </div>
-                            </div>
-
-                            {/* Información Adicional */}
-                            <div className="bg-[#1a1a19] rounded-md p-2 border border-gray-600/30">
-                                <div className="grid grid-cols-2 gap-3 text-xs text-center">
-                                    <div>
-                                        <div className="text-xs font-medium text-red-400">taxpayers con Multas</div>
-                                        <div className="text-lg font-bold text-white">{analisisRecaudacion.taxpayersConMultas}</div>
-                                    </div>
-                                    <div>
-                                        <div className="text-xs font-medium text-green-400">Mayor Recaudador</div>
-                                        <div className="text-xs font-bold text-white truncate">{analisisRecaudacion.mayorRecaudador}</div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                <CollectAnalisis />
             </div>
         </div>
     )

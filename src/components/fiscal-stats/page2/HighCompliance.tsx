@@ -45,60 +45,88 @@ function HighCompliance() {
     const downloadPDF = (tableId: string, fileName: string) => {
         const element = document.getElementById(tableId)
         if (element) {
+            // Crear una nueva ventana para imprimir solo la tabla específica
             const printWindow = window.open("", "_blank")
             if (printWindow) {
-                const tableContent = element.innerHTML
+                const tableRows = compliance?.map((taxpayer, index) => `
+                    <tr>
+                        <td>${index + 1}</td>
+                        <td>${taxpayer.name}</td>
+                        <td>${taxpayer.rif}</td>
+                        <td>${taxpayer.complianceRate}%</td>
+                        <td>${formatCurrency(Number(taxpayer.totalIva))}</td>
+                        <td>${formatCurrency(Number(taxpayer.totalIslr))}</td>
+                        <td>${formatCurrency(Number(taxpayer.totalFines))}</td>
+                        <td>${formatCurrency(Number(taxpayer.totalCollected))}</td>
+                    </tr>
+                    `).join('');
+
                 printWindow.document.write(`
-                <html>
-                <head>
-                    <title>${fileName}</title>
-                    <style>
-                    @page { size: A4; margin: 0.5in; }
-                    body { 
-                        font-family: Arial, sans-serif; 
-                        margin: 0; 
-                        background: white; 
-                        color: black; 
-                        font-size: 12px;
-                    }
-                    .header { 
-                        margin-bottom: 20px; 
-                        font-size: 18px; 
-                        font-weight: bold; 
-                        text-align: center;
-                        border-bottom: 2px solid #333;
-                        padding-bottom: 10px;
-                    }
-                    table { 
-                        width: 100%; 
-                        border-collapse: collapse; 
-                        margin-top: 10px;
-                    }
-                    th, td { 
-                        border: 1px solid #ddd; 
-                        padding: 8px; 
-                        text-align: left; 
-                        font-size: 11px;
-                    }
-                    th { 
-                        background-color: #f2f2f2; 
-                        font-weight: bold;
-                    }
-                    .space-y-2 > * + * { margin-top: 0.5rem; }
-                    .p-3 { padding: 0.75rem; }
-                    .mb-2 { margin-bottom: 0.5rem; }
-                    .font-medium { font-weight: 500; }
-                    .font-bold { font-weight: 700; }
-                    .text-sm { font-size: 0.875rem; }
-                    .text-xs { font-size: 0.75rem; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
-                    ${tableContent}
-                </body>
-                </html>
-            `)
+                    <html>
+                    <head>
+                        <title>${fileName}</title>
+                        <style>
+                        body {
+                            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+                            margin: 40px;
+                            background: #fff;
+                            color: #111;
+                        }
+                        .header {
+                            margin-bottom: 30px;
+                            font-size: 22px;
+                            font-weight: 700;
+                            text-align: center;
+                            text-transform: uppercase;
+                            color: #2b6cb0;
+                        }
+                        .table-wrapper {
+                            padding: 0 20px;
+                        }
+                        table {
+                            width: 100%;
+                            border-collapse: collapse;
+                            font-size: 14px;
+                        }
+                        th, td {
+                            padding: 10px;
+                            border: 1px solid #ccc;
+                            text-align: center;
+                        }
+                        th {
+                            background-color: #f5f5f5;
+                            color: #333;
+                            font-weight: 600;
+                        }
+                        tr:nth-child(even) {
+                            background-color: #fafafa;
+                        }
+                        </style>
+                    </head>
+                    <body>
+                        <div class="header">${fileName.replace(".pdf", "").replace(/-/g, " ").toUpperCase()}</div>
+                        <div class="table-wrapper">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Nombre</th>
+                                        <th>RIF</th>
+                                        <th>% Cumplimiento</th>
+                                        <th>IVA</th>
+                                        <th>ISLR</th>
+                                        <th>Multas</th>
+                                        <th>Total Pagado</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${tableRows}
+                                </tbody>
+                            </table>
+                        </div>
+                    </body>
+                    </html>
+                `);
                 printWindow.document.close()
                 printWindow.print()
             }

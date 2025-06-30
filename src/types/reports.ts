@@ -51,7 +51,31 @@ export interface ProcessCompliance {
 export interface ComplianceInterface {
     name:           string;
     rif:            string;
-    totalCollected: number;
     complianceRate: number;
+    totalCollected: number;
+    totalIva:       number;
+    totalIslr:      number;
+    totalFines:     number;
+}
+
+export interface FiscalAnalisis {
+    taxpayerWithMostCollected: TaxpayerWithMostCollected;
+    totalCollected: number;
+    totalIva: number;
+    totalIslr: number;
+    totalFines: number;
+    avgIva: number;
+    avgIslr: number;
+    avgFines: number;
+    taxpayersWithFines: number;
+}
+
+export interface TaxpayerWithMostCollected {
+    name: string;
+    rif: string;
+    totalCollected: number;
+    iva: number;
+    islr: number;
+    fines: number;
 }
 
