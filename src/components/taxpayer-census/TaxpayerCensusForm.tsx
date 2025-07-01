@@ -78,7 +78,7 @@ function TaxpayerCensusForm() {
                         <input
                             id="number"
                             type="number"
-                            {...register("number", { required: "Required field" })}
+                            {...register("number", { required: "Required field", min: { value: 0, message: "El número de providencia debe ser positivo" } },)}
                             className="w-full px-3 py-2 mt-1 border border-gray-300 rounded"
                         />
                         {errors.number && <span className="text-sm text-red-600">{errors.number.message}</span>}

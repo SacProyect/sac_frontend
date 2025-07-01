@@ -48,3 +48,26 @@ export const getTaxpayerCensus = async () => {
     }
 
 }
+
+export const deleteTaxpayerCensus = async (id: string) => {
+
+
+    try {
+
+        let requestUrl = "/census/delete-census"
+
+        const response = await apiConnection.delete(`${requestUrl}/${id}`);
+
+        if (response.status === 201) {
+            return response;
+        }
+
+        return;
+
+    } catch (e) {
+        console.error(e);
+        throw new Error("No se pudo eliminar el contribuyente de censo")
+    }
+
+
+}

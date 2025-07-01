@@ -1,29 +1,46 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import InfoTableOptMenu from '../UI/InfoTable/InfoTableOptMenu';
 import { TaxpayerCensus } from '../../types/taxpayerCensus';
+import { deleteTaxpayerCensus } from '../utils/api/taxpayerCensusFunctions';
+import toast from 'react-hot-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 interface TaxpayerCensusTableProps {
   propRows: TaxpayerCensus[];
 }
 
-const columns = [
-  { label: 'Número', id: 'number' },
-  { label: 'Proceso', id: 'process' },
-  { label: 'Nombre', id: 'name' },
-  { label: 'RIF', id: 'rif' },
-  { label: 'Tipo', id: 'type' },
-  { label: 'Dirección', id: 'address' },
-  { label: 'Fecha de emisión', id: 'emition_date' },
-  { label: 'Fiscal', id: 'fiscal.name' },
-];
 
 const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) => {
+  const { user } = useAuth();
   const [rows, setRows] = useState<TaxpayerCensus[]>([]);
   const [visibleCount, setVisibleCount] = useState(25);
   const [searchTerm, setSearchTerm] = useState('');
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const loadingMoreLock = useRef(false);
+  const [activeRowId, setActiveRowId] = useState<string | null>(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [selectedIdToDelete, setSelectedIdToDelete] = useState<string | null>(null);
+  const optionsRef = useRef<HTMLDivElement | null>(null);
+
+  const columns = useMemo(() => {
+    const base = [
+      { label: 'Número', id: 'number' },
+      { label: 'Proceso', id: 'process' },
+      { label: 'Nombre', id: 'name' },
+      { label: 'RIF', id: 'rif' },
+      { label: 'Tipo', id: 'type' },
+      { label: 'Dirección', id: 'address' },
+      { label: 'Fecha de emisión', id: 'emition_date' },
+      { label: 'Fiscal', id: 'fiscal.name' },
+    ];
+
+    if (user?.role === 'ADMIN') {
+      base.push({ label: 'Opciones', id: 'options' });
+    }
+
+    return base;
+  }, [user]);
 
   useEffect(() => {
     const sorted = [...propRows].sort((a, b) => Number(a.number) - Number(b.number));
@@ -86,6 +103,36 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
 
   console.log("Taxpayers: " + JSON.stringify(filteredTaxpayers));
 
+  const handleDelete = async () => {
+    if (!selectedIdToDelete) return;
+
+    try {
+      const res = await deleteTaxpayerCensus(selectedIdToDelete);
+      if (res) {
+        setRows(prev => prev.filter(r => r.id !== selectedIdToDelete));
+        toast.success("Contribuyente eliminado correctamente.");
+      } else {
+        toast.error("No se pudo eliminar el contribuyente.");
+      }
+    } catch (error) {
+      toast.error("Error al eliminar.");
+      console.error(error);
+    } finally {
+      setShowDeleteModal(false);
+      setSelectedIdToDelete(null);
+    }
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (optionsRef.current && !optionsRef.current.contains(event.target as Node)) {
+        setActiveRowId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="w-full">
       <div className='flex items-center justify-center w-full lg:py-4'>
@@ -126,8 +173,24 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
             >
               {columns.map((col) => {
                 const value =
-                  col.id === 'options' ? (
-                    <InfoTableOptMenu id={item.id} />
+                  col.id === 'options' && user && user.role === "ADMIN" ? (
+                    <div className='relative' ref={activeRowId === item.id ? optionsRef : null}>
+                      <button onClick={() => setActiveRowId(activeRowId === item.id ? null : item.id)}>...</button>
+                      {activeRowId === item.id && (
+                        <div className='absolute top-6 right-2 bg-white shadow-md rounded-md z-50'>
+                          <button
+                            onClick={() => {
+                              setShowDeleteModal(true);
+                              setSelectedIdToDelete(item.id);
+                              setActiveRowId(null);
+                            }}
+                            className="block w-full px-4 py-1 text-left text-red-500 hover:bg-gray-100"
+                          >
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
                   ) : col.id === 'emition_date' ? (
                     item.emition_date
                       ? new Date(item.emition_date).toLocaleDateString()
@@ -151,6 +214,32 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
               })}
             </div>
           ))}
+
+          {showDeleteModal && selectedIdToDelete && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+              <div className="bg-white p-6 rounded-lg shadow-lg text-center space-y-4 max-w-xs w-full">
+                <p className="text-sm">
+                  ¿Seguro que desea eliminar al contribuyente con ID <strong>{selectedIdToDelete}</strong>?
+                </p>
+                <div className="flex justify-around mt-4">
+                  <button
+                    onClick={() => setShowDeleteModal(false)}
+                    className="px-4 py-1 text-gray-600 border rounded hover:bg-gray-100"
+                  >
+                    Cancelar
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-1 text-white bg-red-500 rounded hover:bg-red-600"
+                  >
+                    Confirmar
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+
 
           {isLoadingMore && (
             <div className="flex justify-center py-2">
