@@ -476,20 +476,21 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    {(user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id || user?.role === "ADMIN") && taxpayerData?.process === "AF" &&
-                        <div className="flex items-end justify-around w-full gap-2 pr-14 mt-14 lg:mt-4">
-                            {fases.map((fase) => (
-                                <button
-                                    key={fase}
-                                    onClick={() => handleFaseClick(fase)}
-                                    className={`px-2 py-1 rounded font-semibold text-white transition 
-                ${taxpayerData?.fase === fase ? "bg-green-600" : "bg-[#3498db] hover:bg-blue-700"}`}
-                                >
-                                    {fase.replace("FASE_", "FASE ")}
-                                </button>
-                            ))}
-                        </div>
-                    }
+                    {(user?.role === "ADMIN" || (user?.role === "COORDINATOR" && taxpayerData?.user.group.coordinatorId === user.id))
+                        && taxpayerData?.process === "AF" && (
+                            <div className="flex items-end justify-around w-full gap-2 pr-14 mt-14 lg:mt-4">
+                                {fases.map((fase) => (
+                                    <button
+                                        key={fase}
+                                        onClick={() => handleFaseClick(fase)}
+                                        className={`px-2 py-1 rounded font-semibold text-white transition 
+            ${taxpayerData?.fase === fase ? "bg-green-600" : "bg-[#3498db] hover:bg-blue-700"}`}
+                                    >
+                                        {fase.replace("FASE_", "FASE ")}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
 
                     {taxpayerData?.fase && taxpayerData.process === "AF" && (
                         <div className="w-full pt-4 mt-2 text-sm italic text-left text-gray-700 pr-14 lg:pr-0">
