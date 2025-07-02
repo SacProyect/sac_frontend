@@ -74,7 +74,7 @@ function Goal() {
                 </div>
 
                 {/* INDICADOR DE DIFERENCIA */}
-                <div className="px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30">
+                <div className={`px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg ${recaudacionComparacion.deficit < 0 ? "bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30" : "bg-gradient-to-r from-green-600 to-green-500 rounded-2xl border-green-400/30"}`}>
                     <div className="mb-1 text-xl font-black text-white">
                         {recaudacionComparacion.deficit.toFixed(1)}%
                     </div>
@@ -108,8 +108,8 @@ function Goal() {
                 <div className="bg-[#1a1a19] rounded-lg p-3 border border-gray-600/30">
                     <div className="flex items-center justify-between text-sm">
                         <span className="text-gray-400">Diferencia en monto:</span>
-                        <span className="font-bold text-red-400">
-                            -{formatCurrency(recaudacionComparacion.esperada - recaudacionComparacion.real)}
+                        <span className={`font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-400"}`}>
+                            {formatCurrency(Math.abs(recaudacionComparacion.esperada - recaudacionComparacion.real))}
                         </span>
                     </div>
                 </div>
