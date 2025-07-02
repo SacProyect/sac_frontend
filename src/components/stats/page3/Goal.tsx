@@ -82,16 +82,20 @@ function Goal() {
                 </div>
 
                 {/* RECAUDACIÓN REAL */}
-                <div className="p-2 border bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50 rounded-xl">
+                <div className={`p-2 border  rounded-xl ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-gradient-to-r from-green-600/20 to-green-400/20 border-green-500/50" : "bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50"}`}>
                     <div className="flex items-center justify-between">
                         <div>
-                            <div className="mb-1 text-xs font-medium text-red-300">RECAUDACIÓN REAL</div>
-                            <div className="text-xl font-bold text-red-400">
+                            <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>RECAUDACIÓN REAL</div>
+                            <div className={`text-xl font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-white" : "text-red-500"}`}>
                                 {formatCurrency(recaudacionComparacion.real)}
                             </div>
                         </div>
-                        <div className="flex items-center justify-center w-12 h-12 bg-red-500 rounded-full">
-                            <TrendingDown className="w-6 h-6 text-white" />
+                        <div className={`flex items-center justify-center w-12 h-12  rounded-full ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-green-500" : "bg-red-500"}`}>
+                            {recaudacionComparacion.real > recaudacionComparacion.esperada ? (
+                                <TrendingUp className="w-6 h-6 text-white" />
+                            ) : (
+                                <TrendingDown className="w-6 h-6 text-white" />
+                            )}
                         </div>
                     </div>
                     {/* <div className="h-2 mt-3 rounded-full bg-red-900/30">
