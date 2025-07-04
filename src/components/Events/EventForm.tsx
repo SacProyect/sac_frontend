@@ -12,7 +12,7 @@ import SelectInput from '../UI/SelectInput';
 import { useCallback, useEffect, useState } from 'react';
 import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
-import { parseDate } from '@internationalized/date';
+import { parseDate, CalendarDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
 import { IvaReportFormData } from '../iva/IvaForm';
 import { IslrReportFormData } from '../ISLR/IslrForm';
@@ -26,7 +26,7 @@ import TaxpayerList from '../UI/TaxpayerList';
 
 export interface EventFormData {
     id: string;
-    date: string;
+    date: CalendarDate;
     type: string;
     amount: number;
     taxpayerId: string;
@@ -98,7 +98,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
             mode: "onChange",
             defaultValues: {
                 amount: 0.00,
-                date: new Date().toISOString().split('T')[0],  // Ensure date is a string
+                date: parseDate(new Date().toISOString().split('T')[0]),  // Default CalendarDate
                 description: ""
             }
         });
@@ -156,7 +156,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
         try {
 
             // Convert date to ISO 8601 format (e.g., "2025-03-17T00:00:00.000Z")
-            const parsedDate = parseDate(data.date);
+
+            console.log(typeof data.date);
+
+            const parsedDate = data.date;
             const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();
 
             const expiresAt = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day);

@@ -102,8 +102,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     const dataMock = [
-        { name: "COMPRAS (BS)", value: buys > 0 ? buys : 1, color: "#0080c1" },
-        { name: "VENTAS (BS)", value: sells > 0 ? sells : 1, color: "#737373" },
+        { name: "COMPRAS (BS)", value: buys > 0 ? parseFloat(buys.toFixed(2)) : 1, color: "#0080c1" },
+        { name: "VENTAS (BS)", value: sells > 0 ? parseFloat(sells.toFixed(2)) : 1, color: "#737373" },
     ];
 
 
