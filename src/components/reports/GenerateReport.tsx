@@ -57,11 +57,13 @@ function GenerateReport() {
         return null;
     }
 
-    if (user.role === "ADMIN" || user.role === "FISCAL") {
+    if (user.role === "ADMIN" || user.role === "FISCAL" || user.role === "SUPERVISOR") {
         taxpayerArray = user.taxpayer;
     } else if (user.role === "COORDINATOR") {
         taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
     }
+
+    console.log(user.coordinatedGroup);
 
     // ✅ Filtrar los contribuyentes con process !== "FP"
     taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
@@ -91,6 +93,9 @@ function GenerateReport() {
             handleSearch();
         }
     };
+
+
+
 
 
     return (
@@ -148,8 +153,8 @@ function GenerateReport() {
                             >
                                 <div className='w-[120px]'><p>{taxpayer.rif}</p></div>
                                 <div className='w-[120px]'><p>{taxpayer.emition_date.slice(0, 10)}</p></div>
-                                <div className='w-[420px]'><p>{taxpayer.name}</p></div>
-                                <div className='w-[150px]'><p>{taxpayer.user.name}</p></div>
+                                <div className='w-[420px]'><p>{taxpayer.name ?? "No se encontró el nombre"}</p></div>
+                                <div className='w-[150px]'><p>{taxpayer.user?.name ?? "No se encontró el nombre"}</p></div>
                                 <div className='flex justify-end w-full lg:w-[120px]'>
                                     <button
                                         className='p-1 px-2 m-0 text-xs font-medium border border-gray-200 lg:text-sm'
@@ -163,7 +168,7 @@ function GenerateReport() {
                     </div>
 
                     {/* Group Reports Header */}
-                    {user.role !== "FISCAL" && (
+                    {user.role !== "FISCAL" && user.role !== "SUPERVISOR" && (
                         <>
                             <div className='pt-4 space-y-2'>
                                 <h2 className='font-semibold text-gray-500'>Reportes por grupo</h2>
