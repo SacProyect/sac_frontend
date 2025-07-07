@@ -51,6 +51,8 @@ function IvaForm() {
         taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     } else if (user.role === "COORDINATOR") {
         taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
+    } else if (user.role === "SUPERVISOR") {
+        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
     }
 
     const {
