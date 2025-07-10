@@ -7,44 +7,6 @@ import { FiscalInfo } from "@/types/reports"
 import { Download, TrendingUp, TrendingDown, Users, BarChart3, User } from "lucide-react"
 
 
-// Datos simulados para la página 2
-// const altoCumplimiento = [
-//     { name: "Empresa ABC C.A.", rif: "J-12345678-9", cumplimiento: 98.5, recaudado: 730000 },
-//     { name: "Corporación XYZ S.A.", rif: "J-87654321-0", cumplimiento: 97.2, recaudado: 615000 },
-//     { name: "Industrias DEF C.A.", rif: "J-11223344-5", cumplimiento: 96.8, recaudado: 525000 },
-//     { name: "Tecnología MNO S.A.", rif: "J-44556677-8", cumplimiento: 95.2, recaudado: 310000 },
-//     { name: "Construcción PQR C.A.", rif: "J-33445566-2", cumplimiento: 94.8, recaudado: 290000 },
-// ]
-
-// const medioCumplimiento = [
-//     { name: "Comercial GHI S.A.", rif: "J-55667788-1", cumplimiento: 78.5, recaudado: 475000 },
-//     { name: "Servicios JKL C.A.", rif: "J-99887766-3", cumplimiento: 76.2, recaudado: 400000 },
-//     { name: "Alimentos STU S.A.", rif: "J-22334455-6", cumplimiento: 74.8, recaudado: 275000 },
-//     { name: "Textiles VWX C.A.", rif: "J-66778899-4", cumplimiento: 72.1, recaudado: 220000 },
-//     { name: "Farmacia YZ S.A.", rif: "J-77889900-7", cumplimiento: 70.5, recaudado: 180000 },
-// ]
-
-// const bajoCumplimiento = [
-//     { name: "Empresa Baja A C.A.", rif: "J-11111111-1", cumplimiento: 45.2, recaudado: 150000 },
-//     { name: "Comercial Baja B S.A.", rif: "J-22222222-2", cumplimiento: 42.8, recaudado: 120000 },
-//     { name: "Servicios Baja C C.A.", rif: "J-33333333-3", cumplimiento: 40.5, recaudado: 95000 },
-//     { name: "Industria Baja D S.A.", rif: "J-44444444-4", cumplimiento: 38.1, recaudado: 80000 },
-//     { name: "Construcción Baja E C.A.", rif: "J-55555555-5", cumplimiento: 35.7, recaudado: 65000 },
-// ]
-
-const analisisRecaudacion = {
-    totalIVA: 2450000,
-    totalISLR: 1580000,
-    totalMultas: 285000,
-    totalGeneral: 4315000,
-    promedioIVA: 306250,
-    promedioISLR: 197500,
-    promedioMultas: 35625,
-    taxpayersConMultas: 5,
-    mayorRecaudador: "Empresa ABC C.A.",
-    menorRecaudador: "Construcción Baja E C.A.",
-}
-
 const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("es-VE", {
         style: "currency",
@@ -125,7 +87,7 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
         <div className="lg:flex flex-col w-full gap-4 p-4 overflow-hidden lg:h-[92vh]">
             {/* Fila superior - 2 estadísticas */}
 
-            <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl hidden lg:block">
+            <div className="hidden p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl lg:block">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                         <div className="flex items-center justify-center w-16 h-16 bg-blue-600 rounded-full">
@@ -152,7 +114,7 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
                     </div>
                 </div>
             </div>
-            <div className="gap-4 flex flex-col">
+            <div className="flex flex-col gap-4">
                 <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                     {/* Estadística 1: Alto Cumplimiento */}
                     <HighCompliance />

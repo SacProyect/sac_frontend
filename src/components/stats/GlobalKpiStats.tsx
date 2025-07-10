@@ -39,15 +39,15 @@ interface GlobalKPIProps {
 export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
     // Transformar el objeto de la API en el array que necesita Recharts
     const data: KPIStat[] = [
-        { name: "Recaudación total (Bs.)", value: globalKpi.totalTaxCollection },
+        { name: "Cobro total (Bs.)", value: globalKpi.totalTaxCollection },
         { name: "Promedio excedente fiscal (Bs.)", value: globalKpi.averageCreditSurplus },
         { name: "Indice de contribuyentes con multas", value: globalKpi.finePercentage },
-        { name: "Porcentaje de crecimiento recaudación", value: globalKpi.growthRate },
+        { name: "Porcentaje de crecimiento cobro", value: globalKpi.growthRate },
         { name: "Morosidad %", value: globalKpi.delinquencyRate },
     ];
 
     // Campos que se muestran con % (para etiqueta y tooltip)
-    const percentageFields = ["Indice de contribuyentes con multas", "Porcentaje de crecimiento recaudación", "Morosidad %"];
+    const percentageFields = ["Indice de contribuyentes con multas", "Porcentaje de crecimiento cobro", "Morosidad %"];
 
     const renderCustomLabel = (props: CustomLabelProps) => {
         const { x = 0, y = 0, width = 0, height = 0, value = 0, payload } = props;
@@ -105,7 +105,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
                 </div>
                 {/* Subtítulo */}
                 <p className="text-center text-[8px] leading-[11px] text-[#838382] px-2 mb-1">
-                    Esta gráfica muestra indicadores clave de rendimiento como recaudación total, promedio de excedente fiscal, porcentaje de contribuyentes con multas, tasa de crecimiento y morosidad.
+                    Esta gráfica muestra indicadores clave de rendimiento como cobro total, promedio de excedente fiscal, porcentaje de contribuyentes con multas, tasa de crecimiento y morosidad.
                 </p>
                 {/* Gráfico */}
                 <div className="flex-1 min-h-0 pr-4 lg:pr-0">

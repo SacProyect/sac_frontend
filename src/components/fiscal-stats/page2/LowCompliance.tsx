@@ -141,11 +141,11 @@ function LowCompliance() {
 
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[35vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
+                    <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <TrendingDown className="w-4 h-4 text-red-500" />
                         Contribuyentes con Bajo Cumplimiento (&lt;33%)
                     </div>
-                    <div className="pr-4 pt-4">
+                    <div className="pt-4 pr-4">
                         <button
                             onClick={() => downloadPDF("bajo-cumplimiento-fiscal-table", "bajo-cumplimiento-fiscal.pdf")}
                             className="px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
@@ -182,7 +182,7 @@ function LowCompliance() {
                                         </div>
                                     </div>
                                     <div className="bg-[#2a2a29] rounded-md p-2">
-                                        <div className="mb-1 text-xs text-gray-400">Total Recaudado</div>
+                                        <div className="mb-1 text-xs text-gray-400">Total Cobrado</div>
                                         <div className="font-bold text-red-400">{formatCurrency(taxpayer.totalCollected)}</div>
                                     </div>
                                 </div>
