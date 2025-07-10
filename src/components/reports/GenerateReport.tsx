@@ -8,8 +8,9 @@ import { useNavigate } from 'react-router-dom';
 import { Event } from '@/types/event';
 import { IVAReports } from '@/types/IvaReports';
 import { GroupData } from '../contributions/ContributionTypes';
-import { getContributions } from '../utils/api/reportFunctions';
+import { getCompleteReport, getContributions } from '../utils/api/reportFunctions';
 import toast from 'react-hot-toast';
+import CompleteReportModal from './CompleteReportModal';
 
 
 
@@ -22,6 +23,7 @@ function GenerateReport() {
     const [inputValue, setInputValue] = useState("");
     const [query, setQuery] = useState("");
     const [isLoadingGroups, setIsLoadingGroups] = useState(true);
+    const [showCompleteReport, setShowCompleteReport] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -94,6 +96,22 @@ function GenerateReport() {
         }
     };
 
+    const handleCompleteReportSubmit = async (filters: {
+        groupId?: string;
+        startDate?: string;
+        endDate?: string;
+        process?: "AF" | "VDF" | "FP";
+    }) => {
+        try {
+            const data = await getCompleteReport(filters);
+            console.log("✅ Reporte completo recibido:", data);
+            // Aquí puedes manejar los datos recibidos, como redirigir o mostrar en pantalla
+            setShowCompleteReport(false);
+        } catch (error: any) {
+            toast.error(error.message || "No se pudo generar el reporte");
+        }
+    };
+
 
 
 
@@ -112,7 +130,17 @@ function GenerateReport() {
 
                     {/* Search input */}
                     <div className='w-full'>
-                        <h2 className='text-gray-500'>Buscar contribuyente</h2>
+                        <div className='flex items-center justify-between'>
+                            <div>
+                                <h2 className='text-gray-500'>Buscar contribuyente</h2>
+                            </div>
+                            {user.role === "ADMIN" && (
+                                <div>
+                                    <button className='px-2 py-1 bg-[#3498DB] text-white' onClick={() => setShowCompleteReport(!showCompleteReport)}>Generar Reporte completo</button>
+                                </div>
+                            )}
+                        </div>
+
                         <div className='flex flex-col items-start w-full gap-2 pt-4 lg:flex-row lg:items-center'>
 
                             <div className='w-full lg:w-[90%] flex items-center gap-2 px-3 py-1 bg-white border rounded-md'>
@@ -204,8 +232,16 @@ function GenerateReport() {
                     )}
 
 
+
                 </div>
             </div>
+
+            {showCompleteReport && (
+                <CompleteReportModal
+                    groups={groupData}
+                    onClose={() => setShowCompleteReport(false)}
+                />
+            )}
 
         </section>
 

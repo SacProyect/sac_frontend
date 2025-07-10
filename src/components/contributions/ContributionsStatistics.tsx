@@ -198,7 +198,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado Multas</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado Multas</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
@@ -209,7 +209,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado IVA</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado IVA</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
@@ -220,7 +220,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Recaudado ISLR</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado ISLR</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (

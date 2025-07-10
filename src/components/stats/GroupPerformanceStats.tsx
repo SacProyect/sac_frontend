@@ -51,7 +51,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                 </div>
 
                 <p className="text-[11px] md:text-xs text-[#838382] mb-2 font-inter text-center leading-5 px-2">
-                    Esta gráfica muestra el rendimiento total de cada grupo. Se mide con base en IVA, ISLR, multas pagadas y monto recaudado.
+                    Esta gráfica muestra el rendimiento total de cada grupo. Se mide con base en IVA, ISLR, multas pagadas y monto cobrado.
                 </p>
 
                 <div className="flex-1 pt-4 pr-1 overflow-y-auto custom-scroll">
@@ -77,10 +77,10 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 </div>
                             </div>
 
-                            {/* Monto recaudado por multas */}
+                            {/* Monto cobrado por multas */}
                             <div className="flex flex-col mb-1 lg:flex-row lg:items-center lg:space-x-3">
                                 <div className="text-[#7cffcc] text-xs w-full lg:w-[100px] text-center lg:text-left">
-                                    Recaudado Multas
+                                    Cobrado Multas
                                 </div>
                                 <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
@@ -96,7 +96,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             {/* IVA */}
                             <div className="flex flex-col mb-1 lg:flex-row lg:items-center lg:space-x-3">
                                 <div className="text-[#ffd27f] text-xs w-full lg:w-[100px] text-center lg:text-left">
-                                    IVA recaudado
+                                    IVA cobrado
                                 </div>
                                 <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div
@@ -112,7 +112,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             {/* ISLR */}
                             <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-3">
                                 <div className="text-[#ff8d8d] text-xs w-full lg:w-[100px] text-center lg:text-left">
-                                    ISLR recaudado
+                                    ISLR cobrado
                                 </div>
                                 <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
                                     <div

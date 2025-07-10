@@ -34,7 +34,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             { name: 'Excedente de Crédito', id: 'excess' },
             { name: 'Compras', id: 'purchases' },
             { name: 'Ventas', id: 'sells' },
-            { name: 'Recaudado', id: 'paid' },
+            { name: 'Cobrado', id: 'paid' },
         ];
     } else if (user.role === "ADMIN") {
         columns = [
@@ -43,7 +43,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             { name: 'Excedente de Crédito', id: 'excess' },
             { name: 'Compras', id: 'purchases' },
             { name: 'Ventas', id: 'sells' },
-            { name: 'Recaudado', id: 'paid' },
+            { name: 'Cobrado', id: 'paid' },
             { name: 'Acciones', id: 'options' },
         ];
     } else {

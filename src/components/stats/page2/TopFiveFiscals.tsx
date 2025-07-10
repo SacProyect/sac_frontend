@@ -79,7 +79,7 @@ function TopFiveFiscals() {
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
-                                    <th>Total Recaudado</th>
+                                    <th>Total Cobrado</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -153,8 +153,8 @@ function TopFiveFiscals() {
     return (
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white h-[60vh] lg:h-[45vh]">
-                <div className="flex flex-row items-center justify-between pb-4 lg:pb-0 pr-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
+                <div className="flex flex-row items-center justify-between pb-4 pr-4 lg:pb-0">
+                    <div className="flex items-center justify-center gap-2 pt-4 pl-4 text-lg font-semibold">
                         <Users className="w-5 h-5 text-purple-500" />
                         Top 5 Fiscales por Grupo
                     </div>

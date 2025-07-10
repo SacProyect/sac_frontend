@@ -109,9 +109,9 @@ function CollectAnalisis() {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[35vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
+                    <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <BarChart3 className="w-4 h-4 text-purple-500" />
-                        Análisis de Recaudación
+                        Análisis de Cobro
                     </div>
                     {/* <div className="lg:pr-4 lg:pt-4">
                         <button
@@ -130,7 +130,7 @@ function CollectAnalisis() {
                                 <div className="mb-1 text-xl font-bold text-purple-400">
                                     {formatCurrency(Number(analisis?.totalCollected))}
                                 </div>
-                                <div className="text-xs text-purple-300">Total Recaudado</div>
+                                <div className="text-xs text-purple-300">Total Cobrado</div>
                             </div>
                         </div>
 
@@ -184,7 +184,7 @@ function CollectAnalisis() {
                                     <div className="text-lg font-bold text-white">{analisis?.taxpayersWithFines}</div>
                                 </div>
                                 <div className=''>
-                                    <div className="text-xs font-medium text-green-400">Mayor Recaudador</div>
+                                    <div className="text-xs font-medium text-green-400">Mayor cobrador</div>
                                     <p className="text-xs font-bold text-white ">{analisis?.taxpayerWithMostCollected?.name ? analisis?.taxpayerWithMostCollected?.name : "No se encontró"}</p>
                                 </div>
                             </div>

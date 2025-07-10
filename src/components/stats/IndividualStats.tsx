@@ -325,7 +325,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     };
 
 
-
     return (
         <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
@@ -383,16 +382,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                 </p>
                             </div>
                         ) : (
-                            user?.role === "FISCAL" && user?.id === taxpayerData?.officerId || user?.role === "COORDINATOR" && user.id === taxpayerData?.user?.group?.coordinatorId || user?.role === "ADMIN" && (
-                                <div className="pt-2">
-                                    <button
-                                        className="px-2 py-1 text-white bg-[#3498db]"
-                                        onClick={() => handleCulminatedClick(true)}
-                                    >
-                                        Culminar Procedimiento
-                                    </button>
-                                </div>
-                            )
+                            (user?.role === "FISCAL" && user?.id === taxpayerData?.officerId) ||
+                            (user?.role === "COORDINATOR" && user?.id === taxpayerData?.user?.group?.coordinatorId) ||
+                            user?.role === "ADMIN"
+                        ) && (
+                            <div className="pt-2">
+                                <button
+                                    className="px-2 py-1 text-white bg-[#3498db]"
+                                    onClick={() => handleCulminatedClick(true)}
+                                >
+                                    Culminar Procedimiento
+                                </button>
+                            </div>
                         )}
 
                         {user?.role === "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length >= 1 && (

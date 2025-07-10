@@ -44,7 +44,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
 
             } catch (e) {
                 console.error(e);
-                toast.error("No se pudo obtener la información del recaudado mensual.")
+                toast.error("No se pudo obtener la información del cobrado mensual.")
             }
         }
         fetchData();
@@ -154,9 +154,9 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[40vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
+                    <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <DollarSign className="w-4 h-4 text-green-500" />
-                        Recaudación Mensual
+                        Cobro Mensual
                     </div>
                     {/* <div className="lg:pt-4 lg:pr-4">
                         <button
@@ -176,11 +176,11 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                                         <h3 className="text-lg font-semibold text-blue-400">{month.month} {new Date(Date.now()).getFullYear().toString()}</h3>
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-green-400">{formatCurrency(month.total)}</div>
-                                            <div className="text-xs text-gray-400">Total Recaudado</div>
+                                            <div className="text-xs text-gray-400">Total Cobrado</div>
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
+                                    <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
                                         <div className="p-3 text-center border rounded-md bg-blue-900/30 border-blue-700/30">
                                             <div className="mb-1 text-xs text-blue-300">IVA</div>
                                             <div className="text-sm font-bold text-blue-400">{formatCurrency(month.iva)}</div>

@@ -2,6 +2,7 @@ import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./apiConnection";
 import { GroupData } from "@/components/contributions/ContributionTypes";
 import { GroupRecordsApiResponse } from "@/types/groupRecords";
+import { GetCompleteReportParams } from "@/types/reports";
 
 
 interface ContributionsInput {
@@ -126,7 +127,7 @@ export const getTaxpayersCompliance = async () => {
 	}
 }
 
-export const getExpectedAmount= async () => {
+export const getExpectedAmount = async () => {
 	try {
 		let requestURL = 'reports/get-expected-amount'
 
@@ -135,7 +136,7 @@ export const getExpectedAmount= async () => {
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se pudo obtener el recaudado esperado.")
+		throw new Error("No se pudo obtener el cobrado esperado.")
 	}
 }
 
@@ -215,7 +216,7 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 	}
 };
 
-export const getFiscalInfo = async (fiscalId : string) => {
+export const getFiscalInfo = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-info`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
@@ -226,7 +227,7 @@ export const getFiscalInfo = async (fiscalId : string) => {
 	}
 };
 
-export const getFiscalTaxpayers = async (fiscalId : string) => {
+export const getFiscalTaxpayers = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-taxpayers`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
@@ -237,18 +238,59 @@ export const getFiscalTaxpayers = async (fiscalId : string) => {
 	}
 };
 
-export const getFiscalMonthlyCollect = async (fiscalId : string) => {
+function isValidDate(dateStr: string): boolean {
+	return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(new Date(dateStr).getTime());
+}
+
+export const getCompleteReport = async (params: GetCompleteReportParams) => {
+	try {
+		// Validar fechas
+		if (params.startDate && !isValidDate(params.startDate.slice(0, 10))) {
+			throw new Error("La fecha de inicio no es válida. Usa el formato YYYY-MM-DD.");
+		}
+		if (params.endDate && !isValidDate(params.endDate.slice(0, 10))) {
+			throw new Error("La fecha de fin no es válida. Usa el formato YYYY-MM-DD.");
+		}
+		if (params.startDate && params.endDate) {
+			const start = new Date(params.startDate);
+			const end = new Date(params.endDate);
+			if (start > end) {
+				throw new Error("La fecha de inicio no puede ser mayor que la fecha de fin.");
+			}
+		}
+
+		// Validar proceso si está presente
+		if (params.process && !["AF", "VDF", "FP"].includes(params.process)) {
+			throw new Error("El tipo de proceso debe ser AF, VDF o FP.");
+		}
+
+		const query = new URLSearchParams();
+
+		if (params.startDate) query.append("startDate", params.startDate);
+		if (params.endDate) query.append("endDate", params.endDate);
+		if (params.groupId) query.append("groupId", params.groupId);
+		if (params.process) query.append("process", params.process);
+
+		const response = await apiConnection.get(`/reports/get-complete-report?${query.toString()}`);
+		return response.data;
+	} catch (error: any) {
+		console.error("Error al obtener el reporte general:", error);
+		throw new Error(error.message || "No se pudo obtener el reporte general.");
+	}
+};
+
+export const getFiscalMonthlyCollect = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-monthly-collect`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
 		return response.data;
 	} catch (e) {
-		console.error('Error al obtener el reporte de recaudado mensual:', e)
+		console.error('Error al obtener el reporte de cobrado mensual:', e)
 		throw e
 	}
 };
 
-export const getFiscalMonthlyPerformance = async (fiscalId : string) => {
+export const getFiscalMonthlyPerformance = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-monthly-performance`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
@@ -259,7 +301,7 @@ export const getFiscalMonthlyPerformance = async (fiscalId : string) => {
 	}
 };
 
-export const getFiscalComplianceByProcess = async (fiscalId : string) => {
+export const getFiscalComplianceByProcess = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-compliance-by-process`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
@@ -270,7 +312,7 @@ export const getFiscalComplianceByProcess = async (fiscalId : string) => {
 	}
 };
 
-export const getFiscalTaxpayerCompliance = async (fiscalId : string) => {
+export const getFiscalTaxpayerCompliance = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-compliance`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
@@ -281,7 +323,7 @@ export const getFiscalTaxpayerCompliance = async (fiscalId : string) => {
 	}
 };
 
-export const getFiscalCollectAnalisis = async (fiscalId : string) => {
+export const getFiscalCollectAnalisis = async (fiscalId: string) => {
 	try {
 		const requestUrl = `reports/get-fiscal-collect-analisis`
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);

@@ -49,13 +49,20 @@ export interface ProcessCompliance {
 }
 
 export interface ComplianceInterface {
-    name:           string;
-    rif:            string;
+    name: string;
+    rif: string;
     complianceRate: number;
     totalCollected: number;
-    totalIva:       number;
-    totalIslr:      number;
-    totalFines:     number;
+    totalIva: number;
+    totalIslr: number;
+    totalFines: number;
+}
+
+export interface GetCompleteReportParams {
+    groupId?: string;
+    startDate?: string;
+    endDate?: string;
+    process?: "AF" | "VDF" | "FP";
 }
 
 export interface FiscalAnalisis {
