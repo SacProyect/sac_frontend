@@ -221,7 +221,7 @@ function IvaForm() {
                                     }}
                                     className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-500 hover:text-white"
                                 >
-                                    {t.name} — {t.process} — {t.providenceNum}
+                                    {t.name} — {t.process} — {t.providenceNum} - {new Date(t.emition_date).toLocaleDateString("es-VE")}
                                 </div>
                             ))}
                         </div>

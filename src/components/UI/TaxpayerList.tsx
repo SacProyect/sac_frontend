@@ -50,7 +50,7 @@ const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] })
                                 }`}
                             placeholder="Buscar contribuyente..."
                         />
-                        <div className="absolute inset-y-0 right-2 flex items-center justify-center text-center z-50">
+                        <div className="absolute inset-y-0 z-50 flex items-center justify-center text-center right-2">
                             <button
                                 type="button"
                                 className="px-0 py-0 w-7 h-7 rounded-lg text-xs bg-[#3498db] text-white content-center cursor-pointer"
@@ -63,7 +63,7 @@ const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] })
 
 
                     {isDropdownOpen && filteredTaxpayers.length > 0 && (
-                        <ul className="absolute z-10 mt-1 w-full bg-white border border-gray-300 rounded-md max-h-40 overflow-y-auto shadow-lg">
+                        <ul className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-40">
                             {filteredTaxpayers.map((taxpayer) => (
                                 <li
                                     key={taxpayer.id}
@@ -76,13 +76,13 @@ const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] })
                                 >
                                     <div className="font-semibold">{taxpayer.name}</div>
                                     <div className="text-sm text-gray-500">
-                                        {taxpayer.rif} - {taxpayer.process}
+                                        {taxpayer.rif} - {taxpayer.process} - {new Date(taxpayer.emition_date).toLocaleDateString('es-VE')}
                                     </div>
                                 </li>
                             ))}
                         </ul>
                     )}
-                    {error && <p className="text-sm text-red-500 mt-1">{error.message}</p>}
+                    {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
                 </div>
             )}
         />
