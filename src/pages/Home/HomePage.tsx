@@ -11,6 +11,10 @@ import { useDebounce } from '@/hooks/useDebounce';
 function HomePage() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
+    const [visibleCount, setVisibleCount] = useState(25);
+
+
+
 
     if (!user) {
         navigate("/login");
@@ -19,7 +23,7 @@ function HomePage() {
 
     useEffect(() => {
         refreshUser();
-    }, [refreshUser]);
+    }, []);
 
     const [taxpayers, setTaxpayers] = useState<Taxpayer[]>(user.taxpayer || []);
 
@@ -52,12 +56,12 @@ function HomePage() {
 
     const searchValue = watch('search');
     const selectedYear = watch('year');
-    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 400);
+    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 800);
 
     const filteredItems = useMemo(() => {
         const term = debouncedSearch.trim();
 
-        return taxpayers
+        const result = taxpayers
             .map(item => {
                 const officerName =
                     item.user?.id === user.id || user.role === "FISCAL"
@@ -84,12 +88,22 @@ function HomePage() {
                 const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.user.name} ${item.providenceNum}`.toLowerCase();
                 return contains(haystack, term);
             });
+        return result;
     }, [taxpayers, debouncedSearch, user, contains, officerMap, selectedYear]);
 
     const years = useMemo(() => {
         const currentYear = new Date().getFullYear();
         return ['Todos', ...Array.from({ length: currentYear - 2022 }, (_, i) => (2023 + i).toString())];
     }, []);
+
+
+
+
+    useEffect(() => {
+        setVisibleCount(25); // reset cuando se filtra
+    }, [debouncedSearch, selectedYear]);
+
+
 
     return (
         <div className="w-full px-0 py-0 overflow-x-hidden">
@@ -131,8 +145,10 @@ function HomePage() {
                     />
                 </div>
 
-                <div className="w-full overflow-x-auto pl-2 lg:pl-0">
-                    <TaxpayerTable propRows={filteredItems} />
+                <div className="w-full pl-2 overflow-x-auto lg:pl-0">
+                    <TaxpayerTable propRows={filteredItems} visibleCount={visibleCount}
+                        setVisibleCount={setVisibleCount}
+                    />
                 </div>
             </div>
         </div>

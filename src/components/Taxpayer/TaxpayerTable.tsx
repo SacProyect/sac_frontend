@@ -4,6 +4,8 @@ import { Taxpayer } from '../../types/taxpayer';
 
 interface TaxpayerTableProps {
     propRows: Taxpayer[];
+    visibleCount: number;
+    setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const columns = [
@@ -18,22 +20,17 @@ const columns = [
     { label: 'Opciones', id: 'options' },
 ];
 
-const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
-    const [rows, setRows] = useState<Taxpayer[]>([]);
-    const [visibleCount, setVisibleCount] = useState(25);
+const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, setVisibleCount }) => {
     const containerRef = useRef<HTMLDivElement>(null);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
 
     console.log(propRows)
 
-    useEffect(() => {
-        // Ordena las filas por providenceNum
+    const visibleRows = useMemo(() => {
         const sorted = [...propRows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));
-        setRows(sorted);
-    }, [propRows]);
-
-    const visibleRows = useMemo(() => rows.slice(0, visibleCount), [rows, visibleCount]);
+        return sorted.slice(0, visibleCount);
+    }, [propRows, visibleCount]);
 
     useEffect(() => {
         const el = containerRef.current;
@@ -55,13 +52,13 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                 const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
 
                 // Si estamos a menos de 100px del fondo y hay más filas para cargar
-                if (distanceToBottom < 100 && visibleCount < rows.length) {
+                if (distanceToBottom < 100 && visibleCount < propRows.length) {
                     loadingMoreLock.current = true; // bloqueamos
                     setIsLoadingMore(true);
 
                     // Simula carga asincrónica
                     setTimeout(() => {
-                        setVisibleCount((prev) => Math.min(prev + 25, rows.length));
+                        setVisibleCount((prev) => Math.min(prev + 25, propRows.length));
                         setIsLoadingMore(false);
                         loadingMoreLock.current = false; // desbloqueamos
                     }, 500);
@@ -75,7 +72,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
             clearTimeout(debounceTimeout);
             el.removeEventListener('scroll', handleScroll);
         };
-    }, [visibleCount, rows.length, isLoadingMore]);
+    }, [visibleCount, propRows.length, isLoadingMore]);
 
 
 
@@ -150,4 +147,4 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     );
 };
 
-export default TaxpayerTable;
+export default React.memo(TaxpayerTable);
