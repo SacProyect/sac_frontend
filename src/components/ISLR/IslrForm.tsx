@@ -137,7 +137,7 @@ function IslrForm() {
                                             }`}
                                     >
                                         <div className="font-semibold">{t.name}</div>
-                                        <div className="text-xs text-gray-500">{t.rif} — {t.process}</div>
+                                        <div className="text-xs text-gray-500">{t.rif} — {t.process} - {new Date(t.emition_date).toLocaleDateString("es-VE")}</div>
                                     </div>
                                 ))
                             ) : (
