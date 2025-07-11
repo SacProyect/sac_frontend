@@ -26,7 +26,7 @@ function Login() {
             toast.success("¡Inicio de sesión exitoso!")
 
         } catch (error: any) {
-            console.error("Error al validar el login:", error);
+            console.error(error);
             toast.error("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
         }
     };
