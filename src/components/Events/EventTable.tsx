@@ -149,7 +149,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                     <div className="relative inline-block" ref={el => { menuRefs.current[row.id] = el; }}>
                       <button onClick={() => toggleMenu(row.id)} className="text-gray-600 hover:text-gray-900">⋮</button>
                       {activeMenuId === row.id && (
-                        <div className="fixed z-50 mt-1 bg-white border rounded shadow-md">
+                        <div className="fixed z-50 mt-1 bg-white border rounded shadow-md bottom-28 right-4 lg:bottom-4 lg:right-4">
                           <button
                             onClick={() => {
                               setEditingRowId(row.id);
