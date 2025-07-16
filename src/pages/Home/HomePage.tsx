@@ -107,15 +107,15 @@ function HomePage() {
 
     return (
         <div className="w-full px-0 py-0 overflow-x-hidden">
-            <div className="w-full max-w-screen-lg mx-auto">
+            <div className="w-full mx-auto xl:max-w-full lg:max-w-screen-lg">
                 <h2 className="my-4 text-2xl font-bold text-center text-black">Administración</h2>
 
-                <div className="flex flex-col flex-wrap items-stretch justify-between gap-2 mb-4 sm:flex-row">
+                <div className="flex flex-col flex-wrap items-stretch justify-between gap-2 px-4 mb-4 sm:flex-row">
                     <Controller
                         control={control}
                         name='search'
                         render={({ field: { name, value, onChange, onBlur } }) => (
-                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 min-w-[200px] px-2 lg:px-0">
+                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 px-2 lg:w-11/12 lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Buscar</Label>
                                 <Input
                                     className="w-full p-2 text-black transition bg-white border border-gray-300 shadow-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -130,7 +130,7 @@ function HomePage() {
                         control={control}
                         name='year'
                         render={({ field }) => (
-                            <div className="min-w-[140px] px-2 lg:px-0">
+                            <div className="px-2 lg:w-1/12 lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Año</Label>
                                 <select
                                     {...field}
@@ -145,7 +145,7 @@ function HomePage() {
                     />
                 </div>
 
-                <div className="w-full pl-2 overflow-x-auto lg:pl-0">
+                <div className="flex items-center justify-center w-full pl-2 overflow-x-auto lg:pl-0">
                     <TaxpayerTable propRows={filteredItems} visibleCount={visibleCount}
                         setVisibleCount={setVisibleCount}
                     />
