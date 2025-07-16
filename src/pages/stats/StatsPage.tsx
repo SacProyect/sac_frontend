@@ -32,7 +32,7 @@ function StatsPage() {
 
     const [currentPage, setCurrentPage] = useState(1);
 
-    if (!user || user.role !== 'ADMIN') {
+    if (!user || (user.role !== 'ADMIN' && user.role !== "COORDINATOR")) {
         navigate('/login');
         return;
     }

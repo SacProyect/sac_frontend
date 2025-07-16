@@ -47,6 +47,7 @@ function Sidebar() {
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Contribuciones", path: "/contributions" },
         { name: "Generar Reportes", path: "/gen-reports" },
+        { name: "Estadisticas", path: "/stats" },
 
 
     ] : [
