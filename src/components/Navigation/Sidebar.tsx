@@ -75,7 +75,7 @@ function Sidebar() {
 
 
     return (
-        <div className="lg:flex sm:hidden">
+        <div className="lg:flex">
             {/* Sidebar for larger screens */}
             <div className="hidden w-[18vw] h-[100vh] p-4 text-gray-100 bg-gray-800 rounded-r-lg lg:block">
                 <div className="flex flex-col w-full h-full">
