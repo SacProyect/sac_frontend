@@ -134,8 +134,8 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
   }, []);
 
   return (
-    <div className="w-full">
-      <div className='flex items-center justify-center w-full lg:py-4'>
+    <div className="w-full ">
+      <div className='flex items-center justify-center w-full lg:py-4 sm:py-4'>
         <h2 className="mb-2 text-2xl font-semibold">Contribuyentes Censados</h2>
       </div>
 
@@ -149,8 +149,8 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
         />
       </div>
 
-      <div ref={containerRef} className="overflow-auto h-[70vh] w-[100vw] lg:h-[83.5vh] lg:w-[80vw] custom-scroll lg:pl-4">
-        <div className="flex flex-col lg:min-w-full text-xs">
+      <div ref={containerRef} className="overflow-auto h-[70vh] w-[100vw] sm:w-[95vw] sm:pl-4 lg:h-[83.5vh] lg:w-[80vw] custom-scroll lg:pl-4">
+        <div className="flex flex-col text-xs lg:min-w-full">
           <div
             className="sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max flex lg:grid"
             style={{ gridTemplateColumns: `repeat(${columns.length}, 0.8fr)` }}
@@ -177,7 +177,7 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
                     <div className='relative' ref={activeRowId === item.id ? optionsRef : null}>
                       <button onClick={() => setActiveRowId(activeRowId === item.id ? null : item.id)}>...</button>
                       {activeRowId === item.id && (
-                        <div className='absolute top-6 right-2 bg-white shadow-md rounded-md z-50'>
+                        <div className='absolute z-50 bg-white rounded-md shadow-md top-6 right-2'>
                           <button
                             onClick={() => {
                               setShowDeleteModal(true);
@@ -217,7 +217,7 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
 
           {showDeleteModal && selectedIdToDelete && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
-              <div className="bg-white p-6 rounded-lg shadow-lg text-center space-y-4 max-w-xs w-full">
+              <div className="w-full max-w-xs p-6 space-y-4 text-center bg-white rounded-lg shadow-lg">
                 <p className="text-sm">
                   ¿Seguro que desea eliminar al contribuyente con ID <strong>{selectedIdToDelete}</strong>?
                 </p>

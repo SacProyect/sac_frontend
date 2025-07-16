@@ -77,7 +77,13 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
 
 
     return (
-        <div ref={containerRef} className="overflow-auto h-[70vh] lg:h-[83.5vh] w-full lg:w-[80vw] custom-scroll">
+        <div
+            ref={containerRef}
+            className="overflow-auto w-full lg:w-[80vw] xl:w-[80vw] custom-scroll"
+            style={{
+                height: 'calc(100vh - 165px)' // puedes ajustar a 110px o 140px si aún ves scroll
+            }}
+        >
             <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
                 <div
@@ -92,7 +98,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                         <div
                             key={col.id}
                             className="px-1 pl-4 py-1 font-semibold min-w-[10rem] 
-                            lg:min-w-0 lg:px-2 lg:py-2 lg:whitespace-nowrap"
+                            lg:min-w-0 xl:min-w-[3rem] lg:px-2 lg:py-2 lg:whitespace-nowrap"
                         >
                             {col.label}
                         </div>
