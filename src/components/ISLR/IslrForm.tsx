@@ -180,10 +180,6 @@ function IslrForm() {
                                 value: /^[0-9.,]+$/,
                                 message: "Solo se permiten números, puntos o comas"
                             },
-                            validate: (value) => {
-                                const parsed = parseFloat(value.replace(",", "."));
-                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                            }
                         })}
                         placeholder="Ej: 500,75"
                         className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
