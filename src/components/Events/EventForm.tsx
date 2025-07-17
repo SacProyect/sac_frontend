@@ -165,7 +165,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
             const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();
 
             const expiresAt = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day);
-            expiresAt.setDate(expiresAt.getDate() + 25);
+            expiresAt.setDate(expiresAt.getDate() + 15);
             const formattedExpiresAt = expiresAt.toISOString();
 
             let newEvent: NewEvent;

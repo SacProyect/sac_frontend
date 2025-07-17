@@ -112,8 +112,7 @@ function GenerateReport() {
         }
     };
 
-
-
+    console.log(filteredTaxpayers);
 
 
     return (
@@ -174,13 +173,13 @@ function GenerateReport() {
                         </div>
 
                         {/* Table Body */}
-                        {filteredTaxpayers.map(taxpayer => (
+                        {filteredTaxpayers.filter(t => t.id && t.rif).map(taxpayer => (
                             <div
                                 key={taxpayer.id}
                                 className='flex flex-col w-full px-4 py-2 border-b border-l border-r lg:flex-row last:rounded-br-md last:rounded-bl-md'
                             >
-                                <div className='w-[120px]'><p>{taxpayer.rif}</p></div>
-                                <div className='w-[120px]'><p>{taxpayer.emition_date.slice(0, 10)}</p></div>
+                                <div className='w-[120px]'><p>{taxpayer.rif ? taxpayer.rif : "No se encontró el rif"}</p></div>
+                                <div className='w-[120px]'><p>{taxpayer.emition_date ? taxpayer.emition_date.slice(0, 10) : "No se encontró la fecha de emisión"}</p></div>
                                 <div className='w-[420px]'><p>{taxpayer.name ?? "No se encontró el nombre"}</p></div>
                                 <div className='w-[150px]'><p>{taxpayer.user?.name ?? "No se encontró el nombre"}</p></div>
                                 <div className='flex justify-end w-full lg:w-[120px]'>
@@ -214,7 +213,9 @@ function GenerateReport() {
                                         <div className='w-full h-[4rem] flex border rounded-md px-4 items-center justify-between' key={group.id}>
                                             <div className='w-[90%]'>
                                                 <p className='text-sm font-semibold text-gray-500'>{group.name || "No se encontró"}</p>
-                                                <p className='text-xs text-gray-500'>{group.members.length || "No se encontró"}</p>
+                                                <p className='text-xs text-gray-500'>
+                                                    {group.members?.length > 0 ? `${group.members.length} miembros` : "No se encontró"}
+                                                </p>
                                             </div>
                                             <div className='w-[10%] flex items-center'>
                                                 <button

@@ -1,3 +1,4 @@
+import { ISLRReports } from "@/types/ISLRReports";
 import { IVAReports } from "@/types/IvaReports";
 import Decimal from "decimal.js";
 
@@ -50,6 +51,7 @@ export interface Taxpayer {
     event: Event[];
     payment: Payment[];
     IVAReports: IVAReports[];
+    ISLRReports: ISLRReports[];
 }
 
 export enum ContractType {

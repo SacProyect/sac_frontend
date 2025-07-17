@@ -10,10 +10,12 @@ interface ContributionsStatisticsProps {
     selectedGroup: string,
     pdfMode?: boolean // <-- nueva prop opcional
     selectedSupervisorId: string | null;
+    startDate: string;
+    endDate: string;
 }
 
 
-function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, selectedSupervisorId }: ContributionsStatisticsProps) {
+function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, selectedSupervisorId, startDate, endDate }: ContributionsStatisticsProps) {
     const [typeClicked, setTypeClicked] = useState("FP")
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
     const [groupId, supervisorId] = selectedGroup.split("_");
@@ -36,14 +38,6 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 (taxpayer) => !typeClicked || taxpayer.process === typeClicked
             );
 
-            // Sum up payments only for the filtered taxpayers
-            const totalCollected = filteredTaxpayers ? filteredTaxpayers.reduce((memberSum, taxpayer) => {
-                const taxpayerTotal = (taxpayer.payment ?? []).reduce(
-                    (sum, pay) => sum + Number(pay.amount),
-                    0
-                );
-                return memberSum + taxpayerTotal;
-            }, 0) : 0;
 
             const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
                 return warningSum + (taxpayer.event?.filter(event => event.type === "WARNING").length ?? 0);
@@ -57,7 +51,6 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 return compromisesSum + (taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length ?? 0);
             }, 0);
 
-
             const totalTaxpayers = filteredTaxpayers.length;
 
 
@@ -70,14 +63,35 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 return (ivaSum + taxpayerIVA);
             }, 0);
 
+            const totalISLR = filteredTaxpayers.reduce((islrSum, taxpayer) => {
+                const taxpayerIslr = taxpayer.ISLRReports?.reduce(
+                    (sum, report) => sum + Number(report.paid || 0),
+                    0
+                ) || 0;
+                return (islrSum + taxpayerIslr);
+            }, 0);
+
+            const totalCollectedFines = filteredTaxpayers.reduce((acc, taxpayer) => {
+                const collectedFines = taxpayer.event.filter((ev) => ev.type === "FINE").reduce(
+                    (sum, report) => sum + Number(report.amount || 0),
+                    0
+                ) || 0;
+                return acc + collectedFines
+            }, 0)
+
+            console.log(totalISLR)
+
+
+
             return {
                 ...member,
                 taxpayer: filteredTaxpayers, // Keep only the filtered taxpayers
-                totalCollected, // Store the total collected amount
                 totalWarnings,
                 totalFines,
                 totalCompromises,
                 totalTaxpayers,
+                totalCollectedFines,
+                totalISLR,
                 totalIVA: parseFloat(totalIVA.toFixed(2)),
             };
         })
@@ -139,6 +153,8 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
         return <BiSortDown />;
     };
 
+    console.log(sortedData);
+
 
 
 
@@ -149,7 +165,12 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
             {selectedGroupData ? (
                 <>
                     <div className='flex justify-between w-full'>
-                        <p className='pt-4 pl-4 text-xl font-semibold'>Estadisticas para: {selectedGroupData?.name} - Abril 2025</p>
+                        <p className='pt-4 pl-4 text-xl font-semibold'>
+                            Estadísticas para: {selectedGroupData?.name}
+                            {startDate && endDate
+                                ? `. Desde la fecha: ${new Date(startDate).toLocaleDateString("es-VE")} hasta la fecha: ${new Date(endDate).toLocaleDateString("es-VE")}`
+                                : ""}
+                        </p>
                         {/* <button className='font-normal text-gray-500'>Close</button> */}
                     </div>
 
@@ -203,29 +224,29 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                     </div>
                                     {sortedData?.map((data) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCollected}</p>
+                                            <p>{data.totalCollectedFines.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado IVA</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado IVA</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalIVA}</p>
+                                            <p>{data.totalIVA.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado ISLR</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado ISLR</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCollected}</p>
+                                            <p>{data.totalISLR.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -236,7 +257,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                     </div>
                                     {sortedData?.map((member) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalWarnings}</p>
+                                            <p>{member.totalWarnings.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -247,7 +268,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                     </div>
                                     {sortedData?.map((member) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalFines}</p>
+                                            <p>{member.totalFines.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -258,7 +279,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                     </div>
                                     {sortedData?.map((member) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalCompromises}</p>
+                                            <p>{member.totalCompromises.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -271,7 +292,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                     </div>
                                     {sortedData?.map((member) => (
                                         <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p className="text-xs">{member.totalTaxpayers}</p>
+                                            <p className="text-xs">{member.totalTaxpayers.toLocaleString()}</p>
                                         </div>
                                     ))}
                                 </div>

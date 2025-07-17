@@ -83,7 +83,7 @@ function ContributionsPage() {
                 setSelectedSupervisorId={setSelectedSupervisorId}
             />
             <div className='pt-8 pb-16 pl-8 pr-4 lg:pb-0'>
-                <ContributionsStatistics groupData={groupData} selectedGroup={selectedGroup} selectedSupervisorId={selectedSupervisorId} />
+                <ContributionsStatistics groupData={groupData} selectedGroup={selectedGroup} selectedSupervisorId={selectedSupervisorId} startDate={startDate} endDate={endDate} />
             </div>
         </aside>
     )

@@ -14,13 +14,14 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
     const [endDate, setEndDate] = useState<string>("");
     const [process, setProcess] = useState<"AF" | "VDF" | "FP" | "">("");
 
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("es-VE", {
+    const formatCurrency = (amount: number | string | null | undefined) => {
+        const safeAmount = Number(amount) || 0;
+        return safeAmount.toLocaleString("es-VE", {
             style: "currency",
             currency: "VES",
             minimumFractionDigits: 0,
-        }).format(amount)
-    }
+        });
+    };
 
     const handleSubmit = async () => {
         try {
@@ -165,7 +166,7 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
                     <td>${t.culminated ? "Sí" : "No"}</td>
                     <td>${t.notified ? "Sí" : "No"}</td>
                     <td>${t.process === "AF" ? (t.hasRepairAct ? "Sí" : "No") : "—"}</td>
-                    <td>${t.finesCount}</td>
+                    <td>${t.finesCount.toLocaleString()}</td>
                     <td>${formatCurrency(t.totalIva)}</td>
                     <td>${formatCurrency(t.totalIslr)}</td>
                     <td>${formatCurrency(t.totalFines)}</td>
