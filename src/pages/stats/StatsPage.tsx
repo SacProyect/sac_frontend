@@ -1,5 +1,5 @@
 import { GlobalKPIResponse } from '@/components/stats/GlobalKpiStats';
-import { Stat } from '@/components/stats/GlobalPerfomance';
+import { ChartData } from '@/components/stats/GlobalPerfomance';
 import { CollectionStats } from '@/components/stats/GlobalTaxpayerPerformance';
 import {
     getGlobalKPI,
@@ -24,7 +24,7 @@ const GlobalKPIStats = lazy(() => import('@/components/stats/GlobalKpiStats').th
 function StatsPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [rawStats, setRawStats] = useState<Stat[]>([]);
+    const [rawStats, setRawStats] = useState<ChartData[]>([]);
     const [loaded, setLoaded] = useState(false);
     const [taxpayerPerformance, setTaxpayerPerformance] = useState<CollectionStats | null>(null);
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
@@ -43,14 +43,11 @@ function StatsPage() {
                 const stats = await getGlobalPerformance();
 
                 if (Array.isArray(stats) && stats.length > 0) {
-                    const parsed: Stat[] = stats.map((item: any) => ({
+                    const parsed: ChartData[] = stats.map((item: any) => ({
                         month: item.month,
-                        ivaAmount: item.ivaAmount ?? 0,
-                        islrAmount: item.islrAmount ?? 0,
-                        complianceRate: item.complianceRate ?? 0,
-                        globalIndex: item.globalIndex ?? 0,
-                        previousIndex: item.previousIndex ?? null,
-                        percentageChange: item.percentageChange ?? null,
+                        realAmount: item.realAmount,
+                        expectedAmount: item.expectedAmount,
+
                     }));
 
                     setRawStats(parsed);
@@ -79,7 +76,7 @@ function StatsPage() {
                         {/* GRAFICA 1 */}
                         <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
-                                {rawStats.length > 0 ? <PageOneStats rawStats={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
+                                {rawStats.length > 0 ? <PageOneStats chartData={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
                             </Suspense>
                         </div>
 
