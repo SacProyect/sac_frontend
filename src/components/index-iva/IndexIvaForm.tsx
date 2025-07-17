@@ -47,7 +47,7 @@ function IndexIvaForm() {
     };
 
     return (
-        <div className="max-w-md p-6 mx-auto bg-white rounded-lg shadow h-[40vh] flex flex-col items-center justify-center">
+        <div className="max-w-md p-6 mx-auto bg-white rounded-lg shadow h-[40vh] md:h-full lg:h-[40vh] md:mt-6 flex flex-col items-center justify-center">
             <h2 className="mb-6 text-2xl font-bold text-center text-black">
                 Actualizar Índices de IVA
             </h2>

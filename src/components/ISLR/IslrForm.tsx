@@ -103,7 +103,7 @@ function IslrForm() {
     }, []);
 
     return (
-        <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0">
+        <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0 md:mb-4 lg:mb-0">
             <form
                 onSubmit={handleSubmit(onSubmit, (formErrors) => {
                     console.error("Errores de validación:", formErrors);
