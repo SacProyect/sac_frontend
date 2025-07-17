@@ -153,8 +153,6 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
         return <BiSortDown />;
     };
 
-    console.log(sortedData);
-
 
 
 

@@ -103,8 +103,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     const dataMock = [
-        { name: "COMPRAS (BS)", value: buys > 0 ? parseFloat(buys.toFixed(2)) : 1, color: "#0080c1" },
-        { name: "VENTAS (BS)", value: sells > 0 ? parseFloat(sells.toFixed(2)) : 1, color: "#737373" },
+        {
+            name: "COMPRAS (BS)",
+            value: buys > 0 ? parseFloat(buys.toFixed(2)) : 1,
+            formatted: buys.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
+            color: "#0080c1"
+        },
+        {
+            name: "VENTAS (BS)",
+            value: sells > 0 ? parseFloat(sells.toFixed(2)) : 1,
+            formatted: sells.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
+            color: "#737373"
+        },
     ];
 
 
@@ -568,14 +578,24 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                         nameKey="name"
                                         cx="50%"
                                         cy="50%"
+                                        className="text-xs"
                                         outerRadius={50}
-                                        label
+                                        label={({ value }) =>
+                                            value.toLocaleString("es-VE", {
+                                                style: "currency",
+                                                currency: "VES",
+                                                maximumFractionDigits: 0,
+                                            })
+                                        }
                                     >
                                         {dataMock.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
                                     </Pie>
-                                    <Tooltip />
+                                    <Tooltip
+                                        formatter={(value: number) =>
+                                            value.toLocaleString("es-VE", { style: "currency", currency: "VES", minimumFractionDigits: 2 })}
+                                    />
                                 </PieChart>
                             </ResponsiveContainer>
                         </div>
