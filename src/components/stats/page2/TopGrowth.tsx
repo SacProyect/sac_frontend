@@ -141,9 +141,9 @@ function TopGrowth() {
 
     return (
         <>
-            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white lg:h-[40vh]">
-                <div className="flex flex-row items-center justify-between pb-4 lg:pb-0 pr-4">
-                    <div className="flex items-center justify-center gap-2 text-lg font-semibold pt-4 pl-4">
+            <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white lg:h-full">
+                <div className="flex flex-row items-center justify-between pb-4 pr-4 lg:pb-0">
+                    <div className="flex items-center justify-center gap-2 pt-4 pl-4 text-lg font-semibold">
                         <TrendingUp className="w-5 h-5 text-green-500" />
                         Coordinadores - Crecimiento Mensual
                     </div>

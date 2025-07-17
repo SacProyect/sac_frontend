@@ -48,57 +48,58 @@ function Goal() {
 
 
     return (
-        <div className="bg-[#2a2a29] border-[#3a3a39] text-white p-4 rounded-xl space-y-6 lg:h-[50vh]">
-            <div className="flex items-center gap-2 text-base font-semibold">
-                <BarChart3 className="w-4 h-4 text-purple-500" />
-                Cobro Real vs Esperado
-            </div>
+        <div className="bg-[#2a2a29] border-[#3a3a39] text-white p-4 rounded-xl  h-full lg:h-[50vh] md:pb-10 lg:pb-0">
+            <div className='space-y-6'>
+                <div className="flex items-center gap-2 text-base font-semibold">
+                    <BarChart3 className="w-4 h-4 text-purple-500" />
+                    Cobro Real vs Esperado
+                </div>
 
-            <div className="h-full lg:h-[40vh] space-y-4">
-                {/* META ESPERADA */}
-                <div className="p-2 border bg-gradient-to-r from-blue-600/20 to-blue-400/20 border-blue-500/50 rounded-xl">
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className="mb-1 text-xs font-medium text-blue-300">META ESPERADA</div>
-                            <div className="text-lg font-bold text-blue-400">
-                                {formatCurrency(recaudacionComparacion.esperada)}
+                <div className="h-full lg:h-[40vh] space-y-4">
+                    {/* META ESPERADA */}
+                    <div className="p-2 border bg-gradient-to-r from-blue-600/20 to-blue-400/20 border-blue-500/50 rounded-xl">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className="mb-1 text-xs font-medium text-blue-300">META ESPERADA</div>
+                                <div className="text-lg font-bold text-blue-400">
+                                    {formatCurrency(recaudacionComparacion.esperada)}
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
+                                <TrendingUp className="w-6 h-6 text-white" />
                             </div>
                         </div>
-                        <div className="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-full">
-                            <TrendingUp className="w-6 h-6 text-white" />
-                        </div>
-                    </div>
-                    {/* <div className="h-2 mt-3 rounded-full bg-blue-900/30">
+                        {/* <div className="h-2 mt-3 rounded-full bg-blue-900/30">
                         <div className="w-full h-2 bg-blue-500 rounded-full" />
                     </div> */}
-                </div>
-
-                {/* INDICADOR DE DIFERENCIA */}
-                <div className={`px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg ${recaudacionComparacion.deficit < 0 ? "bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30" : "bg-gradient-to-r from-green-600 to-green-500 rounded-2xl border-green-400/30"}`}>
-                    <div className="mb-1 text-xl font-black text-white">
-                        {recaudacionComparacion.deficit.toFixed(1)}%
                     </div>
-                    <p className="text-sm font-medium text-red-100">{recaudacionComparacion.deficit < 0 ? "DÉFICIT" : "SUPERAVIT"}</p>
-                </div>
 
-                {/* RECAUDACIÓN REAL */}
-                <div className={`p-2 border  rounded-xl ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-gradient-to-r from-green-600/20 to-green-400/20 border-green-500/50" : "bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50"}`}>
-                    <div className="flex items-center justify-between">
-                        <div>
-                            <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>COBRO REAL</div>
-                            <div className={`text-xl font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-white" : "text-red-500"}`}>
-                                {formatCurrency(recaudacionComparacion.real)}
+                    {/* INDICADOR DE DIFERENCIA */}
+                    <div className={`px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg ${recaudacionComparacion.deficit < 0 ? "bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30" : "bg-gradient-to-r from-green-600 to-green-500 rounded-2xl border-green-400/30"}`}>
+                        <div className="mb-1 text-xl font-black text-white">
+                            {recaudacionComparacion.deficit.toFixed(1)}%
+                        </div>
+                        <p className="text-sm font-medium text-red-100">{recaudacionComparacion.deficit < 0 ? "DÉFICIT" : "SUPERAVIT"}</p>
+                    </div>
+
+                    {/* RECAUDACIÓN REAL */}
+                    <div className={`p-2 border  rounded-xl ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-gradient-to-r from-green-600/20 to-green-400/20 border-green-500/50" : "bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50"}`}>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>COBRO REAL</div>
+                                <div className={`text-xl font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-white" : "text-red-500"}`}>
+                                    {formatCurrency(recaudacionComparacion.real)}
+                                </div>
+                            </div>
+                            <div className={`flex items-center justify-center w-12 h-12  rounded-full ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-green-500" : "bg-red-500"}`}>
+                                {recaudacionComparacion.real > recaudacionComparacion.esperada ? (
+                                    <TrendingUp className="w-6 h-6 text-white" />
+                                ) : (
+                                    <TrendingDown className="w-6 h-6 text-white" />
+                                )}
                             </div>
                         </div>
-                        <div className={`flex items-center justify-center w-12 h-12  rounded-full ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-green-500" : "bg-red-500"}`}>
-                            {recaudacionComparacion.real > recaudacionComparacion.esperada ? (
-                                <TrendingUp className="w-6 h-6 text-white" />
-                            ) : (
-                                <TrendingDown className="w-6 h-6 text-white" />
-                            )}
-                        </div>
-                    </div>
-                    {/* <div className="h-2 mt-3 rounded-full bg-red-900/30">
+                        {/* <div className="h-2 mt-3 rounded-full bg-red-900/30">
                         <div
                             className="h-2 transition-all duration-1000 bg-red-500 rounded-full"
                             style={{
@@ -106,15 +107,16 @@ function Goal() {
                             }}
                         />
                     </div> */}
-                </div>
+                    </div>
 
-                {/* INFORMACIÓN ADICIONAL */}
-                <div className="bg-[#1a1a19] rounded-lg p-3 border border-gray-600/30">
-                    <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-400">Diferencia en monto:</span>
-                        <span className={`font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-400"}`}>
-                            {formatCurrency(Math.abs(recaudacionComparacion.esperada - recaudacionComparacion.real))}
-                        </span>
+                    {/* INFORMACIÓN ADICIONAL */}
+                    <div className="bg-[#1a1a19] rounded-lg p-4 border border-gray-600/30">
+                        <div className="flex items-center justify-between text-sm">
+                            <span className="text-gray-400">Diferencia en monto:</span>
+                            <span className={`font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-400"}`}>
+                                {formatCurrency(Math.abs(recaudacionComparacion.esperada - recaudacionComparacion.real))}
+                            </span>
+                        </div>
                     </div>
                 </div>
             </div>

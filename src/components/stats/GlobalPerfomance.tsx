@@ -79,11 +79,11 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full lg:w-[41vw] h-[60vh] lg:h-[42vh] bg-[#1c1c1b] pb-8 pt-8 lg:pt-4 text-white font-inter">
+        <div className="flex flex-col items-center w-full lg:w-full h-full lg:h-full bg-[#1c1c1b] pb-8 pt-8 lg:pb-12 lg:pt-4 text-white font-inter">
             {/* Title and Description */}
             <div className="mb-4 text-center">
-                <div className="w-full lg:w-[36vw] border border-[#b7c0cd] bg-[#292d33] rounded-md">
-                    <h1 className="font-semibold text-sm lg:text-sm py-2 px-4 text-white font-inter whitespace-nowrap">
+                <div className="w-full lg:w-full border border-[#b7c0cd] bg-[#292d33] rounded-md">
+                    <h1 className="px-4 py-2 text-sm font-semibold text-white lg:text-sm font-inter whitespace-nowrap">
                         RENDIMIENTO GLOBAL
                     </h1>
                 </div>
@@ -93,17 +93,15 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
             </div>
 
             {/* Chart */}
-            <div className="w-full lg:w-[41vw] h-full text-xs">
-                <ResponsiveContainer width="100%" height="90%">
+            <div className="w-full h-full text-xs">
+                <ResponsiveContainer width="100%" >
                     <LineChart data={rendimientoData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                         <CartesianGrid strokeDasharray="3 3" />
                         <XAxis
                             dataKey="month"
-                            angle={0}
                             textAnchor="end"
                             interval={0}
                             scale="point"
-                            height={40}
                             tickFormatter={getShortMonthName}
                         />
                         <YAxis domain={yAxisDomain} />
@@ -127,7 +125,7 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
             </div>
 
             {/* Summary Below Chart */}
-            <div className="flex flex-col items-center gap-4 mt-0 text-center lg:px-4 sm:flex-row">
+            {/* <div className="flex flex-col items-center gap-4 mt-0 text-center lg:px-4 sm:flex-row">
                 <div className="px-4 py-2 bg-[#5996ff] rounded-lg shadow">
                     <p className="text-xs font-medium">
                         {bestMonth && bestMonth.percentageChange !== null
@@ -142,7 +140,7 @@ const PageOneStats = ({ rawStats }: { rawStats: Stat[] }) => {
                             : "No hay datos disponibles para determinar el mejor mes"}
                     </p>
                 </div>
-            </div>
+            </div> */}
         </div>
     );
 };

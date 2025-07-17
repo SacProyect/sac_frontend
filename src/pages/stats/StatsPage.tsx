@@ -74,36 +74,42 @@ function StatsPage() {
         if (currentPage === 1) {
             return (
                 <>
-                    <div className='flex lg:flex-row flex-col w-full h-[100vh] lg:w-[82vw] lg:h-[40.15vh] bg-[#1c1c1b]'>
-                        <div className='w-full h-full lg:w-[41vw] lg:h-[50vh] xl:h-[50vh]'>
+                    <div className="flex flex-col lg:flex-wrap lg:flex-row w-full lg:w-[82vw] h-full  lg:h-[94.5vh] bg-[#1c1c1b]">
+
+                        {/* GRAFICA 1 */}
+                        <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
                                 {rawStats.length > 0 ? <PageOneStats rawStats={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
                             </Suspense>
                         </div>
-                        <div className='w-full h-[60vh] lg:w-[41vw] lg:h-[50vh]'>
+
+                        {/* GRAFICA 2 */}
+                        <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             {taxpayerPerformance && (
                                 <Suspense fallback={<p className="text-lg text-center">Cargando desempeño individual...</p>}>
                                     {taxpayerPerformance !== null ? <PageTwoStats stats={taxpayerPerformance} /> : <p>No hay estadísticas para mostrar</p>}
                                 </Suspense>
                             )}
                         </div>
-                    </div>
 
-                    <div className='flex lg:flex-row flex-col w-full lg:w-[82vw] lg:h-[50vh] pt-10 lg:pt-0 bg-[#1c1c1b] pb-16'>
-                        <div className='w-full h-[70vh] lg:w-[44vw] lg:h-[50vh]'>
+                        {/* GRAFICA 3 */}
+                        <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             {groupStats && (
                                 <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
                                     {groupStats.length > 0 ? <GroupPerformanceStats groupStats={groupStats} /> : <p>No hay estadísticas para mostrar</p>}
                                 </Suspense>
                             )}
                         </div>
-                        <div className='w-full h-[70vh] lg:w-[41vw] lg:h-[50vh]'>
+
+                        {/* GRAFICA 4 */}
+                        <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             {globalKpi && (
                                 <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
                                     <GlobalKPIStats globalKpi={globalKpi} />
                                 </Suspense>
                             )}
                         </div>
+
                     </div>
 
                     {/* Solo visible en mobile: renderizar página 2 y 3 directamente debajo */}
@@ -117,15 +123,15 @@ function StatsPage() {
 
         if (currentPage === 2) {
             return (
-                <>
+                <div className="w-full lg:w-[82vw]  lg:h-[94.5vh] flex flex-col bg-[#1c1c1b] text-white">
                     <StatisticsPage2 />
-                </>
+                </div>
             )
         }
 
         if (currentPage === 3) {
             return (
-                <div className="w-full lg:w-[82vw] lg:h-[90.2vh] flex flex-col bg-[#1c1c1b] text-white">
+                <div className="w-full lg:w-[82vw]  lg:h-[94.5vh] flex flex-col bg-[#1c1c1b] text-white">
                     <StatisticsPage3 />
                 </div>
 
@@ -142,43 +148,45 @@ function StatsPage() {
     const totalPages = 3;
 
     return (
-        <div className='flex flex-col '>
-            {!loaded ? (
-                <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
-                    <p className='w-full text-3xl text-center'>Cargando los datos, por favor espere.</p>
-                </div>
-            ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
-                <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
-                    <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
-                </div>
-            ) : (
-                <>
-                    {renderPage()}
-                    <div className="justify-center hidden py-4 space-x-4 lg:flex bg-[#1c1c1b]">
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
-                        >
-                            <ChevronLeft className="w-4 h-4" /> Anterior
-                        </button>
-                        {[...Array(totalPages)].map((_, index) => (
-                            <button
-                                key={index}
-                                onClick={() => setCurrentPage(index + 1)}
-                                className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
-                            >
-                                {index + 1}
-                            </button>
-                        ))}
-                        <button
-                            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
-                        >
-                            Siguiente <ChevronRight className="w-4 h-4" />
-                        </button>
+        <div className="min-h-screen bg-[#292d33]">
+            <div className='flex flex-col '>
+                {!loaded ? (
+                    <div className='flex items-center justify-center w-full h-full md:w-[100vw] md:h-[100vh] lg:w-[82vw] lg:h-[100vh] text-center'>
+                        <p className='w-full text-3xl text-center text-white'>Cargando los datos, por favor espere.</p>
                     </div>
-                </>
-            )}
+                ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
+                    <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
+                        <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
+                    </div>
+                ) : (
+                    <>
+                        {renderPage()}
+                        <div className="justify-center hidden py-1 space-x-4 lg:flex bg-[#1c1c1b]">
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                                className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
+                            >
+                                <ChevronLeft className="w-4 h-4" /> Anterior
+                            </button>
+                            {[...Array(totalPages)].map((_, index) => (
+                                <button
+                                    key={index}
+                                    onClick={() => setCurrentPage(index + 1)}
+                                    className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
+                                >
+                                    {index + 1}
+                                </button>
+                            ))}
+                            <button
+                                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                                className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
+                            >
+                                Siguiente <ChevronRight className="w-4 h-4" />
+                            </button>
+                        </div>
+                    </>
+                )}
+            </div>
         </div>
     );
 }

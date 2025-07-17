@@ -40,8 +40,8 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
     };
 
     return (
-        <div className="w-full lg:w-[42vw] h-full lg:h-[40vh] pt-32 lg:pt-0">
-            <div className="bg-[#1c1c1b] p-4 w-full h-[50vh] flex flex-col">
+        <div className="w-full h-full pt-32 lg:w-full lg:h-full lg:pt-0">
+            <div className="bg-[#1c1c1b] p-4 w-full h-full lg:h-full flex flex-col">
                 <div className="mb-2 text-xl font-semibold text-center text-white font-inter">
                     <div className="flex justify-center">
                         <p className="w-full lg:w-96 bg-[#292d33] border border-[#b7c0cd] py-1 rounded-md text-[14px] lg:text-sm">
@@ -54,7 +54,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                     Esta gráfica muestra el rendimiento total de cada grupo. Se mide con base en IVA, ISLR, multas pagadas y monto cobrado.
                 </p>
 
-                <div className="flex-1 pt-4 pr-1 overflow-y-auto custom-scroll">
+                <div className="pt-4 pr-1 overflow-y-auto lg:flex lg:flex-col lg:w-full lg:h-full lg:px-8 custom-scroll">
                     {sortedStats.map((group, i) => (
                         <div key={i} className="mb-6">
                             <div className="text-[#d2d2d2] text-sm mb-1 text-center lg:text-left">
@@ -62,11 +62,11 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             </div>
 
                             {/* Multas pagadas */}
-                            <div className="flex flex-col mb-1 lg:flex-row lg:items-center lg:space-x-3">
-                                <div className="text-[#7ca7ff] text-xs w-full lg:w-[100px] text-center lg:text-left">
+                            <div className="flex flex-col w-full mb-1 lg:flex-row lg:items-center lg:space-x-3">
+                                <div className="text-[#7ca7ff] text-xs w-full lg:w-full text-center lg:text-left">
                                     Multas pagadas
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-full w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#5996ff] rounded-full"
                                         style={{ width: getBarWidth(group.totalPaidFines, totalPaid) }}
@@ -78,11 +78,11 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             </div>
 
                             {/* Monto cobrado por multas */}
-                            <div className="flex flex-col mb-1 lg:flex-row lg:items-center lg:space-x-3">
-                                <div className="text-[#7cffcc] text-xs w-full lg:w-[100px] text-center lg:text-left">
+                            <div className="flex flex-col w-full mb-1 lg:flex-row lg:items-center lg:space-x-3">
+                                <div className="text-[#7cffcc] text-xs w-full lg:w-full text-center lg:text-left">
                                     Cobrado Multas
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-full w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#42f5c5] rounded-full"
                                         style={{ width: getBarWidth(group.totalPaidAmount, totalCollected) }}
@@ -94,11 +94,11 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             </div>
 
                             {/* IVA */}
-                            <div className="flex flex-col mb-1 lg:flex-row lg:items-center lg:space-x-3">
-                                <div className="text-[#ffd27f] text-xs w-full lg:w-[100px] text-center lg:text-left">
+                            <div className="flex flex-col w-full mb-1 lg:flex-row lg:items-center lg:space-x-3">
+                                <div className="text-[#ffd27f] text-xs w-full text-center lg:text-left">
                                     IVA cobrado
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-full w-full rounded-full mt-1 lg:mt-0 ">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#ffc74d] rounded-full"
                                         style={{ width: getBarWidth(group.totalIvaCollected, totalIva), minWidth: "2px" }}
@@ -110,11 +110,11 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                             </div>
 
                             {/* ISLR */}
-                            <div className="flex flex-col lg:flex-row lg:items-center lg:space-x-3">
-                                <div className="text-[#ff8d8d] text-xs w-full lg:w-[100px] text-center lg:text-left">
+                            <div className="flex flex-col w-full lg:flex-row lg:items-center lg:space-x-3">
+                                <div className="text-[#ff8d8d] text-xs w-full lg:w-full text-center lg:text-left">
                                     ISLR cobrado
                                 </div>
-                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-[260px] w-full rounded-full mt-1 lg:mt-0">
+                                <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-full w-full rounded-full mt-1 lg:mt-0">
                                     <div
                                         className="absolute top-0 left-0 h-full bg-[#ff6b6b] rounded-full"
                                         style={{ width: getBarWidth(group.totalIslrCollected, totalIslr) }}

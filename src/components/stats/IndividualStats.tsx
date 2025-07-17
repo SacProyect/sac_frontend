@@ -349,17 +349,17 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     return (
-        <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0">
+        <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0 lg:mt-0">
             {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
             <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full lg:h-[60vh] shadow-xl pb-0 lg:pb-4">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
-                <div className="w-full lg:p-4 lg:w-1/2">
-                    <h1 className="mb-4 text-xl font-semibold uppercase">
+                <div className="w-full md:p-4 lg:p-4 lg:w-1/2">
+                    <h1 className="mb-2 text-xl font-semibold uppercase lg:text-sm xl:text-2xl">
                         Datos del contribuyente
                     </h1>
 
-                    <div className="flex flex-col space-y-2 text-sm">
+                    <div className="flex flex-col space-y-2 text-xs xl:text-sm">
                         <p><span className="font-bold">NRO DE PROVIDENCIA:</span>{taxpayerData ? taxpayerData?.providenceNum : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "No se pudo cargar la información"}</p>
@@ -383,14 +383,14 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
                     {taxpayerData?.notified === true ? (
                         <div>
-                            <p className="pt-2 text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                            <p className="pt-2 text-xs font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                 Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
                             </p>
                         </div>
 
                     ) : (
                         <div>
-                            <p className="pt-2 text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
+                            <p className="pt-2 text-xs font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
                                 Este contribuyente aún no ha sido notificado acerca de su procedimiento.
                             </p>
                         </div>
@@ -411,7 +411,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         ) && (
                             <div className="pt-2">
                                 <button
-                                    className="px-2 py-1 text-white bg-[#3498db]"
+                                    className="px-2 py-1 text-white bg-[#3498db] text-xs xl:text-sm"
                                     onClick={() => handleCulminatedClick(true)}
                                 >
                                     Culminar Procedimiento
@@ -501,13 +501,13 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
 
                     {canEditFase && (
-                        <div className="flex items-end justify-around w-full gap-2 pr-14 mt-14 lg:mt-4">
+                        <div className="flex items-end justify-around w-full gap-2 text-xs pr-14 mt-14 lg:mt-2 xl:pt-8">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
                                     onClick={() => handleFaseClick(fase)}
-                                    className={`px-2 py-1 rounded font-semibold text-white transition 
-            ${taxpayerData?.fase === fase ? "bg-green-600" : "bg-[#3498db] hover:bg-blue-700"}`}
+                                    className={`px-2 py-1 lg:py-0 xl:py-1 rounded font-semibold text-white transition 
+                    ${taxpayerData?.fase === fase ? "bg-green-600" : "bg-[#3498db] hover:bg-blue-700"}`}
                                 >
                                     {fase.replace("FASE_", "FASE ")}
                                 </button>
@@ -516,7 +516,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
 
                     {taxpayerData?.fase && taxpayerData.process === "AF" && (
-                        <div className="w-full pt-4 mt-2 text-sm italic text-left text-gray-700 pr-14 lg:pr-0">
+                        <div className="w-full pt-4 mt-2 text-sm italic text-left text-gray-700 pr-14 lg:pr-0 lg:pt-0 xl:pt-8">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
                                     FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
@@ -542,9 +542,9 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                 </div>
 
                 {/* Columna Derecha - Bullets + Gráfica Pastel */}
-                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem]">
+                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem] md:h-full">
 
-                    <div className="flex flex-row flex-wrap items-center justify-between w-full gap-2 px-2 py-1">
+                    <div className="flex flex-row flex-wrap items-center justify-between w-full gap-2 px-2 py-1 md:px-4 lg:px-2">
                         {/* Botón de notificación */}
                         {(user?.role === "FISCAL" && taxpayerData?.officerId === user.id || user?.role === "ADMIN") && !taxpayerData?.notified && (
                             <button
@@ -569,7 +569,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </div>
 
                     {dataMock.some(item => item.value > 0) && (
-                        <div className="flex justify-center items-center w-full h-full lg:w-[30vw] lg:h-[20vh]">
+                        <div className="flex justify-center items-center w-full h-full lg:w-[30vw] md:h-full lg:h-[20vh]">
                             <ResponsiveContainer width="100%" height="100%" aspect={2}>
                                 <PieChart>
                                     <Pie
@@ -601,11 +601,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className="w-full lg:px-4 mt-6 md:mt-0 lg:mt-4 md:h-[20vh] h-full">
+                    <div className="w-full lg:px-4 mt-6 md:mt-0 lg:mt-4 md:mb-4 lg:mb-0 md:h-[50vh] h-full lg:h-[20vh]">
                         <h3 className="mb-2 text-sm font-semibold text-center">
                             Variación de rendimiento mensual
                         </h3>
-                        <ResponsiveContainer width="100%" height="90%" aspect={2}>
+                        <ResponsiveContainer width="100%" aspect={2} className="h-[5vh]">
                             <LineChart data={lineChartData}>
                                 <CartesianGrid strokeDasharray="3 3" />
                                 <XAxis dataKey="month" fontSize={10} />

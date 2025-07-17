@@ -59,7 +59,7 @@ const TaxpayerDetail = () => {
 	]
 
 	return (
-		<div className='flex flex-col max-w-[46rem] lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
+		<div className='flex flex-col max-w-[46rem] md:max-w-full lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
 			<Group className="flex flex-col items-center justify-center w-full pt-4 mb-4 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
 				{(() => {
