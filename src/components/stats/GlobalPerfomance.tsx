@@ -40,7 +40,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                     </h1>
                 </div>
                 <p className="mt-2 text-[9.4px] leading-[12.9px] text-[#838382] font-inter">
-                    Comparativa de monto mensual Recaudado y Esperado. (La línea roja muestra cuanto se debería haber recaudado y la azul cuanto se recaudó realmente. Los puntos verdes reflejan que se superó el esperado y los rojos que no se alcanzó la meta de recaudo esperada)
+                    Comparativa de monto mensual Recaudado y Esperado. (La línea roja muestra cuanto se debería haber recaudado y la azul cuanto se recaudó realmente. Los puntos verdes reflejan que se superó el esperado y los rojos que no se alcanzó la meta de recaudo esperada en los meses correspondientes)
                 </p>
             </div>
 

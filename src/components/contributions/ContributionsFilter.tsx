@@ -190,11 +190,11 @@ function ContributionsFilter({
                                     <p className='text-xs font-semibold'>{Number(fines).toLocaleString()}</p>
                                 </div>
                                 <div className='flex justify-between pt-2'>
-                                    <p className='text-xs '>Cob. IVA:</p>
+                                    <p className='text-xs '>Pag. IVA:</p>
                                     <p className='text-xs font-semibold'>{Number(iva).toLocaleString()} Bs.S</p>
                                 </div>
                                 <div className='flex justify-between pt-2'>
-                                    <p className='text-xs '>Cob. ISLR:</p>
+                                    <p className='text-xs '>Pag. ISLR:</p>
                                     <p className='text-xs font-semibold'>{Number(islr).toLocaleString()} Bs.S</p>
                                 </div>
                                 <div className='flex justify-between pt-2'>
