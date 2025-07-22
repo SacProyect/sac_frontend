@@ -54,7 +54,7 @@ export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
                                         />
                                         {/* Centered value, always visible */}
                                         <span className="absolute inset-0 flex items-center justify-center text-xs text-white">
-                                            {bar.value}
+                                            {bar.value.toLocaleString()}
                                         </span>
                                     </div>
                                 </div>
