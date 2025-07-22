@@ -39,8 +39,8 @@ interface GlobalKPIProps {
 export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
     // Transformar el objeto de la API en el array que necesita Recharts
     const data: KPIStat[] = [
-        { name: "Cobro total (Bs.)", value: globalKpi.totalTaxCollection },
-        { name: "Promedio excedente fiscal (Bs.)", value: globalKpi.averageCreditSurplus },
+        { name: "Cobro total (Bs.)", value: Number(globalKpi.totalTaxCollection) },
+        { name: "Promedio excedente fiscal (Bs.)", value: Number(globalKpi.averageCreditSurplus) },
         { name: "Indice de contribuyentes con multas", value: globalKpi.finePercentage },
         { name: "Porcentaje de crecimiento cobro", value: globalKpi.growthRate },
         { name: "Morosidad %", value: globalKpi.delinquencyRate },
@@ -53,6 +53,11 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
         const { x = 0, y = 0, width = 0, height = 0, value = 0, payload } = props;
         const h = typeof height === "string" ? parseFloat(height) : height;
         const isPercent = payload && percentageFields.includes(payload.name);
+
+        const formattedValue = isPercent
+            ? `${value}%`
+            : Number(value).toLocaleString("es-VE", { maximumFractionDigits: 2 });
+
         return (
             <text
                 x={Number(x) + Number(width) + 6}
@@ -61,7 +66,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
                 fontSize={8}
                 alignmentBaseline="middle"
             >
-                {value}{isPercent ? "%" : ""}
+                {formattedValue}
             </text>
         );
     };
@@ -72,6 +77,11 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
             const isPercentage = percentageFields.includes(name);
             const isLow = isPercentage && Number(value) < 20;
             const bg = isLow ? "#ff4d4d" : "#1eff87";
+
+            const formattedValue = isPercentage
+                ? `${value}%`
+                : Number(value).toLocaleString("es-VE", { maximumFractionDigits: 2 });
+
             return (
                 <div style={{
                     backgroundColor: bg,
@@ -81,7 +91,7 @@ export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
                     color: "#000"
                 }}>
                     <p><strong>{name}</strong></p>
-                    <p>{value}{isPercentage ? "%" : ""}</p>
+                    <p>{formattedValue}</p>
                 </div>
             );
         }
