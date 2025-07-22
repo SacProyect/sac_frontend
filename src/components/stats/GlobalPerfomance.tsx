@@ -27,7 +27,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
 
     const mappedData = chartData.map(item => ({
         ...item,
-        dotColor: item.realAmount >= item.expectedAmount ? "#00ff66" : "#ff4d4d",
+        dotColor: item.realAmount >= item.expectedAmount ? "#00ff66" : "#00ff66",
     }));
 
     return (
@@ -36,11 +36,11 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
             <div className="mb-4 text-center">
                 <div className="w-full lg:w-full border border-[#b7c0cd] bg-[#292d33] rounded-md">
                     <h1 className="px-4 py-2 text-sm font-semibold text-white lg:text-sm font-inter whitespace-nowrap">
-                        RENDIMIENTO GLOBAL
+                        RENDIMIENTO GLOBAL DE IVA
                     </h1>
                 </div>
                 <p className="mt-2 text-[9.4px] leading-[12.9px] text-[#838382] font-inter">
-                    Comparativa de monto mensual Recaudado y Esperado. (La línea roja muestra cuanto se debería haber recaudado y la azul cuanto se recaudó realmente. Los puntos verdes reflejan que se superó el esperado y los rojos que no se alcanzó la meta de recaudo esperada en los meses correspondientes)
+                    Comparativa de monto mensual de IVA pagado.
                 </p>
             </div>
 
@@ -60,20 +60,20 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                                 })
                             }
                         />
-                        <Line
+                        {/* <Line
                             type="monotone"
                             dataKey="expectedAmount"
                             stroke="#e74c3c"
                             strokeWidth={2}
                             name="Esperado"
                             dot={false}
-                        />
+                        /> */}
                         <Line
                             type="monotone"
                             dataKey="realAmount"
                             stroke="#3498db"
                             strokeWidth={2}
-                            name="Recaudado"
+                            name="Pagado"
                             dot={({ cx, cy, payload }) => (
                                 <circle cx={cx} cy={cy} r={4} fill={payload.dotColor} stroke="#fff" strokeWidth={1} />
                             )}

@@ -180,7 +180,9 @@ function TopGrowth() {
                                         </div>
                                         <div className={`text-right ${index === 0 ? "text-green-400" : "text-blue-400"}`}>
                                             <div className="text-xl font-bold">{coordinator.growthPercentage.toFixed(2)}%</div>
-                                            <div className="text-sm">Crecimiento</div>
+                                            <p className="text-sm">
+                                                {coordinator.growthPercentage > 0 ? "Crecimiento" : "Decrecimiento"}
+                                            </p>
                                         </div>
                                     </div>
 

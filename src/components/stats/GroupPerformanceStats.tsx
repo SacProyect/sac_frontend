@@ -89,7 +89,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                     />
                                 </div>
                                 <div className="text-[#7cffcc] text-xs min-w-[40px] text-left mt-1 lg:mt-0">
-                                    {group.totalPaidAmount} BS
+                                    {Number(group.totalPaidAmount).toLocaleString()} BS
                                 </div>
                             </div>
 
@@ -105,7 +105,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                     />
                                 </div>
                                 <div className="text-[#ffd27f] text-xs min-w-[40px] text-left mt-1 lg:mt-0">
-                                    {group.totalIvaCollected} BS
+                                    {Number(group.totalIvaCollected).toLocaleString()} BS
                                 </div>
                             </div>
 
@@ -121,7 +121,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                     />
                                 </div>
                                 <div className="text-[#ff8d8d] text-xs min-w-[40px] text-left mt-1 lg:mt-0">
-                                    {group.totalIslrCollected} BS
+                                    {Number(group.totalIslrCollected).toLocaleString()} BS
                                 </div>
                             </div>
                         </div>
