@@ -13,6 +13,7 @@ export interface User {
     taxpayer: Taxpayer[],
     coordinatedGroup: CoordinatedGroup,
     group: Group,
+    groupId: string,
     supervisorId?: string,
 }
 
