@@ -1,7 +1,9 @@
 import React, { useState } from "react";
-import { X } from "lucide-react";
+import { User, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { getCompleteReport } from "../utils/api/reportFunctions";
+import { useAuth } from "@/hooks/useAuth";
+import { useNavigate } from "react-router-dom";
 
 interface Props {
     onClose: () => void;
@@ -13,6 +15,14 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");
     const [process, setProcess] = useState<"AF" | "VDF" | "FP" | "">("");
+    const { user } = useAuth();
+    const navigate = useNavigate();
+
+    if (!user) {
+        navigate("/login");
+        return;
+    }
+
 
     const formatCurrency = (amount: number | string | null | undefined) => {
         const safeAmount = Number(amount) || 0;
@@ -186,6 +196,15 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
         printWindow.print();
     };
 
+    if (user.role === "SUPERVISOR") {
+        console.log(user);
+        if (!user.groupId) toast.error("No se pudo encontrar el id correspondiente a su grupo.");
+        groups.filter((group) => group.id === user.groupId);
+    } else if (user.role === "COORDINATOR") {
+        if (!user.coordinatedGroup.id) toast.error("No se pudo encontrar el id correspondiente a su grupo.");
+        groups.filter((group) => group.id === user.coordinatedGroup.id);
+    }
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
             <div className="relative w-full max-w-xl p-6 bg-white rounded-lg shadow-lg animate-fadeIn">
@@ -208,7 +227,9 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
                             value={selectedGroupId}
                             onChange={(e) => setSelectedGroupId(e.target.value)}
                         >
-                            <option value="">Todos los grupos</option>
+                            {user.role === "ADMIN" && (
+                                <option value="">Todos los grupos</option>
+                            )}
                             {groups.map((group) => (
                                 <option key={group.id} value={group.id}>
                                     {group.name}
