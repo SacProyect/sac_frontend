@@ -27,7 +27,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
 
     const mappedData = chartData.map(item => ({
         ...item,
-        dotColor: item.realAmount >= item.expectedAmount ? "#00ff66" : "#00ff66",
+        dotColor: item.realAmount >= item.expectedAmount ? "#00ff66" : "#FF0000",
     }));
 
     return (
@@ -60,14 +60,14 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                                 })
                             }
                         />
-                        {/* <Line
+                        <Line
                             type="monotone"
                             dataKey="expectedAmount"
                             stroke="#e74c3c"
-                            strokeWidth={2}
+                            strokeWidth={0}
                             name="Esperado"
                             dot={false}
-                        /> */}
+                        />
                         <Line
                             type="monotone"
                             dataKey="realAmount"
