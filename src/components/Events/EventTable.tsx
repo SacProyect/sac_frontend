@@ -119,7 +119,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     }
   };
 
-  console.log(JSON.stringify(rows));
+  console.log(rows)
 
   return (
     <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
@@ -182,7 +182,15 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                     row.type === "FINE" ? (
                       user?.role === "ADMIN" ||
                         (user?.role === "FISCAL" &&
-                          user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) ? (
+                          user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) || (
+                          user?.role === "SUPERVISOR" &&
+                          (
+                            user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id) ||
+                            user.supervised_members?.some(m =>
+                              m.id === row.officerId
+                            )
+                          )
+                        ) ? (
                         <select
                           value={(row.debt ?? 0) > 0 ? "not_paid" : "paid"}
                           onClick={(e) => e.stopPropagation()}

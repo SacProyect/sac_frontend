@@ -14,4 +14,5 @@ export interface Event {
     debt?: number;
     expires_at: string,
     description?: string;
+    officerId?: string
 }

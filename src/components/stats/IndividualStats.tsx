@@ -337,9 +337,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
     console.log(taxpayerData);
 
-    console.log(user?.id);
-    console.log(taxpayerData?.user.supervisorId);
-    console.log(user?.role)
+    console.log(user)
 
     const canEditFase = (
         user?.role === "ADMIN" ||
@@ -407,6 +405,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         ) : (
                             (user?.role === "FISCAL" && user?.id === taxpayerData?.officerId) ||
                             (user?.role === "COORDINATOR" && user?.id === taxpayerData?.user?.group?.coordinatorId) ||
+                            (user?.role === "SUPERVISOR" && (user?.id === taxpayerData?.officerId || user.supervised_members?.some((member) => member.id === taxpayerData?.officerId))) ||
                             user?.role === "ADMIN"
                         ) && (
                             <div className="pt-2">
@@ -546,14 +545,24 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
                     <div className="flex flex-row flex-wrap items-center justify-between w-full gap-2 px-2 py-1 md:px-4 lg:px-2">
                         {/* Botón de notificación */}
-                        {(user?.role === "FISCAL" && taxpayerData?.officerId === user.id || user?.role === "ADMIN") && !taxpayerData?.notified && (
-                            <button
-                                className="px-3 py-1 bg-[#3498db] text-white text-sm font-medium rounded"
-                                onClick={() => handleNotifiedClick(true)}
-                            >
-                                Reportar como notificado
-                            </button>
-                        )}
+                        {(
+                            (user?.role === "FISCAL" && taxpayerData?.officerId === user.id) ||
+                            user?.role === "ADMIN" ||
+                            (
+                                user?.role === "SUPERVISOR" &&
+                                (
+                                    user.id === taxpayerData?.officerId ||
+                                    user.supervised_members?.some(member => member.id === taxpayerData?.officerId)
+                                )
+                            )
+                        ) && !taxpayerData?.notified && (
+                                <button
+                                    className="px-3 py-1 bg-[#3498db] text-white text-sm font-medium rounded"
+                                    onClick={() => handleNotifiedClick(true)}
+                                >
+                                    Reportar como notificado
+                                </button>
+                            )}
 
                         {/* Leyenda de compras y ventas */}
                         <div className="flex flex-row items-center gap-4 text-sm">

@@ -134,7 +134,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     }, []);
 
     return (
-        <div className="w-full px-4 overflow-auto text-sm custom-scroll">
+        <div className="w-full px-4 pt-16 overflow-auto text-sm custom-scroll">
             {pdfMode && <p className="py-8 text-lg">Historial de IVA</p>}
             <table className="min-w-full text-left border-collapse">
                 <thead className="w-full bg-[#2C3E50]">
