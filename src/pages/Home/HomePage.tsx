@@ -7,6 +7,8 @@ import { useFilter } from 'react-aria';
 import { useNavigate } from 'react-router-dom';
 import { Taxpayer } from '@/types/taxpayer';
 import { useDebounce } from '@/hooks/useDebounce';
+import { getTaxpayers } from '@/components/utils/api/taxpayerFunctions';
+import toast from 'react-hot-toast';
 
 function HomePage() {
     const { user, refreshUser } = useAuth();
@@ -21,30 +23,28 @@ function HomePage() {
         return null;
     }
 
+    // useEffect(() => {
+    //     refreshUser();
+    // }, []);
+
+    const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
+
+
     useEffect(() => {
-        refreshUser();
-    }, []);
+        const loadTaxpayers = async () => {
+            try {
+                const response = await getTaxpayers();
 
-    const [taxpayers, setTaxpayers] = useState<Taxpayer[]>(user.taxpayer || []);
+                setTaxpayers(response);
 
-    useEffect(() => {
-        if (["FISCAL", "ADMIN", "COORDINATOR", "SUPERVISOR"].includes(user.role)) {
-            setTaxpayers(user.taxpayer || []);
+            } catch (e) {
+                console.error(e);
+                toast.error("No se pudieron obtener los contribuyentes.");
+            }
         }
-    }, [user]);
 
-    const officerMap = useMemo(() => {
-        const map: Record<string, string> = {};
-        if (["FISCAL", "ADMIN"].includes(user.role)) {
-            const name = user.name;
-            taxpayers.forEach(t => { map[t.officerId || ""] = name; });
-        } else if (user.role === "COORDINATOR") {
-            user.coordinatedGroup?.members?.forEach(m => {
-                map[m.id] = m.name;
-            });
-        }
-        return map;
-    }, [user, taxpayers]);
+        loadTaxpayers();
+    }, [])
 
     const { contains } = useFilter({ sensitivity: "base" });
     const { control, watch } = useForm({
@@ -63,12 +63,7 @@ function HomePage() {
 
         const result = taxpayers
             .map(item => {
-                const officerName =
-                    item.user?.id === user.id || user.role === "FISCAL"
-                        ? user.name
-                        : user.role === "ADMIN"
-                            ? (item.user?.name || 'Desconocido')
-                            : officerMap[item.officerId || ""] || 'Desconocido';
+                const officerName = item.user?.name || "Desconocido";
 
                 return {
                     ...item,
@@ -89,7 +84,7 @@ function HomePage() {
                 return contains(haystack, term);
             });
         return result;
-    }, [taxpayers, debouncedSearch, user, contains, officerMap, selectedYear]);
+    }, [taxpayers, debouncedSearch, user, contains, selectedYear]);
 
     const years = useMemo(() => {
         const currentYear = new Date().getFullYear();

@@ -29,6 +29,8 @@ function IvaForm() {
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
     const [showDropdown, setShowDropdown] = useState(false);
+    const [decemberReached, setDecemberReached] = useState(false);
+    const [loadingMonthInfo, setLoadingMonthInfo] = useState(true);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -118,46 +120,57 @@ function IvaForm() {
 
     // Recalcular mes siguiente cuando cambie el contribuyente
     useEffect(() => {
+        setLoadingMonthInfo(true);
         if (!selectedTaxpayer) {
             setNextAllowedMonth(null);
             setNextAllowedYear(null);
+            setDecemberReached(false);
+            setLoadingMonthInfo(false);
             setValue('date', '');
             return;
         }
 
         const sorted = [...(selectedTaxpayer.IVAReports || [])]
-            .sort((a, b) =>
-                new Date(b.date).getTime() - new Date(a.date).getTime()
-            );
+            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        let year: number;
-        let monthNumber: number;
+        const emitionYear = new Date(selectedTaxpayer.emition_date).getUTCFullYear();
+        let year = emitionYear;
+        let monthNumber = 1;
 
         if (sorted.length === 0) {
-            // Sin reportes: enero del año actual
-            const now = new Date();
-            year = now.getFullYear();
+            year = emitionYear;
             monthNumber = 1;
+            setDecemberReached(false);
+        } else if (sorted.length >= 12) {
+            setNextAllowedMonth(null);
+            setNextAllowedYear(null);
+            setDecemberReached(true);
+            setLoadingMonthInfo(false);
+            setValue('date', '');
+            return;
         } else {
-            // Extraemos mes/año del último reporte desde el string
-            const [yearStr, monthStr] = sorted[0].date.split('-');
-            const lastMonth = parseInt(monthStr, 10); // 1–12
-            year = parseInt(yearStr, 10);
+            const [lastYearStr, lastMonthStr] = sorted[0].date.split('-');
+            const lastMonth = parseInt(lastMonthStr, 10);
+            year = parseInt(lastYearStr, 10);
             monthNumber = lastMonth + 1;
+
             if (monthNumber > 12) {
-                monthNumber = 1;
-                year += 1;
+                setNextAllowedMonth(null);
+                setNextAllowedYear(null);
+                setDecemberReached(true);
+                setLoadingMonthInfo(false);
+                setValue('date', '');
+                return;
+            } else {
+                setDecemberReached(false);
             }
         }
 
         setNextAllowedMonth(monthNumber);
         setNextAllowedYear(year);
-
-        // Creamos un Date en UTC para el primer día de ese mes
         const isoDate = new Date(Date.UTC(year, monthNumber - 1, 1)).toISOString();
-        // Ejemplo resultante: "2025-05-01T00:00:00.000Z"
-
         setValue('date', isoDate);
+        setLoadingMonthInfo(false);
     }, [selectedTaxpayer, setValue]);
 
     const filteredTaxpayers = taxpayerArray.filter(t =>
@@ -181,7 +194,7 @@ function IvaForm() {
     }, []);
 
     return (
-        <div className="flex items-center justify-center w-full h-full lg:h-[100vh] pt-10 lg:pt-0 md:my-4">
+        <div className="flex items-center justify-center w-full h-full lg:h-[90vh] pt-10 lg:pt-0 md:my-4">
             <form
                 onSubmit={handleSubmit(onSubmit, (formErrors) => {
                     console.error("Errores de validación:", formErrors);
@@ -357,9 +370,17 @@ function IvaForm() {
 
                 <button
                     type="submit"
-                    className="w-full py-2 mt-4 text-sm font-medium text-white transition bg-blue-500 rounded-lg hover:bg-blue-600"
+                    disabled={loadingMonthInfo || decemberReached}
+                    className={`w-full py-2 mt-4 text-sm font-medium text-white rounded-lg transition ${loadingMonthInfo || decemberReached
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-blue-500 hover:bg-blue-600'
+                        }`}
                 >
-                    Enviar
+                    {loadingMonthInfo
+                        ? "Cargando información..."
+                        : decemberReached
+                            ? "Todos los reportes del año han sido cargados"
+                            : "Enviar"}
                 </button>
             </form>
         </div>

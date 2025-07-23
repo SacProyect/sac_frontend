@@ -17,13 +17,16 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Partial<IVAReports>>({});
     const [dropdownPos, setDropdownPos] = useState<{ top: number; left: number } | null>(null);
+    const buttonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
     const navigate = useNavigate();
 
     const { user } = useAuth();
-    if (!user) {
-        navigate("/login");
-        return;
-    }
+
+    useEffect(() => {
+        if (!user) navigate("/login");
+    }, [user]);
+
+    if (!user) return null;
 
     let columns: { name: string; id: keyof IVAReports | 'options' }[];
 
@@ -117,6 +120,9 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
         try {
             await deleteIva(reportIdToDelete);
             toast.success('Reporte eliminado');
+
+            // Remueve el reporte eliminado del estado
+            setRows(prev => prev.filter(row => row.id !== reportIdToDelete));
             setReportIdToDelete(null);
         } catch (err: any) {
             toast.error(`Error: ${err.message || err}`);
@@ -134,7 +140,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     }, []);
 
     return (
-        <div className="w-full px-4 pt-16 overflow-auto text-sm custom-scroll">
+        <div className="w-full px-4 overflow-auto text-sm custom-scroll">
             {pdfMode && <p className="py-8 text-lg">Historial de IVA</p>}
             <table className="min-w-full text-left border-collapse">
                 <thead className="w-full bg-[#2C3E50]">
@@ -153,11 +159,10 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                         })}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody >
                     {processedItems.map((item) => (
                         <tr key={item._key} className="hover:bg-gray-50">
                             {columns.map((col) => {
-                                const buttonRef = useRef<HTMLButtonElement | null>(null);
                                 return (
                                     <td key={col.id} className="relative px-4 py-2 border-b border-gray-100 whitespace-nowrap">
                                         {editingRowId === item.id && col.id !== 'options' ? (
@@ -169,8 +174,8 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                         ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
                                             <div className="relative inline-block">
                                                 <button
-                                                    ref={buttonRef}
-                                                    onClick={() => toggleMenu(item.id, buttonRef.current)}
+                                                    ref={(el) => { buttonRefs.current[item.id] = el; }}
+                                                    onClick={() => toggleMenu(item.id, buttonRefs.current[item.id])}
                                                     className="text-gray-600 hover:text-gray-900"
                                                 >
                                                     ⋮
