@@ -6,7 +6,7 @@ import FormContainer from '../UI/FormContainer';
 import { Form, Label, Button } from 'react-aria-components'
 import DateInputUI from '../UI/DateInputUI';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-import { createEvent, getPendingPayments } from '../utils/api/taxpayerFunctions';
+import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import SelectInput from '../UI/SelectInput';
 import { useCallback, useEffect, useState } from 'react';
@@ -66,28 +66,25 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
     const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
+    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
     if (!user) {
         navigate("/login");
         return null;
     }
 
-    // console.log("Taxpayer Id receive in event form: " + taxpayerId)
+    useEffect(() => {
+        const fetchTaxpayers = async () => {
+            try {
+                const response = await getTaxpayerForEvents();
+                const filtered = response.data.filter((t: Taxpayer) => t.process !== "FP");
+                setTaxpayerArray(filtered);
+            } catch (e) {
+                toast.error("No se pudieron obtener los contribuyentes.");
+            }
+        };
 
-    let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN") {
-        taxpayerArray = user.taxpayer;
-    } else if (user.role === "FISCAL") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
-    } else if (user.role === "SUPERVISOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    }
-
-
-
-    // ✅ Filtrar los contribuyentes con process !== "FP"
-    taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
+        fetchTaxpayers();
+    }, []);
 
     const {
         register,

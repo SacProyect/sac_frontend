@@ -6,7 +6,7 @@ import { Taxpayer } from '@/types/taxpayer';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { EventFormData } from '../Events/EventForm';
 import toast from 'react-hot-toast';
-import { createIVA } from '../utils/api/taxpayerFunctions';
+import { createIVA, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 import { IslrReportFormData } from '../ISLR/IslrForm';
 import Decimal from 'decimal.js';
 
@@ -31,6 +31,7 @@ function IvaForm() {
     const [showDropdown, setShowDropdown] = useState(false);
     const [decemberReached, setDecemberReached] = useState(false);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(true);
+    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -41,21 +42,19 @@ function IvaForm() {
 
     if (!user) return null;
 
+
     useEffect(() => {
-        refreshUser();
-    }, [])
+        const fetchTaxpayers = async () => {
+            try {
+                const response = await getTaxpayerForEvents();
+                setTaxpayerArray(response.data);
+            } catch (e) {
+                toast.error("No se pudieron obtener los contribuyentes.");
+            }
+        };
 
-
-    let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN") {
-        taxpayerArray = user.taxpayer;
-    } else if (user.role === "FISCAL") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
-    } else if (user.role === "SUPERVISOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    }
+        fetchTaxpayers();
+    }, []);
 
     const {
         register,
@@ -132,6 +131,8 @@ function IvaForm() {
 
         const sorted = [...(selectedTaxpayer.IVAReports || [])]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+        console.log(selectedTaxpayer?.IVAReports)
 
         const emitionYear = new Date(selectedTaxpayer.emition_date).getUTCFullYear();
         let year = emitionYear;

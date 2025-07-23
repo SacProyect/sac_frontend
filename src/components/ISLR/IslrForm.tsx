@@ -6,7 +6,7 @@ import { Taxpayer } from '@/types/taxpayer';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { EventFormData } from '../Events/EventForm';
 import toast from 'react-hot-toast';
-import { createISLR } from '../utils/api/taxpayerFunctions';
+import { createISLR, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 import Decimal from 'decimal.js';
 import { IvaReportFormData } from '../iva/IvaForm';
 
@@ -25,6 +25,7 @@ function IslrForm() {
     const [filter, setFilter] = useState('');
     const [showSuggestions, setShowSuggestions] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
+    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
 
     useEffect(() => {
         if (!user) {
@@ -34,16 +35,19 @@ function IslrForm() {
 
     if (!user) return null;
 
-    let taxpayerArray: Taxpayer[] = [];
-    if (user.role === "ADMIN") {
-        taxpayerArray = user.taxpayer;
-    } else if (user.role === "FISCAL") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.user?.group?.coordinatorId === user.id);
-    } else if (user.role === "SUPERVISOR") {
-        taxpayerArray = user.taxpayer.filter((t) => t.officerId === user.id);
-    }
+    useEffect(() => {
+        const fetchTaxpayers = async () => {
+            try {
+                const response = await getTaxpayerForEvents();
+                setTaxpayerArray(response.data);
+            } catch (e) {
+                toast.error("No se pudieron obtener los contribuyentes.");
+            }
+        };
+
+        fetchTaxpayers();
+    }, []);
+
 
     const {
         register,

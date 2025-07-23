@@ -1,11 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useDeferredValue, useCallback } from 'react';
 import { Controller, Control } from 'react-hook-form';
 import { Taxpayer } from '../../types/taxpayer';
 import { EventFormData } from '../Events/EventForm';
 import { IvaReportFormData } from '../iva/IvaForm';
 import { IslrReportFormData } from '../ISLR/IslrForm';
-import { BsArrowDownSquareFill } from "react-icons/bs";
 
+const normalize = (str: string) =>
+    str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
 
 interface Props {
     control: Control<EventFormData | IvaReportFormData | IslrReportFormData>;
@@ -14,19 +15,31 @@ interface Props {
     taxpayers?: Taxpayer[];
 }
 
-const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] }) => {
+const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpayers = [] }) => {
     const [inputValue, setInputValue] = useState('');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
 
-    const normalize = (str: string) =>
-        str.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+    const deferredInput = useDeferredValue(inputValue);
 
     const filteredTaxpayers = useMemo(() => {
-        const query = normalize(inputValue);
+        const query = normalize(deferredInput);
         return taxpayers.filter((t) =>
             normalize(`${t.providenceNum} ${t.process} ${t.rif} ${t.name}`).includes(query)
         );
-    }, [inputValue, taxpayers]);
+    }, [deferredInput, taxpayers]);
+
+    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, onChange: (val: string) => void) => {
+        const val = e.target.value;
+        setInputValue(val);
+        setDropdownOpen(true);
+        onChange(""); // Limpiar selección previa
+    }, []);
+
+    const handleSelect = useCallback((taxpayer: Taxpayer, onChange: (val: string) => void) => {
+        onChange(taxpayer.id);
+        setInputValue(taxpayer.name);
+        setDropdownOpen(false);
+    }, []);
 
     return (
         <Controller
@@ -39,15 +52,11 @@ const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] })
                     <div className="relative w-full">
                         <input
                             type="text"
-                            value={taxpayers.find(t => t.id === field.value)?.name || inputValue}
-                            onChange={(e) => {
-                                setInputValue(e.target.value);
-                                setDropdownOpen(true);
-                            }}
+                            value={inputValue || taxpayers.find(t => t.id === field.value)?.name || ""}
+                            onChange={(e) => handleInputChange(e, field.onChange)}
                             onFocus={() => setDropdownOpen(true)}
                             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
-                            className={`w-full p-2 pr-8 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'
-                                }`}
+                            className={`w-full p-2 pr-8 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
                             placeholder="Buscar contribuyente..."
                         />
                         <div className="absolute inset-y-0 z-50 flex items-center justify-center text-center right-2">
@@ -61,32 +70,28 @@ const TaxpayerList: React.FC<Props> = ({ control, name, label, taxpayers = [] })
                         </div>
                     </div>
 
-
                     {isDropdownOpen && filteredTaxpayers.length > 0 && (
                         <ul className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-40">
                             {filteredTaxpayers.map((taxpayer) => (
                                 <li
                                     key={taxpayer.id}
                                     className="px-3 py-2 cursor-pointer hover:bg-blue-100"
-                                    onClick={() => {
-                                        field.onChange(taxpayer.id);
-                                        setInputValue(taxpayer.name);
-                                        setDropdownOpen(false);
-                                    }}
+                                    onClick={() => handleSelect(taxpayer, field.onChange)}
                                 >
                                     <div className="font-semibold">{taxpayer.name}</div>
                                     <div className="text-sm text-gray-500">
-                                        {taxpayer.rif} - {taxpayer.process} - {new Date(taxpayer.emition_date).toLocaleDateString('es-VE')}
+                                        {taxpayer.rif} - {taxpayer.process} - {taxpayer.emition_date}
                                     </div>
                                 </li>
                             ))}
                         </ul>
                     )}
+
                     {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}
                 </div>
             )}
         />
     );
-};
+});
 
 export default TaxpayerList;
