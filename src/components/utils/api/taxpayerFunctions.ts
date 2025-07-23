@@ -139,6 +139,21 @@ export const getTaxpayers = async () => {
 	}
 }
 
+
+// This api is specific to retrieve the taxpayers related to the user that needs to create some reports
+export const getTaxpayerForEvents = async () => {
+	try {
+		let requestURL = "taxpayer/get-taxpayers-for-events"
+
+		const response = await apiConnection.get(requestURL);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se encontraron contribuyentes")
+	}
+}
+
 export const deleteTaxpayer = async (taxpayerId: string) => {
 	try {
 		const response = await (await apiConnection.delete(`/taxpayer/${taxpayerId}`)).data
