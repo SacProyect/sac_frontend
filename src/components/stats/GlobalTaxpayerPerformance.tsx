@@ -35,7 +35,7 @@ export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
 
                 {/* Description */}
                 <p className="text-[11px] md:text-xs lg:text-xs text-[#838382] font-inter text-center leading-5 lg:py-1 md:py-8">
-                    A continuación, se puede observar la tasa y total de los contribuyentes registrados que han realizado a tiempo sus pagos, cuáles se han ido a compromiso de pago y cuáles no han cumplido.
+                    A continuación, se puede observar el monto total recaudado de IVA, ISLR, Multas. En el año actual.
                 </p>
 
                 {/* Bars + Percentage Scale */}

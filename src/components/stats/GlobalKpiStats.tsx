@@ -30,6 +30,7 @@ export interface GlobalKPIResponse {
     finePercentage: number;
     growthRate: number;
     delinquencyRate: number;
+    totalTaxpayers: number;
 }
 
 interface GlobalKPIProps {
@@ -39,7 +40,8 @@ interface GlobalKPIProps {
 export const GlobalKPIStats = ({ globalKpi }: GlobalKPIProps) => {
     // Transformar el objeto de la API en el array que necesita Recharts
     const data: KPIStat[] = [
-        { name: "Cobro total (Bs.)", value: Number(globalKpi.totalTaxCollection) },
+        // { name: "Cobro total (Bs.)", value: Number(globalKpi.totalTaxCollection) },
+        { name: "Total Contibuyentes", value: globalKpi.totalTaxpayers },
         { name: "Promedio excedente fiscal (Bs.)", value: Number(globalKpi.averageCreditSurplus) },
         { name: "Indice de contribuyentes con multas", value: globalKpi.finePercentage },
         { name: "Porcentaje de crecimiento cobro", value: globalKpi.growthRate },
