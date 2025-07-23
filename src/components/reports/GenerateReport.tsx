@@ -11,6 +11,7 @@ import { GroupData } from '../contributions/ContributionTypes';
 import { getCompleteReport, getContributions } from '../utils/api/reportFunctions';
 import toast from 'react-hot-toast';
 import CompleteReportModal from './CompleteReportModal';
+import { getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 
 
 
@@ -24,6 +25,7 @@ function GenerateReport() {
     const [query, setQuery] = useState("");
     const [isLoadingGroups, setIsLoadingGroups] = useState(true);
     const [showCompleteReport, setShowCompleteReport] = useState(false);
+    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
 
     useEffect(() => {
         if (!user) {
@@ -52,23 +54,27 @@ function GenerateReport() {
     }, [user])
 
 
-    let taxpayerArray: Taxpayer[] = [];
-
     if (!user) {
-        navigate("/login")
+        navigate("/login");
         return null;
     }
 
-    if (user.role === "ADMIN" || user.role === "FISCAL" || user.role === "SUPERVISOR") {
-        taxpayerArray = user.taxpayer;
-    } else if (user.role === "COORDINATOR") {
-        taxpayerArray = user.coordinatedGroup.members ? user.coordinatedGroup.members.flatMap((member) => member.taxpayer || []) : [];
-    }
+    useEffect(() => {
+        const fetchTaxpayers = async () => {
+            try {
+                const response = await getTaxpayerForEvents();
+                const filtered = response.data.filter((t: Taxpayer) => t.process !== "FP");
+                setTaxpayerArray(filtered);
+            } catch (e) {
+                toast.error("No se pudieron obtener los contribuyentes.");
+            }
+        };
+
+        fetchTaxpayers();
+    }, []);
+
 
     console.log(user.coordinatedGroup);
-
-    // ✅ Filtrar los contribuyentes con process !== "FP"
-    taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
 
     if (groupData) {
         groupData.sort((a, b) => a.name.localeCompare(b.name));
