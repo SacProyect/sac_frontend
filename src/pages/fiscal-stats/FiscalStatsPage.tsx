@@ -8,6 +8,7 @@ import { getFiscalInfo } from "@/components/utils/api/reportFunctions"
 import { useNavigate } from "react-router-dom"
 import toast from "react-hot-toast"
 import { FiscalInfo } from "@/types/reports"
+import FiscalStatsPage3 from "./FiscalStatsPage3"
 
 export default function FiscalStatsPage() {
     const { user } = useAuth();
@@ -34,7 +35,7 @@ export default function FiscalStatsPage() {
         fetchData();
     }, [])
 
-    const totalPages = 2;
+    const totalPages = 3;
 
     const goToPage = (page: number) => {
         if (page >= 1 && page <= totalPages) setCurrentPage(page)
@@ -54,6 +55,7 @@ export default function FiscalStatsPage() {
         switch (currentPage) {
             case 1: return <FiscalStatsPage1 fiscalData={fiscalInfo} />;
             case 2: return <FiscalStatsPage2 fiscalData={fiscalInfo} />;
+            case 3: return <FiscalStatsPage3 fiscalData={fiscalInfo} />;
             default: return null;
         }
     }
@@ -61,11 +63,12 @@ export default function FiscalStatsPage() {
     return (
         <div className="w-full lg:w-[82vw] flex flex-col bg-[#1c1c1b] text-white">
             {/* Render en mobile: ambas páginas */}
-            <div className="block lg:hidden space-y-4">
+            <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (
                     <>
                         <FiscalStatsPage1 fiscalData={fiscalInfo} />
                         <FiscalStatsPage2 fiscalData={fiscalInfo} />
+                        <FiscalStatsPage3 fiscalData={fiscalInfo} />
                     </>
                 )}
             </div>
@@ -86,7 +89,7 @@ export default function FiscalStatsPage() {
                     Anterior
                 </button>
 
-                {[1, 2].map((page) => (
+                {[1, 2, 3].map((page) => (
                     <button
                         key={page}
                         onClick={() => goToPage(page)}

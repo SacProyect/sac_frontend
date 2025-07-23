@@ -40,3 +40,28 @@ export enum event_type {
     WARNING = "WARNING",
     PAYMENT_COMPROMISE = "PAYMENT_COMPROMISE"
 }
+
+export interface FiscalTaxpayer {
+    id: string
+    name: string
+    rif: string
+    address: string
+    date: string
+    emition_date: string
+    fase: string
+    process: string
+    culminated: boolean
+    collectedIva: string
+    collectedIslr: string
+    collectedFines: string
+    totalCollected: string
+    deadline: number
+    delayDays?: number
+}
+
+export interface FiscalTaxpayerStatsResponse {
+    vdfOnTime: FiscalTaxpayer[]
+    vdfLate: FiscalTaxpayer[]
+    afOnTime: FiscalTaxpayer[]
+    afLate: FiscalTaxpayer[]
+}
