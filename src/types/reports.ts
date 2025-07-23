@@ -14,6 +14,7 @@ export interface TaxpayersList {
     name: string;
     address: string;
     emition_date: Date;
+    date?: Date;
     rif: string;
     fase: string;
     collectedIva: string;

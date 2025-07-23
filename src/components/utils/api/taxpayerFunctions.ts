@@ -132,13 +132,28 @@ export const getTaxpayers = async () => {
 
 		const response = await (await apiConnection.get(requestURL)).data
 
-		return response
+		return response;
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudieron obtener los contribuyentes.")
 	}
 }
 
+export const getFiscalTaxpayersForStats = async (fiscalId: string) => {
+
+	try {
+		let requestUrl = "/taxpayer/get-fiscal-taxpayers-for-stats"
+
+		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los vdf y af fuera ni dentro de plazo.")
+	}
+
+}
 
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
 export const getTaxpayerForEvents = async () => {
