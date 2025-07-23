@@ -23,6 +23,7 @@ export interface SupervisorsStat {
     collectedISLR: string;
     collectedFines: string;
     totalFines: string;
+    supervisorName: string;
 }
 
 export interface Member {
