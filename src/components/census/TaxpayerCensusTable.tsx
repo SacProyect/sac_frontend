@@ -1,5 +1,4 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
-import InfoTableOptMenu from '../UI/InfoTable/InfoTableOptMenu';
 import { TaxpayerCensus } from '../../types/taxpayerCensus';
 import { deleteTaxpayerCensus } from '../utils/api/taxpayerCensusFunctions';
 import toast from 'react-hot-toast';

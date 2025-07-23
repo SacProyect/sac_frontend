@@ -2,7 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Event } from '@/types/event';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
-import { deleteEvent, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
+import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
+import { Taxpayer } from '@/types/taxpayer';
 
 interface EventTableProps {
   rows: Event[];
@@ -25,6 +26,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   const [editValues, setEditValues] = useState<Partial<Event>>({});
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
   const [pendingStatusChange, setPendingStatusChange] = useState<{
     id: string;
     newStatus: "paid" | "not_paid";
@@ -119,7 +121,20 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     }
   };
 
-  console.log(rows)
+
+  useEffect(() => {
+    const fetchTaxpayers = async () => {
+      try {
+        const response = await getTaxpayerForEvents();
+        setTaxpayerArray(response.data);
+      } catch (e) {
+        toast.error("No se pudieron obtener los contribuyentes.");
+      }
+    };
+
+    fetchTaxpayers();
+  }, []);
+
 
   return (
     <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
@@ -182,10 +197,10 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                     row.type === "FINE" ? (
                       user?.role === "ADMIN" ||
                         (user?.role === "FISCAL" &&
-                          user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) || (
+                          taxpayerArray?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) || (
                           user?.role === "SUPERVISOR" &&
                           (
-                            user.taxpayer?.some(t => t.id === row.taxpayerId && t.officerId === user.id) ||
+                            taxpayerArray.some(t => t.id === row.taxpayerId && t.officerId === user.id) ||
                             user.supervised_members?.some(m =>
                               m.id === row.officerId
                             )

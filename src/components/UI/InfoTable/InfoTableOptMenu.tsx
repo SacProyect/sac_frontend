@@ -29,19 +29,12 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
 
     const deleteHandler = async () => {
         try {
-            await deleteTaxpayer(id)
-            const auxTaxpayerArray = user.taxpayer
-            const auxUser = user
-            const deletedTaxpayerIndex = auxTaxpayerArray.findIndex((taxpayer: Taxpayer) => taxpayer.id === id)
-            auxTaxpayerArray.splice(deletedTaxpayerIndex, 1)
-            auxUser.taxpayer = auxTaxpayerArray
-            setUser(auxUser)
-            navigate(0);
+            await deleteTaxpayer(id);
+            navigate(0); // Forzar refetch con useEffect o SWR, react-query, etc.
         } catch (error) {
-            console.log(error)
+            console.log(error);
         }
-
-    }
+    };
 
     const options = user.role == "ADMIN" ? [
         { name: 'Detalles', path: `/taxpayer/${id}` },
@@ -63,9 +56,9 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
         <div>
             {isTryingToDelete &&
                 <div className='absolute top-10 right-0 flex justify-center items-center w-[81.5vw]'>
-                    <div className=" w-1/3 h-52 bg-gray-500 text-white p-2 rounded-lg flex flex-col items-center justify-center space-y-4">
-                        <div className='flex items-end justify-end w-full pr-4 h-8'>
-                            <button className=' cursor-pointer' onClick={() => setIsTryingToDelete(false)}>
+                    <div className="flex flex-col items-center justify-center w-1/3 p-2 space-y-4 text-white bg-gray-500 rounded-lg  h-52">
+                        <div className='flex items-end justify-end w-full h-8 pr-4'>
+                            <button className='cursor-pointer ' onClick={() => setIsTryingToDelete(false)}>
                                 <IoIosClose size={30} />
                             </button>
                         </div>
@@ -74,8 +67,8 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
                         </div>
                         <p>¿Seguro que desea eliminar a este contribuyente?</p>
                         <div className='flex justify-around w-full'>
-                            <button className='bg-green-400 px-4 py-2 rounded-md' onClick={() => setIsTryingToDelete(false)}>NO</button>
-                            <button className='bg-red-500 px-4 py-2 rounded-md' onClick={() => deleteHandler()}>SI</button>
+                            <button className='px-4 py-2 bg-green-400 rounded-md' onClick={() => setIsTryingToDelete(false)}>NO</button>
+                            <button className='px-4 py-2 bg-red-500 rounded-md' onClick={() => deleteHandler()}>SI</button>
                         </div>
                     </div>
                 </div>
