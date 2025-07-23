@@ -80,6 +80,8 @@ function ContributionsFilter({
         };
     }, [calendarOpen]);
 
+    console.log(groupData.map((group) => group.supervisorsStats));
+
     return (
         <section className='w-full pl-8'>
             <div className='relative flex items-center pt-4'>
@@ -132,6 +134,7 @@ function ContributionsFilter({
                     const fines = stats?.totalFines ?? group.totalFines;
                     const iva = stats?.collectedIva ?? group.totalIva;
                     const islr = stats?.collectedISLR ?? group.totalIslr;
+                    const collectedFines = stats?.collectedFines ?? group.collectedFines;
 
                     const selectedIndex = selectedId
                         ? group.supervisorsStats.findIndex(s => s.supervisorId === selectedId)
@@ -166,7 +169,7 @@ function ContributionsFilter({
                                         }}
                                         className='px-2 py-1 text-xs bg-blue-100 border border-gray-400 rounded-md hover:bg-blue-200'
                                     >
-                                        Supervisor {index + 1}
+                                        {supervisorStat.supervisorName}
                                     </button>
                                 ))}
                                 <button
@@ -188,6 +191,10 @@ function ContributionsFilter({
                                 <div className='flex justify-between w-full pt-2'>
                                     <p className='text-xs '>Multas:</p>
                                     <p className='text-xs font-semibold'>{Number(fines).toLocaleString()}</p>
+                                </div>
+                                <div className='flex justify-between w-full pt-2'>
+                                    <p className='text-xs '>Cob. Multas:</p>
+                                    <p className='text-xs font-semibold'>{Number(collectedFines).toLocaleString()}</p>
                                 </div>
                                 <div className='flex justify-between pt-2'>
                                     <p className='text-xs '>Pag. IVA:</p>

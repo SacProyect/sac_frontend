@@ -10,6 +10,7 @@ export interface GroupData {
     members: Member[]; // no lo usas directamente aún
     collected: string;
     totalFines: string;
+    collectedFines: string;
     totalIva: string;
     totalIslr: string;
     supervisorsStats: SupervisorsStat[];
