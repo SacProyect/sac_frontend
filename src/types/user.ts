@@ -15,6 +15,7 @@ export interface User {
     group: Group,
     groupId: string,
     supervisorId?: string,
+    supervised_members?: User[],
 }
 
 export interface CoordinatedGroup {
