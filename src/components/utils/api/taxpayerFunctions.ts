@@ -126,6 +126,19 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 	}
 }
 
+export const getTaxpayers = async () => {
+	try {
+		let requestURL = "/taxpayer/get-taxpayers"
+
+		const response = await (await apiConnection.get(requestURL)).data
+
+		return response
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los contribuyentes.")
+	}
+}
+
 export const deleteTaxpayer = async (taxpayerId: string) => {
 	try {
 		const response = await (await apiConnection.delete(`/taxpayer/${taxpayerId}`)).data

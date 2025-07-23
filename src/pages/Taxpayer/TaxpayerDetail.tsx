@@ -115,10 +115,14 @@ const TaxpayerDetail = () => {
 					) : "No hay datos para mostrar. Por favor agregue multas a este contribuyente para poder ver esta tabla."}
 				</div>
 			) : selectedTable === "iva" ? (
-				<div className='flex text-center items-center justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
+				<div className='flex text-center items-start justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
 					{taxSummary.length > 0 ? (
 						<TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
-					) : "No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla."}
+					) :
+						<div className='flex items-center justify-center w-full h-full text-center'>
+							<p className=''>No hay datos para mostrar. Por favor agregue reportes de IVA a este contribuyente para poder ver esta tabla.</p>
+						</div>
+					}
 
 				</div>
 			) : <div className='flex text-center items-center justify-center w-full h-full lg:h-[25vh] pb-24 overflow-x-auto lg:pb-0 lg:overflow-x-hidden lg:pl-0'>
