@@ -131,7 +131,7 @@ function FiscalReviewComponent() {
                                     key={fiscal.id}
                                     className='flex flex-col w-full px-4 py-3 border-b border-l border-r lg:flex-row last:rounded-b-md'
                                 >
-                                    <div className='flex-[1]'><p>{fiscal.personId ?? "No se encontró la cédula"}</p></div>
+                                    <div className='flex-[1]'><p>{fiscal.personId ? Number(fiscal.personId).toLocaleString() : "No se encontró la cédula"}</p></div>
                                     <div className='flex-[2]'><p>{fiscal.name ?? "No se encontró el nombre"}</p></div>
                                     <div className='flex-[1]'><p>{fiscal.group?.name ?? "No se encontró el grupo"}</p></div>
                                     <div className='flex-[1]'><p>{(fiscal.role === "FISCAL" && fiscal.supervisor?.name) ? fiscal.supervisor.name : fiscal.role === "SUPERVISOR" ? fiscal.name : "No se encontró el supervisor"}</p></div>
