@@ -155,6 +155,24 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string) => {
 
 }
 
+export const getFiscalsForReview = async () => {
+
+	try {
+		let requestUrl = "/user/get-fiscals-for-review"
+
+		const response = await apiConnection.get(`${requestUrl}`);
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los fiscales.")
+	}
+}
+
+
+
+
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
 export const getTaxpayerForEvents = async () => {
 	try {

@@ -25,7 +25,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalMonthlyCollect(user.id);
+                const response = await getFiscalMonthlyCollect(fiscalInfo.fiscalId);
 
                 const months = [
                     "enero", "febrero", "marzo", "abril", "mayo", "junio",

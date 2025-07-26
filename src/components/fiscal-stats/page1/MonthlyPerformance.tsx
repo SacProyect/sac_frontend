@@ -26,7 +26,7 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalMonthlyPerformance(user.id);
+                const response = await getFiscalMonthlyPerformance(fiscalInfo.fiscalId);
 
                 setMonthlyGrowth(response);
 
@@ -141,7 +141,7 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] text-white rounded-xl lg:h-[40vh]">
                 <div className="flex flex-row items-center justify-between pb-3">
-                    <div className="flex items-center gap-2 text-base font-semibold pl-4 pt-4">
+                    <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <FileText className="w-4 h-4 text-purple-500" />
                         Evolución Mensual del Rendimiento
                     </div>

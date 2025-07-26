@@ -28,7 +28,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalComplianceByProcess(user.id);
+                const response = await getFiscalComplianceByProcess(fiscalInfo.fiscalId);
 
                 const newStats = [
                     {

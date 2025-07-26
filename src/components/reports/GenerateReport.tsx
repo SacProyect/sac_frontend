@@ -1,14 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
-import ReportModal from './ReportModal';
 import { useAuth } from '@/hooks/useAuth';
 import { Taxpayer } from '@/types/taxpayer';
 import { useNavigate } from 'react-router-dom';
-import { Event } from '@/types/event';
-import { IVAReports } from '@/types/IvaReports';
 import { GroupData } from '../contributions/ContributionTypes';
-import { getCompleteReport, getContributions } from '../utils/api/reportFunctions';
+import { getContributions } from '../utils/api/reportFunctions';
 import toast from 'react-hot-toast';
 import CompleteReportModal from './CompleteReportModal';
 import { getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
@@ -16,10 +13,8 @@ import { getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 
 
 function GenerateReport() {
-    const [showReportModal, setShowReportModal] = useState(false);
     const { user } = useAuth();
     const navigate = useNavigate();
-    // const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
     const [groupData, setGroupData] = useState<GroupData[]>([]);
     const [inputValue, setInputValue] = useState("");
     const [query, setQuery] = useState("");
@@ -72,9 +67,6 @@ function GenerateReport() {
 
         fetchTaxpayers();
     }, []);
-
-
-    console.log(user.coordinatedGroup);
 
     if (groupData) {
         groupData.sort((a, b) => a.name.localeCompare(b.name));

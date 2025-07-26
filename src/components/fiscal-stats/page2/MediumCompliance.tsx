@@ -1,12 +1,18 @@
 import { getFiscalTaxpayerCompliance } from '@/components/utils/api/reportFunctions';
 import { useAuth } from '@/hooks/useAuth';
-import { ComplianceInterface } from '@/types/reports';
+import { ComplianceInterface, FiscalInfo } from '@/types/reports';
 import { Download, Users } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-function MediumCompliance() {
+
+interface MediumComplianceProps {
+    fiscalData: FiscalInfo;
+}
+
+
+function MediumCompliance({ fiscalData }: MediumComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -19,7 +25,7 @@ function MediumCompliance() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayerCompliance(user.id);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
 
                 setCompliance(response.medium);
 

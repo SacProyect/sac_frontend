@@ -8,6 +8,7 @@ import { useEffect, useState } from "react"
 
 interface FiscalStatsPage3Props {
     fiscalData: FiscalInfo
+    fiscalId: string | undefined;
 }
 
 export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) {
