@@ -32,6 +32,7 @@ function Sidebar() {
         { name: "Contribuciones", path: "/contributions" },
         { name: "Estadísticas", path: "/stats" },
         { name: "Generar Reportes", path: "/gen-reports" },
+        { name: "Rev. Fiscal", path: "/fiscal-review" },
 
 
     ] : user.role === "COORDINATOR" ? [
@@ -48,9 +49,10 @@ function Sidebar() {
         { name: "Contribuciones", path: "/contributions" },
         { name: "Generar Reportes", path: "/gen-reports" },
         { name: "Estadisticas", path: "/stats" },
+        { name: "Rev. Fiscal", path: "/fiscal-review" },
 
 
-    ] : [
+    ] : user.role === "SUPERVISOR" ? [
         { name: 'Inicio', path: '/' },
         { name: 'Tabla Censo', path: '/show-census' },
         { name: 'Actuaciones', path: '/taxpayer' },
@@ -63,8 +65,21 @@ function Sidebar() {
         // { name: 'Pagos', path: '/payment' },
         // { name: 'Compromisos de pagos', path: '/payment_compromise' },
         { name: "Generar Reportes", path: "/gen-reports" },
+        { name: "Rev. Fiscal", path: "/fiscal-review" },
 
-
+    ] : [
+        { name: 'Inicio', path: '/' },
+        { name: 'Tabla Censo', path: '/show-census' },
+        { name: 'Actuaciones', path: '/taxpayer' },
+        { name: 'Contribuyentes', path: '/census' },
+        { name: 'Avisos', path: '/warning' },
+        { name: 'Multas', path: '/fine' },
+        { name: 'Reporte IVA', path: '/iva' },
+        { name: "Reporte de ISLR", path: "/islr" },
+        { name: "Estadísticas", path: `/fiscal-stats/${user.id}` },
+        // { name: 'Pagos', path: '/payment' },
+        // { name: 'Compromisos de pagos', path: '/payment_compromise' },
+        { name: "Generar Reportes", path: "/gen-reports" },
     ]
 
     const handleLogout = () => {

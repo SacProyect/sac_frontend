@@ -16,6 +16,7 @@ import { IVAReports } from './types/IvaReports';
 import ReportModal from './components/reports/ReportModal';
 import ReportModalGroups from './components/reports/ReportModalGroups';
 import { ISLRReports } from './types/ISLRReports';
+import FiscalReviewPage from './pages/fiscal-review/FiscalReviewPage';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
@@ -129,17 +130,17 @@ export const router = createBrowserRouter([
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
           },
           {
-            path: "/fiscal-stats",
+            path: "/fiscal-review",
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Revisión de fiscales...</div>} ><FiscalReviewPage /></Suspense>
+          },
+          {
+            path: "/fiscal-stats/:fiscalId",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><FiscalStats /></Suspense>
           },
           {
             path: "/index-iva",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Indice de IVA...</div>} ><IndexIva /></Suspense>
           },
-          // {
-          //   path: "/gen-reports",
-          //   element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Generación de Reportes...</div>} ><ReportsPage /></Suspense>
-          // },
           {
             path: "/iva",
             element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Reporte de IVA...</div>} ><IvaReport /></Suspense>

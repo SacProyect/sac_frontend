@@ -1,12 +1,17 @@
 import { getFiscalCollectAnalisis } from '@/components/utils/api/reportFunctions';
 import { useAuth } from '@/hooks/useAuth';
-import { FiscalAnalisis } from '@/types/reports';
+import { FiscalAnalisis, FiscalInfo } from '@/types/reports';
 import { BarChart3, Download } from 'lucide-react';
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-function CollectAnalisis() {
+
+interface CollectAnalisisProps {
+    fiscalData: FiscalInfo
+}
+
+function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
     const [analisis, setAnalisis] = useState<FiscalAnalisis>();
 
     const { user } = useAuth();
@@ -20,7 +25,7 @@ function CollectAnalisis() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalCollectAnalisis(user.id);
+                const response = await getFiscalCollectAnalisis(fiscalData.fiscalId);
 
                 setAnalisis(response);
 

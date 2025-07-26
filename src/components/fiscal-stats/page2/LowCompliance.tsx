@@ -1,6 +1,6 @@
 import { getFiscalTaxpayerCompliance } from '@/components/utils/api/reportFunctions';
 import { useAuth } from '@/hooks/useAuth';
-import { ComplianceInterface } from '@/types/reports'
+import { ComplianceInterface, FiscalInfo } from '@/types/reports'
 import { Download, TrendingDown } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast';
@@ -8,9 +8,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 
+interface LowComplianceProps {
+    fiscalData: FiscalInfo;
+}
 
-
-function LowCompliance() {
+function LowCompliance({ fiscalData }: LowComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -24,7 +26,7 @@ function LowCompliance() {
                 return;
             }
             try {
-                const response = await getFiscalTaxpayerCompliance(user.id);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
 
                 setCompliance(response.low);
 

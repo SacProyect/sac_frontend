@@ -10,9 +10,10 @@ import { Download, TrendingUp, TrendingDown, Users, BarChart3, User } from "luci
 
 interface FiscalStatsPage2Props {
     fiscalData: FiscalInfo
+    fiscalId: string | undefined;
 }
 
-export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) {
+export default function FiscalStatsPage2({ fiscalData, fiscalId }: FiscalStatsPage2Props) {
     return (
         <div className="lg:flex flex-col w-full gap-4 p-4 overflow-hidden lg:h-[92vh]">
             {/* Fila superior - 2 estadísticas */}
@@ -47,19 +48,19 @@ export default function FiscalStatsPage2({ fiscalData }: FiscalStatsPage2Props) 
             <div className="flex flex-col gap-4">
                 <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                     {/* Estadística 1: Alto Cumplimiento */}
-                    <HighCompliance />
+                    <HighCompliance fiscalData={fiscalData} />
 
                     {/* Estadística 2: Medio Cumplimiento */}
-                    <MediumCompliance />
+                    <MediumCompliance fiscalData={fiscalData} />
                 </div>
 
                 {/* Fila inferior - 2 estadísticas */}
                 <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
                     {/* Estadística 3: Bajo Cumplimiento */}
-                    <LowCompliance />
+                    <LowCompliance fiscalData={fiscalData} />
 
                     {/* Estadística 4: Eficiencia del Fiscal */}
-                    <CollectAnalisis />
+                    <CollectAnalisis fiscalData={fiscalData} />
                 </div>
             </div>
         </div>

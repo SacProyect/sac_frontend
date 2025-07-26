@@ -5,7 +5,7 @@ import FiscalStatsPage1 from "./FiscalStatsPage1"
 import FiscalStatsPage2 from "./FiscalStatsPage2"
 import { useAuth } from "@/hooks/useAuth"
 import { getFiscalInfo } from "@/components/utils/api/reportFunctions"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useParams } from "react-router-dom"
 import toast from "react-hot-toast"
 import { FiscalInfo } from "@/types/reports"
 import FiscalStatsPage3 from "./FiscalStatsPage3"
@@ -13,11 +13,19 @@ import FiscalStatsPage3 from "./FiscalStatsPage3"
 export default function FiscalStatsPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const { fiscalId } = useParams();
 
     if (!user) {
         navigate('/login')
         return;
     }
+
+    useEffect(() => {
+        if (user.role === "FISCAL" && user.id !== fiscalId) {
+            toast.error("No puede acceder a esta página.")
+            navigate("/")
+        }
+    }, [])
 
     const [currentPage, setCurrentPage] = useState(1);
     const [fiscalInfo, setFiscalInfo] = useState<FiscalInfo>();
@@ -25,7 +33,8 @@ export default function FiscalStatsPage() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalInfo(user.id);
+                const response = await getFiscalInfo(fiscalId || user.id);
+                console.log(response);
                 setFiscalInfo(response);
             } catch (e) {
                 console.error(e);
@@ -53,9 +62,9 @@ export default function FiscalStatsPage() {
         if (!fiscalInfo) return <div>Loading...</div>;
 
         switch (currentPage) {
-            case 1: return <FiscalStatsPage1 fiscalData={fiscalInfo} />;
-            case 2: return <FiscalStatsPage2 fiscalData={fiscalInfo} />;
-            case 3: return <FiscalStatsPage3 fiscalData={fiscalInfo} />;
+            case 1: return <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
+            case 2: return <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
+            case 3: return <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
             default: return null;
         }
     }
@@ -66,9 +75,9 @@ export default function FiscalStatsPage() {
             <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (
                     <>
-                        <FiscalStatsPage1 fiscalData={fiscalInfo} />
-                        <FiscalStatsPage2 fiscalData={fiscalInfo} />
-                        <FiscalStatsPage3 fiscalData={fiscalInfo} />
+                        <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} />
+                        <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} />
+                        <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} />
                     </>
                 )}
             </div>
