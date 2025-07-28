@@ -168,7 +168,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                     </div> */}
                 </div>
                 <div className="pt-0">
-                    <div id="recaudacion-mensual-table" className=" lg:h-[30vh] overflow-y-auto custom-scroll p-4">
+                    <div id="recaudacion-mensual-table" className="h-[40vh] lg:h-[30vh] overflow-y-auto custom-scroll p-4">
                         <div className="space-y-4">
                             {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">
