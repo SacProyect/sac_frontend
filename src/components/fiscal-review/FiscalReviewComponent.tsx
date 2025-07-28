@@ -45,7 +45,9 @@ function FiscalReviewComponent() {
         fetchTaxpayers();
     }, []);
 
-    fiscalArray.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+    // if (fiscalArray) fiscalArray.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
+
+    console.log(fiscalArray);
 
     // Filtrar por nombre, rif o fiscal (user.name)
     const q = inputValue.trim().toLowerCase();
