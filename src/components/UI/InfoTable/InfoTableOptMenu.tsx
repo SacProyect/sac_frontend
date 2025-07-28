@@ -56,7 +56,7 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
         <div>
             {isTryingToDelete &&
                 <div className='absolute top-10 right-0 flex justify-center items-center w-[81.5vw]'>
-                    <div className="flex flex-col items-center justify-center w-1/3 p-2 space-y-4 text-white bg-gray-500 rounded-lg  h-52">
+                    <div className="z-50 flex flex-col items-center justify-center w-1/3 p-2 space-y-4 text-white bg-gray-500 rounded-lg h-52">
                         <div className='flex items-end justify-end w-full h-8 pr-4'>
                             <button className='cursor-pointer ' onClick={() => setIsTryingToDelete(false)}>
                                 <IoIosClose size={30} />
