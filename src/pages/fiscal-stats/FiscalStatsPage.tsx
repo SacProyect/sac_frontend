@@ -70,7 +70,7 @@ export default function FiscalStatsPage() {
     }
 
     return (
-        <div className="w-full lg:w-[82vw] flex flex-col bg-[#1c1c1b] text-white">
+        <div className="w-full lg:w-[82vw] h-full lg:h-[100vh] flex flex-col bg-[#1c1c1b] text-white">
             {/* Render en mobile: ambas páginas */}
             <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (

@@ -56,7 +56,7 @@ export default function FiscalStatsPage1({ fiscalData, fiscalId }: FiscalStatsPa
       </div>
 
       {/* Fila inferior - 2 estadísticas */}
-      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 h-[20vh]">
         {/* Estadística 3: Evolución Mensual del Rendimiento */}
         <MonthlyPerformance fiscalInfo={fiscalData} />
 
