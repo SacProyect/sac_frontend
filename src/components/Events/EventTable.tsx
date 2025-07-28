@@ -65,9 +65,19 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     if (!editingRowId) return;
     try {
       const cleanId = editingRowId;
-      const { taxpayer, taxpayerId, type, date, ...sanitizedPayload } = editValues;
-      const updatedEvent = await updateEvent({ ...sanitizedPayload, id: cleanId });
-      setRows(prev => prev.map(row => row.id === cleanId ? { ...row, ...updatedEvent } : row));
+
+      const { taxpayer, taxpayerId, date, officerId, ...rest } = editValues;
+      const sanitizedPayload = {
+        ...rest,
+        id: cleanId,
+        type: editValues.type, // aseguras que el type sí se mande
+      };
+
+      const updatedEvent = await updateEvent(sanitizedPayload);
+
+      setRows(prev =>
+        prev.map(row => (row.id === cleanId ? { ...row, ...updatedEvent } : row))
+      );
       toast.success('Evento actualizado');
       setEditingRowId(null);
       setEditValues({});
