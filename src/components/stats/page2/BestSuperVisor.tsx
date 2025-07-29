@@ -3,43 +3,18 @@ import { GroupData } from '@/types/stats'
 import { Award, Download, Trophy } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
+import { useRef } from 'react';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 
-// Datos de ejemplo
-// const supervisorData = [
-//     {
-//         group: "Grupo 1",
-//         best: { name: "Ana García", iva: 125000, islr: 85000, multas: 15000, total: 225000 },
-//         worst: { name: "Carlos López", iva: 95000, islr: 65000, multas: 8000, total: 168000 },
-//     },
-//     {
-//         group: "Grupo 2",
-//         best: { name: "María Rodríguez", iva: 135000, islr: 90000, multas: 18000, total: 243000 },
-//         worst: { name: "José Martínez", iva: 88000, islr: 60000, multas: 7000, total: 155000 },
-//     },
-//     {
-//         group: "Grupo 3",
-//         best: { name: "Luis Fernández", iva: 118000, islr: 82000, multas: 12000, total: 212000 },
-//         worst: { name: "Carmen Silva", iva: 92000, islr: 58000, multas: 9000, total: 159000 },
-//     },
-//     {
-//         group: "Grupo 4",
-//         best: { name: "Roberto Díaz", iva: 142000, islr: 95000, multas: 20000, total: 257000 },
-//         worst: { name: "Elena Morales", iva: 85000, islr: 55000, multas: 6000, total: 146000 },
-//     },
-//     {
-//         group: "Grupo 5",
-//         best: { name: "Patricia Vega", iva: 128000, islr: 87000, multas: 16000, total: 231000 },
-//         worst: { name: "Miguel Torres", iva: 90000, islr: 62000, multas: 8500, total: 160500 },
-//     },
-//     {
-//         group: "Grupo 6",
-//         best: { name: "Andrea Ruiz", iva: 132000, islr: 89000, multas: 17000, total: 238000 },
-//         worst: { name: "David Herrera", iva: 87000, islr: 57000, multas: 7500, total: 151500 },
-//     },
-// ]
+
+
 
 function BestSuperVisor() {
     const [supervisorData, setSupervisorData] = useState<GroupData[]>([]);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [scrollReady, setScrollReady] = useState(false);
+
+
 
     useEffect(() => {
         const fetchSupervisors = async () => {
@@ -69,6 +44,8 @@ function BestSuperVisor() {
                 transformedData.sort((a, b) => b.combinedTotal - a.combinedTotal);
 
                 setSupervisorData(transformedData);
+                setScrollReady(true);
+
             } catch (e: any) {
                 console.error(e);
                 toast.error("No se pudieron obtener los mejores supervisores.");
@@ -77,6 +54,8 @@ function BestSuperVisor() {
 
         fetchSupervisors();
     }, []);
+
+
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -194,6 +173,8 @@ function BestSuperVisor() {
         win.print();
     };
 
+    useAutoScroll(scrollRef, "supervisor-table", scrollReady);
+
 
     return (
         <>
@@ -213,7 +194,7 @@ function BestSuperVisor() {
                     </div>
                 </div>
                 <div>
-                    <div id="supervisor-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4">
+                    <div id="supervisor-table" className="h-[40vh] lg:h-[40vh] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
                         <div className="space-y-4">
                             {supervisorData && supervisorData?.map((group, index) => (
                                 <div key={index} className="border border-[#3a3a39] rounded-lg p-4">

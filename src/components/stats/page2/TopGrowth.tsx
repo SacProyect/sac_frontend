@@ -1,11 +1,15 @@
 import { getMonthlyGrowth } from '@/components/utils/api/reportFunctions';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { BestGrowth } from '@/types/stats';
 import { Download, TrendingUp } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 
 function TopGrowth() {
     const [coordinatorGrowth, setCoordinatorGrowth] = useState<BestGrowth[]>([]);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [scrollReady, setScrollReady] = useState(false);
+
 
     useEffect(() => {
         const fetchCoordinatorGrowth = async () => {
@@ -23,6 +27,7 @@ function TopGrowth() {
                     .sort((a: BestGrowth, b: BestGrowth) => b.growthPercentage - a.growthPercentage); // Orden descendente
 
                 setCoordinatorGrowth(transformed);
+                setScrollReady(true);
             } catch (e) {
                 console.error(e);
                 throw new Error("No se pudo obtener el crecimiento estadístico de los coordinadores.");
@@ -138,6 +143,8 @@ function TopGrowth() {
         win.print();
     };
 
+    useAutoScroll(scrollRef, "coordinador-table", scrollReady);
+
 
     return (
         <>
@@ -157,7 +164,7 @@ function TopGrowth() {
                     </div>
                 </div>
                 <div>
-                    <div id="coordinador-table" className="h-[270px] lg:h-[30vh] overflow-y-auto custom-scroll p-4">
+                    <div id="coordinador-table" className="h-[270px] lg:h-[30vh] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
                         <div className="pb-4 space-y-3">
                             {coordinatorGrowth && coordinatorGrowth.map((coordinator, index) => (
                                 <div

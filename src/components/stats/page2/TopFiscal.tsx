@@ -1,7 +1,8 @@
 import { getTopFiscals } from '@/components/utils/api/reportFunctions'
+import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { TopFiscals } from '@/types/stats'
 import { Download, TrendingUp } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast'
 
 
@@ -9,6 +10,9 @@ import toast from 'react-hot-toast'
 
 function TopFiscal() {
     const [topFiscals, setTopFiscals] = useState<TopFiscals[]>();
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [scrollReady, setScrollReady] = useState(false);
+
 
     useEffect(() => {
         const fetchFiscals = async () => {
@@ -18,6 +22,7 @@ function TopFiscal() {
                 const response = await getTopFiscals();
 
                 setTopFiscals(response.data);
+                setScrollReady(true);
 
             } catch (e) {
                 console.error(e);
@@ -123,7 +128,7 @@ function TopFiscal() {
         win.print();
     };
 
-
+    useAutoScroll(scrollRef, "fiscales-table", scrollReady);
 
 
     return (
@@ -144,7 +149,7 @@ function TopFiscal() {
                     </div>
                 </div>
                 <div>
-                    <div id="fiscales-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4">
+                    <div id="fiscales-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
                         <div className="space-y-2">
                             {topFiscals && topFiscals?.map((fiscal, index) => (
                                 <div

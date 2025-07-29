@@ -17,6 +17,7 @@ import ReportModal from './components/reports/ReportModal';
 import ReportModalGroups from './components/reports/ReportModalGroups';
 import { ISLRReports } from './types/ISLRReports';
 import FiscalReviewPage from './pages/fiscal-review/FiscalReviewPage';
+import { PresentationProvider } from './components/context/PresentationContext';
 
 const FinePage = lazy(() => import('./pages/Events/FinePage'));
 const ComitmentPage = lazy(() => import('./pages/Events/ComitmentPage'));
@@ -127,7 +128,11 @@ export const router = createBrowserRouter([
           },
           {
             path: "/stats",
-            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} ><StatsPage /></Suspense>
+            element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white'>Cargando Página de Estadísticas...</div>} >
+              <PresentationProvider>
+                <StatsPage />
+              </PresentationProvider>
+            </Suspense>
           },
           {
             path: "/fiscal-review",

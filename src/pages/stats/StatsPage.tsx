@@ -15,6 +15,7 @@ import { GroupStat } from '@/components/stats/GroupPerformanceStats';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import StatisticsPage2 from './StatsPage2';
 import StatisticsPage3 from './StatsPage3';
+import { usePresentation } from '@/components/context/PresentationContext';
 
 const PageOneStats = lazy(() => import('@/components/stats/GlobalPerfomance'));
 const PageTwoStats = lazy(() => import('@/components/stats/GlobalTaxpayerPerformance').then(m => ({ default: m.PageTwoStats })));
@@ -30,7 +31,7 @@ function StatsPage() {
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
     const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
 
-    const [currentPage, setCurrentPage] = useState(1);
+    const { currentPage, isAutoMode, autoScrollEnabled, setUserInteraction, goToPage, goToNextPage, goToPrevPage } = usePresentation();
 
     if (!user || (user.role !== 'ADMIN' && user.role !== "COORDINATOR")) {
         navigate('/login');
@@ -66,6 +67,15 @@ function StatsPage() {
 
         fetchStats();
     }, []);
+
+    useEffect(() => {
+        if (isAutoMode && currentPage === 1) {
+            // Salta automáticamente a la página 2
+            // Pero solo una vez, si aún está en la 1
+            const event = new Event('jumpToAutoMode');
+            window.dispatchEvent(event); // Puedes eliminar si no usas este evento
+        }
+    }, [isAutoMode]);
 
     const renderPage = () => {
         if (currentPage === 1) {
@@ -160,7 +170,7 @@ function StatsPage() {
                         {renderPage()}
                         <div className="justify-center hidden py-1 space-x-4 lg:flex bg-[#1c1c1b]">
                             <button
-                                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                                onClick={goToPrevPage}
                                 className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
                             >
                                 <ChevronLeft className="w-4 h-4" /> Anterior
@@ -168,14 +178,14 @@ function StatsPage() {
                             {[...Array(totalPages)].map((_, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => setCurrentPage(index + 1)}
+                                    onClick={() => goToPage(index + 1)}
                                     className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
                                 >
                                     {index + 1}
                                 </button>
                             ))}
                             <button
-                                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                                onClick={goToNextPage}
                                 className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c]"
                             >
                                 Siguiente <ChevronRight className="w-4 h-4" />
