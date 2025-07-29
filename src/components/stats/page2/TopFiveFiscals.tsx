@@ -1,7 +1,8 @@
 import { getTopFiveByGroup } from '@/components/utils/api/reportFunctions';
+import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { TopFiveFiscalsByGroup } from '@/types/stats'
 import { Download, Users } from 'lucide-react'
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import toast from 'react-hot-toast';
 
 
@@ -9,6 +10,9 @@ import toast from 'react-hot-toast';
 
 function TopFiveFiscals() {
     const [fiscalsByGroup, setFiscalsByGroup] = useState<TopFiveFiscalsByGroup[]>();
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const [scrollReady, setScrollReady] = useState(false);
+
 
     useEffect(() => {
         const fetchTopFiveByGroup = async () => {
@@ -36,6 +40,7 @@ function TopFiveFiscals() {
                     .sort((a, b) => b.totalCollected - a.totalCollected); // Orden descendente
 
                 setFiscalsByGroup(transformedData);
+                setScrollReady(true);
             } catch (e) {
                 toast.error("No se pudieron obtener los mejores fiscales de cada grupo.");
             }
@@ -150,6 +155,9 @@ function TopFiveFiscals() {
     };
 
 
+    useAutoScroll(scrollRef, "fiscales-grupo-table", scrollReady);
+
+
     return (
         <>
             <div className="bg-[#2a2a29] border-[#3a3a39] rounded-md text-white h-[60vh] lg:h-full">
@@ -168,8 +176,8 @@ function TopFiveFiscals() {
                     </div>
                 </div>
                 <div>
-                    <div id="fiscales-grupo-table" className="lg:h-[35vh] h-[48vh] overflow-y-auto custom-scroll p-4 ">
-                        <div className="space-y-4 lg:pb-8">
+                    <div id="fiscales-grupo-table" className="lg:h-[35vh] h-[48vh] overflow-y-auto custom-scroll p-4 " ref={scrollRef}>
+                        <div className="space-y-4 lg:pb-4">
                             {fiscalsByGroup?.map((group, index) => (
                                 <div key={index} className="border border-[#3a3a39] rounded-lg p-4">
                                     <h3 className="mb-3 font-semibold text-purple-400">{group.name}</h3>
