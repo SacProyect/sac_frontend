@@ -34,7 +34,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const lastInteractionRef = useRef<number>(Date.now());
 
-    const INACTIVITY_LIMIT = 30000; // 30s
+    const INACTIVITY_LIMIT = 60000; // 30s
     const TOTAL_PAGES = 3;
 
     useEffect(() => {
@@ -97,7 +97,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
         window.addEventListener('click', handleUserActivity);
         window.addEventListener('scroll', handleUserActivity);
-        window.addEventListener('mousemove', handleUserActivity);
+        // window.addEventListener('mousemove', handleUserActivity);
         window.addEventListener('keydown', handleUserActivity);
 
         const checkInactivity = setInterval(() => {
@@ -113,7 +113,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             clearInterval(checkInactivity);
             window.removeEventListener('click', handleUserActivity);
             window.removeEventListener('scroll', handleUserActivity);
-            window.removeEventListener('mousemove', handleUserActivity);
+            // window.removeEventListener('mousemove', handleUserActivity);
             window.removeEventListener('keydown', handleUserActivity);
         };
     }, [isAutoMode, isLargeScreen]);
