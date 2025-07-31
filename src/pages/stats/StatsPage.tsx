@@ -155,6 +155,8 @@ function StatsPage() {
 
     const totalPages = 3;
 
+
+
     return (
         <div className="min-h-screen bg-[#292d33]">
             <div className='flex flex-col '>
