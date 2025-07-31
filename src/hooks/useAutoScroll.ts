@@ -22,7 +22,7 @@ export function useAutoScroll(
     const waitRef = useRef<number | null>(null);
 
     // Register the table once
-    useEffect(() => {
+    useEffect(() => { 
         registerTable(tableId);
     }, []);
 
