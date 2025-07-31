@@ -5,6 +5,7 @@ import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { useRef } from 'react';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
+import { usePresentation } from '@/components/context/PresentationContext'
 
 
 
@@ -13,6 +14,7 @@ function BestSuperVisor() {
     const [supervisorData, setSupervisorData] = useState<GroupData[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
+    const { currentPage } = usePresentation();
 
 
 
@@ -173,7 +175,7 @@ function BestSuperVisor() {
         win.print();
     };
 
-    useAutoScroll(scrollRef, "supervisor-table", scrollReady);
+    useAutoScroll(scrollRef, "supervisor-table", scrollReady && currentPage === 2);
 
 
     return (

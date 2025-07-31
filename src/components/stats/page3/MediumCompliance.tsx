@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { High } from '@/types/stats'
 import { AlertTriangle, Download } from 'lucide-react'
@@ -10,14 +11,16 @@ interface MediumComplianceProps {
 }
 
 function MediumCompliance({ data }: MediumComplianceProps) {
+    const { currentPage } = usePresentation();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
 
+
     useEffect(() => {
-        if (data) {
+        if (data.length > 0) {
             setScrollReady(true);
         }
-    }, [data]);
+    }, [data.length]);
 
 
     const formatCurrency = (amount: number) => {
@@ -119,8 +122,8 @@ function MediumCompliance({ data }: MediumComplianceProps) {
         }
     }
 
-
-    useAutoScroll(scrollRef, "medio-cumplimiento-table", scrollReady);
+    const shouldScroll = scrollReady && currentPage === 3;
+    useAutoScroll(scrollRef, "medio-cumplimiento-table", shouldScroll);
 
 
 

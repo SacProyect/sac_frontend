@@ -52,25 +52,36 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             const alreadyRegistered = prev.includes(id);
             if (!alreadyRegistered) {
                 const updated = [...prev, id];
+                console.log(`[registerTable] Registered table: ${id}`);
+
+
+                console.log(`[registerTable] Total registered tables: ${updated.length}`);
                 if (updated.length === 1) {
-                    // Primer registro activa el primero
                     setCurrentTableId(id);
+                    console.log(`[registerTable] First table set as active: ${id}`);
                 }
                 return updated;
+            } else {
+                console.log(`[registerTable] Table ${id} is already registered.`);
             }
             return prev;
         });
     };
 
+
+
+
     const goToNextTableOrPage = () => {
         const index = tableQueue.findIndex(id => id === currentTableId);
         if (index === -1 || index === tableQueue.length - 1) {
-            // Última tabla → avanzar de página
+            console.log(`[goToNextTableOrPage] Last table reached: ${currentTableId}. Going to next page.`);
             setCurrentTableId(null);
             setTableQueue([]);
             goToNextPageOnScrollEnd();
         } else {
-            setCurrentTableId(tableQueue[index + 1]);
+            const nextId = tableQueue[index + 1];
+            setCurrentTableId(nextId);
+            console.log(`[goToNextTableOrPage] Moving to next table: ${nextId}`);
         }
     };
 
@@ -82,13 +93,39 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
         if (!isAutoMode) return;
 
         setCurrentPage(prev => {
-            if (prev >= TOTAL_PAGES) {
-                return 2; // Salta de la 3 a la 2
-            } else {
-                return prev + 1;
+            const isLastPage = prev >= TOTAL_PAGES;
+            const shouldLoop = isLastPage && tableQueue.length === 0 && currentTableId === null;
+
+            if (isLastPage) {
+                if (!shouldLoop) {
+                    console.log(`[goToNextPageOnScrollEnd] Staying on page ${prev} until scroll finishes.`);
+                    return prev; // Wait until scroll in last page completes
+                }
+
+                console.log(`[goToNextPageOnScrollEnd] Last page done. Looping back to page 2.`);
+                return 2;
             }
+
+            const nextPage = prev + 1;
+            console.log(`[goToNextPageOnScrollEnd] Moving from page ${prev} to ${nextPage}`);
+            return nextPage;
         });
     };
+
+    // Watch for loop condition after tables have been cleared on last page
+    useEffect(() => {
+        if (!isAutoMode || currentPage !== TOTAL_PAGES) return;
+
+        const timeout = setTimeout(() => {
+            const shouldLoop = tableQueue.length === 0 && currentTableId === null;
+            if (shouldLoop) {
+                console.log(`[Loop Timeout] 30s passed on page ${currentPage}. Returning to page 2`);
+                setCurrentPage(2);
+            }
+        }, 30000); // 30 seconds
+
+        return () => clearTimeout(timeout);
+    }, [isAutoMode, currentPage, tableQueue.length, currentTableId]);
 
     useEffect(() => {
         setIsLargeScreen(window.innerWidth > 1024);
@@ -104,8 +141,14 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             if (!isLargeScreen) return;
             const now = Date.now();
             if (!isAutoMode && now - lastInteractionRef.current > INACTIVITY_LIMIT) {
+                console.log("[Inactivity] Auto mode activated due to inactivity");
                 setIsAutoMode(true);
-                setCurrentPage(2); // ← inicia desde la página 2 al detectar inactividad
+                setCurrentPage((prev) => {
+                    if (prev !== 2) {
+                        console.log(`[Inactivity] Jumping to page 2 from page ${prev}`);
+                    }
+                    return prev !== 2 ? 2 : prev;
+                });
             }
         }, 1000);
 
@@ -121,6 +164,8 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         setAutoScrollEnabled(isAutoMode);
     }, [isAutoMode, currentPage]);
+
+
 
     return (
         <PresentationContext.Provider

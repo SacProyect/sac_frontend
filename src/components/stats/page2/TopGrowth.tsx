@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext';
 import { getMonthlyGrowth } from '@/components/utils/api/reportFunctions';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { BestGrowth } from '@/types/stats';
@@ -143,7 +144,8 @@ function TopGrowth() {
         win.print();
     };
 
-    useAutoScroll(scrollRef, "coordinador-table", scrollReady);
+    const { currentPage } = usePresentation();
+    useAutoScroll(scrollRef, "coordinador-table", scrollReady && currentPage === 2);
 
 
     return (

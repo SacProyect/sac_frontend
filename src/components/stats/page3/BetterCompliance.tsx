@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { High } from '@/types/stats'
 import { Download, Users } from 'lucide-react'
@@ -9,15 +10,17 @@ interface BetterComplianceProps {
 }
 
 function BetterCompliance({ data }: BetterComplianceProps) {
+    const { currentPage } = usePresentation();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
 
 
     useEffect(() => {
-        if (data) {
+        if (data.length > 0) {
             setScrollReady(true);
         }
-    }, [data]);
+    }, [data.length]);
+
 
 
     const downloadPDF = (tableId: string, fileName: string) => {
@@ -116,7 +119,9 @@ function BetterCompliance({ data }: BetterComplianceProps) {
         }).format(amount)
     }
 
-    useAutoScroll(scrollRef, "alto-cumplimiento-table", scrollReady);
+
+    const shouldScroll = scrollReady && currentPage === 3;
+    useAutoScroll(scrollRef, "alto-cumplimiento-table", shouldScroll);
 
 
     return (

@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext'
 import { getTopFiscals } from '@/components/utils/api/reportFunctions'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { TopFiscals } from '@/types/stats'
@@ -128,7 +129,9 @@ function TopFiscal() {
         win.print();
     };
 
-    useAutoScroll(scrollRef, "fiscales-table", scrollReady);
+    const { currentPage } = usePresentation();
+
+    useAutoScroll(scrollRef, "fiscales-table", scrollReady && currentPage === 2);
 
 
     return (

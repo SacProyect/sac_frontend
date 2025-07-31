@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { High } from '@/types/stats'
 import { Download, TrendingDown } from 'lucide-react'
@@ -10,15 +11,16 @@ interface LowComplianceProps {
 
 
 function LowCompliance({ data }: LowComplianceProps) {
-    const scrollRef = useRef<HTMLDivElement>(null);
 
+    const { currentPage } = usePresentation();
+    const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
 
     useEffect(() => {
-        if (data) {
+        if (data.length > 0) {
             setScrollReady(true);
         }
-    }, [data]);
+    }, [data.length]);
 
 
 
@@ -122,7 +124,10 @@ function LowCompliance({ data }: LowComplianceProps) {
         }
     }
 
-    useAutoScroll(scrollRef, "bajo-cumplimiento-table", scrollReady);
+
+    const shouldScroll = scrollReady && currentPage === 3;
+
+    useAutoScroll(scrollRef, "bajo-cumplimiento-table", scrollReady && shouldScroll);
 
 
     return (
