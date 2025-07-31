@@ -16,6 +16,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 import StatisticsPage2 from './StatsPage2';
 import StatisticsPage3 from './StatsPage3';
 import { usePresentation } from '@/components/context/PresentationContext';
+import LoadingCircularComponent from '@/components/UI/Loading/LoadingCircularComponent';
 
 const PageOneStats = lazy(() => import('@/components/stats/GlobalPerfomance'));
 const PageTwoStats = lazy(() => import('@/components/stats/GlobalTaxpayerPerformance').then(m => ({ default: m.PageTwoStats })));
@@ -158,9 +159,7 @@ function StatsPage() {
         <div className="min-h-screen bg-[#292d33]">
             <div className='flex flex-col '>
                 {!loaded ? (
-                    <div className='flex items-center justify-center w-full h-full md:w-[100vw] md:h-[100vh] lg:w-[82vw] lg:h-[100vh] text-center'>
-                        <p className='w-full text-3xl text-center text-white'>Cargando los datos, por favor espere.</p>
-                    </div>
+                    <LoadingCircularComponent />
                 ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
                     <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
                         <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
