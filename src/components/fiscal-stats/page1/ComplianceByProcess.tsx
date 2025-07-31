@@ -33,7 +33,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
                 const newStats = [
                     {
                         tipo: "FP",
-                        nombre: "Firma Personal",
+                        nombre: "Fiscal de Punto",
                         descripcion: "Revisión específica de tributos",
                         esperado: parseFloat(response.expectedFP),
                         recaudado: parseFloat(response.collectedFP),

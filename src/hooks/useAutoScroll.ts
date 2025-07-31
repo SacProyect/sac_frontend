@@ -20,7 +20,7 @@ export function useAutoScroll(
     const finishedRef = useRef(false);
 
     // Register the table once
-    useEffect(() => {
+    useEffect(() => { 
         registerTable(tableId);
     }, [tableId]);
 

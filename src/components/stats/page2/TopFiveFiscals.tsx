@@ -1,3 +1,4 @@
+import { usePresentation } from '@/components/context/PresentationContext';
 import { getTopFiveByGroup } from '@/components/utils/api/reportFunctions';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { TopFiveFiscalsByGroup } from '@/types/stats'
@@ -154,8 +155,8 @@ function TopFiveFiscals() {
         win.print();
     };
 
-
-    useAutoScroll(scrollRef, "fiscales-grupo-table", scrollReady);
+    const { currentPage } = usePresentation();
+    useAutoScroll(scrollRef, "fiscales-grupo-table", scrollReady && currentPage === 2);
 
 
     return (
