@@ -78,6 +78,8 @@ function StatsPage() {
         }
     }, [isAutoMode]);
 
+    const isMobile = window.innerWidth < 768;
+
     const renderPage = () => {
         if (currentPage === 1) {
             return (
@@ -122,8 +124,12 @@ function StatsPage() {
 
                     {/* Solo visible en mobile: renderizar página 2 y 3 directamente debajo */}
                     <div className="block lg:hidden bg-[#1c1c1b] text-white">
-                        <StatisticsPage2 />
-                        <StatisticsPage3 />
+                        {isMobile ? (
+                            <div>
+                                <StatisticsPage2 />
+                                <StatisticsPage3 />
+                            </div>
+                        ) : (<></>)}
                     </div>
                 </>
             );
