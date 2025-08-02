@@ -35,8 +35,8 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
 
     const handleSubmit = async () => {
         try {
-            console.log(startDate);
-            console.log(endDate);
+            // console.log(startDate);
+            // console.log(endDate);
 
             // Validaciones previas
             if (startDate && isNaN(new Date(startDate).getTime())) {

@@ -20,13 +20,25 @@ export function useAutoScroll(
     const finishedRef = useRef(false);
 
     // Register the table once
-    useEffect(() => { 
+    useEffect(() => {
         registerTable(tableId);
     }, [tableId]);
 
     // Main scroll logic
     useEffect(() => {
         const el = containerRef.current;
+
+
+        // 🔍 Depuration log to see behavior of scroll
+        console.log(`[${tableId}] autoScroll conditions:`, {
+            el,
+            enabled,
+            autoScrollEnabled,
+            currentTableId,
+            match: tableId === currentTableId,
+            scrollHeight: el?.scrollHeight,
+            clientHeight: el?.clientHeight,
+        });
 
         // Only run logic if the feature is enabled, table is active and auto mode is on
         if (!el || !enabled || !autoScrollEnabled || tableId !== currentTableId) return;
@@ -68,7 +80,7 @@ export function useAutoScroll(
                     }, 1000);
                 }
             }, 20);
-        }, 200);
+        }, 1000);
 
         // Cleanup
         return () => {

@@ -100,7 +100,7 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
     };
   }, [visibleCount, filteredTaxpayers.length, isLoadingMore]);
 
-  console.log("Taxpayers: " + JSON.stringify(filteredTaxpayers));
+  // console.log("Taxpayers: " + JSON.stringify(filteredTaxpayers));
 
   const handleDelete = async () => {
     if (!selectedIdToDelete) return;

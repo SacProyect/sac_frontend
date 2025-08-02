@@ -80,7 +80,7 @@ function ContributionsFilter({
         };
     }, [calendarOpen]);
 
-    console.log(groupData.map((group) => group.supervisorsStats));
+    // console.log(groupData.map((group) => group.supervisorsStats));
 
     return (
         <section className='w-full pl-8'>

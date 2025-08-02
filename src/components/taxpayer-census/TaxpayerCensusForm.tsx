@@ -52,7 +52,7 @@ function TaxpayerCensusForm() {
             const response = await createTaxpayerCensus(payload);
 
             if (!response.success) {
-                console.log("New taxpayer: " + JSON.stringify(response));
+                // console.error("New taxpayer: " + JSON.stringify(response));
 
                 toast.error(response.message || "Error al crear el contribuyente.");
                 return;

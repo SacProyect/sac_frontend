@@ -70,11 +70,6 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
 
-		taxpayerData.forEach((value, key) => {
-
-			console.log("taxpayerfunctions: " + key, value)
-		})
-
 		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
 			headers: {
 				'Content-Type': "multipart/form-data",
@@ -197,7 +192,7 @@ export const deleteTaxpayer = async (taxpayerId: string) => {
 }
 
 export const deleteObservations = async (observationId: string) => {
-	console.log(observationId)
+	// console.log(observationId)
 
 	try {
 		const response = await apiConnection.delete(`/taxpayer/del-observation/${observationId}`);
@@ -214,7 +209,7 @@ export const createEvent = async (event_type: string, event_data: NewEvent) => {
 
 		return response
 	} catch (error) {
-		console.log(error)
+		// console.log(error)
 		return false
 	}
 }
@@ -230,7 +225,7 @@ export const updateObservation = async (id: string, newDescription: string) => {
 
 		return response
 	} catch (e) {
-		console.log("Error: " + e)
+		// console.log("Error: " + e)
 		throw new Error("Error al modificar la observación");
 	}
 }
@@ -318,7 +313,7 @@ export const updateIva = async (payload: Partial<IVAReports>) => {
 };
 
 export const updateEvent = async (payload: Partial<Event>) => {
-	console.log(payload);
+	// console.log(payload);
 
 	try {
 		if (!payload.id) throw new Error("ID requerido para actualizar el reporte");
@@ -454,7 +449,7 @@ export const getPendingPayments = async (taxpayerId: string) => {
 		const response = await (await apiConnection.get(requestURL)).data
 		return response
 	} catch (error) {
-		console.log(error)
+		console.error(error)
 		return []
 	}
 }

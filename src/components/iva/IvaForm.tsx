@@ -73,7 +73,7 @@ function IvaForm() {
     });
 
     const onSubmit = async (data: IvaReportFormData) => {
-        console.log("Submitting data:", data);
+        // console.log("Submitting data:", data);
 
         try {
             const formattedData = {
@@ -110,7 +110,7 @@ function IvaForm() {
     const dateValue = watch('date');
 
 
-    console.log("TAXPAYERS: " + JSON.stringify(taxpayerArray));
+    // console.log("TAXPAYERS: " + JSON.stringify(taxpayerArray));
 
     const taxpayerId = watch("taxpayerId");
 
@@ -132,7 +132,7 @@ function IvaForm() {
         const sorted = [...(selectedTaxpayer.IVAReports || [])]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        console.log(selectedTaxpayer?.IVAReports)
+        // console.log(selectedTaxpayer?.IVAReports)
 
         const emitionYear = new Date(selectedTaxpayer.emition_date).getUTCFullYear();
         let year = emitionYear;

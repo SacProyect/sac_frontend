@@ -94,7 +94,7 @@ function GenerateReport() {
         }
     };
 
-    console.log(filteredTaxpayers);
+    // console.log(filteredTaxpayers);
 
 
 

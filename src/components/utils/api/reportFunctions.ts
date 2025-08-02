@@ -342,7 +342,7 @@ export const getGlobalPerformance = async () => {
 
 		const response = await apiConnection.get(requestUrl)
 
-		console.log("response: " + JSON.stringify(response.data))
+		// console.log("response: " + JSON.stringify(response.data))
 		return response.data
 	} catch (e) {
 		console.error(e)
@@ -356,7 +356,7 @@ export const getGlobalTaxpayerPerformance = async () => {
 
 		const response = await apiConnection.get(requestUrl)
 
-		console.log("TAXPAYER PERFORMANCE: " + JSON.stringify(response.data))
+		// console.log("TAXPAYER PERFORMANCE: " + JSON.stringify(response.data))
 		return response.data
 	} catch (e) {
 		console.error(e)

@@ -25,7 +25,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
 
-    console.log(propRows)
+    // console.log(propRows)
 
     const visibleRows = useMemo(() => {
         const sorted = [...propRows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));

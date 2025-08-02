@@ -296,7 +296,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
-    console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
+    // console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
 
     // Get the Monthly Variation of IVA for the taxpayer
@@ -335,9 +335,9 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
-    console.log(taxpayerData);
+    // console.log(taxpayerData);
 
-    console.log(user)
+    // console.log(user)
 
     const canEditFase = (
         user?.role === "ADMIN" ||

@@ -9,9 +9,8 @@ function ObservationsPage() {
 
     const handleObservationCreated = () => {
         setRefreshKey(prev => prev + 1); // increment to force update
-        console.log("Se activa")
     }
-    
+
 
 
 

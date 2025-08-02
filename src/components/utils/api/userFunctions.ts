@@ -30,7 +30,7 @@ export const getOfficers = async () => {
     try {
 
         const response = await (await apiConnection.get(`/user/all/`)).data
-        console.log(response)
+        // console.log(response)
         return response
     } catch (error) {
         console.error(error)

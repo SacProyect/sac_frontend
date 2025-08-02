@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 interface Props {
     rows: IVAReports[];
     pdfMode?: boolean;
-    setRows: React.Dispatch<React.SetStateAction<IVAReports[]>>;
+    setRows?: React.Dispatch<React.SetStateAction<IVAReports[]>>;
 }
 
 const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
@@ -100,7 +100,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             const payload = { ...editValues };
             await updateIva(payload);
 
-            setRows(prev => prev.map(row => row.id === editingRowId ? { ...row, ...editValues } : row))
+            setRows?.(prev => prev.map(row => row.id === editingRowId ? { ...row, ...editValues } : row))
 
             toast.success('Cambios guardados');
             setEditingRowId(null);
@@ -122,7 +122,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             toast.success('Reporte eliminado');
 
             // Remueve el reporte eliminado del estado
-            setRows(prev => prev.filter(row => row.id !== reportIdToDelete));
+            setRows?.(prev => prev.filter(row => row.id !== reportIdToDelete));
             setReportIdToDelete(null);
         } catch (err: any) {
             toast.error(`Error: ${err.message || err}`);

@@ -75,7 +75,7 @@ function IslrForm() {
                 paid: new Decimal(data.paid.replace(",", ".")).toString(),
             };
 
-            console.log("Sending ISLR report:", formattedData);
+            // console.log("Sending ISLR report:", formattedData);
             const report = await createISLR(formattedData);
             if (report) toast.success("Reporte ISLR creado exitosamente");
             reset();
