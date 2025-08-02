@@ -63,7 +63,7 @@ function BestSuperVisor() {
             } else {
                 console.log("⏳ Esperando a que el contenido tenga scroll...");
             }
-        }, 500); // o más
+        }, 1000); // o más
 
         return () => clearTimeout(timeout);
     }, [supervisorData]);

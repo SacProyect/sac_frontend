@@ -54,7 +54,6 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
                 const updated = [...prev, id];
                 console.log(`[registerTable] Registered table: ${id}`);
 
-
                 console.log(`[registerTable] Total registered tables: ${updated.length}`);
                 if (updated.length === 1) {
                     setCurrentTableId(id);
