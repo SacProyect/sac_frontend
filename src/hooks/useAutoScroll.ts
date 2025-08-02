@@ -6,7 +6,7 @@ import { usePresentation } from '@/components/context/PresentationContext';
 export function useAutoScroll(
     containerRef: React.RefObject<HTMLDivElement | null>,
     tableId: string,
-    enabled: boolean // new flag to prevent early execution
+    enabled: boolean
 ) {
     const {
         autoScrollEnabled,
@@ -18,18 +18,17 @@ export function useAutoScroll(
 
     const intervalRef = useRef<number | null>(null);
     const finishedRef = useRef(false);
+    const waitRef = useRef<number | null>(null);
 
     // Register the table once
     useEffect(() => {
         registerTable(tableId);
     }, [tableId]);
 
-    // Main scroll logic
+    // Main scroll logic with wait until currentTableId matches
     useEffect(() => {
         const el = containerRef.current;
 
-
-        // 🔍 Depuration log to see behavior of scroll
         console.log(`[${tableId}] autoScroll conditions:`, {
             el,
             enabled,
@@ -40,8 +39,11 @@ export function useAutoScroll(
             clientHeight: el?.clientHeight,
         });
 
-        // Only run logic if the feature is enabled, table is active and auto mode is on
-        if (!el || !enabled || !autoScrollEnabled || tableId !== currentTableId) return;
+        // Skip if ref not ready or not enabled yet
+        if (!el || !enabled || !autoScrollEnabled) return;
+
+        // Wait until this table is active (currentTableId === tableId)
+        if (currentTableId !== tableId) return;
 
         // Skip scrolling if there's no overflow
         if (el.scrollHeight <= el.clientHeight) {
@@ -61,12 +63,12 @@ export function useAutoScroll(
         el.addEventListener('wheel', handleUserScroll, { passive: true });
         el.addEventListener('touchstart', handleUserScroll);
 
-        // Delay start to ensure DOM has rendered the full content
-        setTimeout(() => {
+        // Delay to ensure DOM and scroll height is stable
+        waitRef.current = setTimeout(() => {
             intervalRef.current = window.setInterval(() => {
                 if (!el) return;
 
-                el.scrollTop += 2; // Scroll speed
+                el.scrollTop += 2;
 
                 const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
 
@@ -87,6 +89,7 @@ export function useAutoScroll(
             el.removeEventListener('wheel', handleUserScroll);
             el.removeEventListener('touchstart', handleUserScroll);
             if (intervalRef.current) clearInterval(intervalRef.current);
+            if (waitRef.current) clearTimeout(waitRef.current);
         };
     }, [autoScrollEnabled, currentTableId, tableId, enabled]);
 }
