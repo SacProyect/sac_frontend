@@ -7,7 +7,7 @@ import { useEffect } from 'react'
 function FinePage() {
     const { taxpayerId } = useParams()
 
-    console.log("USE PARAMS OUTPUT: " + taxpayerId)
+    // console.log("USE PARAMS OUTPUT: " + taxpayerId)
 
     // const loadEvents = async (taxpayerId: string) => {
     //     const eventArray = await getTaxpayerEvents(taxpayerId, "FINE")

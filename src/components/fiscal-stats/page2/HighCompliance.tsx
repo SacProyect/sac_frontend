@@ -37,7 +37,7 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
         fetchData();
     }, [])
 
-    console.log(compliance);
+    // console.log(compliance);
 
 
     const formatCurrency = (amount: number) => {

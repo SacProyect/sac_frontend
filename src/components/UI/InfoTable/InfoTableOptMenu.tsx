@@ -32,7 +32,7 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
             await deleteTaxpayer(id);
             navigate(0); // Forzar refetch con useEffect o SWR, react-query, etc.
         } catch (error) {
-            console.log(error);
+            console.error(error);
         }
     };
 

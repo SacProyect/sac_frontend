@@ -156,7 +156,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
             // Convert date to ISO 8601 format (e.g., "2025-03-17T00:00:00.000Z")
 
-            console.log(typeof data.date);
+            // console.log(typeof data.date);
 
             const parsedDate = data.date;
             const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();

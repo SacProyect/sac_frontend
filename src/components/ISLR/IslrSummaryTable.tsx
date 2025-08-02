@@ -7,7 +7,7 @@ import { deleteISLR, updateIslrReport } from '../utils/api/taxpayerFunctions';
 interface Props {
     rows: ISLRReports[];
     pdfMode?: boolean;
-    setRows: React.Dispatch<React.SetStateAction<ISLRReports[]>>
+    setRows?: React.Dispatch<React.SetStateAction<ISLRReports[]>>
 }
 
 const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
@@ -89,11 +89,11 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                 Object.entries(editValues).filter(([key]) => key !== 'id' && key !== 'emition_date' && key !== 'updatedAt' && key !== 'taxpayer' && key !== 'taxpayerId').map(([key, value]) => [key, Number(String(value).replace(',', '.'))])
             );
 
-            console.log(formattedValues);
+            // console.log(formattedValues);
 
             await updateIslrReport(rowEditingId, formattedValues);
 
-            setRows(prev => prev.map(row => row.id === rowEditingId ? { ...row, ...formattedValues } : row));
+            setRows?.(prev => prev.map(row => row.id === rowEditingId ? { ...row, ...formattedValues } : row));
             toast.success("Reporte actualizado correctamente.");
             setRowEditingId(null);
             setEditValues({});

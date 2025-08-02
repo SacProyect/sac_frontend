@@ -79,7 +79,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 return acc + collectedFines
             }, 0)
 
-            console.log(totalISLR)
+            // console.log(totalISLR)
 
 
 

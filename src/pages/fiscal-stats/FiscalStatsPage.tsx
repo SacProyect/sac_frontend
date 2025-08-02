@@ -34,7 +34,7 @@ export default function FiscalStatsPage() {
         const fetchData = async () => {
             try {
                 const response = await getFiscalInfo(fiscalId || user.id);
-                console.log(response);
+                // console.log(response);
                 setFiscalInfo(response);
             } catch (e) {
                 console.error(e);

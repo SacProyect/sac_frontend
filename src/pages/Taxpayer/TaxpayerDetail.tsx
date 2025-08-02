@@ -40,8 +40,8 @@ const TaxpayerDetail = () => {
 	}
 
 
-	console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
-	console.log("TAX SUMMARY FROM TAXPAYERDETAIL: " + JSON.stringify(taxSummary))
+	// console.log("EVENTS FROM TAXPAYERDETAIL: " + JSON.stringify(events))
+	// console.log("TAX SUMMARY FROM TAXPAYERDETAIL: " + JSON.stringify(taxSummary))
 	// console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
 	// console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
 

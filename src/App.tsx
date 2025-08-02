@@ -109,7 +109,7 @@ export const router = createBrowserRouter([
                   name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}`,
                 }));
               } catch (error) {
-                console.log("No se pudieron obtener los taxpayers: " + error);
+                console.error("No se pudieron obtener los taxpayers: " + error);
                 return [];
               }
             },
@@ -215,7 +215,7 @@ export const router = createBrowserRouter([
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
                 const islrReports = (await getIslrReports(taxpayerId)).data
 
-                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
                 return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {
@@ -239,7 +239,7 @@ export const router = createBrowserRouter([
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
                 const islrReports = (await getIslrReports(taxpayerId)).data
 
-                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
                 return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {
@@ -256,8 +256,8 @@ export const router = createBrowserRouter([
 
                 const taxpayerId = params.taxpayer;
 
-                console.log("PARAMS:", params);
-                console.log("TAXPAYER ID:", taxpayerId);
+                // console.log("PARAMS:", params);
+                // console.log("TAXPAYER ID:", taxpayerId);
                 if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                 events.forEach((event) => (event.id = `${event.id}_${event.type}`));
@@ -267,7 +267,7 @@ export const router = createBrowserRouter([
                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
                 const islrReports = (await getIslrReports(taxpayerId)).data
 
-                console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
+                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
 
                 return { events, fines, payments, taxSummary, islrReports };
               } catch (error) {

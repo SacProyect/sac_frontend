@@ -39,11 +39,11 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
         // const { taxpayer } = useParams()
 
         useEffect(() => {
-            console.log("ivaRef inside TaxpayerDetailReport:", ivaRef);
+            // console.log("ivaRef inside TaxpayerDetailReport:", ivaRef);
             if (ivaRef && "current" in ivaRef && ivaRef.current) {
-                console.log("ivaRef.current inside TaxpayerDetailReport:", ivaRef.current);
+                // console.log("ivaRef.current inside TaxpayerDetailReport:", ivaRef.current);
             } else {
-                console.log("ivaRef is either null or a callback ref, cannot access current property.");
+                // console.log("ivaRef is either null or a callback ref, cannot access current property.");
             }
         }, [ivaRef]);
 
@@ -54,8 +54,8 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
         console.log(islrReports);
 
 
-        console.log("EVENTS FROM TAXPAYERDETAILREPORT: " + JSON.stringify(events))
-        console.log("TAX SUMMARY FROM TAXPAYERDETAILREPORT: " + JSON.stringify(taxSummary))
+        // console.log("EVENTS FROM TAXPAYERDETAILREPORT: " + JSON.stringify(events))
+        // console.log("TAX SUMMARY FROM TAXPAYERDETAILREPORT: " + JSON.stringify(taxSummary))
         // console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
         // console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
 
@@ -99,7 +99,7 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
                 {/* Multas Table */}
                 {(pdfMode || selectedTable === 'fine') && (
                     <div ref={finesRef} className="w-full h-full mb-8 overflow-x-auto lg:overflow-x-hidden">
-                        <EventTable rows={localEvents} setRows={setLocalEvents}  pdfMode={pdfMode}/>
+                        <EventTable rows={localEvents} setRows={setLocalEvents} pdfMode={pdfMode} />
                     </div>
                 )}
 

@@ -110,7 +110,7 @@ function TaxpayerForm() {
             const newTaxpayer = await createTaxpayer(formData);
 
             if (!newTaxpayer.success) {
-                console.log("New taxpayer: " + JSON.stringify(newTaxpayer));
+                // console.log("New taxpayer: " + JSON.stringify(newTaxpayer));
 
                 toast.error(newTaxpayer.message || "Error al crear el contribuyente.");
                 return;
@@ -120,9 +120,9 @@ function TaxpayerForm() {
             // ✅ Éxito
             toast.success("¡Contribuyente creado exitosamente!")
             setUploadedFiles([]);
-            console.log("User before" + JSON.stringify(user))
+            // console.log("User before" + JSON.stringify(user))
             refreshUser()
-            console.log("User after" + JSON.stringify(user))
+            // console.log("User after" + JSON.stringify(user))
             reset()
 
         } catch (error) {
