@@ -46,6 +46,7 @@ function BestSuperVisor() {
                 transformedData.sort((a, b) => b.combinedTotal - a.combinedTotal);
 
                 setSupervisorData(transformedData);
+                setScrollReady(true);
 
             } catch (e: any) {
                 console.error(e);
@@ -55,18 +56,6 @@ function BestSuperVisor() {
 
         fetchSupervisors();
     }, []);
-
-    useEffect(() => {
-        const timeout = setTimeout(() => {
-            if (scrollRef.current && scrollRef.current.scrollHeight > scrollRef.current.clientHeight) {
-                setScrollReady(true);
-            } else {
-                console.log("⏳ Esperando a que el contenido tenga scroll...");
-            }
-        }, 1000); // o más
-
-        return () => clearTimeout(timeout);
-    }, [supervisorData]);
 
 
 
