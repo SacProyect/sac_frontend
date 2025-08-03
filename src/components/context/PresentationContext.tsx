@@ -22,6 +22,11 @@ type PresentationContextType = {
     goToPage: (page: number) => void
 };
 
+const expectedTablesPerPage: Record<number, number> = {
+    2: 4,
+    3: 3,
+};
+
 const PresentationContext = createContext<PresentationContextType | undefined>(undefined);
 
 export const PresentationProvider = ({ children }: { children: ReactNode }) => {
@@ -34,7 +39,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const lastInteractionRef = useRef<number>(Date.now());
 
-    const INACTIVITY_LIMIT = 60000; // 30s
+    const INACTIVITY_LIMIT = 60000; // ms
     const TOTAL_PAGES = 3;
 
     useEffect(() => {
@@ -72,7 +77,21 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const goToNextTableOrPage = () => {
         const index = tableQueue.findIndex(id => id === currentTableId);
-        if (index === -1 || index === tableQueue.length - 1) {
+        const expectedCount = expectedTablesPerPage[currentPage] || 0;
+
+        if (index === -1) {
+            console.warn(`[goToNextTableOrPage] currentTableId not found in queue: ${currentTableId}`);
+            return;
+        }
+
+        const notAllTablesReady = tableQueue.length < expectedCount;
+
+        if (index === tableQueue.length - 1) {
+            if (notAllTablesReady) {
+                console.log(`[goToNextTableOrPage] Reached last registered table (${currentTableId}) but only ${tableQueue.length}/${expectedCount} registered. Waiting...`);
+                return;
+            }
+
             console.log(`[goToNextTableOrPage] Last table reached: ${currentTableId}. Going to next page.`);
             setCurrentTableId(null);
             setTableQueue([]);
