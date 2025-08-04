@@ -10,6 +10,7 @@ import toast from 'react-hot-toast'
 
 
 function TopFiscal() {
+    const { currentPage } = usePresentation();
     const [topFiscals, setTopFiscals] = useState<TopFiscals[]>();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
@@ -129,7 +130,7 @@ function TopFiscal() {
         win.print();
     };
 
-    const { currentPage } = usePresentation();
+
 
     useAutoScroll(scrollRef, "fiscales-table", scrollReady && currentPage === 2);
 

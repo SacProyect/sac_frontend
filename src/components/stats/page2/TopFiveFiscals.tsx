@@ -10,6 +10,7 @@ import toast from 'react-hot-toast';
 
 
 function TopFiveFiscals() {
+    const { currentPage } = usePresentation();
     const [fiscalsByGroup, setFiscalsByGroup] = useState<TopFiveFiscalsByGroup[]>();
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
@@ -155,7 +156,7 @@ function TopFiveFiscals() {
         win.print();
     };
 
-    const { currentPage } = usePresentation();
+
     useAutoScroll(scrollRef, "fiscales-grupo-table", scrollReady && currentPage === 2);
 
 

@@ -7,6 +7,7 @@ import React, { useEffect, useRef, useState } from 'react'
 
 
 function TopGrowth() {
+    const { currentPage } = usePresentation();
     const [coordinatorGrowth, setCoordinatorGrowth] = useState<BestGrowth[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
@@ -144,7 +145,7 @@ function TopGrowth() {
         win.print();
     };
 
-    const { currentPage } = usePresentation();
+
     useAutoScroll(scrollRef, "coordinador-table", scrollReady && currentPage === 2);
 
 
