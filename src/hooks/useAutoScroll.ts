@@ -23,7 +23,7 @@ export function useAutoScroll(
     // Register the table once
     useEffect(() => {
         registerTable(tableId);
-    }, [tableId]);
+    }, []);
 
     // Main scroll logic with wait until currentTableId matches
     useEffect(() => {
@@ -68,7 +68,7 @@ export function useAutoScroll(
             intervalRef.current = window.setInterval(() => {
                 if (!el) return;
 
-                el.scrollTop += 2;
+                el.scrollTop += 15;
 
                 const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
 

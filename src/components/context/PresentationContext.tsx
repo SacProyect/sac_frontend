@@ -29,6 +29,16 @@ const expectedTablesPerPage: Record<number, number> = {
 
 const PresentationContext = createContext<PresentationContextType | undefined>(undefined);
 
+
+export const usePresentation = () => {
+    const context = useContext(PresentationContext);
+    if (context === undefined) {
+        throw new Error('usePresentation must be used within a PresentationProvider');
+    }
+    return context;
+};
+
+
 export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     const [isAutoMode, setIsAutoMode] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
@@ -39,7 +49,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const lastInteractionRef = useRef<number>(Date.now());
 
-    const INACTIVITY_LIMIT = 60000; // ms
+    const INACTIVITY_LIMIT = 30000; // ms
     const TOTAL_PAGES = 3;
 
     useEffect(() => {
@@ -204,12 +214,4 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             {children}
         </PresentationContext.Provider>
     );
-};
-
-export const usePresentation = () => {
-    const context = useContext(PresentationContext);
-    if (context === undefined) {
-        throw new Error('usePresentation must be used within a PresentationProvider');
-    }
-    return context;
 };
