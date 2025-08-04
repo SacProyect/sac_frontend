@@ -63,7 +63,7 @@ export function useAutoScroll(
             intervalRef.current = window.setInterval(() => {
                 if (!el) return;
 
-                el.scrollTop += 2;
+                el.scrollTop += 15;
 
                 const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
 
