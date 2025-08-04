@@ -19,7 +19,8 @@ type PresentationContextType = {
     goToNextPageOnScrollEnd: () => void;
     goToNextPage: () => void,
     goToPrevPage: () => void,
-    goToPage: (page: number) => void
+    goToPage: (page: number) => void;
+    tableQueue: string[];
 };
 
 const expectedTablesPerPage: Record<number, number> = {
@@ -86,11 +87,28 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
 
     const goToNextTableOrPage = () => {
-        const index = tableQueue.findIndex(id => id === currentTableId);
         const expectedCount = expectedTablesPerPage[currentPage] || 0;
 
+        console.log(`[goToNextTableOrPage] Called on page ${currentPage}`);
+        console.log(`[goToNextTableOrPage] currentTableId: ${currentTableId}`);
+        console.log(`[goToNextTableOrPage] tableQueue:`, tableQueue);
+        console.log(`[goToNextTableOrPage] expectedCount for page ${currentPage}: ${expectedCount}`);
+
+        if (!currentTableId) {
+            console.warn(`[goToNextTableOrPage] ❌ currentTableId is null. Aborting.`);
+            return;
+        }
+
+        if (tableQueue.length === 0) {
+            console.warn(`[goToNextTableOrPage] ❌ tableQueue is empty. No tables registered.`);
+            return;
+        }
+
+        const index = tableQueue.findIndex(id => id === currentTableId);
+
         if (index === -1) {
-            console.warn(`[goToNextTableOrPage] currentTableId not found in queue: ${currentTableId}`);
+            console.warn(`[goToNextTableOrPage] ❌ currentTableId (${currentTableId}) not found in tableQueue.`);
+            console.warn(`[goToNextTableOrPage] Full tableQueue:`, tableQueue);
             return;
         }
 
@@ -98,18 +116,18 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
         if (index === tableQueue.length - 1) {
             if (notAllTablesReady) {
-                console.log(`[goToNextTableOrPage] Reached last registered table (${currentTableId}) but only ${tableQueue.length}/${expectedCount} registered. Waiting...`);
+                console.log(`[goToNextTableOrPage] ⚠️ Reached last registered table (${currentTableId}) but only ${tableQueue.length}/${expectedCount} tables registered. Waiting for more tables.`);
                 return;
             }
 
-            console.log(`[goToNextTableOrPage] Last table reached: ${currentTableId}. Going to next page.`);
+            console.log(`[goToNextTableOrPage] ✅ Last table (${currentTableId}) reached. Proceeding to next page.`);
             setCurrentTableId(null);
             setTableQueue([]);
             goToNextPageOnScrollEnd();
         } else {
             const nextId = tableQueue[index + 1];
             setCurrentTableId(nextId);
-            console.log(`[goToNextTableOrPage] Moving to next table: ${nextId}`);
+            console.log(`[goToNextTableOrPage] ➡️ Moving to next table: ${nextId}`);
         }
     };
 
@@ -202,6 +220,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
                 currentPage,
                 autoScrollEnabled,
                 currentTableId,
+                tableQueue,
                 registerTable,
                 goToNextTableOrPage,
                 setUserInteraction,
