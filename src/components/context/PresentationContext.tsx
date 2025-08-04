@@ -53,10 +53,10 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     const INACTIVITY_LIMIT = 30000; // ms
     const TOTAL_PAGES = 3;
 
-    useEffect(() => {
-        setTableQueue([]);
-        setCurrentTableId(null);
-    }, [currentPage]);
+    // useEffect(() => {
+    //     setTableQueue([]);
+    //     setCurrentTableId(null);
+    // }, [currentPage]);
 
     const setUserInteraction = () => {
         lastInteractionRef.current = Date.now();
