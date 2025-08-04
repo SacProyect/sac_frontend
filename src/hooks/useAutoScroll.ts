@@ -29,42 +29,36 @@ export function useAutoScroll(
     useEffect(() => {
         const el = containerRef.current;
 
-        console.log(`[${tableId}] autoScroll conditions:`, {
-            el,
-            enabled,
-            autoScrollEnabled,
-            currentTableId,
-            match: tableId === currentTableId,
-            scrollHeight: el?.scrollHeight,
-            clientHeight: el?.clientHeight,
-        });
+        const tryScroll = () => {
+            if (!el || !enabled || !autoScrollEnabled) return;
+            if (currentTableId !== tableId) return;
 
-        // Skip if ref not ready or not enabled yet
-        if (!el || !enabled || !autoScrollEnabled) return;
+            const hasScroll = el.scrollHeight > el.clientHeight;
 
-        // Wait until this table is active (currentTableId === tableId)
-        if (currentTableId !== tableId) return;
+            console.log(`[${tableId}] tryScroll:`, {
+                scrollHeight: el.scrollHeight,
+                clientHeight: el.clientHeight,
+                hasScroll,
+            });
 
-        // Skip scrolling if there's no overflow
-        if (el.scrollHeight <= el.clientHeight) {
-            console.log(`[${tableId}] No scrollable content. Skipping...`);
-            goToNextTableOrPage();
-            return;
-        }
+            if (!hasScroll) {
+                console.log(`[${tableId}] ⏳ Waiting for scrollable content... Retrying in 500ms`);
+                setTimeout(tryScroll, 500);
+                return;
+            }
 
-        finishedRef.current = false;
-        el.scrollTop = 0;
+            // Scroll logic
+            finishedRef.current = false;
+            el.scrollTop = 0;
 
-        const handleUserScroll = () => {
-            setUserInteraction();
-            if (intervalRef.current) clearInterval(intervalRef.current);
-        };
+            const handleUserScroll = () => {
+                setUserInteraction();
+                if (intervalRef.current) clearInterval(intervalRef.current);
+            };
 
-        el.addEventListener('wheel', handleUserScroll, { passive: true });
-        el.addEventListener('touchstart', handleUserScroll);
+            el.addEventListener('wheel', handleUserScroll, { passive: true });
+            el.addEventListener('touchstart', handleUserScroll);
 
-        // Delay to ensure DOM and scroll height is stable
-        waitRef.current = setTimeout(() => {
             intervalRef.current = window.setInterval(() => {
                 if (!el) return;
 
@@ -75,21 +69,25 @@ export function useAutoScroll(
                 if (atBottom && !finishedRef.current) {
                     finishedRef.current = true;
                     clearInterval(intervalRef.current!);
-                    console.log(`[${tableId}] Scroll finished. Advancing...`);
+                    console.log(`[${tableId}] ✅ Scroll finished. Advancing...`);
 
                     setTimeout(() => {
                         goToNextTableOrPage();
                     }, 1000);
                 }
             }, 20);
-        }, 1000);
+        };
 
-        // Cleanup
+        const start = setTimeout(() => {
+            tryScroll();
+        }, 500); // wait a little for DOM stability
+
         return () => {
-            el.removeEventListener('wheel', handleUserScroll);
-            el.removeEventListener('touchstart', handleUserScroll);
+            clearTimeout(start);
             if (intervalRef.current) clearInterval(intervalRef.current);
             if (waitRef.current) clearTimeout(waitRef.current);
+            containerRef.current?.removeEventListener('wheel', setUserInteraction);
+            containerRef.current?.removeEventListener('touchstart', setUserInteraction);
         };
     }, [autoScrollEnabled, currentTableId, tableId, enabled]);
 }
