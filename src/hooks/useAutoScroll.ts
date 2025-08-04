@@ -14,6 +14,7 @@ export function useAutoScroll(
         registerTable,
         goToNextTableOrPage,
         setUserInteraction,
+        tableQueue,
     } = usePresentation();
 
     const intervalRef = useRef<number | null>(null);
@@ -72,6 +73,12 @@ export function useAutoScroll(
                     console.log(`[${tableId}] ✅ Scroll finished. Advancing...`);
 
                     setTimeout(() => {
+                        // Prevent advancing if tableQueue was reset
+                        if (!tableQueue.includes(currentTableId)) {
+                            console.warn(`[${tableId}] 🚫 Skipping advance: currentTableId (${currentTableId}) not in queue`, tableQueue);
+                            return;
+                        }
+
                         goToNextTableOrPage();
                     }, 1000);
                 }
