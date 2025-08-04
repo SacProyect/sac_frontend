@@ -36,14 +36,14 @@ export function useAutoScroll(
 
             const hasScroll = el.scrollHeight > el.clientHeight;
 
-            console.log(`[${tableId}] tryScroll:`, {
-                scrollHeight: el.scrollHeight,
-                clientHeight: el.clientHeight,
-                hasScroll,
-            });
+            // console.log(`[${tableId}] tryScroll:`, {
+            //     scrollHeight: el.scrollHeight,
+            //     clientHeight: el.clientHeight,
+            //     hasScroll,
+            // });
 
             if (!hasScroll) {
-                console.log(`[${tableId}] ⏳ Waiting for scrollable content... Retrying in 500ms`);
+                // console.log(`[${tableId}] ⏳ Waiting for scrollable content... Retrying in 500ms`);
                 setTimeout(tryScroll, 500);
                 return;
             }
@@ -63,21 +63,16 @@ export function useAutoScroll(
             intervalRef.current = window.setInterval(() => {
                 if (!el) return;
 
-                el.scrollTop += 15;
+                el.scrollTop += 2;
 
                 const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
 
                 if (atBottom && !finishedRef.current) {
                     finishedRef.current = true;
                     clearInterval(intervalRef.current!);
-                    console.log(`[${tableId}] ✅ Scroll finished. Advancing...`);
+                    // console.log(`[${tableId}] ✅ Scroll finished. Advancing...`);
 
                     setTimeout(() => {
-                        // Prevent advancing if tableQueue was reset
-                        // if (!tableQueue.includes(currentTableId)) {
-                        //     console.warn(`[${tableId}] 🚫 Skipping advance: currentTableId (${currentTableId}) not in queue`, tableQueue);
-                        //     return;
-                        // }
 
                         goToNextTableOrPage();
                     }, 1000);
