@@ -74,10 +74,10 @@ export function useAutoScroll(
 
                     setTimeout(() => {
                         // Prevent advancing if tableQueue was reset
-                        if (!tableQueue.includes(currentTableId)) {
-                            console.warn(`[${tableId}] 🚫 Skipping advance: currentTableId (${currentTableId}) not in queue`, tableQueue);
-                            return;
-                        }
+                        // if (!tableQueue.includes(currentTableId)) {
+                        //     console.warn(`[${tableId}] 🚫 Skipping advance: currentTableId (${currentTableId}) not in queue`, tableQueue);
+                        //     return;
+                        // }
 
                         goToNextTableOrPage();
                     }, 1000);
