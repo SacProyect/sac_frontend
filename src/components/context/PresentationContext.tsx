@@ -50,13 +50,9 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const lastInteractionRef = useRef<number>(Date.now());
 
-    const INACTIVITY_LIMIT = 30000; // ms
+    const INACTIVITY_LIMIT = 60000; // ms
     const TOTAL_PAGES = 3;
 
-    // useEffect(() => {
-    //     setTableQueue([]);
-    //     setCurrentTableId(null);
-    // }, [currentPage]);
 
     const setUserInteraction = () => {
         lastInteractionRef.current = Date.now();
@@ -68,16 +64,16 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             const alreadyRegistered = prev.includes(id);
             if (!alreadyRegistered) {
                 const updated = [...prev, id];
-                console.log(`[registerTable] Registered table: ${id}`);
+                // console.log(`[registerTable] Registered table: ${id}`);
 
-                console.log(`[registerTable] Total registered tables: ${updated.length}`);
+                // console.log(`[registerTable] Total registered tables: ${updated.length}`);
                 if (updated.length === 1) {
                     setCurrentTableId(id);
-                    console.log(`[registerTable] First table set as active: ${id}`);
+                    // console.log(`[registerTable] First table set as active: ${id}`);
                 }
                 return updated;
             } else {
-                console.log(`[registerTable] Table ${id} is already registered.`);
+                // console.log(`[registerTable] Table ${id} is already registered.`);
             }
             return prev;
         });
@@ -89,26 +85,26 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
     const goToNextTableOrPage = () => {
         const expectedCount = expectedTablesPerPage[currentPage] || 0;
 
-        console.log(`[goToNextTableOrPage] Called on page ${currentPage}`);
-        console.log(`[goToNextTableOrPage] currentTableId: ${currentTableId}`);
-        console.log(`[goToNextTableOrPage] tableQueue:`, tableQueue);
-        console.log(`[goToNextTableOrPage] expectedCount for page ${currentPage}: ${expectedCount}`);
+        // console.log(`[goToNextTableOrPage] Called on page ${currentPage}`);
+        // console.log(`[goToNextTableOrPage] currentTableId: ${currentTableId}`);
+        // console.log(`[goToNextTableOrPage] tableQueue:`, tableQueue);
+        // console.log(`[goToNextTableOrPage] expectedCount for page ${currentPage}: ${expectedCount}`);
 
         if (!currentTableId) {
-            console.warn(`[goToNextTableOrPage] ❌ currentTableId is null. Aborting.`);
+            // console.warn(`[goToNextTableOrPage] ❌ currentTableId is null. Aborting.`);
             return;
         }
 
         if (tableQueue.length === 0) {
-            console.warn(`[goToNextTableOrPage] ❌ tableQueue is empty. No tables registered.`);
+            // console.warn(`[goToNextTableOrPage] ❌ tableQueue is empty. No tables registered.`);
             return;
         }
 
         const index = tableQueue.findIndex(id => id === currentTableId);
 
         if (index === -1) {
-            console.warn(`[goToNextTableOrPage] ❌ currentTableId (${currentTableId}) not found in tableQueue.`);
-            console.warn(`[goToNextTableOrPage] Full tableQueue:`, tableQueue);
+            // console.warn(`[goToNextTableOrPage] ❌ currentTableId (${currentTableId}) not found in tableQueue.`);
+            // console.warn(`[goToNextTableOrPage] Full tableQueue:`, tableQueue);
             return;
         }
 
@@ -116,18 +112,18 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
         if (index === tableQueue.length - 1) {
             if (notAllTablesReady) {
-                console.log(`[goToNextTableOrPage] ⚠️ Reached last registered table (${currentTableId}) but only ${tableQueue.length}/${expectedCount} tables registered. Waiting for more tables.`);
+                // console.log(`[goToNextTableOrPage] ⚠️ Reached last registered table (${currentTableId}) but only ${tableQueue.length}/${expectedCount} tables registered. Waiting for more tables.`);
                 return;
             }
 
-            console.log(`[goToNextTableOrPage] ✅ Last table (${currentTableId}) reached. Proceeding to next page.`);
+            // console.log(`[goToNextTableOrPage] ✅ Last table (${currentTableId}) reached. Proceeding to next page.`);
             setCurrentTableId(null);
             setTableQueue([]);
             goToNextPageOnScrollEnd();
         } else {
             const nextId = tableQueue[index + 1];
             setCurrentTableId(nextId);
-            console.log(`[goToNextTableOrPage] ➡️ Moving to next table: ${nextId}`);
+            // console.log(`[goToNextTableOrPage] ➡️ Moving to next table: ${nextId}`);
         }
     };
 
@@ -144,16 +140,16 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
             if (isLastPage) {
                 if (!shouldLoop) {
-                    console.log(`[goToNextPageOnScrollEnd] Staying on page ${prev} until scroll finishes.`);
+                    // console.log(`[goToNextPageOnScrollEnd] Staying on page ${prev} until scroll finishes.`);
                     return prev; // Wait until scroll in last page completes
                 }
 
-                console.log(`[goToNextPageOnScrollEnd] Last page done. Looping back to page 2.`);
+                // console.log(`[goToNextPageOnScrollEnd] Last page done. Looping back to page 2.`);
                 return 2;
             }
 
             const nextPage = prev + 1;
-            console.log(`[goToNextPageOnScrollEnd] Moving from page ${prev} to ${nextPage}`);
+            // console.log(`[goToNextPageOnScrollEnd] Moving from page ${prev} to ${nextPage}`);
             return nextPage;
         });
     };
@@ -165,7 +161,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
         const timeout = setTimeout(() => {
             const shouldLoop = tableQueue.length === 0 && currentTableId === null;
             if (shouldLoop) {
-                console.log(`[Loop Timeout] 30s passed on page ${currentPage}. Returning to page 2`);
+                // console.log(`[Loop Timeout] 30s passed on page ${currentPage}. Returning to page 2`);
                 setCurrentPage(2);
             }
         }, 30000); // 30 seconds
@@ -187,11 +183,11 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
             if (!isLargeScreen) return;
             const now = Date.now();
             if (!isAutoMode && now - lastInteractionRef.current > INACTIVITY_LIMIT) {
-                console.log("[Inactivity] Auto mode activated due to inactivity");
+                // console.log("[Inactivity] Auto mode activated due to inactivity");
                 setIsAutoMode(true);
                 setCurrentPage((prev) => {
                     if (prev !== 2) {
-                        console.log(`[Inactivity] Jumping to page 2 from page ${prev}`);
+                        // console.log(`[Inactivity] Jumping to page 2 from page ${prev}`);
                     }
                     return prev !== 2 ? 2 : prev;
                 });
