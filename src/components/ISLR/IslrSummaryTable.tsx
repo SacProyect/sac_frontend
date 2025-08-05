@@ -150,14 +150,14 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                             }}
                                         />
                                     ) : (
-                                        `${item[id as keyof ISLRReports]} BS`
+                                        `${Number(item[id as keyof ISLRReports]).toLocaleString()} BS`
                                     );
                                 } else if (id === 'taxpayer.name') {
                                     value = item.taxpayer.name;
                                 } else if (id === 'taxpayer.process') {
                                     value = item.taxpayer.process;
                                 } else if (id === 'paid') {
-                                    value = `${item.paid} BS`;
+                                    value = `${Number(item.paid).toLocaleString()} BS`;
                                 } else if (id === 'options') {
                                     value =
                                         !pdfMode && user?.role === "ADMIN" ? (

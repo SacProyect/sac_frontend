@@ -186,6 +186,11 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                 const [y, m, d] = item.date.slice(0, 10).split('-');
                                                 return `${d}/${m}/${y}`;
                                             })()
+                                        ) : ['iva', 'excess', 'purchases', 'sells', 'paid'].includes(col.id) ? (
+                                            Number(item[col.id as keyof IVAReports] ?? 0).toLocaleString('es-VE', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })
                                         ) : (
                                             String(item[col.id as keyof IVAReports])
                                         )}
