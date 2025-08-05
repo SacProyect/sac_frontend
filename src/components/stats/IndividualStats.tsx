@@ -1,7 +1,5 @@
-import { Fines } from "@/App";
 import React, { useEffect, useRef, useState } from "react";
 import { PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
-import { Payment } from '../../types/payment'
 import { Event } from "@/types/event";
 import toast, { Toaster } from "react-hot-toast";
 import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayerFunctions";
@@ -420,7 +418,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
                         {user?.role === "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length >= 1 && (
                             <div className="pt-2">
-                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
+                                <button className="px-2 py-1 text-white bg-[#3498db] text-xs xl:text-sm" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
                             </div>
                         )}
 
