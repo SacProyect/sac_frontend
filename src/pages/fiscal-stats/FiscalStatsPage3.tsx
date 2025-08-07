@@ -212,9 +212,9 @@ export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) 
                                     </div>
                                     <div className="flex items-center justify-between">
                                         <div className="flex flex-wrap items-center gap-2">
-                                            <div className={`px-2 py-1 text-xs text-white rounded-md ${badgeColor}`}>{c.deadline} días</div>
+                                            {/* <div className={`px-2 py-1 text-xs text-white rounded-md ${badgeColor}`}>{c.deadline} días</div> */}
                                             {extraBadge && (
-                                                <div className="px-2 py-1 text-xs text-white bg-red-600 rounded-md">+{c.delayDays ?? 0} retraso</div>
+                                                <div className="px-2 py-1 text-xs text-white bg-red-600 rounded-md">+{c.delayDays ?? 0} días de retraso</div>
                                             )}
                                             <Clock className="w-3 h-3 text-gray-400" />
                                         </div>
