@@ -53,10 +53,10 @@ const SelectInput: React.FC<SelectInputProps> = ({ control, name, items = [], la
                     <Label>{label}</Label>
                     <Button
                         className={`     
-                            flex  text-base                     
+                            flex  text-xs   items-center                   
                             border-[#ccc] border
                             rounded-lg bg-slate-50
-                            w-full p-2 mt-0
+                            w-full p-1 mt-0
                             hover:bg-white hover:border-black hover:border-1
                             justify-between`}
                     >

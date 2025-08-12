@@ -55,7 +55,16 @@ function ContributionsPage() {
                     setGroupData(response);
                     // console.log(response)
                 } else if (user.role === "COORDINATOR") {
-                    const groupId = user.coordinatedGroup.id;
+                    const groupId = user.coordinatedGroup?.id;
+
+                    console.log(user);
+
+                    console.log(user.coordinatedGroup);
+
+                    if (!groupId) {
+                        toast.error("No se encontró el grupo coordinado para este usuario.");
+                        return;
+                    }
                     query.id = groupId;
                     const response = await getContributions(query);
                     setGroupData(response);
@@ -64,6 +73,7 @@ function ContributionsPage() {
                     navigate("/401");
                 }
             } catch (e) {
+                console.error(e);
                 toast.error("No se pudieron obtener las contribuciones.");
             }
         };

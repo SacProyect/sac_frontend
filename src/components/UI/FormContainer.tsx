@@ -5,7 +5,7 @@ import { JSX } from "react"
 function FormContainer({ children }: { children: React.ReactNode }): JSX.Element {
     return (
         <div className='flex items-center justify-center w-full h-full sm:h-full md:h-full sm:w-full lg:full lg:h-[100vh] md:my-6 lg:my-0'>
-            <div className='flex-col bg-white p-10 w-[90%] sm:w-[30rem] rounded-lg shadow-md z-10 lg:overflow-y-auto sm:max-h-full lg:max-h-[100vh]'>
+            <div className='flex-col bg-white p-10 w-[90%] sm:w-[30rem] rounded-lg shadow-md z-10 lg:overflow-y-auto sm:max-h-full lg:max-h-[98vh]'>
                 {children}
             </div>
         </div>
