@@ -13,9 +13,11 @@ const columns = [
     { label: 'Procedimiento', id: 'process' },
     { label: 'Razón Social', id: 'name' },
     { label: 'RIF', id: 'rif' },
-    { label: 'Tipo de Contribuyente', id: 'contract_type' },
+    { label: 'Tipo de Contr.', id: 'contract_type' },
     { label: 'Dirección', id: 'address' },
     { label: 'Fecha de Emisión', id: 'emition_date' },
+    { label: 'Parroquia', id: 'parish' },
+    { label: 'Rubro', id: 'category' },
     { label: 'Fiscal', id: 'user.name' },
     { label: 'Opciones', id: 'options' },
 ];
@@ -91,7 +93,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                     style={{
                         // Solo en lg: divide el ancho total disponible en partes iguales
                         // Usa una columna por cada item en columns[]
-                        gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
+                        gridTemplateColumns: `repeat(${columns.length}, 0.4fr)`
                     }}
                 >
                     {columns.map((col) => (
@@ -121,6 +123,10 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                                     <InfoTableOptMenu id={item.id} />
                                 ) : col.id === 'emition_date' ? (
                                     new Date(item.emition_date).toLocaleDateString()
+                                ) : col.id === "category" ? (
+                                    item.category?.name ?? "No se encontró el rubro"
+                                ) : col.id === "parish" ? (
+                                    item.parish?.name ?? "No se encontró la parroquia"
                                 ) : col.id === "contract_type" ? (
                                     item.contract_type === "ORDINARY" ? "ORDINARIO" : "ESPECIAL"
                                 ) : col.id === 'user.name' ? (

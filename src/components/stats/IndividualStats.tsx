@@ -11,6 +11,7 @@ import { InvestigationPdf } from "@/types/investigationPdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
 import { getIndividualIvaReport } from "../utils/api/reportFunctions";
+import { Parish, TaxpayerCategory } from "@/types/taxpayer";
 
 
 
@@ -21,22 +22,24 @@ interface IndividualStatsProps {
 }
 
 interface TaxpayerData {
-    providenceNum: number,
-    address: string,
-    process: string,
-    contract_type: string,
-    rif: string,
-    name: string,
-    description: string,
-    fase: string,
-    notified: Boolean,
-    culminated: Boolean,
-    RepairReports: RepairReports[],
-    officerId: string,
-    investigation_pdfs: InvestigationPdf[],
-    user: User,
-    IVAReports: IVAReports[],
-    supervisorId?: string,
+    providenceNum: number;
+    address: string;
+    process: string;
+    contract_type: string;
+    rif: string;
+    name: string;
+    description: string;
+    fase: string;
+    notified: Boolean;
+    culminated: Boolean;
+    RepairReports: RepairReports[];
+    officerId: string;
+    investigation_pdfs: InvestigationPdf[];
+    user: User;
+    IVAReports: IVAReports[];
+    supervisorId?: string;
+    category: TaxpayerCategory | null;
+    parish: Parish | null;
 }
 
 
@@ -333,7 +336,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
-    // console.log(taxpayerData);
+    console.log(taxpayerData);
 
     // console.log(user)
 
@@ -360,6 +363,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "No se pudo cargar la información"}</p>
+                        <p className="font-bold">Rubro: {taxpayerData && taxpayerData.category && taxpayerData.category.name ? taxpayerData.category.name : "No se encontró el rubro"}</p>
+                        <p className="font-bold">Parroquia: {taxpayerData && taxpayerData.parish && taxpayerData.parish.name ? taxpayerData.parish.name : "No se encontró la parroquia"}</p>
                         <p><span className="font-bold">TIPO DE CONTRIBUYENTE:</span> {taxpayerData
                             ? taxpayerData.contract_type === "ORDINARY"
                                 ? "ORDINARIO"
