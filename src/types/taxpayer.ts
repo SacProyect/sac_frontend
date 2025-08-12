@@ -19,8 +19,20 @@ export interface Taxpayer {
     emition_date: string;
     description: string;
     officerName: string;
+    parish: Parish | null;
+    category: TaxpayerCategory | null;
     user: User;
     IVAReports: IVAReports[];
+}
+
+export interface Parish {
+    id: string;
+    name: string;
+}
+
+export interface TaxpayerCategory {
+    id: string;
+    name: string;
 }
 
 export enum contract_type {
