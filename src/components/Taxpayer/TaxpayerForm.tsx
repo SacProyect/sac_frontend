@@ -7,12 +7,15 @@ import TextInput from '../UI/TextInput';
 import SelectInput from '../UI/SelectInput';
 import { json, useLoaderData, useNavigate } from 'react-router-dom';
 import type { Item } from '../UI/SelectInput';
-import { createTaxpayer } from '../utils/api/taxpayerFunctions';
-import { useState } from 'react';
+import { createTaxpayer, getParishList, getTaxpayerCategories } from '../utils/api/taxpayerFunctions';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { taxpayer_process, contract_type } from '../../types/taxpayer';
 import toast from 'react-hot-toast';
 import { useDropzone } from 'react-dropzone'
 import { HiOutlineUpload } from 'react-icons/hi';
+import { Parish } from '@/types/parish';
+import { TaxpayerCategories } from '@/types/taxpayerCategories';
+import { normalize } from '../utils/Form utils/Normalize';
 
 
 
@@ -25,6 +28,8 @@ export type NewTaxpayer = {
     officerId: string;
     address: string;
     emition_date: string;
+    parish: string;
+    category: string;
 };
 
 
@@ -42,6 +47,18 @@ function TaxpayerForm() {
     const official = useLoaderData() as Item[]
     const [rifPrefix, setRifPrefix] = useState("J")
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+    const [parishList, setParishList] = useState<Parish[]>([]);
+    const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+    const [showParishDropdown, setShowParishDropdown] = useState(false);
+    const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
+    const [selectedParishName, setSelectedParishName] = useState('');
+    const [selectedCategoryName, setSelectedCategoryName] = useState('');
+    const parishDropdownRef = useRef<HTMLDivElement>(null);
+    const categoryDropdownRef = useRef<HTMLDivElement>(null);
+    const [parishSearch, setParishSearch] = useState('');
+    const [debouncedParishSearch, setDebouncedParishSearch] = useState('');
+    const [categorySearch, setCategorySearch] = useState('');
+    const [debouncedCategorySearch, setDebouncedCategorySearch] = useState('');
 
 
     const {
@@ -60,9 +77,32 @@ function TaxpayerForm() {
                 officerId: '',
                 address: '',
                 emition_date: '',
+                parish: '',
+                category: '',
             }
         });
 
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                parishDropdownRef.current &&
+                !parishDropdownRef.current.contains(event.target as Node)
+            ) {
+                setShowParishDropdown(false);
+            }
+            if (
+                categoryDropdownRef.current &&
+                !categoryDropdownRef.current.contains(event.target as Node)
+            ) {
+                setShowCategoryDropdown(false);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, []);
 
 
     // Types for the arrays
@@ -102,10 +142,16 @@ function TaxpayerForm() {
             formData.append("officerId", data.officerId);
             formData.append("address", data.address);
             formData.append("emition_date", data.emition_date);
+            formData.append("parish", data.parish);
+            formData.append("category", data.category);
 
             uploadedFiles.forEach((file) => {
                 formData.append("pdfs", file)
             })
+
+            for (const pair of formData.entries()) {
+                console.log(pair[0], pair[1]);
+            }
 
             const newTaxpayer = await createTaxpayer(formData);
 
@@ -118,12 +164,16 @@ function TaxpayerForm() {
             }
 
             // ✅ Éxito
-            toast.success("¡Contribuyente creado exitosamente!")
+            toast.success("¡Contribuyente creado exitosamente!");
             setUploadedFiles([]);
             // console.log("User before" + JSON.stringify(user))
-            refreshUser()
+            refreshUser();
             // console.log("User after" + JSON.stringify(user))
-            reset()
+            reset();
+
+            setSelectedCategoryName('');
+            setSelectedParishName('');
+
 
         } catch (error) {
             console.error("Error inesperado en onSubmit:", error);
@@ -146,11 +196,63 @@ function TaxpayerForm() {
 
     const sortedOfficials = [...official].sort((a, b) => a.name.localeCompare(b.name));
 
+    useEffect(() => {
+        const fetchCategoriesAndParish = async () => {
+            try {
+                const parish = await getParishList();
+                setParishList(parish.data);
+            } catch (err) {
+                console.error("Error al obtener parroquias:", err);
+                toast.error("No se pudo obtener la lista de parroquias");
+            }
+
+            try {
+                const categories = await getTaxpayerCategories();
+                setTaxpayerCategories(categories.data);
+            } catch (err) {
+                console.error("Error al obtener rubros:", err);
+                toast.error("No se pudo obtener la lista de rubros");
+            }
+        };
+
+        if (user) {
+            fetchCategoriesAndParish();
+        }
+    }, [user]);
+
+
+    // --- Debounce states (500ms) ---
+    // English: Debounce parish search
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedParishSearch(parishSearch), 500);
+        return () => clearTimeout(t);
+    }, [parishSearch]);
+
+    // English: Debounce category search
+    useEffect(() => {
+        const t = setTimeout(() => setDebouncedCategorySearch(categorySearch), 500);
+        return () => clearTimeout(t);
+    }, [categorySearch]);
+
+
+    // --- Filtered lists with useMemo (better perf) ---
+    // English: Recompute only when list or debounced query changes
+    const filteredParishList = useMemo(() => {
+        const q = normalize(debouncedParishSearch);
+        if (!q) return parishList; // optional: show all when empty
+        return parishList.filter(p => normalize(p.name).includes(q));
+    }, [parishList, debouncedParishSearch]);
+
+    const filteredCategories = useMemo(() => {
+        const q = normalize(debouncedCategorySearch);
+        if (!q) return taxpayerCategories;
+        return taxpayerCategories.filter(c => normalize(c.name).includes(q));
+    }, [taxpayerCategories, debouncedCategorySearch]);
 
     return (
         <>
-            <div className='flex items-center justify-center text-xs md:h-full lg:h-full sm:max-h-full'>
-                <FormContainer>
+            <div className="flex items-center justify-center w-full h-full p-4 text-xs">
+                <div className="w-full max-w-[90%] sm:max-w-[30rem] bg-white p-6 rounded-lg shadow-md overflow-y-auto max-h-full lg:h-[95vh]">
                     <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar Contribuyente</h2>
                     <Form onSubmit={handleSubmit(onSubmit)} className=''>
                         <div className=''>
@@ -207,8 +309,90 @@ function TaxpayerForm() {
                         </div>
                         {errors.address && <span className="text-sm text-red-600">{errors.address.message}<br></br></span>}
 
+                        <div className="relative pt-2" ref={parishDropdownRef}>
+                            <Label>Parroquia</Label>
+                            <Controller
+                                name="parish"
+                                control={control}
+                                rules={{ required: "Campo obligatorio" }}
+                                render={({ field: { value, onChange } }) => (
+                                    <div className="relative">
+                                        <input
+                                            onClick={() => setShowParishDropdown(!showParishDropdown)}
+                                            className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
+                                            value={parishSearch}
+                                            onChange={(e) => setParishSearch(e.target.value)}
+                                        >
+                                        </input>
+
+                                        {showParishDropdown && (
+                                            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
+                                                {filteredParishList.map((parish) => (
+                                                    <li
+                                                        key={parish.id}
+                                                        className="px-3 py-1 cursor-pointer hover:bg-blue-100"
+                                                        onClick={() => {
+                                                            onChange(parish.id);
+                                                            setSelectedParishName(parish.name);
+                                                            setShowParishDropdown(false);
+                                                        }}
+                                                    >
+                                                        {parish.name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                            {errors.parish && (
+                                <span className="text-sm text-red-600">{errors.parish.message}</span>
+                            )}
+                        </div>
+
+                        <div className="relative pt-2" ref={categoryDropdownRef}>
+                            <Label>Rubro</Label>
+                            <Controller
+                                name="category"
+                                control={control}
+                                rules={{ required: "Campo obligatorio" }}
+                                render={({ field: { value, onChange } }) => (
+                                    <div className="relative">
+                                        <input
+                                            onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
+                                            value={categorySearch}
+                                            className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
+                                            onChange={(e) => setCategorySearch(e.target.value)}
+                                        >
+                                        </input>
+
+                                        {showCategoryDropdown && (
+                                            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
+                                                {filteredCategories.map((category) => (
+                                                    <li
+                                                        key={category.id}
+                                                        className="px-3 py-1 cursor-pointer hover:bg-blue-100"
+                                                        onClick={() => {
+                                                            onChange(category.id);
+                                                            setSelectedCategoryName(category.name);
+                                                            setShowCategoryDropdown(false);
+                                                        }}
+                                                    >
+                                                        {category.name}
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        )}
+                                    </div>
+                                )}
+                            />
+                            {errors.category && (
+                                <span className="text-sm text-red-600">{errors.category.message}</span>
+                            )}
+                        </div>
+
                         {/* Fecha de Emisión */}
-                        <div className='pt-2'>
+                        <div className='pt-2 pr-4'>
                             <Label>Fecha de Emisión</Label>
                             <TextInput
                                 placeholder="Seleccione una fecha"
@@ -315,24 +499,24 @@ function TaxpayerForm() {
                         <div className="pt-4 ">
                             <div
                                 {...getRootProps()}
-                                className={`flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"
+                                className={`flex flex-col items-center justify-center w-full h-[4rem] lg:h-[2rem] border-2 border-dashed rounded-md cursor-pointer ${"border-blue-500  bg-blue-100"
                                     } transition-all duration-200`}
                             >
                                 <input {...getInputProps()} />
                                 {isDragActive ? (
-                                    <div className='flex items-center'>
-                                        <div className='pr-4 text-blue-500'>
-                                            <HiOutlineUpload size={50} />
+                                    <div className='flex items-center justify-center'>
+                                        <div className='px-4 text-blue-500'>
+                                            <HiOutlineUpload size={20} />
                                         </div>
-                                        <p className="text-sm text-blue-500">Suelta los archivos aquí...</p>
+                                        <p className="text-xs text-blue-500">Suelta los archivos aquí...</p>
                                     </div>
 
                                 ) : (
-                                    <div className='flex items-center'>
-                                        <div className='pr-4 text-blue-500'>
-                                            <HiOutlineUpload size={50} />
+                                    <div className='flex items-center justify-center'>
+                                        <div className='px-4 text-blue-500'>
+                                            <HiOutlineUpload size={20} />
                                         </div>
-                                        <p className="text-sm text-gray-600">Arrastra y suelta los archivos o haz clic aquí para seleccionarlos</p>
+                                        <p className="text-xs text-gray-600">Arrastra y suelta los archivos o haz clic aquí para seleccionarlos</p>
                                     </div>
                                 )}
                             </div>
@@ -372,7 +556,7 @@ function TaxpayerForm() {
                         </Button>
                     </Form>
 
-                </FormContainer>
+                </div>
             </div>
         </>
     )

@@ -454,6 +454,35 @@ export const getPendingPayments = async (taxpayerId: string) => {
 	}
 }
 
+export const getParishList = async () => {
+	try {
+		let requestUrl = 'taxpayer/get-parish-list'
+
+		const response = await apiConnection.get(requestUrl)
+
+		return response;
+
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener la lista de parroquias")
+	}
+}
+
+export const getTaxpayerCategories = async () => {
+
+	try {
+		let requestUrl = 'taxpayer/get-taxpayer-categories'
+
+
+		const response = await apiConnection.get(requestUrl);
+
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener las categorias");
+	}
+}
+
 export const getTaxpayerData = async (taxpayerId: string) => {
 
 	try {
