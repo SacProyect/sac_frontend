@@ -40,7 +40,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
     };
 
     return (
-        <div className="w-full h-full pt-32 lg:w-full lg:h-full lg:pt-0">
+        <div className="w-full h-full pt-16 lg:w-full lg:h-full lg:pt-0">
             <div className="bg-[#1c1c1b] p-4 w-full h-full lg:h-full flex flex-col">
                 <div className="mb-2 text-xl font-semibold text-center text-white font-inter">
                     <div className="flex justify-center">

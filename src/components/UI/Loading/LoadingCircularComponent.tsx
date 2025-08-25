@@ -2,7 +2,7 @@ import React from 'react'
 
 function LoadingCircularComponent() {
     return (
-        <section className="w-full lg:w-[82vw]  h-[100vh] flex items-center justify-center">
+        <section className="w-[100vw] lg:w-[82vw]  h-[100vh] flex items-center justify-center">
             <div className="flex flex-col items-center text-gray-600">
                 <svg className="w-8 h-8 mb-4 text-blue-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

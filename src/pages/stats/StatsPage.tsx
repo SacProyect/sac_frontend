@@ -1,6 +1,6 @@
 import { GlobalKPIResponse } from '@/components/stats/GlobalKpiStats';
 import { ChartData } from '@/components/stats/GlobalPerfomance';
-import { CollectionStats } from '@/components/stats/GlobalTaxpayerPerformance';
+import { MonthlyIvaStats } from '@/components/stats/GlobalTaxpayerPerformance';
 import {
     getGlobalKPI,
     getGlobalPerformance,
@@ -28,7 +28,7 @@ function StatsPage() {
     const navigate = useNavigate();
     const [rawStats, setRawStats] = useState<ChartData[]>([]);
     const [loaded, setLoaded] = useState(false);
-    const [taxpayerPerformance, setTaxpayerPerformance] = useState<CollectionStats | null>(null);
+    const [taxpayerPerformance, setTaxpayerPerformance] = useState<MonthlyIvaStats | null>(null);
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
     const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
 
@@ -49,8 +49,11 @@ function StatsPage() {
                         month: item.month,
                         realAmount: item.realAmount,
                         expectedAmount: item.expectedAmount,
-
+                        taxpayersEmitted: item.taxpayersEmitted,
                     }));
+
+                    console.log(stats);
+                    console.log(parsed);
 
                     setRawStats(parsed);
                     setTaxpayerPerformance(await getGlobalTaxpayerPerformance());
@@ -87,7 +90,7 @@ function StatsPage() {
                     <div className="flex flex-col lg:flex-wrap lg:flex-row w-full lg:w-[82vw] h-full  lg:h-[94.5vh] bg-[#1c1c1b]">
 
                         {/* GRAFICA 1 */}
-                        <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
+                        <div className="w-full h-[70vh] p-2 lg:w-1/2 lg:h-1/2">
                             <Suspense fallback={<p className="text-lg text-center">Cargando estadísticas mensuales...</p>}>
                                 {rawStats.length > 0 ? <PageOneStats chartData={rawStats} /> : <p>No hay estadísticas para mostrar</p>}
                             </Suspense>
@@ -167,7 +170,9 @@ function StatsPage() {
         <div className="min-h-screen bg-[#292d33]">
             <div className='flex flex-col '>
                 {!loaded ? (
-                    <LoadingCircularComponent />
+                    <div className=''>
+                        <LoadingCircularComponent />
+                    </div>
                 ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
                     <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
                         <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>

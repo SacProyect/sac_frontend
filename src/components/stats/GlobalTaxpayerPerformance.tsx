@@ -1,78 +1,119 @@
-import React from "react";
+// comments in English
+import React, { useMemo } from "react";
+import {
+    ResponsiveContainer,
+    BarChart,
+    Bar,
+    XAxis,
+    YAxis,
+    Tooltip,
+    CartesianGrid,
+    ReferenceLine,
+} from "recharts";
 
-
-export interface CollectionStats {
-    ivaCollected: number;
-    islrCollected: number;
-    finesCollected: number;
-    totalCollected: number;
+// API response shape
+export interface MonthlyIvaStats {
+    year: number;
+    months: {
+        monthIndex: number;   // 0..11
+        monthName: string;    // "Enero", ...
+        ivaCollected: number; // month sum of IVA paid
+    }[];
+    totalIvaCollected: number;
 }
 
+// Custom tooltip to format currency and show month label
+const CustomTooltip = ({ active, payload, label }: any) => {
+    // comments in English
+    if (active && payload && payload.length) {
+        const value = payload[0].value as number;
+        const formatted = value.toLocaleString("es-VE", { maximumFractionDigits: 2 });
+        return (
+            <div className="rounded bg-black/80 px-2 py-1 text-[11px] text-white">
+                <div className="font-semibold">{label}</div>
+                <div>IVA: {formatted}</div>
+            </div>
+        );
+    }
+    return null;
+};
 
-export const PageTwoStats = ({ stats }: { stats: CollectionStats }) => {
-    const getBarWidthPercent = (value: number) =>
-        `${stats.totalCollected ? (value / stats.totalCollected) * 100 : 0}%`;
+export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats }> = ({ stats }) => {
+    // comments in English
+    // Build chart data: 12 points, using month short name as label
+    const data = useMemo(
+        () =>
+            (stats?.months ?? []).map((m) => ({
+                label: m.monthName.slice(0, 3),
+                value: m.ivaCollected,
+                fullLabel: m.monthName,
+            })),
+        [stats?.months]
+    );
 
-    const getPercentage = (value: number) =>
-        `${stats.totalCollected ? Math.round((value / stats.totalCollected) * 100) : 0}%`;
+    // If total is zero (edge case), fall back to max month to avoid flat line domain
+    const maxDomain =
+        stats?.totalIvaCollected && stats.totalIvaCollected > 0
+            ? stats.totalIvaCollected
+            : Math.max(...data.map((d) => d.value), 1);
 
-    const bars = [
-        { label: "IVA", value: stats.ivaCollected },
-        { label: "ISLR", value: stats.islrCollected },
-        { label: "Multas", value: stats.finesCollected },
-        { label: "Total", value: stats.totalCollected }
-    ];
+    const formatCurrency = (n: number) =>
+        n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
 
     return (
         <div className="w-full h-full pt-16 lg:w-full lg:h-full lg:pt-0">
-            <div className="bg-[#1c1c1b] w-full h-full p-4 flex flex-col justify-between">
+            <div className="bg-[#1c1c1b] w-full h-full lg:p-4 flex flex-col justify-between">
                 {/* Title */}
                 <div className="bg-[#292d33] border border-[#b7c0cd] rounded-md py-1">
                     <p className="text-base font-semibold text-center text-white font-inter">
-                        CUMPLIMIENTO DE OBLIGACIONES
+                        RECAUDACIÓN MENSUAL · IVA · {stats?.year ?? ""}
                     </p>
                 </div>
 
                 {/* Description */}
                 <p className="text-[11px] md:text-xs lg:text-xs text-[#838382] font-inter text-center leading-5 lg:py-1 md:py-8">
-                    A continuación, se puede observar el monto total recaudado de IVA, ISLR, Multas. En el año actual.
+                    Monto total recaudado de IVA por mes.
                 </p>
 
-                {/* Bars + Percentage Scale */}
-                <div className="relative flex flex-col justify-center flex-1">
-                    {/* Bars */}
-                    <div className="space-y-8">
-                        {bars.map((bar, index) => (
-                            <div key={index} className="flex items-center gap-2">
-                                <span className="text-[#949491] text-xs w-[28%]">{bar.label}</span>
-                                <div className="w-full bg-[#333] rounded-full overflow-hidden h-[20px] relative">
-                                    <div className="w-full bg-[#333] rounded-full overflow-hidden h-[20px] relative">
-                                        {/* Background bar with width */}
-                                        <div
-                                            className="bg-[#5996ff] h-full"
-                                            style={{ width: getBarWidthPercent(bar.value) }}
-                                        />
-                                        {/* Centered value, always visible */}
-                                        <span className="absolute inset-0 flex items-center justify-center text-xs text-white">
-                                            {bar.value.toLocaleString()}
-                                        </span>
-                                    </div>
-                                </div>
-                                <span className="text-[#949491] text-xs w-[12%] text-right">
-                                    {getPercentage(bar.value)}
-                                </span>
-                            </div>
-                        ))}
-                    </div>
+                {/* Chart */}
+                <div className="flex-1 min-h-[18rem] md:min-h-[22rem] lg:min-h-[18rem]">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data} margin={{ top: 10, right: 8, left: 4, bottom: 10 }}>
+                            <CartesianGrid stroke="#333" strokeDasharray="3 3" vertical={false} />
+                            <XAxis
+                                dataKey="label"
+                                tick={{ fill: "#949491", fontSize: 10 }}
+                                axisLine={{ stroke: "#555" }}
+                                tickLine={{ stroke: "#555" }}
+                            />
+                            <YAxis
+                                domain={[0, maxDomain]}
+                                tickFormatter={(v) => formatCurrency(v)}
+                                tick={{ fill: "#949491", fontSize: 10 }}
+                                axisLine={{ stroke: "#555" }}
+                                tickLine={{ stroke: "#555" }}
+                                width={80}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+                            {/* Optional reference line at total */}
+                            <ReferenceLine y={maxDomain} stroke="#666" strokeDasharray="4 4" />
+                            <Bar
+                                dataKey="value"
+                                name="IVA"
+                                fill="#5996ff"
+                                radius={[6, 6, 0, 0]}
+                                barSize={24}
+                            />
+                        </BarChart>
+                    </ResponsiveContainer>
+                </div>
 
-                    {/* Percentage Scale */}
-                    <div className="absolute bottom-0 lg:-bottom-4 left-[20%] right-[14%] lg:left-[22%] lg:right-[16%] flex justify-between text-[#808584] text-[11px] font-inter">
-                        {[...Array(11)].map((_, i) => (
-                            <span key={i} className="w-[1px] text-center">
-                                {i * 10}%
-                            </span>
-                        ))}
-                    </div>
+                {/* Footer summary */}
+                <div className="mt-4 text-center text-xs text-[#c5c8ce]">
+                    Total IVA {stats?.year ?? ""}:{" "}
+                    <span className="font-semibold text-white">
+                        {formatCurrency(stats?.totalIvaCollected ?? 0)}
+                    </span>
                 </div>
             </div>
         </div>
