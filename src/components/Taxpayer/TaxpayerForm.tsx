@@ -389,7 +389,7 @@ function TaxpayerForm() {
                                                     setCategorySearch(e.target.value);
                                                     if (!showCategoryDropdown) setShowCategoryDropdown(true);
                                                 }}
-                                                placeholder="Buscar rubro..."
+                                                placeholder="Buscar actividad comercial..."
                                             />
 
                                             {showCategoryDropdown && (
