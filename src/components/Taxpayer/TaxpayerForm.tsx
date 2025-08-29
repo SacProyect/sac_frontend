@@ -315,35 +315,51 @@ function TaxpayerForm() {
                                 name="parish"
                                 control={control}
                                 rules={{ required: "Campo obligatorio" }}
-                                render={({ field: { value, onChange } }) => (
-                                    <div className="relative">
-                                        <input
-                                            onClick={() => setShowParishDropdown(!showParishDropdown)}
-                                            className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
-                                            value={parishSearch}
-                                            onChange={(e) => setParishSearch(e.target.value)}
-                                        >
-                                        </input>
+                                render={({ field: { value, onChange } }) => {
+                                    // Sync input text when RHF value changes
+                                    useEffect(() => {
+                                        const selected = parishList.find(p => p.id === value);
+                                        // If there's a selected item, show its name; otherwise keep whatever the user is typing
+                                        if (selected) setParishSearch(selected.name);
+                                    }, [value, parishList]);
 
-                                        {showParishDropdown && (
-                                            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
-                                                {filteredParishList.map((parish) => (
-                                                    <li
-                                                        key={parish.id}
-                                                        className="px-3 py-1 cursor-pointer hover:bg-blue-100"
-                                                        onClick={() => {
-                                                            onChange(parish.id);
-                                                            setSelectedParishName(parish.name);
-                                                            setShowParishDropdown(false);
-                                                        }}
-                                                    >
-                                                        {parish.name}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                )}
+                                    return (
+                                        <div className="relative">
+                                            <input
+                                                onClick={() => setShowParishDropdown(prev => !prev)}
+                                                className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
+                                                value={parishSearch}
+                                                onChange={(e) => {
+                                                    setParishSearch(e.target.value); // search text
+                                                    if (!showParishDropdown) setShowParishDropdown(true);
+                                                }}
+                                                placeholder="Buscar parroquia..."
+                                            />
+
+                                            {showParishDropdown && (
+                                                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
+                                                    {filteredParishList.map((parish) => (
+                                                        <li
+                                                            key={parish.id}
+                                                            className="px-3 py-1 cursor-pointer hover:bg-blue-100"
+                                                            onMouseDown={(e) => e.preventDefault()} // avoid input blur before click
+                                                            onClick={() => {
+                                                                onChange(parish.id);          // set RHF field with the ID
+                                                                setParishSearch(parish.name); // show selected name in the input
+                                                                setShowParishDropdown(false);
+                                                            }}
+                                                        >
+                                                            {parish.name}
+                                                        </li>
+                                                    ))}
+                                                    {filteredParishList.length === 0 && (
+                                                        <li className="px-3 py-2 text-gray-500">Sin resultados</li>
+                                                    )}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    );
+                                }}
                             />
                             {errors.parish && (
                                 <span className="text-sm text-red-600">{errors.parish.message}</span>
@@ -356,35 +372,50 @@ function TaxpayerForm() {
                                 name="category"
                                 control={control}
                                 rules={{ required: "Campo obligatorio" }}
-                                render={({ field: { value, onChange } }) => (
-                                    <div className="relative">
-                                        <input
-                                            onClick={() => setShowCategoryDropdown(!showCategoryDropdown)}
-                                            value={categorySearch}
-                                            className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
-                                            onChange={(e) => setCategorySearch(e.target.value)}
-                                        >
-                                        </input>
+                                render={({ field: { value, onChange } }) => {
+                                    // Sync text when RHF value changes
+                                    useEffect(() => {
+                                        const selected = taxpayerCategories.find(c => c.id === value);
+                                        if (selected) setCategorySearch(selected.name);
+                                    }, [value, taxpayerCategories]);
 
-                                        {showCategoryDropdown && (
-                                            <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
-                                                {filteredCategories.map((category) => (
-                                                    <li
-                                                        key={category.id}
-                                                        className="px-3 py-1 cursor-pointer hover:bg-blue-100"
-                                                        onClick={() => {
-                                                            onChange(category.id);
-                                                            setSelectedCategoryName(category.name);
-                                                            setShowCategoryDropdown(false);
-                                                        }}
-                                                    >
-                                                        {category.name}
-                                                    </li>
-                                                ))}
-                                            </ul>
-                                        )}
-                                    </div>
-                                )}
+                                    return (
+                                        <div className="relative">
+                                            <input
+                                                onClick={() => setShowCategoryDropdown(prev => !prev)}
+                                                value={categorySearch}
+                                                className="w-full p-2 mt-1 text-left bg-white border border-gray-300 rounded"
+                                                onChange={(e) => {
+                                                    setCategorySearch(e.target.value);
+                                                    if (!showCategoryDropdown) setShowCategoryDropdown(true);
+                                                }}
+                                                placeholder="Buscar rubro..."
+                                            />
+
+                                            {showCategoryDropdown && (
+                                                <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded max-h-[20vh] overflow-y-auto text-sm">
+                                                    {filteredCategories.map((category) => (
+                                                        <li
+                                                            key={category.id}
+                                                            className="px-3 py-1 cursor-pointer hover:bg-blue-100"
+                                                            onMouseDown={(e) => e.preventDefault()} // keep input focused
+                                                            onClick={() => {
+                                                                onChange(category.id);          // set RHF field with the ID
+                                                                setCategorySearch(category.name); // display selected name
+                                                                setShowCategoryDropdown(false);
+                                                            }}
+                                                        >
+                                                            {category.name}
+                                                        </li>
+                                                    ))}
+                                                    {filteredCategories.length === 0 && (
+                                                        <li className="px-3 py-2 text-gray-500">Sin resultados</li>
+                                                    )}
+                                                </ul>
+                                            )}
+                                        </div>
+                                    );
+                                }}
                             />
                             {errors.category && (
                                 <span className="text-sm text-red-600">{errors.category.message}</span>
