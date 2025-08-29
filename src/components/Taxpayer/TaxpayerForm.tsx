@@ -367,7 +367,7 @@ function TaxpayerForm() {
                         </div>
 
                         <div className="relative pt-2" ref={categoryDropdownRef}>
-                            <Label>Rubro</Label>
+                            <Label>Actividad Comercial</Label>
                             <Controller
                                 name="category"
                                 control={control}
