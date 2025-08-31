@@ -50,7 +50,7 @@ function LowCompliance({ fiscalData }: LowComplianceProps) {
         const element = document.getElementById(tableId)
         if (element) {
             // Crear una nueva ventana para imprimir solo la tabla específica
-            const printWindow = window.open("", "_blank")
+            const printWindow = window.open("", fiscalData.fiscalName + "Contribuyentes bajo cumplimiento")
             if (printWindow) {
                 const tableRows = compliance?.map((taxpayer, index) => `
                     <tr>
@@ -131,6 +131,7 @@ function LowCompliance({ fiscalData }: LowComplianceProps) {
                     </body>
                     </html>
                 `);
+                printWindow.document.title = fiscalData.fiscalName + " Contribuyentes bajo cumplimiento";
                 printWindow.document.close()
                 printWindow.print()
             }

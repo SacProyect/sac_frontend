@@ -35,6 +35,7 @@ function Goal() {
         real: expectedGoal?.totalPaid,
         diferencia: expectedGoal?.difference,
         deficit: expectedGoal?.percentage,
+        compliance: expectedGoal?.compliance
     }
 
     const formatCurrency = (amount: number) => {
@@ -75,18 +76,18 @@ function Goal() {
                     </div>
 
                     {/* INDICADOR DE DIFERENCIA */}
-                    <div className={`px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg ${recaudacionComparacion.deficit < 0 ? "bg-gradient-to-r from-red-600 to-red-500 rounded-2xl border-red-400/30" : "bg-gradient-to-r from-green-600 to-green-500 rounded-2xl border-green-400/30"}`}>
+                    <div className={`px-4 py-1 lg:flex lg:items-center lg:justify-center lg:space-x-2 text-center border shadow-lg bg-gradient-to-r from-green-600 to-green-500 rounded-2xl border-green-400/30`}>
                         <div className="mb-1 text-xl font-black text-white">
-                            {recaudacionComparacion.deficit.toFixed(1)}%
+                            {recaudacionComparacion.compliance.toFixed(1)}%
                         </div>
-                        <p className="text-sm font-medium text-red-100">{recaudacionComparacion.deficit < 0 ? "DÉFICIT" : "SUPERAVIT"}</p>
+                        <p className="text-sm font-medium text-red-100">Cumplimiento</p>
                     </div>
 
                     {/* RECAUDACIÓN REAL */}
                     <div className={`p-2 border  rounded-xl ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-gradient-to-r from-green-600/20 to-green-400/20 border-green-500/50" : "bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50"}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>COBRO REAL (Mes actual)</div>
+                                <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>COBRO REAL (Mes anterior)</div>
                                 <div className={`text-xl font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-white" : "text-red-500"}`}>
                                     {formatCurrency(recaudacionComparacion.real)}
                                 </div>

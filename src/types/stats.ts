@@ -60,4 +60,5 @@ export interface ExpectedGoal {
     difference: number;
     percentage: number;
     status: string;
+    compliance: number;
 }
