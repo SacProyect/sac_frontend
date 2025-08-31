@@ -1,5 +1,5 @@
 import { getFiscalTaxpayerCompliance } from '@/components/utils/api/reportFunctions';
-import { exportExcel } from '@/components/utils/exportReports';
+import { exportExcel } from '@/components/utils/Fiscal utils/exportReports';
 import { useAuth } from '@/hooks/useAuth';
 import { ComplianceInterface, FiscalInfo } from '@/types/reports';
 import { Download, TrendingUp } from 'lucide-react';
