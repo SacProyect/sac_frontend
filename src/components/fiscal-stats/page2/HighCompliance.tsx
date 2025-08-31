@@ -133,6 +133,7 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
                     </body>
                     </html>
                 `);
+                printWindow.document.title = fiscalData.fiscalName + " Contribuyentes alto cumplimiento";
                 printWindow.document.close()
                 printWindow.print()
             }

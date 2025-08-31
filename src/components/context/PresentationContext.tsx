@@ -50,7 +50,7 @@ export const PresentationProvider = ({ children }: { children: ReactNode }) => {
 
     const lastInteractionRef = useRef<number>(Date.now());
 
-    const INACTIVITY_LIMIT = 60000; // ms
+    const INACTIVITY_LIMIT = 300000; // ms
     const TOTAL_PAGES = 3;
 
 

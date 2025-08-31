@@ -133,6 +133,7 @@ function MediumCompliance({ fiscalData }: MediumComplianceProps) {
                     </body>
                     </html>
                 `);
+                printWindow.document.title = fiscalData.fiscalName + " Contribuyentes medio cumplimiento";
                 printWindow.document.close()
                 printWindow.print()
             }
