@@ -6,36 +6,36 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
-
-
 interface TaxpayerListProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo & { taxpayersList?: TaxpayersList[] }
 }
 
 function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
-    const [taxpayersList, setTaxpayersList] = useState<TaxpayersList[]>();
+    const [taxpayersList, setTaxpayersList] = useState<TaxpayersList[] | undefined>(fiscalInfo.taxpayersList);
     const { user } = useAuth();
     const navigate = useNavigate();
 
     if (!user) {
         navigate('/login')
-        return;
+        return null;
     }
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const response = await getFiscalTaxpayers(fiscalInfo.fiscalId);
+        if (!fiscalInfo.taxpayersList) {
+            const fetchData = async () => {
+                try {
+                    const response = await getFiscalTaxpayers(fiscalInfo.fiscalId);
 
-                setTaxpayersList(response);
+                    setTaxpayersList(response);
 
-            } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                } catch (e) {
+                    console.error(e);
+                    toast.error("No se pudo obtener la información del fiscal.")
+                }
             }
+            fetchData();
         }
-        fetchData();
-    }, [])
+    }, [fiscalInfo.taxpayersList, fiscalInfo.fiscalId])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -61,7 +61,6 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
                 return "bg-gray-600"
         }
     }
-
 
     return (
         <>
