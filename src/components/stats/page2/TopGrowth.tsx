@@ -1,5 +1,6 @@
 import { usePresentation } from '@/components/context/PresentationContext';
 import { getMonthlyGrowth } from '@/components/utils/api/reportFunctions';
+import { exportTopGrowthExcel } from '@/components/utils/stats/exportTopGrowthExcel';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { BestGrowth } from '@/types/stats';
 import { Download, TrendingUp } from 'lucide-react'
@@ -157,10 +158,19 @@ function TopGrowth() {
                         <TrendingUp className="w-5 h-5 text-green-500" />
                         Coordinadores - Crecimiento Mensual
                     </div>
-                    <div className='pt-4'>
+                    <div className='flex pt-4 space-x-2'>
                         <button
                             onClick={() => downloadPDF("coordinador-table", "coordinadores-crecimiento.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
+                        >
+                            <Download className="w-4 h-4" />
+                        </button>
+                        {/* Excel */}
+                        <button
+                            onClick={() =>
+                                exportTopGrowthExcel(coordinatorGrowth, "coordinadores-crecimiento")
+                            }
+                            className="flex items-center gap-1 px-2 py-2 text-white bg-green-600 border-green-600 rounded-md hover:bg-green-700"
                         >
                             <Download className="w-4 h-4" />
                         </button>
