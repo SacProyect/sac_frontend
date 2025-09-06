@@ -1,4 +1,5 @@
 import { usePresentation } from '@/components/context/PresentationContext';
+import { exportComplianceExcel } from '@/components/utils/stats/exportComplianceExcel';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { High } from '@/types/stats'
 import { Download, Users } from 'lucide-react'
@@ -132,10 +133,19 @@ function BetterCompliance({ data }: BetterComplianceProps) {
                         <Users className="w-4 h-4 text-green-500" />
                         Contribuyentes - Mayor Cumplimiento
                     </div>
-                    <div className='pt-4 pr-4'>
+                    <div className='flex pt-4 pr-4 space-x-2'>
                         <button
                             onClick={() => downloadPDF("alto-cumplimiento-table", "contribuyentes-alto-cumplimiento.pdf")}
                             className="flex items-center justify-center px-2 text-white bg-blue-600 border-blue-600 hover:bg-blue-700 h-7"
+                        >
+                            <Download className="w-3 h-3" />
+                        </button>
+                        {/* Excel */}
+                        <button
+                            onClick={() =>
+                                exportComplianceExcel(data, "contribuyentes-alto-cumplimiento")
+                            }
+                            className="flex items-center justify-center px-2 text-white bg-green-600 border-green-600 hover:bg-green-700 h-7"
                         >
                             <Download className="w-3 h-3" />
                         </button>
