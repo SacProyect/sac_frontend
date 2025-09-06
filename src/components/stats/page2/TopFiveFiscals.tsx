@@ -1,5 +1,6 @@
 import { usePresentation } from '@/components/context/PresentationContext';
 import { getTopFiveByGroup } from '@/components/utils/api/reportFunctions';
+import { exportTopFiveByGroupExcel } from '@/components/utils/stats/exportTopFiveByGroupExcel';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { TopFiveFiscalsByGroup } from '@/types/stats'
 import { Download, Users } from 'lucide-react'
@@ -168,12 +169,21 @@ function TopFiveFiscals() {
                         <Users className="w-5 h-5 text-purple-500" />
                         Top 5 Fiscales por Grupo
                     </div>
-                    <div className='pt-4'>
+                    <div className='flex pt-4 space-x-2'>
                         <button
                             onClick={() => downloadPDF("fiscales-grupo-table", "top-fiscales-por-grupo.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4 rounded-md" />
+                        </button>
+                        {/* Botón Excel */}
+                        <button
+                            onClick={() =>
+                                exportTopFiveByGroupExcel(fiscalsByGroup || [], "top-fiscales-por-grupo")
+                            }
+                            className="flex items-center gap-1 px-2 py-2 text-white bg-green-600 border-green-600 rounded-md hover:bg-green-700"
+                        >
+                            <Download className="w-4 h-4" />
                         </button>
                     </div>
                 </div>
