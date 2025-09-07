@@ -15,7 +15,7 @@ import { IoIosClose } from "react-icons/io";
 
 
 
-const InfoTableOptMenu = ({ id }: { id: string }) => {
+const InfoTableOptMenu = ({ id, setEditingRows }: { id: string; setEditingRows: React.Dispatch<React.SetStateAction<{ [key: string]: Partial<Taxpayer> }>>; }) => {
     const { user, setUser } = useAuth()
     const [isTryingToDelete, setIsTryingToDelete] = useState(false);
     const [popOverOpen, setPopOverOpen] = useState(false);
@@ -38,10 +38,11 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
 
     const options = user.role == "ADMIN" ? [
         { name: 'Detalles', path: `/taxpayer/${id}` },
+        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })) },
         { name: 'Borrar', onPress: () => setIsTryingToDelete(true) }
     ] : [
-        { name: 'Detalles', path: `/taxpayer/${id}` }
-
+        { name: 'Detalles', path: `/taxpayer/${id}` },
+        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })) },
     ]
 
 
@@ -97,9 +98,10 @@ const InfoTableOptMenu = ({ id }: { id: string }) => {
                                                 </span>
                                             </Link> :
                                             <Button
-                                                className={"bg-inherit p-0 inline-flex items-center justify-center text-center hover:border-white selected:border-white"}
+                                                className="inline-flex items-center justify-center p-0 text-center bg-inherit hover:border-white"
                                                 onPress={() => {
-                                                    handleDeleteClick();
+                                                    opt.onPress?.(); // ejecuta Editar o Borrar según el caso
+                                                    setPopOverOpen(false); // cierra el menú
                                                 }}
                                             >
                                                 <span className='text-black'>
