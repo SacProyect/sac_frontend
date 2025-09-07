@@ -20,7 +20,7 @@ export interface Taxpayer {
     description: string;
     officerName: string;
     parish: Parish | null;
-    category: TaxpayerCategory | null;
+    taxpayer_category?: TaxpayerCategory | null;
     user: User;
     IVAReports: IVAReports[];
 }

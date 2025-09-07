@@ -363,7 +363,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "No se pudo cargar la información"}</p>
-                        <p className="font-bold">Rubro: {taxpayerData && taxpayerData.category && taxpayerData.category.name ? taxpayerData.category.name : "No se encontró el rubro"}</p>
+                        <p className="font-bold">Actividad Comercial: {taxpayerData && taxpayerData.category && taxpayerData.category.name ? taxpayerData.category.name : "No se encontró la actividad comercial"}</p>
                         <p className="font-bold">Parroquia: {taxpayerData && taxpayerData.parish && taxpayerData.parish.name ? taxpayerData.parish.name : "No se encontró la parroquia"}</p>
                         <p><span className="font-bold">TIPO DE CONTRIBUYENTE:</span> {taxpayerData
                             ? taxpayerData.contract_type === "ORDINARY"

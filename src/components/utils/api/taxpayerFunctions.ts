@@ -27,6 +27,17 @@ type CreateIndexIva = {
 	specialAmount: Decimal,
 }
 
+export const updateTaxpayer = async (id: string, data: any) => {
+	try {
+		const requestUrl = `/taxpayer/update-taxpayer/${id}`;
+		const response = await apiConnection.put(requestUrl, data);
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron actualizar los datos del contribuyente.");
+	}
+};
+
 export const createIndexIva = async (input: CreateIndexIva) => {
 
 	try {
