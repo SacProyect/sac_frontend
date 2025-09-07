@@ -210,8 +210,8 @@ function TaxpayerForm() {
                 const categories = await getTaxpayerCategories();
                 setTaxpayerCategories(categories.data);
             } catch (err) {
-                console.error("Error al obtener rubros:", err);
-                toast.error("No se pudo obtener la lista de rubros");
+                console.error("Error al obtener Actividad comercial:", err);
+                toast.error("No se pudo obtener la lista de actividad comercial");
             }
         };
 

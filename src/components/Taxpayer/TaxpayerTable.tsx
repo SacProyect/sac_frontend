@@ -126,8 +126,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                 const categories = await getTaxpayerCategories();
                 setTaxpayerCategories(categories.data);
             } catch (err) {
-                console.error("Error al obtener rubros:", err);
-                toast.error("No se pudo obtener la lista de rubros");
+                console.error("Error al obtener actividad comercial:", err);
+                toast.error("No se pudo obtener la lista de actividad comercial");
             }
         };
 
