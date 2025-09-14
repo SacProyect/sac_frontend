@@ -211,7 +211,7 @@ function IslrForm() {
                 </div>
 
                 <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Cobrado (BS)</label>
+                    <label className="block mb-1 text-sm font-medium text-gray-600">Pagado (BS)</label>
                     <input
                         type="text"
                         {...register("paid", {

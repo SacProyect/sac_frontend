@@ -135,7 +135,7 @@ function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
                                 <div className="mb-1 text-xl font-bold text-purple-400">
                                     {formatCurrency(Number(analisis?.totalCollected))}
                                 </div>
-                                <div className="text-xs text-purple-300">Total Cobrado</div>
+                                <div className="text-xs text-purple-300">Total Pagado</div>
                             </div>
                         </div>
 
@@ -189,7 +189,7 @@ function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
                                     <div className="text-lg font-bold text-white">{analisis?.taxpayersWithFines}</div>
                                 </div>
                                 <div className=''>
-                                    <div className="text-xs font-medium text-green-400">Mayor cobrador</div>
+                                    <div className="text-xs font-medium text-green-400">Mayor Pagador</div>
                                     <p className="text-xs font-bold text-white ">{analisis?.taxpayerWithMostCollected?.name ? analisis?.taxpayerWithMostCollected?.name : "No se encontró"}</p>
                                 </div>
                             </div>

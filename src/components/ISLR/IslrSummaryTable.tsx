@@ -30,7 +30,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
         { name: 'Ingresos', id: 'incomes' },
         { name: 'Gastos', id: 'expent' },
         { name: 'Costos', id: 'costs' },
-        { name: 'Cobrado', id: 'paid' },
+        { name: 'Pagado', id: 'paid' },
         { name: 'Fecha de Emisión', id: 'emition_date' },
         { name: 'Acciones', id: 'options' },
     ];

@@ -9,7 +9,7 @@ export const exportTopFiveByGroupExcel = async (
     const sheet = workbook.addWorksheet("Top 5 Fiscales por Grupo");
 
     // Encabezados generales
-    sheet.addRow(["Grupo", "#", "Nombre", "Total Cobrado"]);
+    sheet.addRow(["Grupo", "#", "Nombre", "Total pagado"]);
 
     groups.forEach((group) => {
         group.fiscals.forEach((f, idx) => {

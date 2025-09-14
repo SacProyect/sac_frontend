@@ -51,7 +51,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                 </div>
 
                 <p className="text-[11px] md:text-xs text-[#838382] mb-2 font-inter text-center leading-5 px-2">
-                    Esta gráfica muestra el rendimiento total de cada grupo. Se mide con base en IVA, ISLR, multas pagadas y monto cobrado.
+                    Esta gráfica muestra el rendimiento total de cada grupo. Se mide con base en IVA, ISLR, multas pagadas y monto pagado.
                 </p>
 
                 <div className="pt-4 pr-1 overflow-y-auto lg:flex lg:flex-col lg:w-full lg:h-full lg:px-8 custom-scroll">
@@ -77,10 +77,10 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                 </div>
                             </div>
 
-                            {/* Monto cobrado por multas */}
+                            {/* Monto pagado por multas */}
                             <div className="flex flex-col w-full mb-1 lg:flex-row lg:items-center lg:space-x-3">
                                 <div className="text-[#7cffcc] text-xs w-full lg:w-full text-center lg:text-left">
-                                    Cobrado Multas
+                                    Pagado Multas
                                 </div>
                                 <div className="relative h-[18px] bg-[#2a2e34] lg:max-w-full w-full rounded-full mt-1 lg:mt-0">
                                     <div
