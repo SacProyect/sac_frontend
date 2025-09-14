@@ -121,7 +121,7 @@ function TaxpayerForm() {
     const onSubmit: SubmitHandler<NewTaxpayer> = async (data) => {
         try {
 
-            if (user.role === "FISCAL" || user.role === "SUPERVISOR") data.officerId = user.id;
+            if (user.role === "FISCAL") data.officerId = user.id;
 
             // ✅ Validación frontend: verificar que se haya subido al menos un PDF
             if (!uploadedFiles || uploadedFiles.length === 0) {
