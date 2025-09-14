@@ -217,7 +217,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                                 </div>
                                 <div>
                                     <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Cobrado Multas</button>
+                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado Multas</button>
                                         <SortIcon column="totalCollected" />
                                     </div>
                                     {sortedData?.map((data) => (

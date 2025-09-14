@@ -136,7 +136,7 @@ export const getExpectedAmount = async () => {
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se pudo obtener el cobrado esperado.")
+		throw new Error("No se pudo obtener el pagado esperado.")
 	}
 }
 
@@ -285,7 +285,7 @@ export const getFiscalMonthlyCollect = async (fiscalId: string) => {
 		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
 		return response.data;
 	} catch (e) {
-		console.error('Error al obtener el reporte de cobrado mensual:', e)
+		console.error('Error al obtener el reporte de pagado mensual:', e)
 		throw e
 	}
 };

@@ -44,7 +44,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
 
             } catch (e) {
                 console.error(e);
-                toast.error("No se pudo obtener la información del cobrado mensual.")
+                toast.error("No se pudo obtener la información del pagado mensual.")
             }
         }
         fetchData();
@@ -176,7 +176,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                                         <h3 className="text-lg font-semibold text-blue-400">{month.month} {new Date(Date.now()).getFullYear().toString()}</h3>
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-green-400">{formatCurrency(month.total)}</div>
-                                            <div className="text-xs text-gray-400">Total Cobrado</div>
+                                            <div className="text-xs text-gray-400">Total Pagado</div>
                                         </div>
                                     </div>
 

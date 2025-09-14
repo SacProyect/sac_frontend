@@ -198,7 +198,7 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
                                         </div>
                                     </div>
                                     <div className="bg-[#2a2a29] rounded-md p-2">
-                                        <div className="mb-1 text-xs text-gray-400">Total Cobrado</div>
+                                        <div className="mb-1 text-xs text-gray-400">Total Pagado</div>
                                         <div className="font-bold text-green-400">{formatCurrency(Number(taxpayer.totalCollected))}</div>
                                     </div>
                                 </div>

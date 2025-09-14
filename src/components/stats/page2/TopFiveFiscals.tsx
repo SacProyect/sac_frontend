@@ -87,7 +87,7 @@ function TopFiveFiscals() {
                                 <tr>
                                     <th>#</th>
                                     <th>Nombre</th>
-                                    <th>Total Cobrado</th>
+                                    <th>Total Pagado</th>
                                 </tr>
                             </thead>
                             <tbody>

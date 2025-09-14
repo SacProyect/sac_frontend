@@ -253,7 +253,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
                                             <div className="font-bold text-blue-400">{formatCurrency(proc.esperado)}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
-                                            <div className="mb-1 text-gray-400">Cobrado</div>
+                                            <div className="mb-1 text-gray-400">Pagado</div>
                                             <div
                                                 className={`font-bold ${proc.cumplimiento >= 90
                                                     ? "text-green-400"
