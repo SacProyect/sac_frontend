@@ -1,18 +1,16 @@
 import { usePresentation } from '@/components/context/PresentationContext';
-import { getMonthlyGrowth } from '@/components/utils/api/reportFunctions';
+import { getMonthlyGrowth } from '@/components/utils/api/reportFunctions'; // ojo: cambia nombre si renombraste la API
 import { exportTopGrowthExcel } from '@/components/utils/stats/exportTopGrowthExcel';
 import { useAutoScroll } from '@/hooks/useAutoScroll';
 import { BestGrowth } from '@/types/stats';
 import { Download, TrendingUp } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
-
 function TopGrowth() {
     const { currentPage } = usePresentation();
     const [coordinatorGrowth, setCoordinatorGrowth] = useState<BestGrowth[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
-
 
     useEffect(() => {
         const fetchCoordinatorGrowth = async () => {
@@ -23,24 +21,24 @@ function TopGrowth() {
                     .map((item: any) => ({
                         coordinatorName: `Coordinador: ${item.coordinatorName}`,
                         groupName: item.groupName,
-                        currentMonth: Number(item.currentMonth),
+                        antePreviousMonth: Number(item.antePreviousMonth),
                         previousMonth: Number(item.previousMonth),
-                        growthPercentage: Number(item.growthPercentage),
+                        compliancePercentage: Number(item.compliancePercentage),
                     }))
-                    .sort((a: BestGrowth, b: BestGrowth) => b.growthPercentage - a.growthPercentage); // Orden descendente
+                    .sort(
+                        (a: BestGrowth, b: BestGrowth) => b.compliancePercentage - a.compliancePercentage
+                    );
 
                 setCoordinatorGrowth(transformed);
                 setScrollReady(true);
             } catch (e) {
                 console.error(e);
-                throw new Error("No se pudo obtener el crecimiento estadístico de los coordinadores.");
+                throw new Error("No se pudo obtener el cumplimiento de los coordinadores.");
             }
         };
 
         fetchCoordinatorGrowth();
     }, []);
-
-
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -64,12 +62,12 @@ function TopGrowth() {
                 <div class="group-block">
                     <h2 class="group-title">${c.groupName}</h2>
                     <p class="coordinator-name"><strong>Coordinador:</strong> ${c.coordinatorName}</p>
-                    <p class="growth">📈 <strong>Crecimiento:</strong> ${c.growthPercentage.toFixed(2)}%</p>
+                    <p class="growth">📊 <strong>Cumplimiento:</strong> ${c.compliancePercentage.toFixed(2)}%</p>
                     <table>
                         <thead>
                             <tr>
-                                <th>Mes Anterior</th>
-                                <th>Mes Actual</th>
+                                <th>Mes Antepasado</th>
+                                <th>Mes Pasado</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -146,9 +144,7 @@ function TopGrowth() {
         win.print();
     };
 
-
     useAutoScroll(scrollRef, "coordinador-table", scrollReady && currentPage === 2);
-
 
     return (
         <>
@@ -156,11 +152,11 @@ function TopGrowth() {
                 <div className="flex flex-row items-center justify-between pb-4 pr-4 lg:pb-0">
                     <div className="flex items-center justify-center gap-2 pt-4 pl-4 text-lg font-semibold">
                         <TrendingUp className="w-5 h-5 text-green-500" />
-                        Coordinadores - Crecimiento Mensual
+                        Coordinadores - Cumplimiento Mensual
                     </div>
                     <div className='flex pt-4 space-x-2'>
                         <button
-                            onClick={() => downloadPDF("coordinador-table", "coordinadores-crecimiento.pdf")}
+                            onClick={() => downloadPDF("coordinador-table", "coordinadores-cumplimiento.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4" />
@@ -168,7 +164,7 @@ function TopGrowth() {
                         {/* Excel */}
                         <button
                             onClick={() =>
-                                exportTopGrowthExcel(coordinatorGrowth, "coordinadores-crecimiento")
+                                exportTopGrowthExcel(coordinatorGrowth, "coordinadores-cumplimiento")
                             }
                             className="flex items-center gap-1 px-2 py-2 text-white bg-green-600 border-green-600 rounded-md hover:bg-green-700"
                         >
@@ -199,20 +195,29 @@ function TopGrowth() {
                                             </div>
                                         </div>
                                         <div className={`text-right ${index === 0 ? "text-green-400" : "text-blue-400"}`}>
-                                            <div className="text-xl font-bold">{coordinator.growthPercentage.toFixed(2)}%</div>
-                                            <p className="text-sm">
-                                                {coordinator.growthPercentage > 0 ? "Crecimiento" : "Decrecimiento"}
-                                            </p>
+                                            <div className="text-xl font-bold">{coordinator.compliancePercentage.toFixed(2)}%</div>
+                                            <p className="text-sm">Cumplimiento</p>
                                         </div>
                                     </div>
 
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div className="bg-[#2a2a29] rounded-md p-3">
-                                            <div className="mb-1 text-gray-400">Mes Anterior</div>
+                                            <div className="mb-1 text-gray-400">
+                                                Mes de {
+                                                    new Date(new Date().getFullYear(), new Date().getMonth() - 2)
+                                                        .toLocaleString("es-ES", { month: "long" })
+                                                        .replace(/^\w/, c => c.toUpperCase())
+                                                }
+                                            </div>
                                             <div className="font-bold">{formatCurrency(Number(coordinator.antePreviousMonth))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-3">
-                                            <div className="mb-1 text-gray-400">Mes Actual</div>
+                                            <div className="mb-1 text-gray-400">
+                                                Mes de {
+                                                    new Date(new Date().getFullYear(), new Date().getMonth() - 1)
+                                                        .toLocaleString("es-ES", { month: "long" })
+                                                        .replace(/^\w/, c => c.toUpperCase())
+                                                }</div>
                                             <div className="font-bold text-green-400">{formatCurrency(Number(coordinator.previousMonth))}</div>
                                         </div>
                                     </div>
