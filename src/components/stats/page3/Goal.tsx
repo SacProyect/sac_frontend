@@ -53,7 +53,7 @@ function Goal() {
             <div className='space-y-6'>
                 <div className="flex items-center gap-2 text-base font-semibold">
                     <BarChart3 className="w-4 h-4 text-purple-500" />
-                    Cobro Real vs Esperado
+                    Pagado IVA real vs Esperado
                 </div>
 
                 <div className="h-full lg:h-[40vh] space-y-4">
@@ -87,7 +87,7 @@ function Goal() {
                     <div className={`p-2 border  rounded-xl ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "bg-gradient-to-r from-green-600/20 to-green-400/20 border-green-500/50" : "bg-gradient-to-r from-red-600/20 to-red-400/20 border-red-500/50"}`}>
                         <div className="flex items-center justify-between">
                             <div>
-                                <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>COBRO REAL (Mes anterior)</div>
+                                <div className={`mb-1 text-xs font-medium ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-green-400" : "text-red-300"}`}>Pagado IVA real (Mes anterior)</div>
                                 <div className={`text-xl font-bold ${recaudacionComparacion.real > recaudacionComparacion.esperada ? "text-white" : "text-red-500"}`}>
                                     {formatCurrency(recaudacionComparacion.real)}
                                 </div>

@@ -31,8 +31,8 @@ export interface TopFiveFiscalsByGroup {
 
 export interface BestGrowth {
     groupName: string;
+    antePreviousMonth: string;
     previousMonth: string;
-    currentMonth: string;
     growthPercentage: number;
     coordinatorName: string;
 }

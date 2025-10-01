@@ -74,8 +74,8 @@ function TopGrowth() {
                         </thead>
                         <tbody>
                             <tr>
+                                <td>${format(Number(c.antePreviousMonth))}</td>
                                 <td>${format(Number(c.previousMonth))}</td>
-                                <td>${format(Number(c.currentMonth))}</td>
                             </tr>
                         </tbody>
                     </table>
@@ -209,11 +209,11 @@ function TopGrowth() {
                                     <div className="grid grid-cols-2 gap-4 text-sm">
                                         <div className="bg-[#2a2a29] rounded-md p-3">
                                             <div className="mb-1 text-gray-400">Mes Anterior</div>
-                                            <div className="font-bold">{formatCurrency(Number(coordinator.previousMonth))}</div>
+                                            <div className="font-bold">{formatCurrency(Number(coordinator.antePreviousMonth))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-3">
                                             <div className="mb-1 text-gray-400">Mes Actual</div>
-                                            <div className="font-bold text-green-400">{formatCurrency(Number(coordinator.currentMonth))}</div>
+                                            <div className="font-bold text-green-400">{formatCurrency(Number(coordinator.previousMonth))}</div>
                                         </div>
                                     </div>
                                 </div>
