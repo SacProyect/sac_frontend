@@ -61,7 +61,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                     <div className="mb-1 font-semibold">Mes: {label}</div>
                     <div>Pagado (IVA): {fmtCurrency(p.realAmount)}</div>
                     <div>Esperado: {fmtCurrency(p.expectedAmount)}</div>
-                    <div>Contribuyentes Creados: {p.taxpayersEmitted ?? 0}</div>
+                    {/* <div>Contribuyentes Creados: {p.taxpayersEmitted ?? 0}</div> */}
                 </div>
             );
         }
