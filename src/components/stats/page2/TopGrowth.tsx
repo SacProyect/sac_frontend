@@ -21,7 +21,7 @@ function TopGrowth() {
                     .map((item: any) => ({
                         coordinatorName: `Coordinador: ${item.coordinatorName}`,
                         groupName: item.groupName,
-                        antePreviousMonth: Number(item.antePreviousMonth),
+                        currentMonth: Number(item.currentMonth),
                         previousMonth: Number(item.previousMonth),
                         compliancePercentage: Number(item.compliancePercentage),
                     }))
@@ -204,21 +204,21 @@ function TopGrowth() {
                                         <div className="bg-[#2a2a29] rounded-md p-3">
                                             <div className="mb-1 text-gray-400">
                                                 Mes de {
-                                                    new Date(new Date().getFullYear(), new Date().getMonth() - 2)
+                                                    new Date(new Date().getFullYear(), new Date().getMonth() - 1)
                                                         .toLocaleString("es-ES", { month: "long" })
                                                         .replace(/^\w/, c => c.toUpperCase())
                                                 }
                                             </div>
-                                            <div className="font-bold">{formatCurrency(Number(coordinator.antePreviousMonth))}</div>
+                                            <div className="font-bold">{formatCurrency(Number(coordinator.previousMonth))}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-3">
                                             <div className="mb-1 text-gray-400">
                                                 Mes de {
-                                                    new Date(new Date().getFullYear(), new Date().getMonth() - 1)
+                                                    new Date(new Date().getFullYear(), new Date().getMonth())
                                                         .toLocaleString("es-ES", { month: "long" })
                                                         .replace(/^\w/, c => c.toUpperCase())
                                                 }</div>
-                                            <div className="font-bold text-green-400">{formatCurrency(Number(coordinator.previousMonth))}</div>
+                                            <div className="font-bold text-green-400">{formatCurrency(Number(coordinator.currentMonth))}</div>
                                         </div>
                                     </div>
                                 </div>

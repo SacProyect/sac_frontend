@@ -36,6 +36,7 @@ export interface BestGrowth {
     growthPercentage: number;
     coordinatorName: string;
     compliancePercentage: number;
+    currentMonth: number;
 }
 
 export interface ComplianceData {
