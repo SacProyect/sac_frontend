@@ -82,6 +82,16 @@ function Sidebar() {
         { name: "Generar Reportes", path: "/gen-reports" },
     ]
 
+    if (user.id === "dc6734e1-77be-42bb-b708-27979e931f08") {
+        navOptions.splice(
+            0,
+            navOptions.length,
+            ...navOptions.filter(
+                (opt) => !["/fine", "/iva", "/islr", "/census", "/show-census", "/taxpayer", "/index-iva", "/warning"].includes(opt.path)
+            )
+        );
+    }
+
     const handleLogout = () => {
         logout()
     }
