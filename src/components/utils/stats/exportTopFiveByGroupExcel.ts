@@ -6,16 +6,17 @@ export const exportTopFiveByGroupExcel = async (
     fileName: string
 ) => {
     const workbook = new ExcelJS.Workbook();
-    const sheet = workbook.addWorksheet("Top 5 Fiscales por Grupo");
+    const sheet = workbook.addWorksheet("Top 5 Fiscales por Coordinación");
 
     // Encabezados generales
-    sheet.addRow(["Grupo", "#", "Nombre", "Total pagado"]);
+    sheet.addRow(["Coordinación", "#", "Nombre", "Total pagado"]);
 
     groups.forEach((group) => {
+        const displayGroupName = group.name.replace(/GRUPO/gi, 'COORDINACIÓN');
         group.fiscals.forEach((f, idx) => {
-            sheet.addRow([group.name, idx + 1, f.name, f.total]);
+            sheet.addRow([displayGroupName, idx + 1, f.name, f.total]);
         });
-        // Espacio entre grupos
+        // Espacio entre coordinaciones
         sheet.addRow([]);
     });
 

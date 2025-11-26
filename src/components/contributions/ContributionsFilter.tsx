@@ -144,9 +144,9 @@ function ContributionsFilter({
                         <div key={group.id} className='w-full h-full pt-2 border-2 border-black rounded-lg cursor-pointer'>
                             <div className='flex justify-between w-full px-2 space-x-2'>
                                 <div className='w-2/3'>
-                                    <p className='text-xs font-semibold'>{group.name}</p>
+                                    <p className='text-xs font-semibold'>{group.name.replace(/GRUPO/gi, 'COORDINACIÓN')}</p>
                                     <p className='text-[11px] text-gray-500'>
-                                        Vista: {selectedIndex >= 0 ? `Supervisor ${selectedIndex + 1}` : "Grupo completo"}
+                                        Vista: {selectedIndex >= 0 ? `Supervisor ${selectedIndex + 1}` : "Coordinación completa"}
                                     </p>
                                 </div>
                                 <div className='w-1/2'>
@@ -155,23 +155,34 @@ function ContributionsFilter({
                             </div>
 
                             <div className='flex flex-col gap-1 px-2 mt-2'>
-                                {group.supervisorsStats.map((supervisorStat, index) => (
-                                    <button
-                                        key={supervisorStat.supervisorId}
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            setSelectedSupervisors(prev => ({
-                                                ...prev,
-                                                [group.id]: supervisorStat.supervisorId
-                                            }));
-                                            setSelectedGroup(group.id); // Selecciona el grupo
+                                {group.supervisorsStats.map((supervisorStat, index) => {
+                                    // Función para reemplazar nombre solo en coordinación 1
+                                    const getDisplayName = (name: string, groupName: string) => {
+                                        const normalizedGroupName = groupName.replace(/GRUPO/gi, 'COORDINACIÓN');
+                                        if (normalizedGroupName === 'COORDINACIÓN 1' && name === 'Alieska Yepez') {
+                                            return 'Estefany Rincon';
+                                        }
+                                        return name;
+                                    };
+                                    
+                                    return (
+                                        <button
+                                            key={supervisorStat.supervisorId}
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                setSelectedSupervisors(prev => ({
+                                                    ...prev,
+                                                    [group.id]: supervisorStat.supervisorId
+                                                }));
+                                            setSelectedGroup(group.id); // Selecciona la coordinación
                                             setSelectedSupervisorId(supervisorStat.supervisorId); // Selecciona supervisor
-                                        }}
-                                        className='px-2 py-1 text-xs bg-blue-100 border border-gray-400 rounded-md hover:bg-blue-200'
-                                    >
-                                        {supervisorStat.supervisorName}
-                                    </button>
-                                ))}
+                                            }}
+                                            className='px-2 py-1 text-xs bg-blue-100 border border-gray-400 rounded-md hover:bg-blue-200'
+                                        >
+                                            {getDisplayName(supervisorStat.supervisorName, group.name)}
+                                        </button>
+                                    );
+                                })}
                                 <button
                                     onClick={(e) => {
                                         e.stopPropagation();
@@ -179,12 +190,12 @@ function ContributionsFilter({
                                             ...prev,
                                             [group.id]: null
                                         }));
-                                        setSelectedGroup(group.id); // Selecciona el grupo
+                                        setSelectedGroup(group.id); // Selecciona la coordinación
                                         setSelectedSupervisorId(null); // Borra filtro de supervisor
                                     }}
                                     className='px-2 py-1 text-xs bg-gray-100 border border-gray-400 rounded-md hover:bg-gray-200'
                                 >
-                                    Ver Grupo Completo
+                                    Ver Coordinación Completa
                                 </button>
                             </div>
                             <div className='lg:px-2'>
