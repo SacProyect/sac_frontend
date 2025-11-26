@@ -164,7 +164,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 <>
                     <div className='flex justify-between w-full'>
                         <p className='pt-4 pl-4 text-xl font-semibold'>
-                            Estadísticas para: {selectedGroupData?.name}
+                            Estadísticas para: {selectedGroupData?.name.replace(/GRUPO/gi, 'COORDINACIÓN')}
                             {startDate && endDate
                                 ? `. Desde la fecha: ${new Date(startDate).toLocaleDateString("es-VE")} hasta la fecha: ${new Date(endDate).toLocaleDateString("es-VE")}`
                                 : ""}
@@ -310,7 +310,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                 </>
             ) : (
                 <div className='flex items-center justify-center w-full h-full'>
-                    <p className='pt-4 pl-4 text-2xl'>Seleccione un grupo por favor</p>
+                    <p className='pt-4 pl-4 text-2xl'>Seleccione una coordinación por favor</p>
                 </div>
             )}
 

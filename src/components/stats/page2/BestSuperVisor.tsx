@@ -78,24 +78,38 @@ function BestSuperVisor() {
                 minimumFractionDigits: 0,
             }).format(Number(val));
 
+        // Función para reemplazar nombre solo en coordinación 1
+        const getDisplayName = (name: string, groupName: string) => {
+            const normalizedGroupName = groupName.replace(/GRUPO/gi, 'COORDINACIÓN');
+            if (normalizedGroupName === 'COORDINACIÓN 1' && name === 'Alieska Yepez') {
+                return 'Estefany Rincon';
+            }
+            return name;
+        };
+
         let htmlTables = supervisorData
             .map(group => {
                 const best = group.supervisors.find(s => s.name === group.best);
                 const worst = group.supervisors.find(s => s.name === group.worse);
 
-                const row = (label: string, s?: any, color = "#111") => `
+                const row = (label: string, s?: any, color = "#111") => {
+                    const displayName = s ? getDisplayName(s.name, group.name) : "-";
+                    return `
                 <tr>
                     <td><strong style="color:${color}">${label}</strong></td>
-                    <td>${s?.name || "-"}</td>
+                    <td>${displayName}</td>
                     <td>${format(s?.collectedIva || 0)}</td>
                     <td>${format(s?.collectedIslr || 0)}</td>
                     <td>${format(s?.collectedFines || 0)}</td>
                     <td>${format(s?.total || 0)}</td>
                 </tr>`;
+                };
+
+                const displayGroupName = group.name.replace(/GRUPO/gi, 'COORDINACIÓN');
 
                 return `
                 <div class="group-table">
-                    <h2>${group.name}</h2>
+                    <h2>${displayGroupName}</h2>
                     <table>
                         <thead>
                             <tr>
@@ -185,11 +199,11 @@ function BestSuperVisor() {
                 <div className="flex flex-row items-center justify-between pb-4 pr-4 lg:pb-0">
                     <div className="flex items-center justify-center gap-2 pt-4 pl-4 text-lg font-semibold">
                         <Trophy className="w-5 h-5 text-yellow-500" />
-                        Mejor Supervisor por Grupos
+                        Mejor Supervisor por Coordinaciones
                     </div>
                     <div className='flex pt-4 space-x-2'>
                         <button
-                            onClick={() => downloadPDF("supervisor-table", "supervisores-por-grupo.pdf")}
+                            onClick={() => downloadPDF("supervisor-table", "supervisores-por-coordinacion.pdf")}
                             className="px-2 py-2 text-white bg-blue-600 border-blue-600 rounded-md hover:bg-blue-700"
                         >
                             <Download className="w-4 h-4" />
@@ -198,7 +212,7 @@ function BestSuperVisor() {
                         {/* Botón Excel */}
                         <button
                             onClick={() =>
-                                exportSupervisorsExcel(supervisorData, "supervisores-por-grupo")
+                                exportSupervisorsExcel(supervisorData, "supervisores-por-coordinacion")
                             }
                             className="px-2 py-2 text-white bg-green-600 border-green-600 rounded-md hover:bg-green-700"
                         >
@@ -209,15 +223,28 @@ function BestSuperVisor() {
                 <div>
                     <div id="supervisor-table" className="h-[40vh] lg:h-[40vh] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
                         <div className="space-y-4">
-                            {supervisorData && supervisorData?.map((group, index) => (
+                            {supervisorData && supervisorData?.map((group, index) => {
+                                // Función para reemplazar nombre solo en coordinación 1
+                                const getDisplayName = (name: string, groupName: string) => {
+                                    const normalizedGroupName = groupName.replace(/GRUPO/gi, 'COORDINACIÓN');
+                                    if (normalizedGroupName === 'COORDINACIÓN 1' && name === 'Alieska Yepez') {
+                                        return 'Estefany Rincon';
+                                    }
+                                    return name;
+                                };
+                                
+                                const displayBest = getDisplayName(group.best, group.name);
+                                const displayWorse = getDisplayName(group.worse, group.name);
+                                
+                                return (
                                 <div key={index} className="border border-[#3a3a39] rounded-lg p-4">
-                                    <h3 className="mb-3 font-semibold text-blue-400">{group.name}</h3>
+                                    <h3 className="mb-3 font-semibold text-blue-400">{group.name.replace(/GRUPO/gi, 'COORDINACIÓN')}</h3>
 
                                     {/* Mejor supervisor */}
                                     <div className="p-3 mb-2 border rounded-md bg-green-900/20 border-green-700/30">
                                         <div className="flex items-center gap-2 mb-2">
                                             <Award className="w-4 h-4 text-green-400" />
-                                            <span className="font-medium text-green-400">Mejor: {group.best}</span>
+                                            <span className="font-medium text-green-400">Mejor: {displayBest}</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 text-sm lg:grid-cols-4">
                                             <div>
@@ -242,7 +269,7 @@ function BestSuperVisor() {
                                     {/* Peor supervisor */}
                                     <div className="p-3 border rounded-md bg-red-900/20 border-red-700/30">
                                         <div className="flex items-center gap-2 mb-2">
-                                            <span className="font-medium text-red-400">Menor: {group.worse}</span>
+                                            <span className="font-medium text-red-400">Menor: {displayWorse}</span>
                                         </div>
                                         <div className="grid grid-cols-2 gap-2 text-sm lg:grid-cols-4">
                                             <div>
@@ -264,7 +291,8 @@ function BestSuperVisor() {
                                         </div>
                                     </div>
                                 </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 </div>

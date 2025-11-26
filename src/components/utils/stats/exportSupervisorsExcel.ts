@@ -8,9 +8,18 @@ export const exportSupervisorsExcel = async (
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Supervisores");
 
+    // Función para reemplazar nombre solo en coordinación 1
+    const getDisplayName = (name: string, groupName: string) => {
+        const normalizedGroupName = groupName.replace(/GRUPO/gi, 'COORDINACIÓN');
+        if (normalizedGroupName === 'COORDINACIÓN 1' && name === 'Alieska Yepez') {
+            return 'Estefany Rincon';
+        }
+        return name;
+    };
+
     // Headers
     sheet.addRow([
-        "Grupo",
+        "Coordinación",
         "Cargo",
         "Nombre",
         "IVA",
@@ -24,10 +33,13 @@ export const exportSupervisorsExcel = async (
         const worst = group.supervisors.find((s) => s.name === group.worse);
 
         const row = (label: string, s?: any) => {
+            const displayGroupName = group.name.replace(/GRUPO/gi, 'COORDINACIÓN');
+            const displaySupervisorName = s ? getDisplayName(s.name, group.name) : "-";
+            
             sheet.addRow([
-                group.name,
+                displayGroupName,
                 label,
-                s?.name || "-",
+                displaySupervisorName,
                 s?.collectedIva || 0,
                 s?.collectedIslr || 0,
                 s?.collectedFines || 0,

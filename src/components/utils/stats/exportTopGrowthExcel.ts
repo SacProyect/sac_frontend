@@ -12,7 +12,7 @@ export const exportTopGrowthExcel = async (
     sheet.addRow([
         "N°",
         "Coordinador",
-        "Grupo",
+        "Coordinación",
         "Mes Anterior",
         "Mes Actual",
         "% Crecimiento",
@@ -20,10 +20,11 @@ export const exportTopGrowthExcel = async (
 
     // Rows
     data.forEach((c, idx) => {
+        const displayGroupName = c.groupName.replace(/GRUPO/gi, 'COORDINACIÓN');
         sheet.addRow([
             idx + 1,
             c.coordinatorName,
-            c.groupName,
+            displayGroupName,
             c.previousMonth,
             c.currentMonth,
             `${c.growthPercentage.toFixed(2)}%`,

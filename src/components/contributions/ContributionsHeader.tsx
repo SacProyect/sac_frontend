@@ -17,10 +17,10 @@ function ContributionsHeader() {
     return (
         <header className='w-full'>
             <div className='pt-8 pl-8'>
-                <h1 className='text-2xl font-semibold'>Estadísticas de grupo</h1>
+                <h1 className='text-2xl font-semibold'>Estadísticas por coordinación</h1>
                 {user.role === "ADMIN" &&
                     <div className=''> 
-                        <p>Seleccione un grupo para ver sus estadísticas.</p>
+                        <p>Seleccione una coordinación para ver sus estadísticas.</p>
                     </div>
                 }
             </div>

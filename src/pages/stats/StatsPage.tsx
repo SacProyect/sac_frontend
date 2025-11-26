@@ -108,7 +108,7 @@ function StatsPage() {
                         {/* GRAFICA 3 */}
                         <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
                             {groupStats && (
-                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por grupos...</p>}>
+                                <Suspense fallback={<p className="text-lg text-center">Cargando desempeño por coordinaciones...</p>}>
                                     {groupStats.length > 0 ? <GroupPerformanceStats groupStats={groupStats} /> : <p>No hay estadísticas para mostrar</p>}
                                 </Suspense>
                             )}
