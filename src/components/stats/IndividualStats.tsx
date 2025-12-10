@@ -40,6 +40,8 @@ interface TaxpayerData {
     supervisorId?: string;
     taxpayer_category: TaxpayerCategory | null;
     parish: Parish | null;
+    emition_date?: string | Date;  // ✅ Fecha del procedimiento
+    updated_at?: string | Date;    // ✅ Fecha de última actualización (usada para fecha de notificación)
 }
 
 
@@ -373,6 +375,16 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                     : taxpayerData.contract_type
                             : "No se pudo cargar la información"}</p>
                         <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
+                        {/* ✅ Información del Fiscal asignado */}
+                        <p><span className="font-bold">FISCAL ASIGNADO:</span> {taxpayerData?.user?.name ? taxpayerData.user.name : "No asignado"}</p>
+                        {/* ✅ Fecha del procedimiento */}
+                        <p><span className="font-bold">FECHA DEL PROCEDIMIENTO:</span> {taxpayerData?.emition_date ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'long', day: 'numeric' }) : "No disponible"}</p>
+                        {/* ✅ Fecha de notificación */}
+                        <p><span className="font-bold">FECHA DE NOTIFICACIÓN:</span> {taxpayerData?.notified && taxpayerData?.updated_at 
+                            ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'long', day: 'numeric' })
+                            : taxpayerData?.notified 
+                                ? "Notificado (fecha no disponible)" 
+                                : "No notificado"}</p>
                         <p><span className="font-bold">Multas registradas:</span> {fines ? fines : "No se pudo cargar la información"}</p>
                         <p>
                             <span className="font-bold">Excedente de crédito actual:</span>{" "}
