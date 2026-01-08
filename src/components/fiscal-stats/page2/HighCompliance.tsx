@@ -30,8 +30,11 @@ function HighCompliance({ fiscalData, year }: HighComplianceProps) {
                 setCompliance(response.high);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener alto cumplimiento:", e);
+                toast.error("No se pudo obtener el alto cumplimiento.", {
+                    id: 'high-compliance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();

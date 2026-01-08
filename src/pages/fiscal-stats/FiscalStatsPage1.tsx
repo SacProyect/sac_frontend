@@ -3,9 +3,7 @@ import MonthlyCollect from "@/components/fiscal-stats/page1/MonthlyCollect"
 import MonthlyPerformance from "@/components/fiscal-stats/page1/MonthlyPerformance"
 import TaxpayerList from "@/components/fiscal-stats/page1/TaxpayerList"
 import { FiscalInfo } from "@/types/reports"
-import { Download, User, DollarSign, FileText, Calendar, Building, MapPin, AlertCircle, Badge } from "lucide-react"
-
-
+import { User } from "lucide-react"
 
 interface FiscalStatsPage1Props {
   fiscalData: FiscalInfo;
@@ -13,11 +11,15 @@ interface FiscalStatsPage1Props {
   year: number;
 }
 
+ fix/filtro-2025
 
 export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalStatsPage1Props) {
 
+
+export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalStatsPage1Props) {
+ main
   return (
-    <div className="flex flex-col w-full  gap-4 p-4 overflow-hidden h-full lg:h-[90.2vh]">
+    <div className="flex flex-col w-full gap-4 p-4 overflow-hidden h-full lg:h-[90.2vh]">
       {/* Header del Fiscal */}
       <div className="p-4 mb-2 border bg-gradient-to-r from-blue-600/20 to-purple-600/20 border-blue-500/30 rounded-xl">
         <div className="flex flex-col items-center justify-center text-center lg:flex-row lg:justify-between">
@@ -60,11 +62,17 @@ export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalS
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 h-[20vh]">
         {/* Estadística 3: Evolución Mensual del Rendimiento */}
         <MonthlyPerformance fiscalInfo={fiscalData} year={year} />
+ fix/filtro-2025
 
 
         {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
         <ComplianceByProcess fiscalInfo={fiscalData} year={year} />
 
+
+
+        {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
+        <ComplianceByProcess fiscalInfo={fiscalData} year={year} />
+ main
       </div>
     </div>
   )

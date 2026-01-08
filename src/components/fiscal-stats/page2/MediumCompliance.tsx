@@ -32,8 +32,11 @@ function MediumCompliance({ fiscalData, year }: MediumComplianceProps) {
                 setCompliance(response.medium);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener medio cumplimiento:", e);
+                toast.error("No se pudo obtener el medio cumplimiento.", {
+                    id: 'medium-compliance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
