@@ -9,9 +9,10 @@ import { useEffect, useState } from "react"
 interface FiscalStatsPage3Props {
     fiscalData: FiscalInfo
     fiscalId: string | undefined;
+    year: number;
 }
 
-export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) {
+export default function FiscalStatsPage3({ fiscalData, year }: FiscalStatsPage3Props) {
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {

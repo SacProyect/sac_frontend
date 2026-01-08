@@ -29,11 +29,12 @@ export default function FiscalStatsPage() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [fiscalInfo, setFiscalInfo] = useState<FiscalInfo>();
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalInfo(fiscalId || user.id);
+                const response = await getFiscalInfo(fiscalId || user.id, selectedYear);
                 // console.log(response);
                 setFiscalInfo(response);
             } catch (e) {
@@ -42,7 +43,7 @@ export default function FiscalStatsPage() {
             }
         }
         fetchData();
-    }, [])
+    }, [selectedYear])
 
     const totalPages = 3;
 
@@ -62,22 +63,38 @@ export default function FiscalStatsPage() {
         if (!fiscalInfo) return <div>Loading...</div>;
 
         switch (currentPage) {
-            case 1: return <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
-            case 2: return <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
-            case 3: return <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} />;
+            case 1: return <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />;
+            case 2: return <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />;
+            case 3: return <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />;
             default: return null;
         }
     }
 
     return (
         <div className="w-full lg:w-[82vw] h-full lg:h-[100vh] flex flex-col bg-[#1c1c1b] text-white">
+            {/* Header con selector de año */}
+            <div className="flex items-center justify-between px-8 py-4 bg-[#1c1c1b] border-b border-[#3a3a3a]">
+                <h1 className="text-2xl font-bold text-white">Estadísticas del Fiscal</h1>
+                <div className="flex items-center gap-4">
+                    <label className="text-sm font-medium text-gray-400">Seleccionar Año:</label>
+                    <select
+                        value={selectedYear}
+                        onChange={(e) => setSelectedYear(Number(e.target.value))}
+                        className="bg-[#2a2a2a] text-white border border-[#3a3a3a] rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all cursor-pointer hover:bg-[#333333]"
+                    >
+                        {[2024, 2025, 2026].map(year => (
+                            <option key={year} value={year}>{year}</option>
+                        ))}
+                    </select>
+                </div>
+            </div>
             {/* Render en mobile: ambas páginas */}
             <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (
                     <>
-                        <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} />
-                        <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} />
-                        <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} />
+                        <FiscalStatsPage1 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />
+                        <FiscalStatsPage2 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />
+                        <FiscalStatsPage3 fiscalData={fiscalInfo} fiscalId={fiscalId} year={selectedYear} />
                     </>
                 )}
             </div>

@@ -9,10 +9,11 @@ import { date } from 'zod';
 
 
 interface MonthlyCollectProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
-function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
+function MonthlyCollect({ fiscalInfo, year }: MonthlyCollectProps) {
     const [monthlyStats, setMonthlyStats] = useState<FiscalMonthlyCollect[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalMonthlyCollect(fiscalInfo.fiscalId);
+                const response = await getFiscalMonthlyCollect(fiscalInfo.fiscalId, year);
 
                 const months = [
                     "enero", "febrero", "marzo", "abril", "mayo", "junio",
@@ -48,7 +49,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
 
     const downloadPDF = (tableId: string, fileName: string) => {
@@ -173,7 +174,7 @@ function MonthlyCollect({ fiscalInfo }: MonthlyCollectProps) {
                             {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">
                                     <div className="flex items-center justify-between mb-3">
-                                        <h3 className="text-lg font-semibold text-blue-400">{month.month} {new Date(Date.now()).getFullYear().toString()}</h3>
+                                        <h3 className="text-lg font-semibold text-blue-400">{month.month} {year.toString()}</h3>
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-green-400">{formatCurrency(month.total)}</div>
                                             <div className="text-xs text-gray-400">Total Pagado</div>

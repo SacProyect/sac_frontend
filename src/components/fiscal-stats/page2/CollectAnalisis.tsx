@@ -8,10 +8,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 interface CollectAnalisisProps {
-    fiscalData: FiscalInfo
+    fiscalData: FiscalInfo;
+    year: number;
 }
 
-function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
+function CollectAnalisis({ fiscalData, year }: CollectAnalisisProps) {
     const [analisis, setAnalisis] = useState<FiscalAnalisis>();
 
     const { user } = useAuth();
@@ -25,7 +26,7 @@ function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalCollectAnalisis(fiscalData.fiscalId);
+                const response = await getFiscalCollectAnalisis(fiscalData.fiscalId, year);
 
                 setAnalisis(response);
 
@@ -35,7 +36,7 @@ function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
 
 

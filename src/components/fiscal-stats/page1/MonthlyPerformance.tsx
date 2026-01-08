@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 interface MonthlyPerformanceProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
-function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
+function MonthlyPerformance({ fiscalInfo, year }: MonthlyPerformanceProps) {
     const [monthlyGrowth, setMonthlyGrowth] = useState<FiscalMonthlyGrowth[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalMonthlyPerformance(fiscalInfo.fiscalId);
+                const response = await getFiscalMonthlyPerformance(fiscalInfo.fiscalId, year);
 
                 setMonthlyGrowth(response);
 
@@ -36,7 +37,7 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
