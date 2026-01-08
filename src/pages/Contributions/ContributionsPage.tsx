@@ -57,10 +57,6 @@ function ContributionsPage() {
                 } else if (user.role === "COORDINATOR") {
                     const groupId = user.coordinatedGroup?.id;
 
-                    console.log(user);
-
-                    console.log(user.coordinatedGroup);
-
                     if (!groupId) {
                         toast.error("No se encontró el grupo coordinado para este usuario.");
                         return;

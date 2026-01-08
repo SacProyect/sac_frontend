@@ -6,7 +6,11 @@ import { BestGrowth } from '@/types/stats';
 import { Download, TrendingUp } from 'lucide-react'
 import React, { useEffect, useRef, useState } from 'react'
 
-function TopGrowth() {
+interface TopGrowthProps {
+    year?: number;
+}
+
+function TopGrowth({ year }: TopGrowthProps) {
     const { currentPage } = usePresentation();
     const [coordinatorGrowth, setCoordinatorGrowth] = useState<BestGrowth[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -15,7 +19,7 @@ function TopGrowth() {
     useEffect(() => {
         const fetchCoordinatorGrowth = async () => {
             try {
-                const response = await getMonthlyGrowth();
+                const response = await getMonthlyGrowth(year);
 
                 const transformed = response.data
                     .map((item: any) => ({
@@ -38,7 +42,7 @@ function TopGrowth() {
         };
 
         fetchCoordinatorGrowth();
-    }, []);
+    }, [year]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {

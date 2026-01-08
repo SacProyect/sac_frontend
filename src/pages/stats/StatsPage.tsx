@@ -28,6 +28,7 @@ function StatsPage() {
     const navigate = useNavigate();
     const [rawStats, setRawStats] = useState<ChartData[]>([]);
     const [loaded, setLoaded] = useState(false);
+    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [taxpayerPerformance, setTaxpayerPerformance] = useState<MonthlyIvaStats | null>(null);
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
     const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
@@ -41,8 +42,9 @@ function StatsPage() {
 
     useEffect(() => {
         const fetchStats = async () => {
+            setLoaded(false);
             try {
-                const stats = await getGlobalPerformance();
+                const stats = await getGlobalPerformance(selectedYear);
 
                 if (Array.isArray(stats) && stats.length > 0) {
                     const parsed: ChartData[] = stats.map((item: any) => ({
@@ -52,15 +54,17 @@ function StatsPage() {
                         taxpayersEmitted: item.taxpayersEmitted,
                     }));
 
-                    console.log(stats);
-                    console.log(parsed);
 
                     setRawStats(parsed);
-                    setTaxpayerPerformance(await getGlobalTaxpayerPerformance());
-                    setGroupStats(await getGroupPerformance());
-                    setGlobalKpi(await getGlobalKPI());
+                    setTaxpayerPerformance(await getGlobalTaxpayerPerformance(selectedYear));
+                    setGroupStats(await getGroupPerformance(selectedYear));
+                    setGlobalKpi(await getGlobalKPI(selectedYear));
                 } else {
-                    toast.error('No se encontraron estadísticas para algunos de los gráficos.');
+                    setRawStats([]);
+                    setTaxpayerPerformance(null);
+                    setGroupStats([]);
+                    setGlobalKpi(null);
+                    toast.error('No se encontraron estadísticas para el año seleccionado.');
                 }
             } catch (e: any) {
                 toast.error(e);
@@ -70,7 +74,7 @@ function StatsPage() {
         };
 
         fetchStats();
-    }, []);
+    }, [selectedYear]);
 
     useEffect(() => {
         if (isAutoMode && currentPage === 1) {
@@ -129,8 +133,8 @@ function StatsPage() {
                     <div className="block lg:hidden bg-[#1c1c1b] text-white">
                         {isMobile ? (
                             <div>
-                                <StatisticsPage2 />
-                                <StatisticsPage3 />
+                                <StatisticsPage2 year={selectedYear} />
+                                <StatisticsPage3 year={selectedYear} />
                             </div>
                         ) : (<></>)}
                     </div>
@@ -141,7 +145,7 @@ function StatsPage() {
         if (currentPage === 2) {
             return (
                 <div className="w-full lg:w-[82vw]  lg:h-[94.5vh] flex flex-col bg-[#1c1c1b] text-white">
-                    <StatisticsPage2 />
+                    <StatisticsPage2 year={selectedYear} />
                 </div>
             )
         }
@@ -149,7 +153,7 @@ function StatsPage() {
         if (currentPage === 3) {
             return (
                 <div className="w-full lg:w-[82vw]  lg:h-[94.5vh] flex flex-col bg-[#1c1c1b] text-white">
-                    <StatisticsPage3 />
+                    <StatisticsPage3 year={selectedYear} />
                 </div>
 
             )
@@ -179,6 +183,21 @@ function StatsPage() {
                     </div>
                 ) : (
                     <>
+                        <div className="flex items-center justify-between px-8 py-4 bg-[#1c1c1b] border-b border-[#3a3a3a]">
+                            <h1 className="text-2xl font-bold text-white">Panel de Estadísticas</h1>
+                            <div className="flex items-center gap-4">
+                                <label className="text-sm font-medium text-gray-400">Seleccionar Año:</label>
+                                <select
+                                    value={selectedYear}
+                                    onChange={(e) => setSelectedYear(Number(e.target.value))}
+                                    className="bg-[#2a2a2a] text-white border border-[#3a3a3a] rounded-lg px-4 py-2 outline-none focus:ring-2 focus:ring-[#4a90e2] transition-all cursor-pointer hover:bg-[#333333]"
+                                >
+                                    {[2024, 2025, 2026].map(year => (
+                                        <option key={year} value={year}>{year}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
                         {renderPage()}
                         <div className="justify-center hidden py-1 space-x-4 lg:flex bg-[#1c1c1b]">
                             <button

@@ -10,7 +10,11 @@ import toast from 'react-hot-toast';
 
 
 
-function TopFiveFiscals() {
+interface TopFiveFiscalsProps {
+    year?: number;
+}
+
+function TopFiveFiscals({ year }: TopFiveFiscalsProps) {
     const { currentPage } = usePresentation();
     const [fiscalsByGroup, setFiscalsByGroup] = useState<TopFiveFiscalsByGroup[]>();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -20,7 +24,7 @@ function TopFiveFiscals() {
     useEffect(() => {
         const fetchTopFiveByGroup = async () => {
             try {
-                const response = await getTopFiveByGroup();
+                const response = await getTopFiveByGroup(year);
 
                 const dataObject = response.data;
 
@@ -50,7 +54,7 @@ function TopFiveFiscals() {
         };
 
         fetchTopFiveByGroup();
-    }, []);
+    }, [year]);
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {

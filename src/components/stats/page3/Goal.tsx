@@ -8,14 +8,18 @@ import toast from 'react-hot-toast';
 
 
 
-function Goal() {
+interface GoalProps {
+    year?: number;
+}
+
+function Goal({ year }: GoalProps) {
     const [expectedGoal, setExpectedGoal] = useState<ExpectedGoal>();
 
     useEffect(() => {
         const fetchExpectedGoal = async () => {
 
             try {
-                const response = await getExpectedAmount();
+                const response = await getExpectedAmount(year);
 
                 setExpectedGoal(response.data);
 
@@ -26,7 +30,7 @@ function Goal() {
         fetchExpectedGoal();
 
 
-    }, [])
+    }, [year])
 
     if (!expectedGoal) return <div>Loading...</div>;
 

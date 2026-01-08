@@ -62,9 +62,12 @@ export const getIslrReports = async (taxpayerId: string) => {
 	}
 }
 
-export const getBestSupervisors = async () => {
+export const getBestSupervisors = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-best-supervisor-by-group'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -75,9 +78,12 @@ export const getBestSupervisors = async () => {
 	}
 }
 
-export const getTopFiscals = async () => {
+export const getTopFiscals = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-top-fiscals'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -88,9 +94,12 @@ export const getTopFiscals = async () => {
 	}
 }
 
-export const getTopFiveByGroup = async () => {
+export const getTopFiveByGroup = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-top-five-by-group'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -101,9 +110,12 @@ export const getTopFiveByGroup = async () => {
 	}
 }
 
-export const getMonthlyGrowth = async () => {
+export const getMonthlyGrowth = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-monthly-growth'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -114,9 +126,12 @@ export const getMonthlyGrowth = async () => {
 	}
 }
 
-export const getTaxpayersCompliance = async () => {
+export const getTaxpayersCompliance = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-taxpayers-compliance'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -127,9 +142,12 @@ export const getTaxpayersCompliance = async () => {
 	}
 }
 
-export const getExpectedAmount = async () => {
+export const getExpectedAmount = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-expected-amount'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
@@ -336,13 +354,16 @@ export const getFiscalCollectAnalisis = async (fiscalId: string) => {
 
 
 
-export const getGlobalPerformance = async () => {
+export const getGlobalPerformance = async (year?: number) => {
 	try {
-		const requestUrl = `reports/global-performance`
+		let requestUrl = `reports/global-performance`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestUrl)
 
-		// console.log("response: " + JSON.stringify(response.data))
+		console.log("GLOBAL PERFORMANCE: " + JSON.stringify(response.data))
 		return response.data
 	} catch (e) {
 		console.error(e)
@@ -350,9 +371,12 @@ export const getGlobalPerformance = async () => {
 	}
 }
 
-export const getGlobalTaxpayerPerformance = async () => {
+export const getGlobalTaxpayerPerformance = async (year?: number) => {
 	try {
-		const requestUrl = `reports/global-taxpayer-performance`
+		let requestUrl = `reports/global-taxpayer-performance`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestUrl)
 
@@ -364,10 +388,13 @@ export const getGlobalTaxpayerPerformance = async () => {
 	}
 }
 
-export const getGroupPerformance = async () => {
+export const getGroupPerformance = async (year?: number) => {
 
 	try {
-		const requestUrl = `reports/group-performance`
+		let requestUrl = `reports/group-performance`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestUrl)
 
@@ -378,11 +405,14 @@ export const getGroupPerformance = async () => {
 	}
 }
 
-export const getGlobalKPI = async () => {
+export const getGlobalKPI = async (year?: number) => {
 
 	try {
 
-		const requestURL = 'reports/global-kpi'
+		let requestURL = 'reports/global-kpi'
+		if (year) {
+			requestURL += `?date=${year}`
+		}
 
 		const response = await apiConnection.get(requestURL);
 
