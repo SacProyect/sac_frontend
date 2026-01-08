@@ -9,9 +9,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface HighComplianceProps {
     fiscalData: FiscalInfo;
+    year: number;
 }
 
-function HighCompliance({ fiscalData }: HighComplianceProps) {
+function HighCompliance({ fiscalData, year }: HighComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -24,7 +25,7 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId, year);
 
                 setCompliance(response.high);
 
@@ -34,7 +35,7 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     // console.log(compliance);
 

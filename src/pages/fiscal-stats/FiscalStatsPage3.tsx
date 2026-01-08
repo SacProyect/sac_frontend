@@ -9,9 +9,10 @@ import { useEffect, useState } from "react"
 interface FiscalStatsPage3Props {
     fiscalData: FiscalInfo
     fiscalId: string | undefined;
+    year: number;
 }
 
-export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) {
+export default function FiscalStatsPage3({ fiscalData, year }: FiscalStatsPage3Props) {
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -34,7 +35,7 @@ export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId)
+                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId, year)
                 const data: FiscalTaxpayerStatsResponse = response.data
                 setVdfOnTime(data.vdfOnTime)
                 setVdfLate(data.vdfLate)
@@ -46,7 +47,7 @@ export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) 
         }
 
         fetchData()
-    }, [])
+    }, [year])
 
     const downloadPDF = (title: string, fileName: string, taxpayers: any[], showDelay = false) => {
         const printWindow = window.open("", "_blank")
