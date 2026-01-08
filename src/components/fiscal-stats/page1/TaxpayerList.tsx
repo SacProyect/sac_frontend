@@ -31,8 +31,11 @@ function TaxpayerList({ fiscalInfo, year }: TaxpayerListProps) {
                 setTaxpayersList(response);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener lista de contribuyentes:", e);
+                toast.error("No se pudo obtener la lista de contribuyentes.", {
+                    id: 'taxpayer-list-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();

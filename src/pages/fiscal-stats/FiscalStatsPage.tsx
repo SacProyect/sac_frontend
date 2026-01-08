@@ -35,11 +35,13 @@ export default function FiscalStatsPage() {
         const fetchData = async () => {
             try {
                 const response = await getFiscalInfo(fiscalId || user.id, selectedYear);
-                // console.log(response);
                 setFiscalInfo(response);
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al cargar información del fiscal:", e);
+                toast.error("No se pudieron cargar las estadísticas del fiscal. Por favor, intente de nuevo.", {
+                    duration: 4000,
+                    id: 'fiscal-stats-error' // Previene duplicados
+                });
             }
         }
         fetchData();
