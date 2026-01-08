@@ -176,8 +176,11 @@ function MonthlyCollect({ fiscalInfo, year }: MonthlyCollectProps) {
                         <div className="space-y-4">
                             {monthlyStats && monthlyStats.map((month, index) => (
                                 <div key={month.month} className="border border-[#3a3a39] bg-[#1a1a19] rounded-lg p-4">
-                                    <div className="flex items-center justify-between mb-3">
+                                    <div className="flex items-center justify-between mb-3" fix/filtro-2025
+                                        <h3 className="text-lg font-semibold text-blue-400">{month.month} {year.toString()}</h3>
+
                                         <h3 className="text-lg font-semibold text-blue-400">{month.month} {year}</h3>
+                                     main
                                         <div className="text-right">
                                             <div className="text-xl font-bold text-green-400">{formatCurrency(month.total)}</div>
                                             <div className="text-xs text-gray-400">Total Pagado</div>
