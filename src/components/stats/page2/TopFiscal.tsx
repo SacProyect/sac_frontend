@@ -10,7 +10,11 @@ import toast from 'react-hot-toast'
 
 
 
-function TopFiscal() {
+interface TopFiscalProps {
+    year?: number;
+}
+
+function TopFiscal({ year }: TopFiscalProps) {
     const { currentPage } = usePresentation();
     const [topFiscals, setTopFiscals] = useState<TopFiscals[]>();
     const scrollRef = useRef<HTMLDivElement>(null);
@@ -22,7 +26,7 @@ function TopFiscal() {
 
             try {
 
-                const response = await getTopFiscals();
+                const response = await getTopFiscals(year);
 
                 setTopFiscals(response.data);
                 setScrollReady(true);
@@ -33,7 +37,7 @@ function TopFiscal() {
             }
         }
         fetchFiscals()
-    }, [])
+    }, [year])
 
 
 

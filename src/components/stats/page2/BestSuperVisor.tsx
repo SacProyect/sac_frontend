@@ -11,7 +11,11 @@ import { exportSupervisorsExcel } from '@/components/utils/stats/exportSuperviso
 
 
 
-function BestSuperVisor() {
+interface BestSuperVisorProps {
+    year?: number;
+}
+
+function BestSuperVisor({ year }: BestSuperVisorProps) {
     const [supervisorData, setSupervisorData] = useState<GroupData[]>([]);
     const scrollRef = useRef<HTMLDivElement>(null);
     const [scrollReady, setScrollReady] = useState(false);
@@ -22,7 +26,7 @@ function BestSuperVisor() {
     useEffect(() => {
         const fetchSupervisors = async () => {
             try {
-                const response = await getBestSupervisors();
+                const response = await getBestSupervisors(year);
 
                 const dataObject = response.data;
 
@@ -56,7 +60,7 @@ function BestSuperVisor() {
         };
 
         fetchSupervisors();
-    }, []);
+    }, [year]);
 
 
 

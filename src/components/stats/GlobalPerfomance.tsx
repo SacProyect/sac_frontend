@@ -18,7 +18,6 @@ export type ChartData = {
 };
 
 const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
-    // Map "YYYY-MM" -> "Ene", "Feb", ...
     const getShortMonthName = (monthStr: string) => {
         const monthNum = parseInt(monthStr.split("-")[1], 10);
         const months = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
