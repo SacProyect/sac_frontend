@@ -197,7 +197,6 @@ const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
     };
 
     if (user.role === "SUPERVISOR") {
-        console.log(user);
         if (!user.groupId) toast.error("No se pudo encontrar el id correspondiente a su grupo.");
         groups.filter((group) => group.id === user.groupId);
     } else if (user.role === "COORDINATOR") {
