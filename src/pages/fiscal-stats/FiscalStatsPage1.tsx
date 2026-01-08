@@ -10,10 +10,11 @@ import { Download, User, DollarSign, FileText, Calendar, Building, MapPin, Alert
 interface FiscalStatsPage1Props {
   fiscalData: FiscalInfo;
   fiscalId: string | undefined;
+  year: number;
 }
 
 
-export default function FiscalStatsPage1({ fiscalData, fiscalId }: FiscalStatsPage1Props) {
+export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalStatsPage1Props) {
 
   return (
     <div className="flex flex-col w-full  gap-4 p-4 overflow-hidden h-full lg:h-[90.2vh]">
@@ -49,20 +50,20 @@ export default function FiscalStatsPage1({ fiscalData, fiscalId }: FiscalStatsPa
       {/* Fila superior - 2 estadísticas */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Estadística 1: Lista de Contribuyentes */}
-        <TaxpayerList fiscalInfo={fiscalData} />
+        <TaxpayerList fiscalInfo={fiscalData} year={year} />
 
         {/* Estadística 2: Recaudación Mensual */}
-        <MonthlyCollect fiscalInfo={fiscalData} />
+        <MonthlyCollect fiscalInfo={fiscalData} year={year} />
       </div>
 
       {/* Fila inferior - 2 estadísticas */}
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 h-[20vh]">
         {/* Estadística 3: Evolución Mensual del Rendimiento */}
-        <MonthlyPerformance fiscalInfo={fiscalData} />
+        <MonthlyPerformance fiscalInfo={fiscalData} year={year} />
 
 
         {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
-        <ComplianceByProcess fiscalInfo={fiscalData} />
+        <ComplianceByProcess fiscalInfo={fiscalData} year={year} />
 
       </div>
     </div>

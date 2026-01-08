@@ -234,10 +234,13 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 	}
 };
 
-export const getFiscalInfo = async (fiscalId: string) => {
+export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-info`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-info/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el reporte de iva individual:', e)
@@ -245,10 +248,13 @@ export const getFiscalInfo = async (fiscalId: string) => {
 	}
 };
 
-export const getFiscalTaxpayers = async (fiscalId: string) => {
+export const getFiscalTaxpayers = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-taxpayers`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-taxpayers/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el reporte de contribuyentes:', e)
@@ -297,10 +303,13 @@ export const getCompleteReport = async (params: GetCompleteReportParams) => {
 	}
 };
 
-export const getFiscalMonthlyCollect = async (fiscalId: string) => {
+export const getFiscalMonthlyCollect = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-monthly-collect`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-monthly-collect/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el reporte de pagado mensual:', e)
@@ -308,10 +317,13 @@ export const getFiscalMonthlyCollect = async (fiscalId: string) => {
 	}
 };
 
-export const getFiscalMonthlyPerformance = async (fiscalId: string) => {
+export const getFiscalMonthlyPerformance = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-monthly-performance`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-monthly-performance/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el reporte mensual de rendimiento:', e)
@@ -319,10 +331,13 @@ export const getFiscalMonthlyPerformance = async (fiscalId: string) => {
 	}
 };
 
-export const getFiscalComplianceByProcess = async (fiscalId: string) => {
+export const getFiscalComplianceByProcess = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-compliance-by-process`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-compliance-by-process/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el cumplimiento por proceso:', e)
@@ -330,10 +345,13 @@ export const getFiscalComplianceByProcess = async (fiscalId: string) => {
 	}
 };
 
-export const getFiscalTaxpayerCompliance = async (fiscalId: string) => {
+export const getFiscalTaxpayerCompliance = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-compliance`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-compliance/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el cumplimiento:', e)
@@ -341,10 +359,13 @@ export const getFiscalTaxpayerCompliance = async (fiscalId: string) => {
 	}
 };
 
-export const getFiscalCollectAnalisis = async (fiscalId: string) => {
+export const getFiscalCollectAnalisis = async (fiscalId: string, year?: number) => {
 	try {
-		const requestUrl = `reports/get-fiscal-collect-analisis`
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		let requestUrl = `reports/get-fiscal-collect-analisis/${fiscalId}`
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
 		console.error('Error al obtener el analisis', e)
