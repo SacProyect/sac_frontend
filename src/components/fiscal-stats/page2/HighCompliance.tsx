@@ -9,9 +9,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface HighComplianceProps {
     fiscalData: FiscalInfo;
+    year: number;
 }
 
-function HighCompliance({ fiscalData }: HighComplianceProps) {
+function HighCompliance({ fiscalData, year }: HighComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -24,17 +25,20 @@ function HighCompliance({ fiscalData }: HighComplianceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId, year);
 
                 setCompliance(response.high);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener alto cumplimiento:", e);
+                toast.error("No se pudo obtener el alto cumplimiento.", {
+                    id: 'high-compliance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     // console.log(compliance);
 

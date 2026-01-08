@@ -9,9 +9,10 @@ import { useEffect, useState } from "react"
 interface FiscalStatsPage3Props {
     fiscalData: FiscalInfo
     fiscalId: string | undefined;
+    year: number;
 }
 
-export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) {
+export default function FiscalStatsPage3({ fiscalData, year }: FiscalStatsPage3Props) {
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
@@ -34,19 +35,23 @@ export default function FiscalStatsPage3({ fiscalData }: FiscalStatsPage3Props) 
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId)
+                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId, year)
                 const data: FiscalTaxpayerStatsResponse = response.data
                 setVdfOnTime(data.vdfOnTime)
                 setVdfLate(data.vdfLate)
                 setAfOnTime(data.afOnTime)
                 setAfLate(data.afLate)
             } catch (error) {
-                console.error("Error fetching data:", error)
+                console.error("Error al obtener estadísticas de contribuyentes:", error)
+                toast.error("No se pudo obtener las estadísticas de contribuyentes.", {
+                    id: 'taxpayer-stats-error',
+                    duration: 3000
+                });
             }
         }
 
         fetchData()
-    }, [])
+    }, [year])
 
     const downloadPDF = (title: string, fileName: string, taxpayers: any[], showDelay = false) => {
         const printWindow = window.open("", "_blank")

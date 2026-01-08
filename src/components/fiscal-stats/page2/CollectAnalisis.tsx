@@ -8,10 +8,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 interface CollectAnalisisProps {
-    fiscalData: FiscalInfo
+    fiscalData: FiscalInfo;
+    year: number;
 }
 
-function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
+function CollectAnalisis({ fiscalData, year }: CollectAnalisisProps) {
     const [analisis, setAnalisis] = useState<FiscalAnalisis>();
 
     const { user } = useAuth();
@@ -25,17 +26,20 @@ function CollectAnalisis({ fiscalData }: CollectAnalisisProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalCollectAnalisis(fiscalData.fiscalId);
+                const response = await getFiscalCollectAnalisis(fiscalData.fiscalId, year);
 
                 setAnalisis(response);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener análisis de cobro:", e);
+                toast.error("No se pudo obtener el análisis de cobro.", {
+                    id: 'collect-analysis-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
 
 

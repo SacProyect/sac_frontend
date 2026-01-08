@@ -10,9 +10,10 @@ import { useNavigate } from 'react-router-dom';
 
 interface LowComplianceProps {
     fiscalData: FiscalInfo;
+    year: number;
 }
 
-function LowCompliance({ fiscalData }: LowComplianceProps) {
+function LowCompliance({ fiscalData, year }: LowComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -26,17 +27,20 @@ function LowCompliance({ fiscalData }: LowComplianceProps) {
                 return;
             }
             try {
-                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId, year);
 
                 setCompliance(response.low);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener bajo cumplimiento:", e);
+                toast.error("No se pudo obtener el bajo cumplimiento.", {
+                    id: 'low-compliance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
