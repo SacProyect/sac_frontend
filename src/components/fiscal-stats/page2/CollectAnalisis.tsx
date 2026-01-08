@@ -31,8 +31,11 @@ function CollectAnalisis({ fiscalData, year }: CollectAnalisisProps) {
                 setAnalisis(response);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener análisis de cobro:", e);
+                toast.error("No se pudo obtener el análisis de cobro.", {
+                    id: 'collect-analysis-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();

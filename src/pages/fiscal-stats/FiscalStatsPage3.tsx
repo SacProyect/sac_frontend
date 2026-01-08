@@ -42,7 +42,11 @@ export default function FiscalStatsPage3({ fiscalData, year }: FiscalStatsPage3P
                 setAfOnTime(data.afOnTime)
                 setAfLate(data.afLate)
             } catch (error) {
-                console.error("Error fetching data:", error)
+                console.error("Error al obtener estadísticas de contribuyentes:", error)
+                toast.error("No se pudo obtener las estadísticas de contribuyentes.", {
+                    id: 'taxpayer-stats-error',
+                    duration: 3000
+                });
             }
         }
 

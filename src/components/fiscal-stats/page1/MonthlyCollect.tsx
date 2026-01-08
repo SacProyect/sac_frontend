@@ -44,8 +44,11 @@ function MonthlyCollect({ fiscalInfo, year }: MonthlyCollectProps) {
                 setMonthlyStats(parsed);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del pagado mensual.")
+                console.error("Error al obtener pagado mensual:", e);
+                toast.error("No se pudo obtener el pagado mensual.", {
+                    id: 'monthly-collect-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();

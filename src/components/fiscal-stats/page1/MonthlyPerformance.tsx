@@ -32,8 +32,11 @@ function MonthlyPerformance({ fiscalInfo, year }: MonthlyPerformanceProps) {
                 setMonthlyGrowth(response);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener rendimiento mensual:", e);
+                toast.error("No se pudo obtener el rendimiento mensual.", {
+                    id: 'monthly-performance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
