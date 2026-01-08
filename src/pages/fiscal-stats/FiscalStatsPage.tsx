@@ -35,6 +35,10 @@ export default function FiscalStatsPage() {
         const fetchData = async () => {
             try {
                 const response = await getFiscalInfo(fiscalId || user.id, selectedYear);
+ fix/filtro-2025
+                // console.log(response);
+
+> main
                 setFiscalInfo(response);
             } catch (e) {
                 console.error("Error al cargar información del fiscal:", e);
@@ -74,7 +78,12 @@ export default function FiscalStatsPage() {
 
     return (
         <div className="w-full lg:w-[82vw] h-full lg:h-[100vh] flex flex-col bg-[#1c1c1b] text-white">
-            {/* Filtro de Año */}
+       
+         fix/filtro-2025
+            {/* Header con selector de año */
+            {/* Filtro de Año */
+              
+              main
             <div className="flex items-center justify-between px-8 py-4 bg-[#1c1c1b] border-b border-[#3a3a3a]">
                 <h1 className="text-2xl font-bold text-white">Estadísticas del Fiscal</h1>
                 <div className="flex items-center gap-4">
@@ -90,7 +99,10 @@ export default function FiscalStatsPage() {
                     </select>
                 </div>
             </div>
+ fix/filtro-2025
 
+
+ main
             {/* Render en mobile: ambas páginas */}
             <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (

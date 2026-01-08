@@ -11,7 +11,13 @@ interface FiscalStatsPage1Props {
   year: number;
 }
 
+ fix/filtro-2025
+
 export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalStatsPage1Props) {
+
+
+export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalStatsPage1Props) {
+ main
   return (
     <div className="flex flex-col w-full gap-4 p-4 overflow-hidden h-full lg:h-[90.2vh]">
       {/* Header del Fiscal */}
@@ -56,9 +62,17 @@ export default function FiscalStatsPage1({ fiscalData, fiscalId, year }: FiscalS
       <div className="grid flex-1 grid-cols-1 gap-4 lg:grid-cols-2 h-[20vh]">
         {/* Estadística 3: Evolución Mensual del Rendimiento */}
         <MonthlyPerformance fiscalInfo={fiscalData} year={year} />
+ fix/filtro-2025
+
 
         {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
         <ComplianceByProcess fiscalInfo={fiscalData} year={year} />
+
+
+
+        {/* Estadística 4: Cumplimiento por Tipo de Procedimiento */}
+        <ComplianceByProcess fiscalInfo={fiscalData} year={year} />
+ main
       </div>
     </div>
   )
