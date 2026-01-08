@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 
 interface MediumComplianceProps {
     fiscalData: FiscalInfo;
+    year: number;
 }
 
 
-function MediumCompliance({ fiscalData }: MediumComplianceProps) {
+function MediumCompliance({ fiscalData, year }: MediumComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -26,7 +27,7 @@ function MediumCompliance({ fiscalData }: MediumComplianceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId, year);
 
                 setCompliance(response.medium);
 
@@ -36,7 +37,7 @@ function MediumCompliance({ fiscalData }: MediumComplianceProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     // console.log(compliance);
 

@@ -9,11 +9,12 @@ import { useNavigate } from 'react-router-dom'
 
 
 interface ComplianceByProcessProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
 
-function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
+function ComplianceByProcess({ fiscalInfo, year }: ComplianceByProcessProps) {
 
 
     const [compliance, setCompliance] = useState<ProcessCompliance[]>([]);
@@ -28,7 +29,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalComplianceByProcess(fiscalInfo.fiscalId);
+                const response = await getFiscalComplianceByProcess(fiscalInfo.fiscalId, year);
 
                 const newStats = [
                     {
@@ -73,7 +74,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
             }
         };
         fetchData();
-    }, []);
+    }, [year]);
 
 
 

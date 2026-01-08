@@ -9,10 +9,11 @@ import { useNavigate } from "react-router-dom";
 
 
 interface TaxpayerListProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
-function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
+function TaxpayerList({ fiscalInfo, year }: TaxpayerListProps) {
     const [taxpayersList, setTaxpayersList] = useState<TaxpayersList[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -25,7 +26,7 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayers(fiscalInfo.fiscalId);
+                const response = await getFiscalTaxpayers(fiscalInfo.fiscalId, year);
 
                 setTaxpayersList(response);
 
@@ -35,7 +36,7 @@ function TaxpayerList({ fiscalInfo }: TaxpayerListProps) {
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {
