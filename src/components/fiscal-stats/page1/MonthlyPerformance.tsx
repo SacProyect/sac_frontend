@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 
 
 interface MonthlyPerformanceProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
-function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
+function MonthlyPerformance({ fiscalInfo, year }: MonthlyPerformanceProps) {
     const [monthlyGrowth, setMonthlyGrowth] = useState<FiscalMonthlyGrowth[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -26,17 +27,20 @@ function MonthlyPerformance({ fiscalInfo }: MonthlyPerformanceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalMonthlyPerformance(fiscalInfo.fiscalId);
+                const response = await getFiscalMonthlyPerformance(fiscalInfo.fiscalId, year);
 
                 setMonthlyGrowth(response);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener rendimiento mensual:", e);
+                toast.error("No se pudo obtener el rendimiento mensual.", {
+                    id: 'monthly-performance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     const formatCurrency = (amount: number) => {
         return new Intl.NumberFormat("es-VE", {

@@ -10,10 +10,11 @@ import { useNavigate } from 'react-router-dom';
 
 interface MediumComplianceProps {
     fiscalData: FiscalInfo;
+    year: number;
 }
 
 
-function MediumCompliance({ fiscalData }: MediumComplianceProps) {
+function MediumCompliance({ fiscalData, year }: MediumComplianceProps) {
     const [compliance, setCompliance] = useState<ComplianceInterface[]>();
     const { user } = useAuth();
     const navigate = useNavigate();
@@ -26,17 +27,20 @@ function MediumCompliance({ fiscalData }: MediumComplianceProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId);
+                const response = await getFiscalTaxpayerCompliance(fiscalData.fiscalId, year);
 
                 setCompliance(response.medium);
 
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al obtener medio cumplimiento:", e);
+                toast.error("No se pudo obtener el medio cumplimiento.", {
+                    id: 'medium-compliance-error',
+                    duration: 3000
+                });
             }
         }
         fetchData();
-    }, [])
+    }, [year])
 
     // console.log(compliance);
 

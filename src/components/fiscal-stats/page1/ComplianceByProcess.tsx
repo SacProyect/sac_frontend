@@ -9,11 +9,12 @@ import { useNavigate } from 'react-router-dom'
 
 
 interface ComplianceByProcessProps {
-    fiscalInfo: FiscalInfo
+    fiscalInfo: FiscalInfo;
+    year: number;
 }
 
 
-function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
+function ComplianceByProcess({ fiscalInfo, year }: ComplianceByProcessProps) {
 
 
     const [compliance, setCompliance] = useState<ProcessCompliance[]>([]);
@@ -28,7 +29,7 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalComplianceByProcess(fiscalInfo.fiscalId);
+                const response = await getFiscalComplianceByProcess(fiscalInfo.fiscalId, year);
 
                 const newStats = [
                     {
@@ -68,12 +69,15 @@ function ComplianceByProcess({ fiscalInfo }: ComplianceByProcessProps) {
 
                 setCompliance(newStats);
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.");
+                console.error("Error al obtener cumplimiento por proceso:", e);
+                toast.error("No se pudo obtener el cumplimiento por proceso.", {
+                    id: 'compliance-process-error',
+                    duration: 3000
+                });
             }
         };
         fetchData();
-    }, []);
+    }, [year]);
 
 
 
