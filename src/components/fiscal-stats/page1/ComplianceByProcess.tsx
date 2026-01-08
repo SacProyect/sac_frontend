@@ -69,8 +69,11 @@ function ComplianceByProcess({ fiscalInfo, year }: ComplianceByProcessProps) {
 
                 setCompliance(newStats);
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.");
+                console.error("Error al obtener cumplimiento por proceso:", e);
+                toast.error("No se pudo obtener el cumplimiento por proceso.", {
+                    id: 'compliance-process-error',
+                    duration: 3000
+                });
             }
         };
         fetchData();

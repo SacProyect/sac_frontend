@@ -35,11 +35,17 @@ export default function FiscalStatsPage() {
         const fetchData = async () => {
             try {
                 const response = await getFiscalInfo(fiscalId || user.id, selectedYear);
+ fix/filtro-2025
                 // console.log(response);
+
+> main
                 setFiscalInfo(response);
             } catch (e) {
-                console.error(e);
-                toast.error("No se pudo obtener la información del fiscal.")
+                console.error("Error al cargar información del fiscal:", e);
+                toast.error("No se pudieron cargar las estadísticas del fiscal. Por favor, intente de nuevo.", {
+                    duration: 4000,
+                    id: 'fiscal-stats-error' // Previene duplicados
+                });
             }
         }
         fetchData();
@@ -72,7 +78,12 @@ export default function FiscalStatsPage() {
 
     return (
         <div className="w-full lg:w-[82vw] h-full lg:h-[100vh] flex flex-col bg-[#1c1c1b] text-white">
-            {/* Header con selector de año */}
+       
+         fix/filtro-2025
+            {/* Header con selector de año */
+            {/* Filtro de Año */
+              
+              main
             <div className="flex items-center justify-between px-8 py-4 bg-[#1c1c1b] border-b border-[#3a3a3a]">
                 <h1 className="text-2xl font-bold text-white">Estadísticas del Fiscal</h1>
                 <div className="flex items-center gap-4">
@@ -88,6 +99,10 @@ export default function FiscalStatsPage() {
                     </select>
                 </div>
             </div>
+ fix/filtro-2025
+
+
+ main
             {/* Render en mobile: ambas páginas */}
             <div className="block space-y-4 lg:hidden">
                 {fiscalInfo && (
@@ -105,33 +120,32 @@ export default function FiscalStatsPage() {
             </div>
 
             {/* Paginación solo en lg */}
-            <div className="hidden lg:flex items-center justify-center gap-2 py-2 bg-[#1c1c1b]">
+            <div className="justify-center hidden py-2 space-x-4 lg:flex bg-[#1c1c1b]">
                 <button
                     onClick={prevPage}
                     disabled={currentPage === 1}
-                    className="text-white hover:bg-[#3a3a39] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                    <ChevronLeft className="w-4 h-4 mr-1" />
-                    Anterior
+                    <ChevronLeft className="w-4 h-4" /> Anterior
                 </button>
 
-                {[1, 2, 3].map((page) => (
+                {[...Array(totalPages)].map((_, index) => (
                     <button
-                        key={page}
-                        onClick={() => goToPage(page)}
-                        className={`px-3 py-1 rounded ${currentPage === page ? "bg-blue-600 hover:bg-blue-700" : "hover:bg-[#3a3a39]"} text-white`}
+                        key={index}
+                        onClick={() => goToPage(index + 1)}
+                        className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
                     >
-                        {page}
+                        {index + 1}
                     </button>
                 ))}
 
                 <button
                     onClick={nextPage}
                     disabled={currentPage === totalPages}
-                    className="text-white hover:bg-[#3a3a39] disabled:opacity-50 disabled:cursor-not-allowed flex items-center"
+                    className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     Siguiente
-                    <ChevronRight className="w-4 h-4 ml-1" />
+                    <ChevronRight className="w-4 h-4" />
                 </button>
             </div>
         </div>

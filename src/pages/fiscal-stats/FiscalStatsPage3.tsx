@@ -35,19 +35,23 @@ export default function FiscalStatsPage3({ fiscalData, year }: FiscalStatsPage3P
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId)
+                const response = await getFiscalTaxpayersForStats(fiscalData.fiscalId, year)
                 const data: FiscalTaxpayerStatsResponse = response.data
                 setVdfOnTime(data.vdfOnTime)
                 setVdfLate(data.vdfLate)
                 setAfOnTime(data.afOnTime)
                 setAfLate(data.afLate)
             } catch (error) {
-                console.error("Error fetching data:", error)
+                console.error("Error al obtener estadísticas de contribuyentes:", error)
+                toast.error("No se pudo obtener las estadísticas de contribuyentes.", {
+                    id: 'taxpayer-stats-error',
+                    duration: 3000
+                });
             }
         }
 
         fetchData()
-    }, [])
+    }, [year])
 
     const downloadPDF = (title: string, fileName: string, taxpayers: any[], showDelay = false) => {
         const printWindow = window.open("", "_blank")

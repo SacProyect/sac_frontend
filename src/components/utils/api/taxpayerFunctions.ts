@@ -145,20 +145,21 @@ export const getTaxpayers = async () => {
 	}
 }
 
-export const getFiscalTaxpayersForStats = async (fiscalId: string) => {
-
+export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number) => {
 	try {
-		let requestUrl = "/taxpayer/get-fiscal-taxpayers-for-stats"
+		let requestUrl = `/taxpayer/get-fiscal-taxpayers-for-stats/${fiscalId}`
 
-		const response = await apiConnection.get(`${requestUrl}/${fiscalId}`);
+		if (year) {
+			requestUrl += `?date=${year}`
+		}
+
+		const response = await apiConnection.get(requestUrl);
 
 		return response;
-
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudieron obtener los vdf y af fuera ni dentro de plazo.")
 	}
-
 }
 
 export const getFiscalsForReview = async () => {
