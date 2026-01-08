@@ -10,23 +10,27 @@ import { Download, Trophy, TrendingUp, Users, Award } from "lucide-react"
 
 
 
-export default function StatisticsPage2() {
+interface StatisticsPage2Props {
+    year?: number;
+}
+
+export default function StatisticsPage2({ year }: StatisticsPage2Props) {
     return (
         <div className="w-full lg:w-[82vw] lg:h-[90.2vh] flex flex-col lg:flex-row items-center justify-center bg-[#1c1c1b] text-white p-6">
             <div className="grid w-full grid-cols-1 gap-6 lg:grid-cols-2  lg:pt-16">
                 {/* Estadística 1: Mejor Supervisor por Coordinaciones */}
-                <BestSuperVisor />
+                <BestSuperVisor year={year} />
 
 
                 {/* Estadística 2: Top Fiscales General */}
-                <TopFiscal />
+                <TopFiscal year={year} />
 
 
                 {/* Estadística 3: Top 5 Fiscales por Coordinación */}
-                <TopFiveFiscals />
+                <TopFiveFiscals year={year} />
 
                 {/* Estadística 4: Coordinador con Mayor Crecimiento */}
-                <TopGrowth />
+                <TopGrowth year={year} />
             </div>
         </div>
     )

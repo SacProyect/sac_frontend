@@ -16,13 +16,17 @@ import toast from "react-hot-toast"
 
 
 
-export default function StatisticsPage3() {
+interface StatisticsPage3Props {
+    year?: number;
+}
+
+export default function StatisticsPage3({ year }: StatisticsPage3Props) {
     const [complianceData, setComplianceData] = useState<ComplianceData | null>(null);
 
     useEffect(() => {
         const fetchCompliance = async () => {
             try {
-                const response = await getTaxpayersCompliance()
+                const response = await getTaxpayersCompliance(year)
                 setComplianceData(response.data)
             } catch (e) {
                 toast.error("Error al obtener el cumplimiento.")
@@ -30,7 +34,7 @@ export default function StatisticsPage3() {
         }
 
         fetchCompliance()
-    }, [])
+    }, [year])
 
     const highCompliance = complianceData?.high ?? []
     const mediumCompliance = complianceData?.medium ?? []
@@ -57,7 +61,7 @@ export default function StatisticsPage3() {
                 <LowCompliance data={lowCompliance} />
 
                 {/* Estadística 4: Comparación Recaudación Real vs Esperada */}
-                <Goal />
+                <Goal year={year} />
             </div>
         </div>
     )

@@ -338,10 +338,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         }
     };
 
-    console.log(taxpayerData);
-
-    // console.log(user)
-
     const canEditFase = (
         user?.role === "ADMIN" ||
         (user?.role === "COORDINATOR" && taxpayerData?.user.group?.coordinatorId === user.id) ||
