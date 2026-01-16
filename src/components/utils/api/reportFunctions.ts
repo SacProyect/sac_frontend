@@ -237,17 +237,10 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-info/${fiscalId}`
- fix/filtro-2025
 		if (year) {
 			requestUrl += `?date=${year}`
 		}
 
-		
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
- main
 		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
