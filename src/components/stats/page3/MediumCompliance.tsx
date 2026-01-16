@@ -136,7 +136,7 @@ function MediumCompliance({ data }: MediumComplianceProps) {
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <AlertTriangle className="w-4 h-4 text-yellow-500" />
-                        Contribuyentes - Cumplimiento Medio
+                        Cumplimiento Medio ({data.length})
                     </div>
                     <div className='flex pt-4 pr-4 space-x-2'>
                         <button
