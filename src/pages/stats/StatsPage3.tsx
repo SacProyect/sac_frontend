@@ -42,8 +42,6 @@ export default function StatisticsPage3({ year }: StatisticsPage3Props) {
 
 
 
-
-
     return (
         <div className="flex flex-col  gap-4 p-4 lg:w-[82vw] lg:h-[90.2vh]">
             {/* Fila superior - 2 estadísticas */}
