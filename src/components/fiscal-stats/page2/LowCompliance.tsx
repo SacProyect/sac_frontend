@@ -42,12 +42,20 @@ function LowCompliance({ fiscalData, year }: LowComplianceProps) {
         fetchData();
     }, [year])
 
-    const formatCurrency = (amount: number) => {
+    // ✅ SANITIZACIÓN CRÍTICA: Manejar NaN, null, undefined
+    const formatCurrency = (amount: number | null | undefined) => {
+        if (amount === null || amount === undefined || isNaN(amount) || !isFinite(amount)) {
+            return new Intl.NumberFormat("es-VE", {
+                style: "currency",
+                currency: "VES",
+                minimumFractionDigits: 0,
+            }).format(0);
+        }
         return new Intl.NumberFormat("es-VE", {
             style: "currency",
             currency: "VES",
             minimumFractionDigits: 0,
-        }).format(amount)
+        }).format(amount);
     }
 
     const downloadPDF = (tableId: string, fileName: string) => {
