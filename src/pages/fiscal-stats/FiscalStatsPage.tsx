@@ -108,34 +108,36 @@ export default function FiscalStatsPage() {
                     {renderPageContent()}
                 </div>
 
-                {/* Paginación solo en lg */}
-                <div className="justify-center hidden py-2 space-x-4 lg:flex bg-[#1c1c1b]">
-                    <button
-                        onClick={prevPage}
-                        disabled={currentPage === 1}
-                        className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <ChevronLeft className="w-4 h-4" /> Anterior
-                    </button>
-
-                    {[...Array(totalPages)].map((_, index) => (
+                {/* Paginación solo en lg - Asegurada dentro del contenedor principal */}
+                <div className="hidden lg:flex justify-center items-center py-2 px-4 bg-[#1c1c1b] border-t border-[#3a3a3a] w-full">
+                    <div className="flex items-center justify-center space-x-4 max-w-full">
                         <button
-                            key={index}
-                            onClick={() => goToPage(index + 1)}
-                            className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
+                            onClick={prevPage}
+                            disabled={currentPage === 1}
+                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            {index + 1}
+                            <ChevronLeft className="w-4 h-4" /> Anterior
                         </button>
-                    ))}
 
-                    <button
-                        onClick={nextPage}
-                        disabled={currentPage === totalPages}
-                        className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Siguiente
-                        <ChevronRight className="w-4 h-4" />
-                    </button>
+                        {[...Array(totalPages)].map((_, index) => (
+                            <button
+                                key={index}
+                                onClick={() => goToPage(index + 1)}
+                                className={`px-4 py-2 rounded-lg text-white border transition hover:scale-110 ${currentPage === index + 1 ? 'bg-[#4a90e2]' : 'bg-[#2a2a2a] border-[#3a3a3a] hover:bg-[#3c3c3c]'}`}
+                            >
+                                {index + 1}
+                            </button>
+                        ))}
+
+                        <button
+                            onClick={nextPage}
+                            disabled={currentPage === totalPages}
+                            className="transition hover:scale-110 bg-[#2a2a2a] px-4 py-2 rounded-lg text-white flex items-center gap-2 border border-[#3a3a3a] hover:bg-[#3c3c3c] disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            Siguiente
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
             </div>
         </main>
