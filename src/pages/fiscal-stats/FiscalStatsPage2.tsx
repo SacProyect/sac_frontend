@@ -3,6 +3,7 @@ import CollectAnalisis from "@/components/fiscal-stats/page2/CollectAnalisis"
 import HighCompliance from "@/components/fiscal-stats/page2/HighCompliance"
 import LowCompliance from "@/components/fiscal-stats/page2/LowCompliance"
 import MediumCompliance from "@/components/fiscal-stats/page2/MediumCompliance"
+import ComplianceDistributionChart from "@/components/fiscal-stats/page2/ComplianceDistributionChart"
 import { FiscalInfo } from "@/types/reports"
 import { Download, TrendingUp, TrendingDown, Users, BarChart3, User } from "lucide-react"
 
@@ -60,8 +61,8 @@ export default function FiscalStatsPage2({ fiscalData, fiscalId, year }: FiscalS
                     {/* Estadística 3: Bajo Cumplimiento */}
                     <LowCompliance fiscalData={fiscalData} year={year} />
 
-                    {/* Estadística 4: Eficiencia del Fiscal */}
-                    <CollectAnalisis fiscalData={fiscalData} year={year} />
+                    {/* Estadística 4: Distribución de Cumplimiento (Gráfico de Dona) */}
+                    <ComplianceDistributionChart fiscalData={fiscalData} year={year} />
                 </div>
             </div>
         </div>
