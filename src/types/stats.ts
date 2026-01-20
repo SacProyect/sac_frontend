@@ -43,6 +43,11 @@ export interface ComplianceData {
     high: High[];
     medium: High[];
     low: High[];
+    // ✅ Campos opcionales (Backend nuevo) para gráficos sin recalcular
+    highComplianceCount?: number;
+    mediumComplianceCount?: number;
+    lowComplianceCount?: number;
+    totalTaxpayers?: number;
 }
 
 export interface High {
