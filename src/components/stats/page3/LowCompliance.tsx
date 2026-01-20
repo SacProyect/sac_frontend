@@ -1,5 +1,6 @@
 import { usePresentation } from '@/components/context/PresentationContext'
 import { exportComplianceExcel } from '@/components/utils/stats/exportComplianceExcel'
+import { formatCurrency } from '@/components/utils/formatCurrency'
 import { useAutoScroll } from '@/hooks/useAutoScroll'
 import { High } from '@/types/stats'
 import { Download, TrendingDown } from 'lucide-react'
@@ -24,16 +25,6 @@ function LowCompliance({ data }: LowComplianceProps) {
     }, [data.length]);
 
 
-
-
-    const formatCurrency = (amount: number) => {
-        return new Intl.NumberFormat("es-VE", {
-            style: "currency",
-            currency: "VES",
-            minimumFractionDigits: 0,
-        }).format(amount)
-    }
-
     const downloadPDF = (tableId: string, fileName: string) => {
         const element = document.getElementById(tableId)
         if (element) {
@@ -46,10 +37,10 @@ function LowCompliance({ data }: LowComplianceProps) {
                         <td>${contribuyente.name}</td>
                         <td>${contribuyente.rif}</td>
                         <td>${contribuyente.compliance}%</td>
-                        <td>${formatCurrency(Number(contribuyente.totalIVA))}</td>
-                        <td>${formatCurrency(Number(contribuyente.totalISLR))}</td>
-                        <td>${formatCurrency(Number(contribuyente.totalFines))}</td>
-                        <td>${formatCurrency(Number(contribuyente.totalCollected))}</td>
+                        <td>${formatCurrency(contribuyente.totalIVA)}</td>
+                        <td>${formatCurrency(contribuyente.totalISLR)}</td>
+                        <td>${formatCurrency(contribuyente.totalFines)}</td>
+                        <td>${formatCurrency(contribuyente.totalCollected)}</td>
                     </tr>
                     `).join('');
 
@@ -188,20 +179,20 @@ function LowCompliance({ data }: LowComplianceProps) {
                                     <div className="grid grid-cols-2 gap-2 text-xs lg:grid-cols-4">
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">IVA</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(Number(contribuyente.totalIVA))}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(contribuyente.totalIVA)}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">ISLR</div>
-                                            <div className="font-bold text-[10px]">{formatCurrency(Number(contribuyente.totalISLR))}</div>
+                                            <div className="font-bold text-[10px]">{formatCurrency(contribuyente.totalISLR)}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Multas</div>
-                                            <div className="font-bold text-red-400 text-[10px]">{formatCurrency(Number(contribuyente.totalFines))}</div>
+                                            <div className="font-bold text-red-400 text-[10px]">{formatCurrency(contribuyente.totalFines)}</div>
                                         </div>
                                         <div className="bg-[#2a2a29] rounded-md p-2">
                                             <div className="mb-1 text-gray-400">Total</div>
                                             <div className="font-bold text-red-400 text-[10px]">
-                                                {formatCurrency(Number(contribuyente.totalCollected))}
+                                                {formatCurrency(contribuyente.totalCollected)}
                                             </div>
                                         </div>
                                     </div>
