@@ -153,7 +153,7 @@ function MediumCompliance({ fiscalData, year }: MediumComplianceProps) {
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <Users className="w-4 h-4 text-yellow-500" />
-                        Contribuyentes con Cumplimiento Medio (34-66%)
+                        Contribuyentes con Cumplimiento Medio (34-66%) ({compliance?.length ?? 0})
                     </div>
                     <div className="flex pt-4 pr-4 space-x-2">
                         <button
