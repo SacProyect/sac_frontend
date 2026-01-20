@@ -150,7 +150,7 @@ function LowCompliance({ fiscalData, year }: LowComplianceProps) {
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <TrendingDown className="w-4 h-4 text-red-500" />
-                        Contribuyentes con Bajo Cumplimiento (&lt;33%)
+                        Contribuyentes con Bajo Cumplimiento (&lt;33%) ({compliance?.length ?? 0})
                     </div>
                     <div className="flex pt-4 pr-4 space-x-2">
                         <button
