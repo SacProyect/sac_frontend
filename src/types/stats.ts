@@ -54,10 +54,10 @@ export interface High {
     name: string;
     rif: string;
     compliance: number;
-    totalIVA: string;
-    totalISLR: string;
-    totalFines: string;
-    totalCollected: string;
+    totalIVA: number | string;
+    totalISLR: number | string;
+    totalFines: number | string;
+    totalCollected: number | string;
 }
 
 export interface ExpectedGoal {
