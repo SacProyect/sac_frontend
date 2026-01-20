@@ -154,7 +154,7 @@ function HighCompliance({ fiscalData, year }: HighComplianceProps) {
                 <div className="flex flex-row items-center justify-between pb-3">
                     <div className="flex items-center gap-2 pt-4 pl-4 text-base font-semibold">
                         <TrendingUp className="w-4 h-4 text-green-500" />
-                        Contribuyentes con Alto Cumplimiento (&gt;67%)
+                        Contribuyentes con Alto Cumplimiento (&gt;67%) ({compliance?.length ?? 0})
                     </div>
                     <div className="flex pt-4 pr-4 space-x-2">
                         <button
