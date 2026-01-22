@@ -19,9 +19,46 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// MODO DESARROLLO: Usuario admin fake para revisar V2 sin backend
+const DEV_MODE = true; // Cambiar a false cuando quieras usar autenticación real
+const FAKE_ADMIN_USER: User = {
+    id: "dev-admin-fake-id",
+    personId: "12345678",
+    name: "Admin Test (Fake)",
+    role: "ADMIN",
+    password: "",
+    status: true,
+    taxpayer: [],
+    coordinatedGroup: null as any,
+    group: null as any,
+    groupId: "",
+};
+
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useLocalStorage("user", null);
-    const [token, setToken] = useLocalStorage("authToken", null);
+    // En modo desarrollo, siempre usar usuario fake
+    const [storedUser, setStoredUser] = useLocalStorage("user", null);
+    const [storedToken, setStoredToken] = useLocalStorage("authToken", null);
+    
+    // Si está en modo desarrollo y no hay usuario, usar el fake
+    const user = DEV_MODE && !storedUser ? FAKE_ADMIN_USER : storedUser;
+    const token = DEV_MODE && !storedToken ? "fake-dev-token" : storedToken;
+    
+    const setUser = (newUser: User | null) => {
+        if (DEV_MODE && newUser === FAKE_ADMIN_USER) {
+            // No guardar el usuario fake en localStorage
+            return;
+        }
+        setStoredUser(newUser);
+    };
+    
+    const setToken = (newToken: string | null) => {
+        if (DEV_MODE && newToken === "fake-dev-token") {
+            // No guardar el token fake en localStorage
+            return;
+        }
+        setStoredToken(newToken);
+    };
+    
     const navigate = useNavigate();
 
     const login = async (user: User, token: string) => {
@@ -37,6 +74,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const refreshUser = useCallback(async () => {
+        // En modo desarrollo, no hacer refresh (usuario fake siempre disponible)
+        if (DEV_MODE) return;
         if (!token) return;
         try {
             const resp = await apiConnection.get<{

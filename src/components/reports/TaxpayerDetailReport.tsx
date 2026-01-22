@@ -51,7 +51,6 @@ const TaxpayerDetailReport = forwardRef<HTMLDivElement, TaxpayerDetailReportProp
         const [localEvents, setLocalEvents] = useState<Event[]>(events)
         const [selectedTable, setSelectedTable] = useState("fine")
 
-        console.log(islrReports);
 
 
         // console.log("EVENTS FROM TAXPAYERDETAILREPORT: " + JSON.stringify(events))

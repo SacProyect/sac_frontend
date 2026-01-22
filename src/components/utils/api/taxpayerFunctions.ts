@@ -555,7 +555,6 @@ export const downloadInvestigationPdf = async (key: string) => {
 			params: { key: encodeURIComponent(key) }
 		});
 
-		console.log(response);
 
 		return response;
 	} catch (e) {

@@ -150,7 +150,6 @@ function TaxpayerForm() {
             })
 
             for (const pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
             }
 
             const newTaxpayer = await createTaxpayer(formData);
