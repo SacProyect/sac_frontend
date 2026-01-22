@@ -103,7 +103,6 @@ function HomePage() {
         setVisibleCount(25); // reset cuando se filtra
     }, [debouncedSearch, selectedYear]);
 
-    console.log(filteredItems);
 
 
 
