@@ -151,7 +151,6 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
             delete payload.parish;
             delete payload.category;
 
-            console.log("Payload a enviar:", payload);
 
             // 🔹 Llamar API
             await updateTaxpayer(id, payload);
