@@ -24,7 +24,7 @@ type PresentationContextType = {
 };
 
 const expectedTablesPerPage: Record<number, number> = {
-    2: 4,
+    2: 3, // Actualizado: ahora solo hay 3 tablas (BestSuperVisor, TopFiscal, TopFiveFiscals)
     3: 3,
 };
 
