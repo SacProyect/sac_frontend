@@ -73,7 +73,11 @@ function HomePage() {
                 };
             })
             .filter(item => {
-                const itemYear = new Date(item.emition_date || '').getFullYear().toString();
+                // ✅ CORRECCIÓN CRÍTICA 2026: Usar UTC para obtener el año fiscal correcto
+                // El problema era que getFullYear() usaba la zona horaria local, causando que
+                // fechas como "2025-12-31T23:00:00.000Z" se interpretaran como 2025 en lugar de 2026
+                const emitionDate = item.emition_date ? new Date(item.emition_date) : null;
+                const itemYear = emitionDate ? emitionDate.getUTCFullYear().toString() : '';
 
                 const yearMatches = selectedYear === 'Todos' || itemYear === selectedYear;
                 if (!yearMatches) return false;
