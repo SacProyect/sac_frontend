@@ -5,7 +5,7 @@ import FiscalStatsPage1 from "./FiscalStatsPage1"
 import FiscalStatsPage2 from "./FiscalStatsPage2"
 import { useAuth } from "@/hooks/useAuth"
 import { getFiscalInfo } from "@/components/utils/api/reportFunctions"
-import { useNavigate, useParams } from "react-router-dom"
+import { useNavigate, useParams, useSearchParams } from "react-router-dom"
 import toast from "react-hot-toast"
 import { FiscalInfo } from "@/types/reports"
 import FiscalStatsPage3 from "./FiscalStatsPage3"
@@ -14,6 +14,11 @@ export default function FiscalStatsPage() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const { fiscalId } = useParams();
+    const [searchParams] = useSearchParams();
+    
+    // ✅ CORRECCIÓN 2026: Obtener año de query params si existe (viene del filtro de supervisores)
+    const yearFromQuery = searchParams.get('year');
+    const initialYear = yearFromQuery ? parseInt(yearFromQuery, 10) : new Date().getFullYear();
 
     if (!user) {
         navigate('/login')
@@ -29,7 +34,7 @@ export default function FiscalStatsPage() {
 
     const [currentPage, setCurrentPage] = useState(1);
     const [fiscalInfo, setFiscalInfo] = useState<FiscalInfo>();
-    const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+    const [selectedYear, setSelectedYear] = useState<number>(initialYear);
 
     useEffect(() => {
         const fetchData = async () => {
