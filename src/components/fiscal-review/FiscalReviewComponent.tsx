@@ -155,30 +155,45 @@ function FiscalReviewComponent() {
                             </div>
 
                             {/* Table Body */}
-                            {filteredFiscals.filter(t => t.id && t.personId).map(fiscal => (
-                                <div
-                                    key={fiscal.id}
-                                    className='flex flex-col w-full px-4 py-3 border-b border-l border-r lg:flex-row last:rounded-b-md'
-                                >
-                                    <div className='flex-[1]'><p>{fiscal.personId ? Number(fiscal.personId).toLocaleString() : "No se encontró la cédula"}</p></div>
-                                    <div className='flex-[2]'><p>{fiscal.name ?? "No se encontró el nombre"}</p></div>
-                                    <div className='flex-[1]'><p>{fiscal.group?.name ?? "No se encontró el grupo"}</p></div>
-                                    <div className='flex-[1]'><p>{(fiscal.role === "FISCAL" && fiscal.supervisor?.name) ? fiscal.supervisor.name : fiscal.role === "SUPERVISOR" ? fiscal.name : "No se encontró el supervisor"}</p></div>
-                                    <div className='flex-[1] flex justify-end mt-2 lg:mt-0'>
-                                        <button
-                                            className='px-3 py-1 text-xs font-medium border border-gray-300 lg:text-sm'
-                                            onClick={() => {
-                                                // ✅ CORRECCIÓN 2026: Pasar año seleccionado como query parameter
-                                                // Si hay un año seleccionado, pasarlo para que la página de estadísticas lo use
-                                                const yearParam = selectedYear !== null ? `?year=${selectedYear}` : '';
-                                                navigate(`/fiscal-stats/${fiscal.id}${yearParam}`);
-                                            }}
-                                        >
-                                            Ver Estadísticas
-                                        </button>
-                                    </div>
+                            {filteredFiscals.filter(t => t.id && t.personId).length === 0 ? (
+                                <div className='w-full px-4 py-8 text-center'>
+                                    <p className='text-gray-500 text-sm'>
+                                        {selectedYear !== null 
+                                            ? `No se encontraron fiscales con casos del año ${selectedYear}.`
+                                            : "No se encontraron fiscales."}
+                                    </p>
+                                    {selectedYear !== null && (
+                                        <p className='text-gray-400 text-xs mt-2'>
+                                            Esto puede deberse a que aún no se han creado casos para este año o que los casos están inactivos.
+                                        </p>
+                                    )}
                                 </div>
-                            ))}
+                            ) : (
+                                filteredFiscals.filter(t => t.id && t.personId).map(fiscal => (
+                                    <div
+                                        key={fiscal.id}
+                                        className='flex flex-col w-full px-4 py-3 border-b border-l border-r lg:flex-row last:rounded-b-md'
+                                    >
+                                        <div className='flex-[1]'><p>{fiscal.personId ? Number(fiscal.personId).toLocaleString() : "No se encontró la cédula"}</p></div>
+                                        <div className='flex-[2]'><p>{fiscal.name ?? "No se encontró el nombre"}</p></div>
+                                        <div className='flex-[1]'><p>{fiscal.group?.name ?? "No se encontró el grupo"}</p></div>
+                                        <div className='flex-[1]'><p>{(fiscal.role === "FISCAL" && fiscal.supervisor?.name) ? fiscal.supervisor.name : fiscal.role === "SUPERVISOR" ? fiscal.name : "No se encontró el supervisor"}</p></div>
+                                        <div className='flex-[1] flex justify-end mt-2 lg:mt-0'>
+                                            <button
+                                                className='px-3 py-1 text-xs font-medium border border-gray-300 lg:text-sm'
+                                                onClick={() => {
+                                                    // ✅ CORRECCIÓN 2026: Pasar año seleccionado como query parameter
+                                                    // Si hay un año seleccionado, pasarlo para que la página de estadísticas lo use
+                                                    const yearParam = selectedYear !== null ? `?year=${selectedYear}` : '';
+                                                    navigate(`/fiscal-stats/${fiscal.id}${yearParam}`);
+                                                }}
+                                            >
+                                                Ver Estadísticas
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))
+                            )}
                         </div>
 
                     </div>
