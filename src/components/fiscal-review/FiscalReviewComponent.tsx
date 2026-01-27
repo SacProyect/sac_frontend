@@ -22,6 +22,8 @@ function FiscalReviewComponent() {
     const [isLoadingFiscals, setIsLoadingFiscals] = useState(true);
     const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
     const [fiscalArray, setFiscalArray] = useState<User[]>([]);
+    // ✅ CORRECCIÓN 2026: Agregado estado para filtro de año
+    const [selectedYear, setSelectedYear] = useState<number | null>(null); // null = todos los años
 
     useEffect(() => {
         if (!user) {
@@ -30,20 +32,25 @@ function FiscalReviewComponent() {
         }
     }, [user])
 
+    // ✅ CORRECCIÓN 2026: Actualizado para usar el filtro de año
     useEffect(() => {
         const fetchTaxpayers = async () => {
+            setIsLoadingFiscals(true);
             try {
-                const response = await getFiscalsForReview();
+                // Pasar el año seleccionado (o undefined si es null)
+                const year = selectedYear !== null ? selectedYear : undefined;
+                const response = await getFiscalsForReview(year);
 
                 setFiscalArray(response.data);
                 setIsLoadingFiscals(false);
             } catch (e) {
                 toast.error("No se pudieron obtener los fiscales.");
+                setIsLoadingFiscals(false);
             }
         };
 
         fetchTaxpayers();
-    }, []);
+    }, [selectedYear]); // ✅ Se ejecuta cuando cambia el año seleccionado
 
     if (fiscalArray) fiscalArray.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
 
@@ -93,22 +100,44 @@ function FiscalReviewComponent() {
                                 </div>
                             </div>
 
-                            <div className='flex flex-col items-start w-full gap-2 pt-4 lg:flex-row lg:items-center'>
-
-                                <div className='w-full lg:w-[90%] flex items-center gap-2 px-3 py-1 bg-white border rounded-md'>
-                                    <CiSearch size={18} className="text-gray-500" />
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar por nombre, cédula, o grupo"
-                                        className="flex-1 text-sm placeholder-gray-400 bg-transparent focus:outline-none"
-                                        value={inputValue}
-                                        onChange={e => setInputValue(e.target.value)}
-                                        onKeyDown={handleKeyDown}
-                                    />
+                            {/* ✅ CORRECCIÓN 2026: Agregado filtro de año */}
+                            <div className='flex flex-col gap-3 pt-4'>
+                                {/* Filtro de Año */}
+                                <div className='w-full lg:w-[300px]'>
+                                    <label className='block text-sm font-medium text-gray-700 mb-1'>
+                                        Filtrar por Año
+                                    </label>
+                                    <select
+                                        value={selectedYear === null ? '' : selectedYear}
+                                        onChange={(e) => {
+                                            const value = e.target.value;
+                                            setSelectedYear(value === '' ? null : parseInt(value, 10));
+                                        }}
+                                        className='w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-sm focus:outline-none focus:ring-2 focus:ring-[#3498DB]'
+                                    >
+                                        <option value="">Todos los años</option>
+                                        <option value="2025">2025</option>
+                                        <option value="2026">2026</option>
+                                    </select>
                                 </div>
 
-                                <div className='w-full lg:w-[10%]'>
-                                    <button className='w-full px-4 py-1 bg-[#3498DB] text-white' onClick={handleSearch}>Buscar</button>
+                                {/* Barra de búsqueda */}
+                                <div className='flex flex-col items-start w-full gap-2 lg:flex-row lg:items-center'>
+                                    <div className='w-full lg:w-[90%] flex items-center gap-2 px-3 py-1 bg-white border rounded-md'>
+                                        <CiSearch size={18} className="text-gray-500" />
+                                        <input
+                                            type="text"
+                                            placeholder="Buscar por nombre, cédula, o grupo"
+                                            className="flex-1 text-sm placeholder-gray-400 bg-transparent focus:outline-none"
+                                            value={inputValue}
+                                            onChange={e => setInputValue(e.target.value)}
+                                            onKeyDown={handleKeyDown}
+                                        />
+                                    </div>
+
+                                    <div className='w-full lg:w-[10%]'>
+                                        <button className='w-full px-4 py-1 bg-[#3498DB] text-white' onClick={handleSearch}>Buscar</button>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -139,7 +168,12 @@ function FiscalReviewComponent() {
                                     <div className='flex-[1] flex justify-end mt-2 lg:mt-0'>
                                         <button
                                             className='px-3 py-1 text-xs font-medium border border-gray-300 lg:text-sm'
-                                            onClick={() => navigate(`/fiscal-stats/${fiscal.id}`)}
+                                            onClick={() => {
+                                                // ✅ CORRECCIÓN 2026: Pasar año seleccionado como query parameter
+                                                // Si hay un año seleccionado, pasarlo para que la página de estadísticas lo use
+                                                const yearParam = selectedYear !== null ? `?year=${selectedYear}` : '';
+                                                navigate(`/fiscal-stats/${fiscal.id}${yearParam}`);
+                                            }}
                                         >
                                             Ver Estadísticas
                                         </button>

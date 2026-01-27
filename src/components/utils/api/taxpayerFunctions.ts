@@ -162,10 +162,19 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 	}
 }
 
-export const getFiscalsForReview = async () => {
+/**
+ * ✅ CORRECCIÓN 2026: Agregado parámetro opcional de año para filtrar fiscales
+ * @param year - Año opcional para filtrar (2025 o 2026). Si no se especifica, retorna todos los fiscales.
+ */
+export const getFiscalsForReview = async (year?: number) => {
 
 	try {
 		let requestUrl = "/user/get-fiscals-for-review"
+		
+		// ✅ Agregar parámetro de año si se especifica
+		if (year !== undefined) {
+			requestUrl += `?year=${year}`;
+		}
 
 		const response = await apiConnection.get(`${requestUrl}`);
 
