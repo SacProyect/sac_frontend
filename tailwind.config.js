@@ -9,7 +9,7 @@ export default {
   theme: {
   	extend: {
   		backgroundImage: {
-  			sac_background: 'url('/src/assets/sac-background.svg')'
+  			sac_background: "url('/src/assets/sac-background.svg')"
   		},
   		display: [
   			'group-hover'

@@ -197,10 +197,10 @@ export const router = createBrowserRouter([
                         loader: async () => {
                             try {
                                 const response = await getOfficers();
-                                return response.map((item: { id: number; name: string; personId: string }) => ({
-                                    value: item.id,
+                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
+                                    value: String(item.id),
                                     name: `${item.name} C.I.:${item.personId}`,
-                                    id: item.id,
+                                    id: String(item.id),
                                 }));
                             } catch (error) {
                                 console.error("No se pudieron obtener los funcionarios: " + error);
@@ -218,10 +218,10 @@ export const router = createBrowserRouter([
                         loader: async () => {
                             try {
                                 const response = await getOfficers();
-                                return response.map((item: { id: number; name: string; personId: string }) => ({
-                                    value: item.id,
+                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
+                                    value: String(item.id),
                                     name: `${item.name} C.I.:${item.personId}`,
-                                    id: item.id,
+                                    id: String(item.id),
                                 }));
                             } catch (error) {
                                 console.error("No se pudieron obtener los funcionarios: " + error);
