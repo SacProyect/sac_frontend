@@ -80,7 +80,6 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
-
 		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
 			headers: {
 				'Content-Type': "multipart/form-data",
