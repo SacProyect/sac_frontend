@@ -1,8 +1,6 @@
-import { GlobalKPIResponse } from '@/components/stats/GlobalKpiStats';
 import { ChartData } from '@/components/stats/GlobalPerfomance';
 import { MonthlyIvaStats } from '@/components/stats/GlobalTaxpayerPerformance';
 import {
-    getGlobalKPI,
     getGlobalPerformance,
     getGlobalTaxpayerPerformance,
     getGroupPerformance,
@@ -21,7 +19,7 @@ import LoadingCircularComponent from '@/components/UI/Loading/LoadingCircularCom
 const PageOneStats = lazy(() => import('@/components/stats/GlobalPerfomance'));
 const PageTwoStats = lazy(() => import('@/components/stats/GlobalTaxpayerPerformance').then(m => ({ default: m.PageTwoStats })));
 const GroupPerformanceStats = lazy(() => import('@/components/stats/GroupPerformanceStats').then(m => ({ default: m.GroupPerformanceStats })));
-const GlobalKPIStats = lazy(() => import('@/components/stats/GlobalKpiStats').then(m => ({ default: m.GlobalKPIStats })));
+const IvaByGroupChart = lazy(() => import('@/components/stats/IvaByGroupChart').then(m => ({ default: m.IvaByGroupChart })));
 
 function StatsPage() {
     const { user } = useAuth();
@@ -31,9 +29,8 @@ function StatsPage() {
     const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
     const [taxpayerPerformance, setTaxpayerPerformance] = useState<MonthlyIvaStats | null>(null);
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
-    const [globalKpi, setGlobalKpi] = useState<GlobalKPIResponse | null>(null);
 
-    const { currentPage, isAutoMode, autoScrollEnabled, setUserInteraction, goToPage, goToNextPage, goToPrevPage } = usePresentation();
+    const { currentPage, isAutoMode, goToPage, goToNextPage, goToPrevPage } = usePresentation();
 
     if (!user || (user.role !== 'ADMIN' && user.role !== "COORDINATOR")) {
         navigate('/login');
@@ -58,12 +55,10 @@ function StatsPage() {
                     setRawStats(parsed);
                     setTaxpayerPerformance(await getGlobalTaxpayerPerformance(selectedYear));
                     setGroupStats(await getGroupPerformance(selectedYear));
-                    setGlobalKpi(await getGlobalKPI(selectedYear));
                 } else {
                     setRawStats([]);
                     setTaxpayerPerformance(null);
                     setGroupStats([]);
-                    setGlobalKpi(null);
                     toast.error('No se encontraron estadísticas para el año seleccionado.');
                 }
             } catch (e: any) {
@@ -120,11 +115,9 @@ function StatsPage() {
 
                         {/* GRAFICA 4 */}
                         <div className="w-full h-[100vh] p-2 lg:w-1/2 lg:h-1/2">
-                            {globalKpi && (
-                                <Suspense fallback={<p className="text-lg text-center">Cargando KPIs globales...</p>}>
-                                    <GlobalKPIStats globalKpi={globalKpi} />
-                                </Suspense>
-                            )}
+                            <Suspense fallback={<p className="text-lg text-center">Cargando rendimiento de IVA por grupo...</p>}>
+                                <IvaByGroupChart year={selectedYear} />
+                            </Suspense>
                         </div>
 
                     </div>
@@ -177,7 +170,7 @@ function StatsPage() {
                     <div className=''>
                         <LoadingCircularComponent />
                     </div>
-                ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0 && !globalKpi) ? (
+                ) : (rawStats.length === 0 && !taxpayerPerformance && groupStats.length === 0) ? (
                     <div className='flex items-center justify-center w-[82vw] h-[100vh]'>
                         <p className='text-2xl font-semibold text-center text-gray-500'>No hay estadísticas para mostrar</p>
                     </div>

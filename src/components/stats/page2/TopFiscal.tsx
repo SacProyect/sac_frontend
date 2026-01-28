@@ -166,7 +166,7 @@ function TopFiscal({ year }: TopFiscalProps) {
                     </div>
                 </div>
                 <div>
-                    <div id="fiscales-table" className="h-[400px] lg:h-[40vh] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
+                    <div id="fiscales-table" className="h-[400px] lg:h-[calc(90.2vh-120px)] overflow-y-auto custom-scroll p-4" ref={scrollRef}>
                         <div className="space-y-2">
                             {topFiscals && topFiscals?.map((fiscal, index) => (
                                 <div
