@@ -80,7 +80,6 @@ const ReportModalGroups = () => {
 
     const selectedGroup = groupId ?? '';
 
-    console.log("GROUP DATA: " + JSON.stringify(groupData));
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-2 py-4 bg-black bg-opacity-50 lg:px-0 lg:py-0">

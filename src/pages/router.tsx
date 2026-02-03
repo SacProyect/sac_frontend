@@ -10,6 +10,7 @@ import { getOfficers } from '@/components/utils/api/userFunctions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayout from '@/MainLayout';
+import MainLayoutV2 from '@/MainLayoutV2';
 import { lazy, Suspense } from 'react';
 import ContributionsPage from '@/pages/Contributions/ContributionsPage';
 import { IVAReports } from '@/types/IvaReports';
@@ -35,6 +36,25 @@ const TaxpayerCensus = lazy(() => import("@/pages/Census/CensusPage"));
 const CensusTable = lazy(() => import("@/pages/CensusTable/CensusTablePage"));
 const IndexIva = lazy(() => import("@/pages/index-iva/IndexIva"));
 const FiscalStats = lazy(() => import("@/pages/fiscal-stats/FiscalStatsPage"));
+const AdminPageV2 = lazy(() => import("@/pages/Admin/AdminPageV2"));
+const SettingsPageV2 = lazy(() => import("@/pages/Settings/SettingsPageV2"));
+const StatsDashboardV2 = lazy(() => import("@/pages/Stats/StatsDashboardV2"));
+const FiscalStatsDashboardV2 = lazy(() => import("@/pages/Stats/FiscalStatsDashboardV2"));
+const CensusTablePageV2 = lazy(() => import("@/pages/CensusTable/CensusTablePageV2"));
+const FiscalReviewPageV2 = lazy(() => import("@/pages/fiscal-review/FiscalReviewPageV2"));
+const ObservationsPageV2 = lazy(() => import("@/pages/Observations/ObservationsPageV2"));
+const TaxpayerDetailV2 = lazy(() => import("@/pages/Taxpayer/TaxpayerDetailV2"));
+const FinePageV2 = lazy(() => import("@/pages/Events/FinePageV2"));
+const NoticePageV2 = lazy(() => import("@/pages/Events/NoticePageV2"));
+const PaymentPageV2 = lazy(() => import("@/pages/Events/PaymentPageV2"));
+const ComitmentPageV2 = lazy(() => import("@/pages/Events/ComitmentPageV2"));
+const ReportsPageV2 = lazy(() => import("@/pages/reports/ReportsPageV2"));
+const ContributionsPageV2 = lazy(() => import("@/pages/Contributions/ContributionsPageV2"));
+const IvaReportV2 = lazy(() => import("@/pages/iva/IvaReportV2"));
+const IslrReportV2 = lazy(() => import("@/pages/ISLR/IslrReportV2"));
+const IndexIvaV2 = lazy(() => import("@/pages/index-iva/IndexIvaV2"));
+const ErrorsReportV2 = lazy(() => import("@/pages/errors/ErrorsReportV2"));
+const LoginPageV2 = lazy(() => import("@/pages/Auth/LoginPageV2"));
 
 
 type LoaderData = {
@@ -64,6 +84,10 @@ export const router = createBrowserRouter([
             {
                 path: "/login",
                 element: <LoginPage />,
+            },
+            {
+                path: "/login/v2",
+                element: <LoginPageV2 />,
             },
             {
                 path: "/",
@@ -173,10 +197,10 @@ export const router = createBrowserRouter([
                         loader: async () => {
                             try {
                                 const response = await getOfficers();
-                                return response.map((item: { id: number; name: string; personId: string }) => ({
-                                    value: item.id,
+                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
+                                    value: String(item.id),
                                     name: `${item.name} C.I.:${item.personId}`,
-                                    id: item.id,
+                                    id: String(item.id),
                                 }));
                             } catch (error) {
                                 console.error("No se pudieron obtener los funcionarios: " + error);
@@ -194,10 +218,10 @@ export const router = createBrowserRouter([
                         loader: async () => {
                             try {
                                 const response = await getOfficers();
-                                return response.map((item: { id: number; name: string; personId: string }) => ({
-                                    value: item.id,
+                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
+                                    value: String(item.id),
                                     name: `${item.name} C.I.:${item.personId}`,
-                                    id: item.id,
+                                    id: String(item.id),
                                 }));
                             } catch (error) {
                                 console.error("No se pudieron obtener los funcionarios: " + error);
@@ -288,6 +312,268 @@ export const router = createBrowserRouter([
                                 return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                             }
                         },
+                    },
+                ],
+            },
+            // Layout V2 - Nuevo diseño Shadcn UI
+            {
+                path: "/v2",
+                element: <ProtectedRoute><MainLayoutV2 /></ProtectedRoute>,
+                children: [
+                    {
+                        path: "admin",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Administración...
+                            </div>
+                        }>
+                            <AdminPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "settings",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Ajustes...
+                            </div>
+                        }>
+                            <SettingsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "stats",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Estadísticas...
+                            </div>
+                        }>
+                            <StatsDashboardV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "stats/fiscal/:fiscalId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Estadísticas del Fiscal...
+                            </div>
+                        }>
+                            <FiscalStatsDashboardV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "census",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Tabla Censo...
+                            </div>
+                        }>
+                            <CensusTablePageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "fiscal-review",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Revisión Fiscal...
+                            </div>
+                        }>
+                            <FiscalReviewPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "observations/:taxpayerId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Observaciones...
+                            </div>
+                        }>
+                            <ObservationsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "fine/:taxpayerId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Multa...
+                            </div>
+                        }>
+                            <FinePageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "warning/:taxpayerId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Aviso...
+                            </div>
+                        }>
+                            <NoticePageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "payment/:taxpayerId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Pago...
+                            </div>
+                        }>
+                            <PaymentPageV2 />
+                        </Suspense>,
+                        loader: async ({ params }) => {
+                            try {
+                                const taxpayerId = params.taxpayerId;
+                                if (!taxpayerId) return [];
+                                const pendingPayments = await getPendingPayments(taxpayerId);
+                                return pendingPayments.map((event: Event) => ({
+                                    id: event.id,
+                                    value: event.id,
+                                    name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}`,
+                                }));
+                            } catch (error) {
+                                console.error("No se pudieron obtener los pagos pendientes: " + error);
+                                return [];
+                            }
+                        },
+                    },
+                    {
+                        path: "payment_compromise/:taxpayerId",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Compromiso de Pago...
+                            </div>
+                        }>
+                            <ComitmentPageV2 />
+                        </Suspense>,
+                        loader: async ({ params }) => {
+                            try {
+                                const taxpayerId = params.taxpayerId;
+                                if (!taxpayerId) return [];
+                                const pendingPayments = await getPendingPayments(taxpayerId);
+                                return pendingPayments.map((event: Event) => ({
+                                    id: event.id,
+                                    value: event.id,
+                                    name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}`,
+                                }));
+                            } catch (error) {
+                                console.error("No se pudieron obtener los pagos pendientes: " + error);
+                                return [];
+                            }
+                        },
+                    },
+                    {
+                        path: "gen-reports/:taxpayer",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reportes...
+                            </div>
+                        }>
+                            <ReportsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "contributions",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Contribuciones...
+                            </div>
+                        }>
+                            <ContributionsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "iva",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte IVA...
+                            </div>
+                        }>
+                            <IvaReportV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "islr",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte ISLR...
+                            </div>
+                        }>
+                            <IslrReportV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "index-iva",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Índice IVA...
+                            </div>
+                        }>
+                            <IndexIvaV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "report/errors",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte de Errores...
+                            </div>
+                        }>
+                            <ErrorsReportV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "taxpayer/:taxpayer",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Detalles del Contribuyente...
+                            </div>
+                        }>
+                            <TaxpayerDetailV2 />
+                        </Suspense>,
+                        loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
+                            try {
+                                const taxpayerId = params.taxpayer;
+                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
+                                const events: Event[] = await getTaxpayerEvents(taxpayerId);
+                                events.forEach((event) => (event.id = `${event.id}`));
+
+                                const fines = await getFineHistory(taxpayerId);
+                                const payments = await getPaymentHistory(taxpayerId);
+                                const taxSummary = (await getTaxHistory(taxpayerId)).data;
+                                const islrReports = (await getIslrReports(taxpayerId)).data
+
+                                return { events, fines, payments, taxSummary, islrReports };
+                            } catch (error) {
+                                console.error(error);
+                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
+                            }
+                        },
+                    },
+                ],
+            },
+            // Ruta temporal sin protección para verificar diseño V2
+            {
+                path: "/v2-preview",
+                element: <MainLayoutV2 />,
+                children: [
+                    {
+                        index: true,
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Vista Previa...
+                            </div>
+                        }>
+                            <AdminPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "admin",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Administración...
+                            </div>
+                        }>
+                            <AdminPageV2 />
+                        </Suspense>,
                     },
                 ],
             },

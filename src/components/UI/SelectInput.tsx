@@ -7,7 +7,6 @@ import { Button } from 'react-aria-components'
 import { Select } from 'react-aria-components'
 import { ListBox } from 'react-aria-components'
 import { Controller } from 'react-hook-form'
-import InputButton from './InputButton'
 
 export interface Item {
     id: string;
@@ -36,10 +35,8 @@ const SelectInput: React.FC<SelectInputProps> = ({ control, name, items = [], la
                     name={name}
                     onSelectionChange={(selectedKey) => {
                         // We need to find the corresponding item based on `selectedKey`
-                        const selectedItem = items.find(item => item.id === selectedKey);
-                        if (selectedItem) {
-                            onChange(selectedItem.value); // Send the correct value (string) like "SPECIAL"
-                        }
+                        const selectedItem = items.find(item => item.value === selectedKey);
+                        if (selectedItem) onChange(selectedItem.value);
                     }}
                     selectedKey={value} // This is the key that is selected (string, corresponding to the `id`)
                     onBlur={onBlur}
@@ -47,31 +44,41 @@ const SelectInput: React.FC<SelectInputProps> = ({ control, name, items = [], la
                     validationBehavior="aria"
                     isInvalid={invalid}
                     placeholder='Seleccione un item'
-                    defaultSelectedKey={items.length > 0 ? items[0].id : undefined}
+                    defaultSelectedKey={items.length > 0 ? items[0].value : undefined}
                     className=""
                 >
-                    <Label>{label}</Label>
+                    <Label className="block text-xs font-medium text-slate-700 mb-1">{label}</Label>
                     <Button
                         className={`     
-                            flex  text-xs   items-center                   
-                            border-[#ccc] border
+                            flex text-xs items-center
+                            border border-[#ccc]
                             rounded-lg bg-slate-50
-                            w-full p-1 mt-0
+                            w-full px-2 py-1 mt-0
                             hover:bg-white hover:border-black hover:border-1
-                            justify-between`}
+                            justify-between gap-2`}
                     >
-                        <SelectValue ref={ref} className={"font-normal"} />
-                        <InputButton onPress={() => { }} >▼</InputButton>
+                        <SelectValue
+                            ref={ref}
+                            className="font-normal flex-1 min-w-0 truncate text-slate-900 data-[placeholder]:text-slate-400"
+                        />
+                        {/* Avoid nested <button> which causes DOM nesting/hydration warnings */}
+                        <span
+                            aria-hidden="true"
+                            className="w-6 h-6 box-content p-0 text-xs bg-[#3498db] text-white inline-flex items-center justify-center rounded flex-shrink-0"
+                        >
+                            ▼
+                        </span>
                     </Button>
-                    <Popover className={"w-[25rem]"}>
+                    {/* Match dropdown width to trigger width */}
+                    <Popover className="w-[--trigger-width] max-w-[90vw] z-50">
                         <ListBox
-                            className={"bg-white w-full rounded-2xl shadow-2xl border border-black overflow-y-scroll max-h-44"}
+                            className="bg-white w-full rounded-lg shadow-xl border border-slate-200 overflow-y-auto max-h-52 p-1 text-xs text-slate-900"
                             items={items}
                         >
                             {
                                 item =>
                                     <ListBoxItem
-                                        className="py-1 px-2 rounded-2xl transition duration-0 hover:duration-200 hover:bg-[#3498db] hover:-translate-y-1 cursor-pointer"
+                                        className="px-2 py-1.5 rounded-md cursor-pointer outline-none data-[hovered]:bg-sky-100 data-[focused]:bg-sky-100 data-[selected]:bg-[#3498db] data-[selected]:text-white"
                                         value={item}
                                         key={item.value}
                                     >

@@ -150,7 +150,6 @@ function TaxpayerForm() {
             })
 
             for (const pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
             }
 
             const newTaxpayer = await createTaxpayer(formData);
@@ -200,7 +199,13 @@ function TaxpayerForm() {
         const fetchCategoriesAndParish = async () => {
             try {
                 const parish = await getParishList();
-                setParishList(parish.data);
+                const parishData = parish?.data;
+                const normalizedParishList = Array.isArray(parishData)
+                    ? parishData
+                    : Array.isArray(parishData?.data)
+                        ? parishData.data
+                        : [];
+                setParishList(normalizedParishList);
             } catch (err) {
                 console.error("Error al obtener parroquias:", err);
                 toast.error("No se pudo obtener la lista de parroquias");
@@ -208,7 +213,13 @@ function TaxpayerForm() {
 
             try {
                 const categories = await getTaxpayerCategories();
-                setTaxpayerCategories(categories.data);
+                const categoriesData = categories?.data;
+                const normalizedCategories = Array.isArray(categoriesData)
+                    ? categoriesData
+                    : Array.isArray(categoriesData?.data)
+                        ? categoriesData.data
+                        : [];
+                setTaxpayerCategories(normalizedCategories);
             } catch (err) {
                 console.error("Error al obtener Actividad comercial:", err);
                 toast.error("No se pudo obtener la lista de actividad comercial");

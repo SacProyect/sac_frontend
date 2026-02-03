@@ -119,7 +119,6 @@ export default function ErrorsReport() {
 
 
     const onError = (errors: any) => {
-        console.log("Validation errors:", errors);
     };
 
 

@@ -1,8 +1,8 @@
 /// <reference types="vite/client" />
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const base_url = import.meta.env.VITE_BASE_URL || "http://localhost:3000";
-
+const base_url = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
+console.log(base_url);
 
 export const apiConnection = axios.create({
 	baseURL: base_url,

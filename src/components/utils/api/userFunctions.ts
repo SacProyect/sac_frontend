@@ -29,11 +29,18 @@ export const signIn = async (user: string, password: string) => {
 export const getOfficers = async () => {
     try {
 
-        const response = await (await apiConnection.get(`/user/all/`)).data
-        // console.log(response)
-        return response
+        const res = await apiConnection.get(`/user/all/`);
+        const payload = res?.data;
+
+        // Backend may return either an array directly or wrapped in an object.
+        // Normalize to always return an array to avoid "map is not a function".
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.users)) return payload.users;
+
+        return [];
     } catch (error) {
         console.error(error)
-        return false
+        return []
     }
 }
