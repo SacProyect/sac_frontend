@@ -385,7 +385,6 @@ export const getGlobalPerformance = async (year?: number) => {
 
 		const response = await apiConnection.get(requestUrl)
 
-		console.log("GLOBAL PERFORMANCE: " + JSON.stringify(response.data))
 		return response.data
 	} catch (e) {
 		console.error(e)

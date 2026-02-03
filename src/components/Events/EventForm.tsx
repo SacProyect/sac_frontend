@@ -136,7 +136,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     }, [taxPayerWatcher])
 
 
-    if (type == "payment" || type == "warning" || type == "payment_compromise") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
 
 
     // Submit form function to send the data of the form
