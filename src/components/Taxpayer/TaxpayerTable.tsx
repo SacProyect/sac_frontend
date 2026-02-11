@@ -2,9 +2,10 @@ import React, { useState, useMemo, useEffect, useRef } from 'react';
 import InfoTableOptMenu from '../UI/InfoTable/InfoTableOptMenu';
 import { Parish, Taxpayer } from '../../types/taxpayer';
 import { useAuth } from '@/hooks/useAuth';
-import { getParishList, getTaxpayerCategories, updateTaxpayer } from '../utils/api/taxpayerFunctions';
+import { updateTaxpayer } from '../utils/api/taxpayerFunctions';
 import toast from 'react-hot-toast';
 import { TaxpayerCategories } from '@/types/taxpayerCategories';
+import { useCachedParishes, useCachedCategories } from '@/hooks/useCachedData';
 
 interface TaxpayerTableProps {
     propRows: Taxpayer[];
@@ -32,8 +33,11 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
     const [editingRows, setEditingRows] = useState<{ [key: string]: Partial<Taxpayer> }>({});;
-    const [parishList, setParishList] = useState<Parish[]>([]);
-    const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+    
+    // ✅ Usar hooks cacheados en vez de estados locales
+    const { parishes: parishList } = useCachedParishes();
+    const { categories: taxpayerCategories } = useCachedCategories();
+    
     const [rows, setRows] = useState<Taxpayer[]>(propRows);
 
     let nonEditableCols: string[] = [];
@@ -112,29 +116,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
         };
     }, [visibleCount, propRows.length, isLoadingMore]);
 
-    useEffect(() => {
-        const fetchCategoriesAndParish = async () => {
-            try {
-                const parish = await getParishList();
-                setParishList(parish.data);
-            } catch (err) {
-                console.error("Error al obtener parroquias:", err);
-                toast.error("No se pudo obtener la lista de parroquias");
-            }
-
-            try {
-                const categories = await getTaxpayerCategories();
-                setTaxpayerCategories(categories.data);
-            } catch (err) {
-                console.error("Error al obtener actividad comercial:", err);
-                toast.error("No se pudo obtener la lista de actividad comercial");
-            }
-        };
-
-        if (user) {
-            fetchCategoriesAndParish();
-        }
-    }, [user]);
+    // ✅ Las listas ahora se cargan automáticamente con los hooks cacheados
+    // No se necesita este useEffect
 
     const handleSave = async (id: string) => {
         try {
