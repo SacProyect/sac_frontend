@@ -1,6 +1,6 @@
 import { useParams } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/v2';
+import { Card } from '@/components/UI/card';
+import { PageHeader } from '@/components/UI/v2';
 import EventForm from '@/components/Events/EventForm';
 
 /**

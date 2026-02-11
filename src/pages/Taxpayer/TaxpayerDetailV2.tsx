@@ -2,10 +2,10 @@ import { useState } from 'react';
 import { useParams, useNavigate, useLoaderData, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Link } from 'react-router-dom';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/UI/card';
+import { Button } from '@/components/UI/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
+import { Badge } from '@/components/UI/badge';
 import { 
   Bell, 
   AlertTriangle, 
@@ -25,7 +25,7 @@ import { IVAReports } from '@/types/IvaReports';
 import { ISLRReports } from '@/types/ISLRReports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
-import { PageHeader, EmptyState } from '@/components/ui/v2';
+import { PageHeader, EmptyState } from '@/components/UI/v2';
 
 /**
  * TaxpayerDetailV2 - Detalle del Contribuyente con diseño Shadcn UI v2.0

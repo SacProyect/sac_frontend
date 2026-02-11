@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/v2';
+import { Card } from '@/components/UI/card';
+import { PageHeader } from '@/components/UI/v2';
 import ContributionsFilter from '@/components/contributions/ContributionsFilter';
 import ContributionsHeader from '@/components/contributions/ContributionsHeader';
 import ContributionsStatistics from '@/components/contributions/ContributionsStatistics';

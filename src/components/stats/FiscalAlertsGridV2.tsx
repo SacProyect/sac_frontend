@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/UI/card';
+import { Badge } from '@/components/UI/badge';
 import { AlertCircle, Clock, CheckCircle } from 'lucide-react';
 import { FiscalInfoExtended } from '@/types/fiscalStats';
 

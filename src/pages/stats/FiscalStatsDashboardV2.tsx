@@ -3,9 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { useFiscalStats } from '@/hooks/useFiscalStats';
 import { useAuth } from '@/hooks/useAuth';
 import { FiscalProfileCardV2, FiscalPerformanceChartV2, FiscalAlertsGridV2 } from '@/components/stats';
-import { YearSelector, LoadingState, ErrorState, PageHeader, BackButton, EmptyState } from '@/components/ui/v2';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { YearSelector, LoadingState, ErrorState, PageHeader, BackButton, EmptyState } from '@/components/UI/v2';
+import { Card } from '@/components/UI/card';
+import { Badge } from '@/components/UI/badge';
 import { Trophy } from 'lucide-react';
 import toast from 'react-hot-toast';
 

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
 import { User, Lock, Bell } from 'lucide-react';
 import { ProfileTabV2 } from '@/components/settings/ProfileTabV2';
 import { SecurityTabV2 } from '@/components/settings/SecurityTabV2';

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useFiscalStats } from '@/hooks/useFiscalStats';
 import { MetricCardV2, MonthlyRevenueChartV2, ComplianceDistributionChartV2, FiscalLeaderboardV2, SupervisorLeaderboardV2 } from '@/components/stats';
-import { YearSelector, LoadingState, ErrorState, PageHeader } from '@/components/ui/v2';
+import { YearSelector, LoadingState, ErrorState, PageHeader } from '@/components/UI/v2';
 import { BarChart3, Users, TrendingUp, AlertCircle } from 'lucide-react';
 
 /**

@@ -6,20 +6,20 @@ import { useDropzone } from 'react-dropzone';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { errorsSchema } from '@/components/validations/errorsSchema';
 import { createError } from '@/components/utils/api/reportFunctions';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Button } from '@/components/ui/button';
+import { Card } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
+import { Textarea } from '@/components/UI/textarea';
+import { Button } from '@/components/UI/button';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/UI/select';
 import { Upload, X } from 'lucide-react';
-import { PageHeader } from '@/components/ui/v2';
+import { PageHeader } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { app_error } from '@/types/errors';
 

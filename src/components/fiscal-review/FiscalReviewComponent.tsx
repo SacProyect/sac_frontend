@@ -9,7 +9,7 @@ import { GroupData } from '@/types/stats';
 import { getContributions } from '@/components/utils/api/reportFunctions';
 import { getFiscalsForReview } from '@/components/utils/api/taxpayerFunctions';
 import { User } from '@/types/user';
-import { TableSkeleton } from '@/components/ui/TableSkeleton';
+import { TableSkeleton } from '@/components/UI/TableSkeleton';
 
 
 

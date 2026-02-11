@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { getFiscalsForReview } from '@/components/utils/api/taxpayerFunctions';
 import type { User } from '@/types/user';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
+import { Button } from '@/components/UI/button';
+import { Badge } from '@/components/UI/badge';
 import { Search, TrendingUp } from 'lucide-react';
-import { EmptyState, PageHeader } from '@/components/ui/v2';
-import { TableSkeleton } from '@/components/ui/TableSkeleton';
+import { EmptyState, PageHeader } from '@/components/UI/v2';
+import { TableSkeleton } from '@/components/UI/TableSkeleton';
 import toast from 'react-hot-toast';
 
 /**

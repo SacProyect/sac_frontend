@@ -1,5 +1,5 @@
 import { PieChart, Pie, Cell, Legend, Tooltip, ResponsiveContainer } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
 import { ComplianceDistributionData } from '@/hooks/useFiscalStats';
 
 interface ComplianceDistributionChartV2Props {

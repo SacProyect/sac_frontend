@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton } from "@/components/UI/skeleton";
 import { cn } from "@/lib/utils";
 
 interface TableSkeletonProps {

@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/UI/button';
 
 interface ModalFooterProps {
   onCancel: () => void;

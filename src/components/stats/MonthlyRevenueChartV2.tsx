@@ -9,7 +9,7 @@ import {
   ResponsiveContainer,
   Brush,
 } from 'recharts';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
 import { MonthlyRevenueData } from '@/hooks/useFiscalStats';
 
 interface MonthlyRevenueChartV2Props {
