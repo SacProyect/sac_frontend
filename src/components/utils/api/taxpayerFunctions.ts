@@ -131,18 +131,39 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 	}
 }
 
-export const getTaxpayers = async (page: number = 1, limit: number = 50) => {
+/**
+ * Obtener contribuyentes con paginación y filtros opcionales por año y término de búsqueda.
+ * - `year`: el backend filtrará por `emition_date` dentro de ese año y ajustará `total` y `totalPages`.
+ * - `search`: el backend filtrará por nombre, RIF o número de providencia según la lógica del endpoint.
+ */
+export const getTaxpayers = async (
+	page: number = 1,
+	limit: number = 50,
+	year?: number,
+	search?: string
+) => {
 	try {
-		let requestURL = "/taxpayer/get-taxpayers"
+		let requestURL = "/taxpayer/get-taxpayers";
+
+		const params: { page: number; limit: number; year?: number; search?: string } = {
+			page,
+			limit,
+		};
+		if (year !== undefined) {
+			params.year = year;
+		}
+		if (search !== undefined && search.trim() !== "") {
+			params.search = search;
+		}
 
 		const response = await (await apiConnection.get(requestURL, {
-			params: { page, limit }
-		})).data
+			params,
+		})).data;
 
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se pudieron obtener los contribuyentes.")
+		throw new Error("No se pudieron obtener los contribuyentes.");
 	}
 }
 
