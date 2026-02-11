@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Card } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import { Card } from '@/components/UI/card';
+import { Label } from '@/components/UI/label';
+import { Switch } from '@/components/UI/switch';
 import { Bell, AlertCircle, BarChart3 } from 'lucide-react';
 import toast from 'react-hot-toast';
 

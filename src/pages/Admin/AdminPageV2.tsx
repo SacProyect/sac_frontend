@@ -1,16 +1,16 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { Card } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Card } from '@/components/UI/card';
+import { Button } from '@/components/UI/button';
+import { Input } from '@/components/UI/input';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/UI/select';
 import {
   Table,
   TableBody,
@@ -18,13 +18,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/UI/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/UI/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -32,11 +32,11 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button as DialogButton } from '@/components/ui/button';
+} from '@/components/UI/dialog';
+import { Button as DialogButton } from '@/components/UI/button';
 import { MoreHorizontal, ChevronDown } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
 import { getTaxpayers, deleteTaxpayer } from '@/components/utils/api/taxpayerFunctions';
 import { AddContribuyenteModalV2, AddMultaModalV2, AddAvisoModalV2 } from '@/components/modals';

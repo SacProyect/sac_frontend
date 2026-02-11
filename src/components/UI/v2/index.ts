@@ -4,7 +4,7 @@
  * Exporta todos los componentes comunes para facilitar las importaciones:
  * 
  * @example
- * import { YearSelector, LoadingState, ErrorState } from '@/components/ui/v2';
+ * import { YearSelector, LoadingState, ErrorState } from '@/components/UI/v2';
  */
 
 export { YearSelector } from './YearSelector';

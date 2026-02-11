@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
+import { Button } from '@/components/UI/button';
 import { ArrowLeft } from 'lucide-react';
 
 interface BackButtonProps {

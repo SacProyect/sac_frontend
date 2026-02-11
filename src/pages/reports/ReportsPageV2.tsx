@@ -1,5 +1,5 @@
-import { Card } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/v2';
+import { Card } from '@/components/UI/card';
+import { PageHeader } from '@/components/UI/v2';
 import GenerateReport from '@/components/reports/GenerateReport';
 
 /**

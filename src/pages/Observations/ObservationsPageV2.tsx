@@ -7,11 +7,11 @@ import {
   updateObservation,
   deleteObservations,
 } from '@/components/utils/api/taxpayerFunctions';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
+import { Card } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
+import { Button } from '@/components/UI/button';
+import { Label } from '@/components/UI/label';
+import { Textarea } from '@/components/UI/textarea';
 import {
   Dialog,
   DialogContent,
@@ -19,9 +19,9 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
+} from '@/components/UI/dialog';
 import { Plus, Edit2, Trash2, Calendar } from 'lucide-react';
-import { LoadingState, EmptyState, PageHeader } from '@/components/ui/v2';
+import { LoadingState, EmptyState, PageHeader } from '@/components/UI/v2';
 import { useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 

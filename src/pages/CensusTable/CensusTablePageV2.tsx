@@ -2,8 +2,8 @@ import { useState, useEffect, useMemo } from 'react';
 import { getTaxpayerCensus } from '@/components/utils/api/taxpayerCensusFunctions';
 import { deleteTaxpayerCensus } from '@/components/utils/api/taxpayerCensusFunctions';
 import type { TaxpayerCensus } from '@/types/taxpayerCensus';
-import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Card } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
 import {
   Table,
   TableBody,
@@ -11,13 +11,13 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/components/ui/table';
+} from '@/components/UI/table';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+} from '@/components/UI/dropdown-menu';
 import {
   Dialog,
   DialogContent,
@@ -25,13 +25,13 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+} from '@/components/UI/dialog';
+import { Button } from '@/components/UI/button';
+import { Badge } from '@/components/UI/badge';
 import { MoreHorizontal, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDebounce } from '@/hooks/useDebounce';
-import { LoadingState, EmptyState, PageHeader } from '@/components/ui/v2';
+import { LoadingState, EmptyState, PageHeader } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 
 /**
