@@ -32,6 +32,9 @@ function IvaForm() {
     const [decemberReached, setDecemberReached] = useState(false);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(true);
     const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [hasMorePages, setHasMorePages] = useState(false);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -50,15 +53,29 @@ function IvaForm() {
     useEffect(() => {
         const fetchTaxpayers = async () => {
             try {
-                const response = await getTaxpayerForEvents();
-                setTaxpayerArray(response.data);
+                const response = await getTaxpayerForEvents(currentPage, 50);
+                
+                if (currentPage === 1) {
+                    setTaxpayerArray(response.data.data);
+                } else {
+                    setTaxpayerArray(prev => [...prev, ...response.data.data]);
+                }
+                
+                setHasMorePages(response.data.page < response.data.totalPages);
             } catch (e) {
                 toast.error("No se pudieron obtener los contribuyentes.");
             }
         };
 
         fetchTaxpayers();
-    }, []);
+    }, [currentPage]);
+
+    const loadMoreTaxpayers = async () => {
+        if (!hasMorePages || isLoadingMore) return;
+        setIsLoadingMore(true);
+        setCurrentPage(prev => prev + 1);
+        setIsLoadingMore(false);
+    };
 
     const {
         register,
@@ -227,7 +244,7 @@ function IvaForm() {
                         <p className="mt-1 text-xs text-red-500">{errors.taxpayerId.message}</p>
                     )}
                     {showDropdown && filteredTaxpayers.length > 0 && (
-                        <div ref={menuRef} className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-52">
+                        <div ref={menuRef} className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-64">
                             {filteredTaxpayers.map((t) => (
                                 <div
                                     key={t.id}
@@ -242,6 +259,22 @@ function IvaForm() {
                                     {t.name} — {t.process} — {t.providenceNum} - {new Date(t.emition_date).toLocaleDateString("es-VE")}
                                 </div>
                             ))}
+                            {hasMorePages && (
+                                <button
+                                    type="button"
+                                    onClick={loadMoreTaxpayers}
+                                    disabled={isLoadingMore}
+                                    className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-blue-600 bg-blue-50 border-t border-gray-200 hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                                >
+                                    {isLoadingMore && (
+                                        <svg className="w-4 h-4 animate-spin shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                                        </svg>
+                                    )}
+                                    {isLoadingMore ? 'Cargando...' : 'Cargar más contribuyentes'}
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

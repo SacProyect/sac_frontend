@@ -52,7 +52,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
       const loadTaxpayers = async () => {
         try {
           const response = await getTaxpayers();
-          setTaxpayers(response);
+          setTaxpayers(response.data);
         } catch (error) {
           console.error('Error cargando contribuyentes:', error);
         }

@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button as DialogButton } from '@/components/ui/button';
-import { MoreHorizontal, ChevronDown } from 'lucide-react';
+import { MoreHorizontal, ChevronDown, Loader2 } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { contract_type } from '@/types/taxpayer';
 import { getTaxpayers, deleteTaxpayer } from '@/components/utils/api/taxpayerFunctions';
@@ -66,6 +66,10 @@ export default function AdminPageV2() {
   const [isAddAvisoOpen, setIsAddAvisoOpen] = useState(false);
   const [isAddMultaOpen, setIsAddMultaOpen] = useState(false);
   const [isUpdateIvaOpen, setIsUpdateIvaOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit] = useState(50);
 
   // Detectar mobile
   useEffect(() => {
@@ -82,8 +86,10 @@ export default function AdminPageV2() {
     const loadTaxpayers = async () => {
       try {
         setLoading(true);
-        const response = await getTaxpayers();
-        setTaxpayers(response);
+        const response = await getTaxpayers(currentPage, limit);
+        setTaxpayers(response.data);
+        setTotal(response.total);
+        setTotalPages(response.totalPages);
       } catch (e) {
         console.error(e);
         toast.error('No se pudieron obtener los contribuyentes.');
@@ -95,7 +101,7 @@ export default function AdminPageV2() {
     if (user) {
       loadTaxpayers();
     }
-  }, [user]);
+  }, [user, currentPage, limit]);
 
   // Debounce para búsqueda
   const debouncedSearch = useDebounce(searchValue.toLowerCase(), 300);
@@ -318,8 +324,11 @@ export default function AdminPageV2() {
         <TableBody>
           {loading ? (
             <TableRow>
-              <TableCell colSpan={10} className="text-center text-slate-400 py-8">
-                Cargando...
+              <TableCell colSpan={10} className="text-center text-slate-400 py-12">
+                <div className="flex flex-col items-center justify-center gap-3">
+                  <Loader2 className="h-10 w-10 animate-spin text-slate-400" />
+                  <p className="text-sm font-medium">Cargando contribuyentes...</p>
+                </div>
               </TableCell>
             </TableRow>
           ) : tableData.length === 0 ? (
@@ -560,6 +569,60 @@ export default function AdminPageV2() {
         {/* Tabla */}
         {isMobile ? <MobileTable /> : <DesktopTable />}
 
+        {/* Controles de Paginación */}
+        <Card className="bg-slate-800 border-slate-700 p-4 mt-6">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="text-sm text-slate-400 flex items-center gap-2">
+              {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
+              Mostrando {taxpayers.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {Math.min(currentPage * limit, total)} de {total} contribuyentes
+            </div>
+            
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setCurrentPage(1)}
+                disabled={currentPage === 1 || loading}
+                variant="outline"
+                size="sm"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50"
+              >
+                Primera
+              </Button>
+              <Button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1 || loading}
+                variant="outline"
+                size="sm"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50"
+              >
+                Anterior
+              </Button>
+              
+              <span className="px-4 py-1 text-sm font-medium text-slate-300">
+                Página {currentPage} de {totalPages}
+              </span>
+              
+              <Button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages || loading}
+                variant="outline"
+                size="sm"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50"
+              >
+                Siguiente
+              </Button>
+              <Button
+                onClick={() => setCurrentPage(totalPages)}
+                disabled={currentPage === totalPages || loading}
+                variant="outline"
+                size="sm"
+                className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50"
+              >
+                Última
+              </Button>
+            </div>
+          </div>
+        </Card>
+
         {/* Modal de confirmación de eliminación */}
         <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
           <DialogContent className="bg-slate-800 border-slate-700 text-white">
@@ -600,8 +663,10 @@ export default function AdminPageV2() {
             // Recargar contribuyentes
             const loadTaxpayers = async () => {
               try {
-                const response = await getTaxpayers();
-                setTaxpayers(response);
+                const response = await getTaxpayers(currentPage, limit);
+                setTaxpayers(response.data);
+                setTotal(response.total);
+                setTotalPages(response.totalPages);
               } catch (e) {
                 console.error(e);
               }

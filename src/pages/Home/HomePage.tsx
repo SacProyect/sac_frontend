@@ -15,6 +15,11 @@ function HomePage() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [visibleCount, setVisibleCount] = useState(25);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [limit] = useState(50);
+    const [loading, setLoading] = useState(false);
 
 
 
@@ -34,18 +39,23 @@ function HomePage() {
     useEffect(() => {
         const loadTaxpayers = async () => {
             try {
-                const response = await getTaxpayers();
+                setLoading(true);
+                const response = await getTaxpayers(currentPage, limit);
 
-                setTaxpayers(response);
+                setTaxpayers(response.data);
+                setTotal(response.total);
+                setTotalPages(response.totalPages);
 
             } catch (e) {
                 console.error(e);
                 toast.error("No se pudieron obtener los contribuyentes.");
+            } finally {
+                setLoading(false);
             }
         }
 
         loadTaxpayers();
-    }, [])
+    }, [currentPage, limit])
 
     const { contains } = useFilter({ sensitivity: "base" });
     const { control, watch } = useForm({
@@ -147,7 +157,65 @@ function HomePage() {
                     />
                 </div>
 
-                <div className="flex items-center justify-center w-full pl-2 overflow-x-auto lg:pl-0">
+                {/* Controles de Paginación (arriba de la tabla) */}
+                <div className="flex flex-col items-center justify-between gap-4 px-4 mb-4 sm:flex-row">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                        {loading && (
+                            <svg className="w-4 h-4 shrink-0 animate-spin text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                        )}
+                        Mostrando {taxpayers.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {Math.min(currentPage * limit, total)} de {total} contribuyentes
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                        <button
+                            onClick={() => setCurrentPage(1)}
+                            disabled={currentPage === 1 || loading}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Primera
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                            disabled={currentPage === 1 || loading}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Anterior
+                        </button>
+                        
+                        <span className="px-4 py-1 text-sm font-medium text-gray-700">
+                            Página {currentPage} de {totalPages}
+                        </span>
+                        
+                        <button
+                            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                            disabled={currentPage === totalPages || loading}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Siguiente
+                        </button>
+                        <button
+                            onClick={() => setCurrentPage(totalPages)}
+                            disabled={currentPage === totalPages || loading}
+                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                        >
+                            Última
+                        </button>
+                    </div>
+                </div>
+
+                <div className="relative flex items-center justify-center w-full min-h-[200px] pl-2 overflow-x-auto lg:pl-0">
+                    {loading ? (
+                        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 rounded-lg">
+                            <svg className="w-10 h-10 mb-3 text-blue-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                            </svg>
+                            <p className="text-sm font-medium text-gray-600">Cargando contribuyentes...</p>
+                        </div>
+                    ) : null}
                     <TaxpayerTable propRows={filteredItems} visibleCount={visibleCount}
                         setVisibleCount={setVisibleCount}
                     />
