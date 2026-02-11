@@ -1,78 +1,100 @@
-import { Card } from '@/components/ui/card';
-import { PageHeader } from '@/components/ui/v2';
 import { Skeleton } from '@/components/ui/skeleton';
 
 /**
- * Skeleton de la página de Contribuciones.
- * Refleja la estructura: header, filtro, grid de tarjetas de coordinación, área de estadísticas.
+ * Skeleton de la página de Contribuciones (versión 1).
+ * Replica el layout de /contributions: header, filtro, grid de tarjetas, bloque de estadísticas.
+ * Sin Card ni PageHeader (diseño claro, aside).
  */
 export default function ContributionsPageSkeleton() {
   return (
-    <div className="space-y-6">
-      <PageHeader
-        title="Estadísticas por Coordinación"
-        description="Consulta y análisis de contribuciones por grupo"
-      />
-      <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200">
-        {/* Header interno */}
-        <div className="w-full">
-          <div className="pt-2 pb-4">
-            <Skeleton className="h-7 w-72 bg-slate-700" />
-            <Skeleton className="mt-2 h-4 w-96 bg-slate-700" />
-          </div>
+    <aside className="h-full w-full overflow-y-auto lg:w-[82vw]">
+      {/* Header (ContributionsHeader): título + subtítulo */}
+      <header className="w-full">
+        <div className="pt-8 pl-8">
+          <Skeleton className="h-8 w-64 bg-gray-300" />
+          <Skeleton className="mt-2 h-4 w-80 max-w-full bg-gray-200" />
+        </div>
+      </header>
+
+      {/* Filtro: "Filtrar por" + botón año */}
+      <section className="w-full pl-8">
+        <div className="flex items-center pt-4">
+          <Skeleton className="h-4 w-16 bg-gray-300" />
+          <Skeleton className="ml-4 h-9 w-24 rounded border border-gray-300 bg-gray-100" />
         </div>
 
-        {/* Filtro: "Filtrar por" + botón año */}
-        <section className="w-full">
-          <div className="flex items-center pt-2 pb-4">
-            <Skeleton className="h-4 w-20 bg-slate-700" />
-            <Skeleton className="ml-4 h-9 w-24 rounded bg-slate-700" />
-          </div>
-        </section>
-
-        {/* Grid de tarjetas de coordinación (5 columnas) */}
-        <div className="grid grid-cols-2 gap-4 pt-2 pr-4 md:grid-cols-3 lg:grid-cols-5">
+        {/* Grid de tarjetas de coordinación (misma grid que ContributionsFilter) */}
+        <div className="grid h-full grid-cols-2 gap-4 overflow-y-auto pt-4 pr-4 sm:grid-cols-2 md:grid-cols-3 lg:h-64 lg:grid-cols-[repeat(5,minmax(140px,1fr))]">
           {[1, 2, 3, 4, 5].map((i) => (
             <div
               key={i}
-              className="flex h-52 flex-col rounded-lg border-2 border-slate-600 bg-slate-800/50 p-3"
+              className="flex w-full flex-col rounded-lg border-2 border-gray-300 bg-white px-2 pt-2 shadow-sm"
             >
-              <div className="flex justify-between">
-                <Skeleton className="h-4 w-24 bg-slate-700" />
-                <Skeleton className="h-6 w-14 rounded-full bg-slate-700" />
+              {/* Fila superior: nombre + vista | badge año */}
+              <div className="flex w-full justify-between space-x-2">
+                <div className="w-2/3 space-y-1">
+                  <Skeleton className="h-3.5 w-24 bg-gray-200" />
+                  <Skeleton className="h-3 w-28 bg-gray-200" />
+                </div>
+                <Skeleton className="h-6 w-14 flex-shrink-0 rounded-full bg-gray-200" />
               </div>
-              <div className="mt-3 flex flex-col gap-2">
-                <Skeleton className="h-7 w-full rounded bg-slate-700" />
-                <Skeleton className="h-7 w-full rounded bg-slate-700" />
-                <Skeleton className="h-7 w-full rounded bg-slate-700" />
-                <Skeleton className="h-7 w-3/4 rounded bg-slate-700" />
+
+              {/* Botones supervisores + Ver Coordinación Completa */}
+              <div className="mt-2 flex flex-col gap-1">
+                <Skeleton className="h-7 w-full rounded-md bg-gray-100" />
+                <Skeleton className="h-7 w-full rounded-md bg-gray-100" />
+                <Skeleton className="h-7 w-[85%] rounded-md bg-gray-100" />
+                <Skeleton className="h-7 w-full rounded-md bg-gray-100" />
               </div>
-              <div className="mt-3 space-y-2">
-                <Skeleton className="h-3 w-full bg-slate-700" />
-                <Skeleton className="h-3 w-full bg-slate-700" />
-                <Skeleton className="h-3 w-2/3 bg-slate-700" />
+
+              {/* Líneas de estadísticas */}
+              <div className="mt-2 space-y-2">
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-20 bg-gray-200" />
+                  <Skeleton className="h-3 w-12 bg-gray-200" />
+                </div>
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-20 bg-gray-200" />
+                  <Skeleton className="h-3 w-12 bg-gray-200" />
+                </div>
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-16 bg-gray-200" />
+                  <Skeleton className="h-3 w-14 bg-gray-200" />
+                </div>
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-16 bg-gray-200" />
+                  <Skeleton className="h-3 w-14 bg-gray-200" />
+                </div>
+                <div className="flex justify-between">
+                  <Skeleton className="h-3 w-16 bg-gray-200" />
+                  <Skeleton className="h-3 w-14 bg-gray-200" />
+                </div>
               </div>
             </div>
           ))}
         </div>
+      </section>
 
-        {/* Área de estadísticas (tabla) */}
-        <div className="mt-8 w-full rounded-md border border-slate-600 lg:h-[52vh]">
-          <div className="flex items-center justify-between border-b border-slate-600 p-4">
-            <Skeleton className="h-5 w-64 bg-slate-700" />
+      {/* Bloque de estadísticas (ContributionsStatistics) */}
+      <div className="pt-8 pb-16 pl-8 pr-4 lg:pb-0">
+        <div className="rounded-md border border-gray-200 bg-white">
+          <div className="flex items-center justify-between border-b border-gray-200 p-4">
+            <Skeleton className="h-5 w-48 bg-gray-200" />
           </div>
-          <div className="grid grid-cols-10 gap-2 p-4" style={{ gridTemplateColumns: 'repeat(10, minmax(0, 1fr))' }}>
-            {Array.from({ length: 10 }).map((_, col) => (
-              <div key={col} className="flex flex-col gap-2">
-                <Skeleton className="h-5 w-full bg-slate-700" />
-                {Array.from({ length: 6 }).map((_, row) => (
-                  <Skeleton key={row} className="h-8 w-full bg-slate-700/80" />
-                ))}
-              </div>
-            ))}
+          <div className="p-4">
+            <div className="space-y-2">
+              {[1, 2, 3, 4, 5, 6].map((row) => (
+                <div key={row} className="flex gap-4">
+                  <Skeleton className="h-9 w-32 bg-gray-100" />
+                  <Skeleton className="h-9 flex-1 bg-gray-100" />
+                  <Skeleton className="h-9 w-20 bg-gray-100" />
+                  <Skeleton className="h-9 w-20 bg-gray-100" />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </Card>
-    </div>
+      </div>
+    </aside>
   );
 }

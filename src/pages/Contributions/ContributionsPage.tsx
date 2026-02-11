@@ -1,10 +1,11 @@
-import ContributionsFilter from '@/components/contributions/ContributionsFilter'
-import ContributionsHeader from '@/components/contributions/ContributionsHeader'
-import ContributionsStatistics from '@/components/contributions/ContributionsStatistics'
+import ContributionsFilter from '@/components/contributions/ContributionsFilter';
+import ContributionsHeader from '@/components/contributions/ContributionsHeader';
+import ContributionsStatistics from '@/components/contributions/ContributionsStatistics';
+import ContributionsPageSkeleton from '@/components/contributions/ContributionsPageSkeleton';
 import { GroupData } from '@/components/contributions/ContributionTypes';
 import { getContributions } from '@/components/utils/api/reportFunctions';
 import { useAuth } from '@/hooks/useAuth';
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,8 +21,8 @@ function ContributionsPage() {
     const [selectedGroup, setSelectedGroup] = useState<string>("");
     const [startDate, setStartDate] = useState("");
     const [endDate, setEndDate] = useState("");
-    const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null)
-
+    const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null);
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -30,11 +31,11 @@ function ContributionsPage() {
         }
 
         const shouldFetch = user.role === "ADMIN" || user.role === "COORDINATOR";
-
         const hasValidDates = startDate && endDate;
 
-        // No ejecutar si faltan datos necesarios
         if (!shouldFetch || (user.role === "ADMIN" && !hasValidDates)) return;
+
+        setLoading(true);
 
         const fetchGroups = async () => {
             try {
@@ -71,12 +72,18 @@ function ContributionsPage() {
             } catch (e) {
                 console.error(e);
                 toast.error("No se pudieron obtener las contribuciones.");
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchGroups();
-    }, [startDate, endDate]);
+    }, [startDate, endDate, selectedSupervisorId, user, navigate]);
 
+
+    if (loading) {
+        return <ContributionsPageSkeleton />;
+    }
 
     return (
         <aside className='lg:w-[82vw] w-full h-full overflow-y-auto'>

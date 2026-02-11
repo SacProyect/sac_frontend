@@ -37,9 +37,11 @@ export default function ContributionsPageV2() {
 
     if (!shouldFetch || (user.role === 'ADMIN' && !hasValidDates)) return;
 
+    // Feedback UX: mostrar loading en cuanto cambia filtro (año, mes o supervisor)
+    setLoading(true);
+
     const fetchGroups = async () => {
       try {
-        setLoading(true);
         const query: Record<string, string> = {};
 
         if (hasValidDates) {
