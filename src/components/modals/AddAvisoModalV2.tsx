@@ -5,20 +5,20 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+} from '@/components/UI/dialog';
+import { Button } from '@/components/UI/button';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/components/ui/select';
+} from '@/components/UI/select';
 import { createEvent } from '@/components/utils/api/taxpayerFunctions';
 import type { Taxpayer } from '@/types/taxpayer';
-import { ModalFooter } from '@/components/ui/v2';
+import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { useCachedTaxpayers } from '@/hooks/useCachedData';
 

@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
+import { Badge } from '@/components/UI/badge';
 import { Trophy, TrendingUp } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/UI/dialog';
 import { FiscalLeaderboardData } from '@/hooks/useFiscalStats';
 
 interface FiscalLeaderboardV2Props {

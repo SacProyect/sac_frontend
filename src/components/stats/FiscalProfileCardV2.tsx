@@ -1,6 +1,6 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Card } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback } from '@/components/UI/avatar';
+import { Card } from '@/components/UI/card';
+import { Badge } from '@/components/UI/badge';
 import { FiscalInfoExtended } from '@/types/fiscalStats';
 
 interface FiscalProfileCardV2Props {

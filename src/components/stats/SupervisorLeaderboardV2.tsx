@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
+import { Badge } from '@/components/UI/badge';
 import { Users } from 'lucide-react';
 import { SupervisorLeaderboardData } from '@/hooks/useFiscalStats';
 
