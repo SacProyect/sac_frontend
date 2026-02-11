@@ -34,8 +34,9 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button as DialogButton } from '@/components/ui/button';
-import { MoreHorizontal, ChevronDown, Loader2 } from 'lucide-react';
+import { MoreHorizontal, ChevronDown } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
+import { Skeleton } from '@/components/ui/skeleton';
 import { contract_type } from '@/types/taxpayer';
 import { getTaxpayers, deleteTaxpayer } from '@/components/utils/api/taxpayerFunctions';
 import { AddContribuyenteModalV2, AddMultaModalV2, AddAvisoModalV2 } from '@/components/modals';
@@ -323,14 +324,20 @@ export default function AdminPageV2() {
         </TableHeader>
         <TableBody>
           {loading ? (
-            <TableRow>
-              <TableCell colSpan={10} className="text-center text-slate-400 py-12">
-                <div className="flex flex-col items-center justify-center gap-3">
-                  <Loader2 className="h-10 w-10 animate-spin text-slate-400" />
-                  <p className="text-sm font-medium">Cargando contribuyentes...</p>
-                </div>
-              </TableCell>
-            </TableRow>
+            Array.from({ length: 10 }).map((_, i) => (
+              <TableRow key={i} className="border-slate-700">
+                <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-14 bg-slate-700" /></TableCell>
+                <TableCell><Skeleton className="h-5 min-w-[120px] bg-slate-700" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
+                <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 min-w-[80px] bg-slate-700" /></TableCell>
+                <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20 bg-slate-700" /></TableCell>
+                <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                <TableCell className="hidden xl:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded bg-slate-700" /></TableCell>
+              </TableRow>
+            ))
           ) : tableData.length === 0 ? (
             <TableRow>
               <TableCell colSpan={10} className="text-center text-slate-400 py-8">
@@ -572,9 +579,8 @@ export default function AdminPageV2() {
         {/* Controles de Paginación */}
         <Card className="bg-slate-800 border-slate-700 p-4 mt-6">
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-sm text-slate-400 flex items-center gap-2">
-              {loading && <Loader2 className="h-4 w-4 animate-spin shrink-0" />}
-              Mostrando {taxpayers.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {Math.min(currentPage * limit, total)} de {total} contribuyentes
+            <div className="text-sm text-slate-400">
+              Mostrando {loading ? '...' : taxpayers.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {loading ? '...' : Math.min(currentPage * limit, total)} de {loading ? '...' : total} contribuyentes
             </div>
             
             <div className="flex items-center gap-2">
