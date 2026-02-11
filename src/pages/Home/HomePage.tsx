@@ -9,7 +9,7 @@ import { Taxpayer } from '@/types/taxpayer';
 import { useDebounce } from '@/hooks/useDebounce';
 import { getTaxpayers } from '@/components/utils/api/taxpayerFunctions';
 import toast from 'react-hot-toast';
-import { TableSkeleton } from '@/components/ui/TableSkeleton';
+import { TableSkeleton } from '@/components/UI/TableSkeleton';
 
 function HomePage() {
     const { user, refreshUser } = useAuth();
