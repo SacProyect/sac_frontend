@@ -21,15 +21,22 @@ function ContributionsFilter({
 }: ContributionsFilterProps) {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const currentYear = new Date().getFullYear();
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [optionClicked, setOptionClicked] = useState("Year");
-    const [selectedYear, setSelectedYear] = useState(2025);
+    const [selectedYear, setSelectedYear] = useState(currentYear);
     const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
     const [selectedSupervisors, setSelectedSupervisors] = useState<Record<string, string | null>>({});
 
     const calendarRef = useRef<HTMLDivElement>(null);
-    const startYear = new Date().getFullYear();
     const startMonth = 0;
+
+    // Rango de años para el selector (ej: 2024, 2025, 2026)
+    const getAvailableYears = () => {
+        const from = currentYear - 2;
+        const to = currentYear + 1;
+        return Array.from({ length: to - from + 1 }, (_, i) => from + i);
+    };
 
     useEffect(() => {
         if (!user) {
@@ -56,13 +63,12 @@ function ContributionsFilter({
         }
     }, [selectedYear, selectedMonth, optionClicked]);
 
-    const getAvailableYears = () => [startYear];
     const getAvailableMonths = (year: number) => {
         const allMonths = [
             'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
             'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
         ];
-        const from = year === startYear ? startMonth : 0;
+        const from = year === currentYear ? startMonth : 0;
         return allMonths.map((name, index) => ({ name, index })).slice(from);
     };
 
@@ -92,7 +98,7 @@ function ContributionsFilter({
                         onClick={() => setCalendarOpen(!calendarOpen)}
                     >
                         <CiCalendar size={15} />
-                        <p className='text-xs'>Año {startYear}</p>
+                        <p className='text-xs'>Año {selectedYear}</p>
                     </button>
                 </div>
                 {calendarOpen && (
