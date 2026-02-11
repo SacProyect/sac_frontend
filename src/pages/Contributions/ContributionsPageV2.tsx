@@ -9,7 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Sheet, SheetContent } from '@/components/UI/sheet';
 
 /**
  * ContributionsPageV2 - Página de Contribuciones con diseño Shadcn UI v2.0
