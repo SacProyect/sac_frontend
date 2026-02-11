@@ -16,10 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { createEvent, getTaxpayers } from '@/components/utils/api/taxpayerFunctions';
+import { createEvent } from '@/components/utils/api/taxpayerFunctions';
 import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/ui/v2';
 import toast from 'react-hot-toast';
+import { useCachedTaxpayers } from '@/hooks/useCachedData';
 
 interface AddMultaModalV2Props {
   isOpen: boolean;
@@ -44,22 +45,9 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
-
-  // Cargar contribuyentes
-  useEffect(() => {
-    if (isOpen) {
-      const loadTaxpayers = async () => {
-        try {
-          const response = await getTaxpayers();
-          setTaxpayers(response.data);
-        } catch (error) {
-          console.error('Error cargando contribuyentes:', error);
-        }
-      };
-      loadTaxpayers();
-    }
-  }, [isOpen]);
+  
+  // ✅ Usar hook cacheado en vez de hacer petición cada vez que se abre el modal
+  const { taxpayers, loading: taxpayersLoading } = useCachedTaxpayers(100);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};

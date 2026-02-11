@@ -4,6 +4,7 @@ import { Event } from '@/types/event';
 import { useAuth } from '@/hooks/useAuth';
 import toast from 'react-hot-toast';
 import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import { Taxpayer } from '@/types/taxpayer';
 
 interface EventTableProps {
@@ -27,7 +28,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   const [editValues, setEditValues] = useState<Partial<Event>>({});
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
+  const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
   const [pendingStatusChange, setPendingStatusChange] = useState<{
     id: string;
     newStatus: "paid" | "not_paid";
@@ -134,27 +135,27 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
 
   const [currentPage, setCurrentPage] = useState(1);
-  const [hasMorePages, setHasMorePages] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
 
+  const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
+  const taxpayerArray = useMemo(
+    () => [...(firstPageTaxpayers || []), ...additionalPages],
+    [firstPageTaxpayers, additionalPages]
+  );
+  const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
+
   useEffect(() => {
-    const fetchTaxpayers = async () => {
+    if (currentPage <= 1) return;
+    const fetchPage = async () => {
       try {
         const response = await getTaxpayerForEvents(currentPage, 50);
-        
-        if (currentPage === 1) {
-          setTaxpayerArray(response.data.data);
-        } else {
-          setTaxpayerArray(prev => [...prev, ...response.data.data]);
-        }
-        
-        setHasMorePages(response.data.page < response.data.totalPages);
+        const data = response?.data?.data ?? [];
+        setAdditionalPages(prev => (currentPage === 2 ? data : [...prev, ...data]));
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }
     };
-
-    fetchTaxpayers();
+    fetchPage();
   }, [currentPage]);
 
   const loadMoreTaxpayers = async () => {

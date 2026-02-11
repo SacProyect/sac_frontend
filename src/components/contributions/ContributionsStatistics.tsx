@@ -1,101 +1,145 @@
-import React, { useEffect, useState } from 'react'
-import { getContributions } from '../utils/api/reportFunctions';
-import toast from 'react-hot-toast';
+import React, { useState } from 'react'
 import { GroupData } from './ContributionTypes';
 import { BiSort, BiSortUp, BiSortDown } from "react-icons/bi";
+import { X } from "lucide-react";
 
 
 interface ContributionsStatisticsProps {
     groupData: GroupData[],
     selectedGroup: string,
-    pdfMode?: boolean // <-- nueva prop opcional
+    pdfMode?: boolean
     selectedSupervisorId: string | null;
     startDate: string;
     endDate: string;
+    /** Al cerrar el panel de estadísticas, limpia la coordinación seleccionada */
+    onClearSelection?: () => void;
 }
 
 
-function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, selectedSupervisorId, startDate, endDate }: ContributionsStatisticsProps) {
+function ContributionsStatistics({ groupData = [], selectedGroup, pdfMode = false, selectedSupervisorId, startDate, endDate, onClearSelection }: ContributionsStatisticsProps) {
     const [typeClicked, setTypeClicked] = useState("FP")
+    const [hintDismissed, setHintDismissed] = useState(false)
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
-    const [groupId, supervisorId] = selectedGroup.split("_");
 
-
-    // Filter the statistics to show based on the selected group
-    const groupStatistics = groupData.filter((group) => group.id === selectedGroup);
+    const groupStatistics = Array.isArray(groupData) ? groupData.filter((group) => group.id === selectedGroup) : [];
     const selectedGroupData = groupStatistics.length > 0 ? groupStatistics[0] : null;
 
 
-    // Selected data based on process type inside of taxpayers
-    const selectedData = selectedGroupData?.members
-        ?.filter((member) => {
-            // Si hay filtro por supervisor, solo tomar los que coinciden
-            if (!selectedSupervisorId) return true;
-            return member.supervisorId === selectedSupervisorId;
-        }).map((member) => {
-            // Filter taxpayers based on the selected type
-            const filteredTaxpayers = member.taxpayer.filter(
-                (taxpayer) => !typeClicked || taxpayer.process === typeClicked
-            );
+    // Detectar si el API devuelve forma "completa" (members con taxpayer) o "ligera" (solo supervisorsStats)
+    const membersList = selectedGroupData?.members ?? [];
+    const hasMemberTaxpayerData = membersList.some(
+        (m) => Array.isArray((m as { taxpayer?: unknown[] }).taxpayer) && ((m as { taxpayer: unknown[] }).taxpayer.length > 0)
+    );
+    const groupWithStats = selectedGroupData as GroupData & {
+        supervisorsStats?: Array<{
+            supervisorId: string;
+            supervisorName: string;
+            collectedIva?: string;
+            collectedISLR?: string;
+            collectedFines?: string;
+            totalFines?: string;
+            totalCollected?: string;
+        }>;
+    };
+    const supervisorsStats = groupWithStats?.supervisorsStats ?? [];
 
+    let selectedData: Array<{
+        name: string;
+        type?: string;
+        totalWarnings: number;
+        totalFines: number;
+        totalCompromises: number;
+        totalTaxpayers: number;
+        totalCollectedFines: number;
+        totalISLR: number;
+        totalIVA: number;
+    }> = [];
 
-            const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
-                return warningSum + (taxpayer.event?.filter(event => event.type === "WARNING").length ?? 0);
-            }, 0);
+    if (!selectedGroup || !selectedGroupData) {
+        selectedData = [];
+    } else if (!hasMemberTaxpayerData && supervisorsStats.length > 0) {
+        // API fiscal-groups: tabla desde supervisorsStats
+        let statsList = [...supervisorsStats];
+        if (selectedSupervisorId) {
+            statsList = statsList.filter((s) => s.supervisorId === selectedSupervisorId);
+        }
+        selectedData = statsList.map((s) => ({
+            name: s.supervisorName ?? '',
+            type: typeClicked,
+            totalWarnings: 0,
+            totalFines: Number(s.totalFines ?? 0),
+            totalCompromises: 0,
+            totalTaxpayers: 0,
+            totalCollectedFines: Number(s.collectedFines ?? 0),
+            totalISLR: Number(s.collectedISLR ?? 0),
+            totalIVA: Number(s.collectedIva ?? 0),
+        }));
+    } else {
+        // API con member.taxpayer
+        selectedData = membersList
+            .filter((member) => {
+                if (!selectedSupervisorId) return true;
+                return (member as { supervisorId?: string }).supervisorId === selectedSupervisorId;
+            })
+            .map((member) => {
+                const taxpayers = (member as { taxpayer?: unknown[] }).taxpayer ?? [];
+                const filteredTaxpayers = (taxpayers as Array<{ process?: string; event?: Array<{ type: string; amount?: string }>; IVAReports?: Array<{ paid?: string }>; ISLRReports?: Array<{ paid?: string }> }>).filter(
+                    (taxpayer) => !typeClicked || taxpayer.process === typeClicked
+                );
 
-            const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
-                return finesSum + (taxpayer.event.filter(event => event.type === "FINE").length ?? 0);
-            }, 0);
+                const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
+                    return warningSum + ((taxpayer.event?.filter(event => event.type === "WARNING").length) ?? 0);
+                }, 0);
 
-            const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
-                return compromisesSum + (taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length ?? 0);
-            }, 0);
+                const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
+                    return finesSum + ((taxpayer.event ?? []).filter(event => event.type === "FINE").length ?? 0);
+                }, 0);
 
-            const totalTaxpayers = filteredTaxpayers.length;
+                const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
+                    return compromisesSum + ((taxpayer.event ?? []).filter((event) => event.type === "PAYMENT_COMPROMISE").length ?? 0);
+                }, 0);
 
+                const totalTaxpayers = filteredTaxpayers.length;
 
-            // ✅ Nuevo cálculo del total IVA
-            const totalIVA = filteredTaxpayers.reduce((ivaSum, taxpayer) => {
-                const taxpayerIVA = taxpayer.IVAReports?.reduce(
-                    (sum, report) => sum + Number(report.paid || 0),
-                    0
-                ) || 0;
-                return (ivaSum + taxpayerIVA);
-            }, 0);
+                const totalIVA = filteredTaxpayers.reduce((ivaSum, taxpayer) => {
+                    const taxpayerIVA = taxpayer.IVAReports?.reduce(
+                        (sum, report) => sum + Number(report.paid || 0),
+                        0
+                    ) || 0;
+                    return (ivaSum + taxpayerIVA);
+                }, 0);
 
-            const totalISLR = filteredTaxpayers.reduce((islrSum, taxpayer) => {
-                const taxpayerIslr = taxpayer.ISLRReports?.reduce(
-                    (sum, report) => sum + Number(report.paid || 0),
-                    0
-                ) || 0;
-                return (islrSum + taxpayerIslr);
-            }, 0);
+                const totalISLR = filteredTaxpayers.reduce((islrSum, taxpayer) => {
+                    const taxpayerIslr = taxpayer.ISLRReports?.reduce(
+                        (sum, report) => sum + Number(report.paid || 0),
+                        0
+                    ) || 0;
+                    return (islrSum + taxpayerIslr);
+                }, 0);
 
-            const totalCollectedFines = filteredTaxpayers.reduce((acc, taxpayer) => {
-                const collectedFines = taxpayer.event.filter((ev) => ev.type === "FINE").reduce(
-                    (sum, report) => sum + Number(report.amount || 0),
-                    0
-                ) || 0;
-                return acc + collectedFines
-            }, 0)
+                const totalCollectedFines = filteredTaxpayers.reduce((acc, taxpayer) => {
+                    const events = taxpayer.event ?? [];
+                    const collectedFines = events.filter((ev) => ev.type === "FINE").reduce(
+                        (sum, report) => sum + Number(report.amount || 0),
+                        0
+                    ) || 0;
+                    return acc + collectedFines;
+                }, 0);
 
-            // console.log(totalISLR)
-
-
-
-            return {
-                ...member,
-                taxpayer: filteredTaxpayers, // Keep only the filtered taxpayers
-                totalWarnings,
-                totalFines,
-                totalCompromises,
-                totalTaxpayers,
-                totalCollectedFines,
-                totalISLR,
-                totalIVA: parseFloat(totalIVA.toFixed(2)),
-            };
-        })
-        .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
+                return {
+                    name: (member as { name: string }).name,
+                    type: typeClicked,
+                    totalWarnings,
+                    totalFines,
+                    totalCompromises,
+                    totalTaxpayers,
+                    totalCollectedFines,
+                    totalISLR,
+                    totalIVA: parseFloat(totalIVA.toFixed(2)),
+                };
+            })
+            .filter((row) => row.totalTaxpayers > 0);
+    }
 
 
     // Handle the sorting of each column
@@ -157,19 +201,29 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
 
 
     return (
-        <section className=' border border-gray-200 w-full lg:h-[52vh] h-[80vh] rounded-md mb-4 lg:mb-0'>
+        <section className='border border-gray-200 w-full rounded-md mb-4 lg:mb-0'>
 
-            {/* Section header */}
             {selectedGroupData ? (
                 <>
-                    <div className='flex justify-between w-full'>
-                        <p className='pt-4 pl-4 text-xl font-semibold'>
+                    <div className='flex min-h-[52vh] lg:min-h-[52vh] flex-col'>
+                    <div className='flex flex-shrink-0 items-start justify-between gap-2 pt-4 pl-4 pr-4'>
+                        <p className='text-xl font-semibold text-gray-800'>
                             Estadísticas para: {selectedGroupData?.name.replace(/GRUPO/gi, 'COORDINACIÓN')}
                             {startDate && endDate
                                 ? `. Desde la fecha: ${new Date(startDate).toLocaleDateString("es-VE")} hasta la fecha: ${new Date(endDate).toLocaleDateString("es-VE")}`
                                 : ""}
                         </p>
-                        {/* <button className='font-normal text-gray-500'>Close</button> */}
+                        {onClearSelection && (
+                            <button
+                                type="button"
+                                onClick={onClearSelection}
+                                className="flex items-center gap-1 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 shadow-sm transition-colors hover:bg-gray-50 hover:text-gray-800"
+                                aria-label="Cerrar y deseleccionar coordinación"
+                            >
+                                <X className="h-4 w-4" />
+                                Cerrar
+                            </button>
+                        )}
                     </div>
 
                     {/* Buttons */}
@@ -307,11 +361,37 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                             <p className='text-gray-600'>*Deslice hacia abajo para ver la lista completa*</p>
                         </div>
                     </div>
+                    </div>
                 </>
             ) : (
-                <div className='flex items-center justify-center w-full h-full'>
-                    <p className='pt-4 pl-4 text-2xl'>Seleccione una coordinación por favor</p>
-                </div>
+                <>
+                    {!hintDismissed && (
+                        <div className="relative flex items-center justify-between gap-4 rounded-lg border border-blue-200 bg-blue-50/80 px-4 py-3 text-blue-800 shadow-sm">
+                            <p className="text-sm font-medium">
+                                Seleccione una coordinación arriba para ver sus estadísticas.
+                            </p>
+                            <button
+                                type="button"
+                                onClick={() => setHintDismissed(true)}
+                                className="flex flex-shrink-0 items-center justify-center rounded-md p-1.5 text-blue-600 transition-colors hover:bg-blue-100 hover:text-blue-800"
+                                aria-label="Cerrar aviso"
+                            >
+                                <X className="h-5 w-5" />
+                            </button>
+                        </div>
+                    )}
+                    {hintDismissed && (
+                        <div className="flex items-center justify-center rounded-md border border-dashed border-gray-300 bg-gray-50/50 py-12">
+                            <button
+                                type="button"
+                                onClick={() => setHintDismissed(false)}
+                                className="text-sm text-gray-500 underline hover:text-gray-700"
+                            >
+                                Mostrar indicación de nuevo
+                            </button>
+                        </div>
+                    )}
+                </>
             )}
 
 
