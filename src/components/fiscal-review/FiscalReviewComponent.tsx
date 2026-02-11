@@ -8,8 +8,8 @@ import toast from 'react-hot-toast';
 import { GroupData } from '@/types/stats';
 import { getContributions } from '@/components/utils/api/reportFunctions';
 import { getFiscalsForReview, getTaxpayerForEvents } from '@/components/utils/api/taxpayerFunctions';
-import LoadingCircularComponent from '../UI/Loading/LoadingCircularComponent';
 import { User } from '@/types/user';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 
 
 
@@ -24,6 +24,11 @@ function FiscalReviewComponent() {
     const [fiscalArray, setFiscalArray] = useState<User[]>([]);
     // ✅ CORRECCIÓN 2026: Agregado estado para filtro de año
     const [selectedYear, setSelectedYear] = useState<number | null>(null); // null = todos los años
+    // Paginación
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [total, setTotal] = useState(0);
+    const [limit] = useState(50);
 
     useEffect(() => {
         if (!user) {
@@ -39,9 +44,11 @@ function FiscalReviewComponent() {
             try {
                 // Pasar el año seleccionado (o undefined si es null)
                 const year = selectedYear !== null ? selectedYear : undefined;
-                const response = await getFiscalsForReview(year);
+                const response = await getFiscalsForReview(year, currentPage, limit);
 
-                setFiscalArray(response.data);
+                setFiscalArray(response.data.data);
+                setTotal(response.data.total);
+                setTotalPages(response.data.totalPages);
                 setIsLoadingFiscals(false);
             } catch (e) {
                 toast.error("No se pudieron obtener los fiscales.");
@@ -50,7 +57,12 @@ function FiscalReviewComponent() {
         };
 
         fetchTaxpayers();
-    }, [selectedYear]); // ✅ Se ejecuta cuando cambia el año seleccionado
+    }, [selectedYear, currentPage, limit]); // ✅ Se ejecuta cuando cambia el año o la página
+
+    // Resetear página al cambiar el año
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [selectedYear]);
 
     if (fiscalArray) fiscalArray.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? ""));
 
@@ -79,9 +91,6 @@ function FiscalReviewComponent() {
     };
 
     return (
-        isLoadingFiscals ? (
-            <LoadingCircularComponent />
-        ) : (
             <section className='w-full h-full pb-14 lg:pb-0'>
                 {/* Header con filtro de año */}
                 <div className='pt-4 px-4'>
@@ -141,11 +150,27 @@ function FiscalReviewComponent() {
                             </div>
                         </div>
 
+                        {/* Controles de Paginación */}
+                        <div className="flex flex-col items-center justify-between gap-4 pt-4 sm:flex-row">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                Mostrando {isLoadingFiscals ? '...' : fiscalArray.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {isLoadingFiscals ? '...' : Math.min(currentPage * limit, total)} de {isLoadingFiscals ? '...' : total} fiscales
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || isLoadingFiscals} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Primera</button>
+                                <button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1 || isLoadingFiscals} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Anterior</button>
+                                <span className="px-4 py-1 text-sm font-medium text-gray-700">Página {currentPage} de {totalPages}</span>
+                                <button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || isLoadingFiscals} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Siguiente</button>
+                                <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages || isLoadingFiscals} className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50">Última</button>
+                            </div>
+                        </div>
+
                         {/* Map Filtered Fiscals */}
                         <div className='w-full h-full lg:h-[75vh] pt-4 overflow-y-auto'>
-
+                            {isLoadingFiscals ? (
+                                <TableSkeleton columns={5} rows={8} className="border-gray-200 bg-white" />
+                            ) : (
+                                <>
                             {/* Table Header (only on lg) */}
-                            {/* Table Header (solo visible en pantallas grandes) */}
                             <div className='hidden w-full px-4 py-2 font-medium bg-gray-200 lg:flex rounded-t-md'>
                                 <div className='flex-[1]'><p>Cédula</p></div>
                                 <div className='flex-[2]'><p>Nombre</p></div>
@@ -194,14 +219,14 @@ function FiscalReviewComponent() {
                                     </div>
                                 ))
                             )}
+                                </>
+                            )}
                         </div>
 
                     </div>
                 </div>
 
             </section>
-
-        )
     );
 }
 

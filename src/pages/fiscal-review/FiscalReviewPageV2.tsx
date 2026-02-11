@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Search, TrendingUp } from 'lucide-react';
-import { LoadingState, EmptyState, PageHeader } from '@/components/ui/v2';
+import { EmptyState, PageHeader } from '@/components/ui/v2';
+import { TableSkeleton } from '@/components/ui/TableSkeleton';
 import toast from 'react-hot-toast';
 
 /**
@@ -20,6 +21,10 @@ export default function FiscalReviewPageV2() {
   const [fiscalArray, setFiscalArray] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const [limit] = useState(50);
 
   useEffect(() => {
     if (!user) {
@@ -30,8 +35,10 @@ export default function FiscalReviewPageV2() {
     const fetchTaxpayers = async () => {
       try {
         setLoading(true);
-        const response = await getFiscalsForReview();
-        setFiscalArray(response.data || []);
+        const response = await getFiscalsForReview(undefined, currentPage, limit);
+        setFiscalArray(response.data.data || []);
+        setTotal(response.data.total);
+        setTotalPages(response.data.totalPages);
       } catch (e) {
         console.error(e);
         toast.error('No se pudieron obtener los fiscales.');
@@ -41,7 +48,7 @@ export default function FiscalReviewPageV2() {
     };
 
     fetchTaxpayers();
-  }, [user, navigate]);
+  }, [user, navigate, currentPage, limit]);
 
   // Filtrar fiscales
   const filteredFiscals = fiscalArray.filter((f) => {
@@ -59,10 +66,6 @@ export default function FiscalReviewPageV2() {
   const sortedFiscals = [...filteredFiscals].sort((a, b) =>
     (a.name ?? '').localeCompare(b.name ?? '')
   );
-
-  if (loading) {
-    return <LoadingState message="Cargando fiscales..." />;
-  }
 
   return (
     <div className="space-y-6">
@@ -104,8 +107,28 @@ export default function FiscalReviewPageV2() {
         </Card>
       </div>
 
+      {/* Controles de Paginación */}
+      <Card className="bg-slate-800 border-slate-700 p-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-slate-400">
+            Mostrando {loading ? '...' : fiscalArray.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {loading ? '...' : Math.min(currentPage * limit, total)} de {loading ? '...' : total} fiscales
+          </div>
+          <div className="flex items-center gap-2">
+            <Button onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || loading} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50">Primera</Button>
+            <Button onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))} disabled={currentPage === 1 || loading} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50">Anterior</Button>
+            <span className="px-4 py-1 text-sm font-medium text-slate-300">Página {currentPage} de {totalPages}</span>
+            <Button onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))} disabled={currentPage === totalPages || loading} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50">Siguiente</Button>
+            <Button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages || loading} variant="outline" size="sm" className="bg-slate-700 border-slate-600 text-white hover:bg-slate-600 disabled:opacity-50">Última</Button>
+          </div>
+        </div>
+      </Card>
+
       {/* Tabla de Fiscales */}
-      {sortedFiscals.length === 0 ? (
+      {loading ? (
+        <Card className="bg-slate-800 border-slate-700 overflow-hidden">
+          <TableSkeleton columns={6} rows={8} className="border-0 bg-transparent" skeletonClassName="bg-slate-700" />
+        </Card>
+      ) : sortedFiscals.length === 0 ? (
         <EmptyState title="No se encontraron fiscales" message="Intenta ajustar los filtros de búsqueda" />
       ) : (
         <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
