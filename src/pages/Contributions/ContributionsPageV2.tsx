@@ -9,7 +9,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import ContributionsPageSkeleton from '@/components/contributions/ContributionsPageSkeleton';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 /**
@@ -80,10 +79,6 @@ export default function ContributionsPageV2() {
 
     fetchGroups();
   }, [startDate, endDate, selectedSupervisorId, user, navigate]);
-
-  if (loading) {
-    return <ContributionsPageSkeleton />;
-  }
 
   return (
     <div className="space-y-6">
