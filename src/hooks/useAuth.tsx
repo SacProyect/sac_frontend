@@ -20,7 +20,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 // MODO DESARROLLO: Usuario admin fake para revisar V2 sin backend
-const DEV_MODE = true; // Cambiar a false cuando quieras usar autenticación real
+const DEV_MODE = false; // Cambiar a false cuando quieras usar autenticación real
 const FAKE_ADMIN_USER: User = {
     id: "dev-admin-fake-id",
     personId: "12345678",
