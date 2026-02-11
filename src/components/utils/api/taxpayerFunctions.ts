@@ -131,11 +131,13 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 	}
 }
 
-export const getTaxpayers = async () => {
+export const getTaxpayers = async (page: number = 1, limit: number = 50) => {
 	try {
 		let requestURL = "/taxpayer/get-taxpayers"
 
-		const response = await (await apiConnection.get(requestURL)).data
+		const response = await (await apiConnection.get(requestURL, {
+			params: { page, limit }
+		})).data
 
 		return response;
 	} catch (e) {
@@ -189,11 +191,13 @@ export const getFiscalsForReview = async (year?: number) => {
 
 
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
-export const getTaxpayerForEvents = async () => {
+export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50) => {
 	try {
 		let requestURL = "taxpayer/get-taxpayers-for-events"
 
-		const response = await apiConnection.get(requestURL);
+		const response = await apiConnection.get(requestURL, {
+			params: { page, limit }
+		});
 
 		return response;
 	} catch (e) {

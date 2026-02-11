@@ -132,18 +132,36 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   };
 
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasMorePages, setHasMorePages] = useState(false);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   useEffect(() => {
     const fetchTaxpayers = async () => {
       try {
-        const response = await getTaxpayerForEvents();
-        setTaxpayerArray(response.data);
+        const response = await getTaxpayerForEvents(currentPage, 50);
+        
+        if (currentPage === 1) {
+          setTaxpayerArray(response.data.data);
+        } else {
+          setTaxpayerArray(prev => [...prev, ...response.data.data]);
+        }
+        
+        setHasMorePages(response.data.page < response.data.totalPages);
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }
     };
 
     fetchTaxpayers();
-  }, []);
+  }, [currentPage]);
+
+  const loadMoreTaxpayers = async () => {
+    if (!hasMorePages || isLoadingMore) return;
+    setIsLoadingMore(true);
+    setCurrentPage(prev => prev + 1);
+    setIsLoadingMore(false);
+  };
 
 
   return (
