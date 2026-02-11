@@ -7,9 +7,10 @@ import { Form, Label, Button } from 'react-aria-components'
 import DateInputUI from '../UI/DateInputUI';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
 import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import SelectInput from '../UI/SelectInput';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
 import { parseDate, CalendarDate } from '@internationalized/date';
@@ -66,35 +67,38 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
     const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
-    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
+    const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [hasMorePages, setHasMorePages] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-    
+
+    const { taxpayersForEvents: firstPageTaxpayers, totalPages, loading: loadingTaxpayers } = useCachedTaxpayersForEvents(50);
+    const firstPageFiltered = useMemo(
+        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
+        [firstPageTaxpayers]
+    );
+    const taxpayerArray = useMemo(
+        () => [...firstPageFiltered, ...additionalPages],
+        [firstPageFiltered, additionalPages]
+    );
+    const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
+
     if (!user) {
         navigate("/login");
         return null;
     }
 
     useEffect(() => {
-        const fetchTaxpayers = async () => {
+        if (currentPage <= 1) return;
+        const fetchPage = async () => {
             try {
                 const response = await getTaxpayerForEvents(currentPage, 50);
-                const filtered = response.data.data.filter((t: Taxpayer) => t.process !== "FP");
-                
-                if (currentPage === 1) {
-                    setTaxpayerArray(filtered);
-                } else {
-                    setTaxpayerArray(prev => [...prev, ...filtered]);
-                }
-                
-                setHasMorePages(response.data.page < response.data.totalPages);
+                const filtered = (response.data.data || []).filter((t: Taxpayer) => t.process !== "FP");
+                setAdditionalPages(prev => (currentPage === 2 ? filtered : [...prev, ...filtered]));
             } catch (e) {
                 toast.error("No se pudieron obtener los contribuyentes.");
             }
         };
-
-        fetchTaxpayers();
+        fetchPage();
     }, [currentPage]);
 
     const loadMoreTaxpayers = async () => {

@@ -7,7 +7,7 @@ import TextInput from '../UI/TextInput';
 import SelectInput from '../UI/SelectInput';
 import { json, useLoaderData, useNavigate } from 'react-router-dom';
 import type { Item } from '../UI/SelectInput';
-import { createTaxpayer, getParishList, getTaxpayerCategories } from '../utils/api/taxpayerFunctions';
+import { createTaxpayer } from '../utils/api/taxpayerFunctions';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { taxpayer_process, contract_type } from '../../types/taxpayer';
 import toast from 'react-hot-toast';
@@ -16,6 +16,7 @@ import { HiOutlineUpload } from 'react-icons/hi';
 import { Parish } from '@/types/parish';
 import { TaxpayerCategories } from '@/types/taxpayerCategories';
 import { normalize } from '../utils/Form utils/Normalize';
+import { useCachedParishes, useCachedCategories } from '@/hooks/useCachedData';
 
 
 
@@ -47,8 +48,11 @@ function TaxpayerForm() {
     const official = useLoaderData() as Item[]
     const [rifPrefix, setRifPrefix] = useState("J")
     const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-    const [parishList, setParishList] = useState<Parish[]>([]);
-    const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+    
+    // ✅ Usar hooks cacheados en vez de estados locales
+    const { parishes: parishList, loading: parishesLoading } = useCachedParishes();
+    const { categories: taxpayerCategories, loading: categoriesLoading } = useCachedCategories();
+    
     const [showParishDropdown, setShowParishDropdown] = useState(false);
     const [showCategoryDropdown, setShowCategoryDropdown] = useState(false);
     const [selectedParishName, setSelectedParishName] = useState('');
@@ -195,41 +199,8 @@ function TaxpayerForm() {
 
     const sortedOfficials = [...official].sort((a, b) => a.name.localeCompare(b.name));
 
-    useEffect(() => {
-        const fetchCategoriesAndParish = async () => {
-            try {
-                const parish = await getParishList();
-                const parishData = parish?.data;
-                const normalizedParishList = Array.isArray(parishData)
-                    ? parishData
-                    : Array.isArray(parishData?.data)
-                        ? parishData.data
-                        : [];
-                setParishList(normalizedParishList);
-            } catch (err) {
-                console.error("Error al obtener parroquias:", err);
-                toast.error("No se pudo obtener la lista de parroquias");
-            }
-
-            try {
-                const categories = await getTaxpayerCategories();
-                const categoriesData = categories?.data;
-                const normalizedCategories = Array.isArray(categoriesData)
-                    ? categoriesData
-                    : Array.isArray(categoriesData?.data)
-                        ? categoriesData.data
-                        : [];
-                setTaxpayerCategories(normalizedCategories);
-            } catch (err) {
-                console.error("Error al obtener Actividad comercial:", err);
-                toast.error("No se pudo obtener la lista de actividad comercial");
-            }
-        };
-
-        if (user) {
-            fetchCategoriesAndParish();
-        }
-    }, [user]);
+    // ✅ Las listas ahora se cargan automáticamente con los hooks cacheados
+    // No se necesita este useEffect
 
 
     // --- Debounce states (500ms) ---

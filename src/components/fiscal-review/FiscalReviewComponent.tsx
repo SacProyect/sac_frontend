@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { GroupData } from '@/types/stats';
 import { getContributions } from '@/components/utils/api/reportFunctions';
-import { getFiscalsForReview, getTaxpayerForEvents } from '@/components/utils/api/taxpayerFunctions';
+import { getFiscalsForReview } from '@/components/utils/api/taxpayerFunctions';
 import { User } from '@/types/user';
 import { TableSkeleton } from '@/components/ui/TableSkeleton';
 

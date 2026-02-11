@@ -9,7 +9,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { LoadingState } from '@/components/ui/v2';
+import ContributionsPageSkeleton from '@/components/contributions/ContributionsPageSkeleton';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
 
 /**
  * ContributionsPageV2 - Página de Contribuciones con diseño Shadcn UI v2.0
@@ -23,6 +24,7 @@ export default function ContributionsPageV2() {
   const [endDate, setEndDate] = useState('');
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [statisticsPanelOpen, setStatisticsPanelOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -78,7 +80,7 @@ export default function ContributionsPageV2() {
   }, [startDate, endDate, selectedSupervisorId, user, navigate]);
 
   if (loading) {
-    return <LoadingState message="Cargando contribuciones..." />;
+    return <ContributionsPageSkeleton />;
   }
 
   return (
@@ -93,19 +95,45 @@ export default function ContributionsPageV2() {
           groupData={groupData}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
-          setSelectedGroup={setSelectedGroup}
+          setSelectedGroup={(id) => {
+            setSelectedGroup(id);
+            if (id) setStatisticsPanelOpen(true);
+          }}
           setSelectedSupervisorId={setSelectedSupervisorId}
         />
-        <div className="pt-8">
-          <ContributionsStatistics
-            groupData={groupData}
-            selectedGroup={selectedGroup}
-            selectedSupervisorId={selectedSupervisorId}
-            startDate={startDate}
-            endDate={endDate}
-          />
-        </div>
       </Card>
+
+      {/* Panel de estadísticas: se abre al seleccionar una coordinación, se cierra con la X */}
+      <Sheet
+        open={statisticsPanelOpen && !!selectedGroup}
+        onOpenChange={(open) => {
+          if (!open) {
+            setStatisticsPanelOpen(false);
+            setSelectedGroup('');
+            setSelectedSupervisorId(null);
+          }
+        }}
+      >
+        <SheetContent
+          side="right"
+          className="w-full overflow-y-auto border-slate-700 bg-white sm:max-w-4xl"
+        >
+          <div className="pr-8 pt-2">
+            <ContributionsStatistics
+              groupData={groupData}
+              selectedGroup={selectedGroup}
+              selectedSupervisorId={selectedSupervisorId}
+              startDate={startDate}
+              endDate={endDate}
+              onClearSelection={() => {
+                setStatisticsPanelOpen(false);
+                setSelectedGroup('');
+                setSelectedSupervisorId(null);
+              }}
+            />
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 }

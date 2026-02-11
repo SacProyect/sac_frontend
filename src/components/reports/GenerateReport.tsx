@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { useAuth } from '@/hooks/useAuth';
@@ -9,6 +9,7 @@ import { getContributions } from '../utils/api/reportFunctions';
 import toast from 'react-hot-toast';
 import CompleteReportModal from './CompleteReportModal';
 import { getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 
 
 
@@ -20,10 +21,20 @@ function GenerateReport() {
     const [query, setQuery] = useState("");
     const [isLoadingGroups, setIsLoadingGroups] = useState(true);
     const [showCompleteReport, setShowCompleteReport] = useState(false);
-    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
+    const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
-    const [hasMorePages, setHasMorePages] = useState(false);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
+    const firstPageFiltered = useMemo(
+        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
+        [firstPageTaxpayers]
+    );
+    const taxpayerArray = useMemo(
+        () => [...firstPageFiltered, ...additionalPages],
+        [firstPageFiltered, additionalPages]
+    );
+    const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
 
     useEffect(() => {
         if (!user) {
@@ -58,24 +69,17 @@ function GenerateReport() {
     }
 
     useEffect(() => {
-        const fetchTaxpayers = async () => {
+        if (currentPage <= 1) return;
+        const fetchPage = async () => {
             try {
                 const response = await getTaxpayerForEvents(currentPage, 50);
-                const filtered = response.data.data.filter((t: Taxpayer) => t.process !== "FP");
-                
-                if (currentPage === 1) {
-                    setTaxpayerArray(filtered);
-                } else {
-                    setTaxpayerArray(prev => [...prev, ...filtered]);
-                }
-                
-                setHasMorePages(response.data.page < response.data.totalPages);
+                const filtered = (response?.data?.data ?? []).filter((t: Taxpayer) => t.process !== "FP");
+                setAdditionalPages(prev => (currentPage === 2 ? filtered : [...prev, ...filtered]));
             } catch (e) {
                 toast.error("No se pudieron obtener los contribuyentes.");
             }
         };
-
-        fetchTaxpayers();
+        fetchPage();
     }, [currentPage]);
 
     const loadMoreTaxpayers = async () => {
