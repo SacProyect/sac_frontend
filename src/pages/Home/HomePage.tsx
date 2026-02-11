@@ -35,12 +35,33 @@ function HomePage() {
 
     const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
 
+    const { contains } = useFilter({ sensitivity: "base" });
+    const { control, watch } = useForm({
+        defaultValues: {
+            search: '',
+            year: 'Todos'
+        }
+    });
+
+    const searchValue = watch('search');
+    const selectedYear = watch('year');
+    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 800);
 
     useEffect(() => {
         const loadTaxpayers = async () => {
             try {
                 setLoading(true);
-                const response = await getTaxpayers(currentPage, limit);
+
+                // Convertir el año seleccionado a número, o dejar undefined si es "Todos"
+                const yearFilter =
+                    selectedYear && selectedYear !== 'Todos'
+                        ? parseInt(selectedYear, 10)
+                        : undefined;
+
+                // Usar el texto buscado (debounced) como filtro de backend si no está vacío
+                const searchFilter = debouncedSearch.trim() || undefined;
+
+                const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
 
                 setTaxpayers(response.data);
                 setTotal(response.total);
@@ -55,19 +76,8 @@ function HomePage() {
         }
 
         loadTaxpayers();
-    }, [currentPage, limit])
-
-    const { contains } = useFilter({ sensitivity: "base" });
-    const { control, watch } = useForm({
-        defaultValues: {
-            search: '',
-            year: 'Todos'
-        }
-    });
-
-    const searchValue = watch('search');
-    const selectedYear = watch('year');
-    const debouncedSearch = useDebounce(searchValue.toLowerCase(), 800);
+        // selectedYear es un string (por ejemplo "2025" o "Todos")
+    }, [currentPage, limit, selectedYear, debouncedSearch]);
 
     const filteredItems = useMemo(() => {
         const term = debouncedSearch.trim();
@@ -110,7 +120,11 @@ function HomePage() {
 
 
     useEffect(() => {
-        setVisibleCount(25); // reset cuando se filtra
+        // reset cuando se filtra o cambia de año
+        setVisibleCount(25);
+
+        // Al cambiar de año o filtro de búsqueda, volvemos a la primera página
+        setCurrentPage(1);
     }, [debouncedSearch, selectedYear]);
 
 
