@@ -133,7 +133,7 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 
 /**
  * Obtener contribuyentes con paginación y filtros opcionales por año y término de búsqueda.
- * - `year`: el backend filtrará por `emition_date` dentro de ese año y ajustará `total` y `totalPages`.
+ * - `year`: se envía como query param `date`; el backend filtrará por `emition_date` dentro de ese año y ajustará `total` y `totalPages`.
  * - `search`: el backend filtrará por nombre, RIF o número de providencia según la lógica del endpoint.
  */
 export const getTaxpayers = async (
@@ -145,11 +145,11 @@ export const getTaxpayers = async (
 	try {
 		let requestURL = "/taxpayer/get-taxpayers";
 
-		const params: { page: number; limit: number; year?: number; search?: string } = {
+		const params: Record<string, number | string> = {
 			page,
 			limit,
 		};
-		if (year !== undefined) {
+		if (year !== undefined && !Number.isNaN(year)) {
 			params.year = year;
 		}
 		if (search !== undefined && search.trim() !== "") {
@@ -172,7 +172,7 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 		let requestUrl = `/taxpayer/get-fiscal-taxpayers-for-stats/${fiscalId}`
 
 		if (year) {
-			requestUrl += `?date=${year}`
+			requestUrl += `?year=${year}`
 		}
 
 		const response = await apiConnection.get(requestUrl);
