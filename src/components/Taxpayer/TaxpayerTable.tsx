@@ -191,7 +191,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
             <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
                 <div
-                    className="sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max flex lg:grid"
+                    className="hidden sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max md:flex md:grid"
                     style={{
                         // Solo en lg: divide el ancho total disponible en partes iguales
                         // Usa una columna por cada item en columns[]
@@ -213,13 +213,14 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                 {visibleRows.map((item) => (
                     <div
                         key={item.id}
-                        className="flex items-center text-center transition-colors hover:bg-blue-50 lg:grid"
+                        className="flex flex-col p-4 mb-4 bg-white rounded-lg shadow-md transition-colors hover:bg-blue-50 md:grid md:p-0 md:rounded-none md:shadow-none"
                         style={{
                             // Igual que el header: mismas columnas
                             gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
                         }}
                     >
                         {columns.map((col) => {
+                            const isOptionsCol = col.id === 'options';
                             const value =
                                 col.id === 'options' ? (
                                     editingRows[item.id] ? (
@@ -257,9 +258,15 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                             return (
                                 <div
                                     key={col.id}
-                                    className="px-1 pl-4 py-1 break-words whitespace-normal min-w-[10rem] 
-                                    lg:min-w-0 lg:px-2 lg:py-2 lg:break-words "
+                                    className={`px-1 py-1 md:px-2 md:py-2 ${
+                                        isOptionsCol
+                                            ? 'flex items-center justify-end md:justify-center'
+                                            : 'flex justify-between text-left md:block md:text-center'
+                                    }`}
                                 >
+                                    {!isOptionsCol && (
+                                        <span className="font-semibold md:hidden">{col.label}:</span>
+                                    )}
                                     {editingRows[item.id] && !nonEditableCols.includes(col.id) ? (
                                         col.id === "parish" ? (
                                             <select
@@ -334,8 +341,12 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                                                 }
                                             />
                                         )
+                                    ) : isOptionsCol ? (
+                                        <div className="flex items-center justify-center w-full">
+                                            {value}
+                                        </div>
                                     ) : (
-                                        value
+                                        <span className="w-full text-right md:text-center">{value}</span>
                                     )}
                                 </div>
                             );
