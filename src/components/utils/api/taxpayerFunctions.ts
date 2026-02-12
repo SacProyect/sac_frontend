@@ -172,7 +172,7 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 		let requestUrl = `/taxpayer/get-fiscal-taxpayers-for-stats/${fiscalId}`
 
 		if (year) {
-			requestUrl += `?year=${year}`
+			requestUrl += `?year=${year}` 
 		}
 
 		const response = await apiConnection.get(requestUrl);
