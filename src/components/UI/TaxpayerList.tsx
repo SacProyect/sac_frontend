@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useDeferredValue, useCallback } from 'react';
+import React, { useState, useMemo, useDeferredValue, useCallback, useRef } from 'react';
 import { Controller, Control } from 'react-hook-form';
 import { Taxpayer } from '../../types/taxpayer';
 import { EventFormData } from '../Events/EventForm';
@@ -13,13 +13,33 @@ interface Props {
     name: keyof EventFormData;
     label: string;
     taxpayers?: Taxpayer[];
+    /** Si se pasa, el padre recibe el texto de búsqueda para filtrar en backend (p. ej. con debounce). */
+    onSearchChange?: (value: string) => void;
+    /** Muestra "Buscando..." en el desplegable cuando el backend está cargando. */
+    searchLoading?: boolean;
+    placeholder?: string;
+    /** Se llama al llegar al final del scroll para cargar más (infinite scroll). */
+    onLoadMore?: () => void;
+    hasMore?: boolean;
+    loadingMore?: boolean;
 }
 
-const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpayers = [] }) => {
+const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpayers = [], onSearchChange, searchLoading, placeholder = 'Buscar contribuyente...', onLoadMore, hasMore, loadingMore }) => {
     const [inputValue, setInputValue] = useState('');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const listRef = useRef<HTMLUListElement>(null);
 
     const deferredInput = useDeferredValue(inputValue);
+
+    const handleScroll = useCallback(() => {
+        const el = listRef.current;
+        if (!el || !onLoadMore || !hasMore || loadingMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const threshold = 40;
+        if (scrollTop + clientHeight >= scrollHeight - threshold) {
+            onLoadMore();
+        }
+    }, [onLoadMore, hasMore, loadingMore]);
 
     const filteredTaxpayers = useMemo(() => {
         const query = normalize(deferredInput);
@@ -33,7 +53,8 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
         setInputValue(val);
         setDropdownOpen(true);
         onChange(""); // Limpiar selección previa
-    }, []);
+        onSearchChange?.(val);
+    }, [onSearchChange]);
 
     const handleSelect = useCallback((taxpayer: Taxpayer, onChange: (val: string) => void) => {
         onChange(taxpayer.id);
@@ -57,7 +78,7 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
                             onFocus={() => setDropdownOpen(true)}
                             onBlur={() => setTimeout(() => setDropdownOpen(false), 150)}
                             className={`w-full p-2 pr-8 border rounded-md ${error ? 'border-red-500' : 'border-gray-300'}`}
-                            placeholder="Buscar contribuyente..."
+                            placeholder={placeholder}
                         />
                         <div className="absolute inset-y-0 z-50 flex items-center justify-center text-center right-2">
                             <button
@@ -70,8 +91,18 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
                         </div>
                     </div>
 
-                    {isDropdownOpen && filteredTaxpayers.length > 0 && (
-                        <ul className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-40">
+                    {isDropdownOpen && (
+                        <>
+                            {searchLoading && filteredTaxpayers.length === 0 ? (
+                                <div className="absolute z-10 w-full mt-1 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-500">
+                                    Buscando...
+                                </div>
+                            ) : filteredTaxpayers.length > 0 ? (
+                        <ul
+                            ref={listRef}
+                            className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-40"
+                            onScroll={handleScroll}
+                        >
                             {filteredTaxpayers.map((taxpayer) => (
                                 <li
                                     key={taxpayer.id}
@@ -84,7 +115,14 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
                                     </div>
                                 </li>
                             ))}
+                            {loadingMore && (
+                                <li className="px-3 py-2 text-sm text-gray-500 text-center">
+                                    Cargando...
+                                </li>
+                            )}
                         </ul>
+                            ) : null}
+                        </>
                     )}
 
                     {error && <p className="mt-1 text-sm text-red-500">{error.message}</p>}

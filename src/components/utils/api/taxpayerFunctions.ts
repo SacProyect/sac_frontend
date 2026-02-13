@@ -214,12 +214,17 @@ export const getFiscalsForReview = async (year?: number, page: number = 1, limit
 
 
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
-export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50) => {
+export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50, search?: string) => {
 	try {
 		let requestURL = "taxpayer/get-taxpayers-for-events"
 
+		const params: Record<string, number | string> = { page, limit };
+		if (search !== undefined && search.trim() !== "") {
+			params.search = search;
+		}
+
 		const response = await apiConnection.get(requestURL, {
-			params: { page, limit }
+			params,
 		});
 
 		return response;
