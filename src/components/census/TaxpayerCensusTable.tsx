@@ -138,7 +138,7 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
         <h2 className="mb-2 text-2xl font-semibold">Contribuyentes Censados</h2>
       </div>
 
-      <div className='pl-4'>
+      <div className='px-4'>
         <input
           type="text"
           placeholder="Buscar..."
@@ -148,29 +148,32 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
         />
       </div>
 
-      <div ref={containerRef} className="overflow-auto h-[70vh] w-[100vw] sm:w-[95vw] sm:pl-4 lg:h-[83.5vh] lg:w-[80vw] custom-scroll lg:pl-4">
+      <div ref={containerRef} className="overflow-auto w-full sm:w-[95vw] sm:pl-4 custom-scroll md:overflow-x-auto lg:h-[83.5vh] lg:w-[80vw] lg:pl-4">
         <div className="flex flex-col text-xs lg:min-w-full">
           <div
-            className="sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max flex lg:grid"
+            className="hidden sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max md:flex md:grid"
             style={{ gridTemplateColumns: `repeat(${columns.length}, 0.8fr)` }}
           >
-            {columns.map((col) => (
-              <div
-                key={col.id}
-                className="px-1 pl-4 py-1 font-semibold min-w-[10rem] lg:min-w-0 lg:px-2 lg:py-2 lg:whitespace-nowrap"
-              >
-                {col.label}
-              </div>
-            ))}
+                {columns.map((col) => (
+                    <div
+                        key={col.id}
+                        className="px-1 pl-4 py-1 font-semibold md:min-w-0 lg:px-2 lg:py-2 lg:whitespace-nowrap"
+                    >
+                        {col.label}
+                    </div>
+                ))}
           </div>
 
           {visibleRows.map((item) => (
             <div
               key={item.id}
-              className="flex items-center text-center transition-colors hover:bg-blue-50 lg:grid"
-              style={{ gridTemplateColumns: `repeat(${columns.length}, 0.8fr)` }}
+              className="flex flex-col p-4 mb-4 bg-white rounded-lg shadow-md transition-colors hover:bg-blue-50 md:grid md:p-0 md:rounded-none md:shadow-none"
+              style={{
+                gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
+              }}
             >
               {columns.map((col) => {
+                const isOptionsCol = col.id === 'options';
                 const value =
                   col.id === 'options' && user && user.role === "ADMIN" ? (
                     <div className='relative' ref={activeRowId === item.id ? optionsRef : null}>
@@ -205,9 +208,16 @@ const TaxpayerCensusTable: React.FC<TaxpayerCensusTableProps> = ({ propRows }) =
                 return (
                   <div
                     key={col.id}
-                    className="px-1 pl-4 py-1 break-words whitespace-normal min-w-[10rem] lg:min-w-0 lg:px-2 lg:py-2 lg:break-words"
+                    className={`px-1 py-1 md:px-2 md:py-2 ${
+                        isOptionsCol
+                            ? 'flex items-center justify-end md:justify-center'
+                            : 'flex justify-between text-left md:block md:text-center'
+                    }`}
                   >
-                    {value}
+                    {!isOptionsCol && (
+                        <span className="font-semibold md:hidden">{col.label}:</span>
+                    )}
+                    <span className="w-full text-right md:text-center">{value}</span>
                   </div>
                 );
               })}
