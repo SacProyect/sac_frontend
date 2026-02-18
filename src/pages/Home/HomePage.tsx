@@ -135,12 +135,12 @@ function HomePage() {
             <div className="w-full mx-auto xl:max-w-full lg:max-w-screen-lg">
                 <h2 className="mb-4 text-2xl font-bold text-center text-black">Administración</h2>
 
-                <div className="flex flex-col flex-wrap items-stretch justify-between gap-2 px-4 mb-4 sm:flex-row">
+                <div className="flex flex-col flex-wrap items-stretch justify-between gap-2 px-4 mb-4 md:flex-row">
                     <Controller
                         control={control}
                         name='search'
                         render={({ field: { name, value, onChange, onBlur } }) => (
-                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 px-2 lg:w-11/12 lg:px-0">
+                            <SearchField name={name} value={value} onChange={onChange} onBlur={onBlur} className="flex-1 px-2 lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Buscar</Label>
                                 <Input
                                     className="w-full p-2 text-black transition bg-white border border-gray-300 shadow-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -155,7 +155,7 @@ function HomePage() {
                         control={control}
                         name='year'
                         render={({ field }) => (
-                            <div className="px-2 lg:w-1/12 lg:px-0">
+                            <div className="px-2 lg:w-auto lg:px-0">
                                 <Label className="mb-1 text-sm font-medium text-gray-700">Año</Label>
                                 <select
                                     {...field}
@@ -171,7 +171,7 @@ function HomePage() {
                 </div>
 
                 {/* Controles de Paginación (arriba de la tabla) */}
-                <div className="flex flex-col items-center justify-between gap-4 px-4 mb-4 sm:flex-row">
+                <div className="flex flex-col items-center justify-between gap-4 px-4 mb-4 md:flex-row">
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                         Mostrando {loading ? '...' : taxpayers.length > 0 ? ((currentPage - 1) * limit + 1) : 0} - {loading ? '...' : Math.min(currentPage * limit, total)} de {loading ? '...' : total} contribuyentes
                     </div>
@@ -180,7 +180,7 @@ function HomePage() {
                         <button
                             onClick={() => setCurrentPage(1)}
                             disabled={currentPage === 1 || loading}
-                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            className="hidden px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg md:block disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
                             Primera
                         </button>
@@ -206,14 +206,14 @@ function HomePage() {
                         <button
                             onClick={() => setCurrentPage(totalPages)}
                             disabled={currentPage === totalPages || loading}
-                            className="px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                            className="hidden px-3 py-1 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg md:block disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
                         >
                             Última
                         </button>
                     </div>
                 </div>
 
-                <div className="w-full pl-2 lg:pl-0 min-h-[320px]">
+                <div className="w-full min-h-[320px] overflow-x-auto">
                     {loading ? (
                         <TableSkeleton
                             columns={11}
