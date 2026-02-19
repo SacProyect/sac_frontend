@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { useAuth } from '@/hooks/useAuth';
@@ -18,11 +18,17 @@ function GenerateReport() {
     const navigate = useNavigate();
     const [groupData, setGroupData] = useState<GroupData[]>([]);
     const [inputValue, setInputValue] = useState("");
+    const [searchDebounce, setSearchDebounce] = useState("");
     const [query, setQuery] = useState("");
     const [isLoadingGroups, setIsLoadingGroups] = useState(true);
     const [showCompleteReport, setShowCompleteReport] = useState(false);
+    const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
+    const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
+    const [searchPage, setSearchPage] = useState(2);
+    const [searchTotalPages, setSearchTotalPages] = useState(1);
+    const [searchLoading, setSearchLoading] = useState(false);
     const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
@@ -30,11 +36,15 @@ function GenerateReport() {
         () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
         [firstPageTaxpayers]
     );
+    const isSearching = searchDebounce.trim() !== '';
+    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
     const taxpayerArray = useMemo(
-        () => [...firstPageFiltered, ...additionalPages],
-        [firstPageFiltered, additionalPages]
+        () => [...displayedFirst, ...displayedExtra],
+        [displayedFirst, displayedExtra]
     );
-    const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
+    const hasMorePages = 1 + Math.floor(displayedExtra.length / 50) < totalPagesDisplayed;
 
     useEffect(() => {
         if (!user) {
@@ -69,7 +79,45 @@ function GenerateReport() {
     }
 
     useEffect(() => {
-        if (currentPage <= 1) return;
+        const timeout = setTimeout(() => {
+            setSearchDebounce(inputValue);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [inputValue]);
+
+    useEffect(() => {
+        const term = searchDebounce.trim();
+        if (term === '') {
+            setSearchResults(null);
+            setSearchAdditionalPages([]);
+            setSearchPage(2);
+            return;
+        }
+        let cancelled = false;
+        const fetchSearchFirst = async () => {
+            setSearchLoading(true);
+            try {
+                const response = await getTaxpayerForEvents(1, 50, term);
+                if (cancelled) return;
+                const data = (response?.data?.data ?? []) as Taxpayer[];
+                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                setSearchResults(filtered);
+                setSearchTotalPages(response?.data?.totalPages ?? 1);
+                setSearchAdditionalPages([]);
+                setSearchPage(2);
+            } catch (e) {
+                if (!cancelled) toast.error("No se pudieron obtener los contribuyentes.");
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        };
+        fetchSearchFirst();
+        return () => { cancelled = true; };
+    }, [searchDebounce]);
+
+    useEffect(() => {
+        if (!isSearching && currentPage <= 2) return;
+        if (isSearching) return;
         const fetchPage = async () => {
             try {
                 const response = await getTaxpayerForEvents(currentPage, 50);
@@ -80,28 +128,34 @@ function GenerateReport() {
             }
         };
         fetchPage();
-    }, [currentPage]);
+    }, [currentPage, isSearching]);
 
-    const loadMoreTaxpayers = async () => {
+    const loadMoreTaxpayers = useCallback(async () => {
         if (!hasMorePages || isLoadingMore) return;
         setIsLoadingMore(true);
-        setCurrentPage(prev => prev + 1);
-        setIsLoadingMore(false);
-    };
+        const term = searchDebounce.trim() || undefined;
+        const pageToFetch = isSearching ? searchPage : currentPage;
+        try {
+            const response = await getTaxpayerForEvents(pageToFetch, 50, term);
+            const data = (response?.data?.data ?? []) as Taxpayer[];
+            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            if (isSearching) {
+                setSearchAdditionalPages(prev => [...prev, ...filtered]);
+                setSearchPage(prev => prev + 1);
+            } else {
+                setAdditionalPages(prev => (pageToFetch === 2 ? filtered : [...prev, ...filtered]));
+                setCurrentPage(prev => prev + 1);
+            }
+        } catch (e) {
+            toast.error("No se pudieron cargar más contribuyentes.");
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [hasMorePages, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage]);
 
     if (groupData) {
         groupData.sort((a, b) => a.name.localeCompare(b.name));
     }
-
-    // Filtrar por nombre, rif o fiscal (user.name)
-    const q = inputValue.trim().toLowerCase();
-    const filteredTaxpayers = taxpayerArray.filter(t => {
-        return (
-            t.name?.toLowerCase().includes(q) ||
-            t.rif?.toLowerCase().includes(q) ||
-            t.user.name.toLowerCase().includes(q)
-        );
-    });
 
     // Manejar submit de búsqueda
     const handleSearch = () => {
@@ -115,7 +169,6 @@ function GenerateReport() {
         }
     };
 
-    // console.log(filteredTaxpayers);
 
 
 
@@ -187,7 +240,7 @@ function GenerateReport() {
                             </div>
 
                             {/* Table Body */}
-                            {filteredTaxpayers.filter(t => t.id && t.rif).map(taxpayer => (
+                            {taxpayerArray.filter(t => t.id && t.rif).map(taxpayer => (
                                 <div
                                     key={taxpayer.id}
                                     className='flex flex-col w-full px-4 py-2 border-b border-l border-r lg:flex-row last:rounded-br-md last:rounded-bl-md'
