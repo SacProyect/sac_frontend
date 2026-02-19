@@ -147,7 +147,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     if (currentPage <= 1) return;
     const fetchPage = async () => {
       try {
-        const response = await getTaxpayerForEvents(currentPage, 50);
+        const response = await getTaxpayerForEvents(currentPage, 50, undefined);
         const data = response?.data?.data ?? [];
         setAdditionalPages(prev => (currentPage === 2 ? data : [...prev, ...data]));
       } catch (e) {

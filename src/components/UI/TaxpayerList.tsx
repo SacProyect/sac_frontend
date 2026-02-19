@@ -13,12 +13,9 @@ interface Props {
     name: keyof EventFormData;
     label: string;
     taxpayers?: Taxpayer[];
-    /** Si se pasa, el padre recibe el texto de búsqueda para filtrar en backend (p. ej. con debounce). */
     onSearchChange?: (value: string) => void;
-    /** Muestra "Buscando..." en el desplegable cuando el backend está cargando. */
     searchLoading?: boolean;
     placeholder?: string;
-    /** Se llama al llegar al final del scroll para cargar más (infinite scroll). */
     onLoadMore?: () => void;
     hasMore?: boolean;
     loadingMore?: boolean;
@@ -52,7 +49,7 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
         const val = e.target.value;
         setInputValue(val);
         setDropdownOpen(true);
-        onChange(""); // Limpiar selección previa
+        onChange("");
         onSearchChange?.(val);
     }, [onSearchChange]);
 
