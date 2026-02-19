@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { Control, useForm } from 'react-hook-form';
@@ -24,18 +24,28 @@ function IslrForm() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
     const [filter, setFilter] = useState('');
+    const [searchDebounce, setSearchDebounce] = useState('');
+    const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
+    const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
+    const [searchPage, setSearchPage] = useState(2);
+    const [searchTotalPages, setSearchTotalPages] = useState(1);
+    const [searchLoading, setSearchLoading] = useState(false);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const menuRef = useRef<HTMLDivElement>(null);
     const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
-    const [currentPage, setCurrentPage] = useState(1);
+    const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
 
     const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
+    const isSearching = searchDebounce.trim() !== '';
+    const displayedFirst = isSearching ? (searchResults ?? []) : (firstPageTaxpayers || []);
+    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
     const taxpayerArray = useMemo(
-        () => [...(firstPageTaxpayers || []), ...additionalPages],
-        [firstPageTaxpayers, additionalPages]
+        () => [...displayedFirst, ...displayedExtra],
+        [displayedFirst, displayedExtra]
     );
-    const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
+    const hasMorePages = 1 + Math.floor(displayedExtra.length / 50) < totalPagesDisplayed;
 
     useEffect(() => {
         if (!user) {
@@ -46,7 +56,44 @@ function IslrForm() {
     if (!user) return null;
 
     useEffect(() => {
-        if (currentPage <= 1) return;
+        const timeout = setTimeout(() => {
+            setSearchDebounce(filter);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [filter]);
+
+    useEffect(() => {
+        const term = searchDebounce.trim();
+        if (term === '') {
+            setSearchResults(null);
+            setSearchAdditionalPages([]);
+            setSearchPage(2);
+            return;
+        }
+        let cancelled = false;
+        const fetchSearchFirst = async () => {
+            setSearchLoading(true);
+            try {
+                const response = await getTaxpayerForEvents(1, 50, term);
+                if (cancelled) return;
+                const data = (response?.data?.data ?? []) as Taxpayer[];
+                setSearchResults(data);
+                setSearchTotalPages(response?.data?.totalPages ?? 1);
+                setSearchAdditionalPages([]);
+                setSearchPage(2);
+            } catch (e) {
+                if (!cancelled) toast.error("No se pudieron obtener los contribuyentes.");
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        };
+        fetchSearchFirst();
+        return () => { cancelled = true; };
+    }, [searchDebounce]);
+
+    useEffect(() => {
+        if (!isSearching && currentPage <= 2) return;
+        if (isSearching) return;
         const fetchPage = async () => {
             try {
                 const response = await getTaxpayerForEvents(currentPage, 50);
@@ -57,14 +104,29 @@ function IslrForm() {
             }
         };
         fetchPage();
-    }, [currentPage]);
+    }, [currentPage, isSearching]);
 
-    const loadMoreTaxpayers = async () => {
+    const loadMoreTaxpayers = useCallback(async () => {
         if (!hasMorePages || isLoadingMore) return;
         setIsLoadingMore(true);
-        setCurrentPage(prev => prev + 1);
-        setIsLoadingMore(false);
-    };
+        const term = searchDebounce.trim() || undefined;
+        const pageToFetch = isSearching ? searchPage : currentPage;
+        try {
+            const response = await getTaxpayerForEvents(pageToFetch, 50, term);
+            const data = (response?.data?.data ?? []) as Taxpayer[];
+            if (isSearching) {
+                setSearchAdditionalPages(prev => [...prev, ...data]);
+                setSearchPage(prev => prev + 1);
+            } else {
+                setAdditionalPages(prev => (pageToFetch === 2 ? data : [...prev, ...data]));
+                setCurrentPage(prev => prev + 1);
+            }
+        } catch (e) {
+            toast.error("No se pudieron cargar más contribuyentes.");
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [hasMorePages, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage]);
 
 
     const {
@@ -104,12 +166,6 @@ function IslrForm() {
         }
     };
 
-    const filteredTaxpayers = useMemo(() => {
-        return taxpayerArray.filter(t =>
-            `${t.providenceNum} ${t.process} ${t.rif} ${t.name}`.toLowerCase().includes(filter.toLowerCase())
-        );
-    }, [taxpayerArray, filter]);
-
     const handleClickOutside = (event: MouseEvent) => {
         if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
             setShowSuggestions(false);
@@ -146,9 +202,9 @@ function IslrForm() {
                     />
                     {showSuggestions && (
                         <div ref={menuRef} className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-200 rounded-lg shadow-lg max-h-64">
-                            {filteredTaxpayers.length > 0 ? (
+                            {taxpayerArray.length > 0 ? (
                                 <>
-                                    {filteredTaxpayers.map((t) => (
+                                    {taxpayerArray.map((t) => (
                                         <div
                                             key={t.id}
                                             onClick={() => {
