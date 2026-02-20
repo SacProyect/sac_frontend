@@ -28,6 +28,7 @@ function IvaForm() {
     const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
     const [search, setSearch] = useState('');
     const [selectedId, setSelectedId] = useState('');
+    const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
     const [showDropdown, setShowDropdown] = useState(false);
     const [decemberReached, setDecemberReached] = useState(false);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(true);
@@ -85,6 +86,7 @@ function IvaForm() {
         setValue,
         reset,
         watch,
+        clearErrors,
     } = useForm<IvaReportFormData>({
         mode: "onChange",
         defaultValues: {
@@ -94,7 +96,7 @@ function IvaForm() {
     });
 
     const onSubmit = async (data: IvaReportFormData) => {
-        // console.log("Submitting data:", data);
+        const toastId = toast.loading("Creando reporte de IVA...");
 
         try {
             const formattedData = {
@@ -113,16 +115,25 @@ function IvaForm() {
 
             const report = await createIVA(formattedData);
             if (report) {
+                const prevTaxpayer = selectedTaxpayer;
                 reset();
+                setSelectedTaxpayer(null);
                 await refreshUser();
                 setTimeout(() => {
                     setValue("taxpayerId", data.taxpayerId);
+                    setSelectedTaxpayer(prevTaxpayer);
                 }, 500);
-                toast.success("Reporte creado exitosamente");
+                toast.success("¡Reporte de IVA creado exitosamente!", { id: toastId });
+            } else {
+                toast.error("No se pudo crear el reporte. Intente de nuevo.", { id: toastId });
             }
         } catch (e: any) {
             console.error("Error creating IVA report:", e);
-            toast.error(e.message);
+            const errorMessage =
+                e?.response?.data?.message ||
+                e?.message ||
+                "Ocurrió un error inesperado al crear el reporte.";
+            toast.error(errorMessage, { id: toastId });
         }
     };
 
@@ -135,8 +146,6 @@ function IvaForm() {
 
     const taxpayerId = watch("taxpayerId");
 
-    const selectedTaxpayer = taxpayerArray.find(t => t.id === taxpayerId);
-
 
     // Recalcular mes siguiente cuando cambie el contribuyente
     useEffect(() => {
@@ -146,7 +155,7 @@ function IvaForm() {
             setNextAllowedYear(null);
             setDecemberReached(false);
             setLoadingMonthInfo(false);
-            setValue('date', '');
+            setValue('date', '', { shouldValidate: true, shouldDirty: true });
             return;
         }
 
@@ -168,7 +177,7 @@ function IvaForm() {
             setNextAllowedYear(null);
             setDecemberReached(true);
             setLoadingMonthInfo(false);
-            setValue('date', '');
+            setValue('date', '', { shouldValidate: true, shouldDirty: true });
             return;
         } else {
             const [lastYearStr, lastMonthStr] = sorted[0].date.split('-');
@@ -181,7 +190,7 @@ function IvaForm() {
                 setNextAllowedYear(null);
                 setDecemberReached(true);
                 setLoadingMonthInfo(false);
-                setValue('date', '');
+                setValue('date', '', { shouldValidate: true, shouldDirty: true });
                 return;
             } else {
                 setDecemberReached(false);
@@ -191,9 +200,10 @@ function IvaForm() {
         setNextAllowedMonth(monthNumber);
         setNextAllowedYear(year);
         const isoDate = new Date(Date.UTC(year, monthNumber - 1, 1)).toISOString();
-        setValue('date', isoDate);
+        setValue('date', isoDate, { shouldValidate: true, shouldDirty: true });
+        clearErrors('date');
         setLoadingMonthInfo(false);
-    }, [selectedTaxpayer, setValue]);
+    }, [selectedTaxpayer, setValue, clearErrors]);
 
     const filteredTaxpayers = taxpayerArray.filter(t =>
         `${t.name} ${t.rif} ${t.process} ${t.providenceNum}`
@@ -252,6 +262,7 @@ function IvaForm() {
                                         setSearch(`${t.name} — ${t.process} — ${t.providenceNum}`);
                                         setValue("taxpayerId", t.id);
                                         setSelectedId(t.id);
+                                        setSelectedTaxpayer(t);
                                         setShowDropdown(false);
                                     }}
                                     className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-500 hover:text-white"
@@ -391,8 +402,11 @@ function IvaForm() {
 
                 <input
                     type="hidden"
-                    {...register('date', { required: true })}
+                    {...register('date', { required: 'Debe seleccionar un contribuyente para calcular la fecha del reporte' })}
                 />
+                {errors.date && (
+                    <p className="mt-1 text-xs text-red-500">{errors.date.message}</p>
+                )}
 
 
                 {nextAllowedMonth !== null && nextAllowedYear !== null && (
@@ -408,8 +422,8 @@ function IvaForm() {
 
                 <button
                     type="submit"
-                    disabled={loadingMonthInfo || decemberReached}
-                    className={`w-full py-2 mt-4 text-sm font-medium text-white rounded-lg transition ${loadingMonthInfo || decemberReached
+                    disabled={loadingMonthInfo || decemberReached || !dateValue}
+                    className={`w-full py-2 mt-4 text-sm font-medium text-white rounded-lg transition ${loadingMonthInfo || decemberReached || !dateValue
                         ? 'bg-gray-400 cursor-not-allowed'
                         : 'bg-blue-500 hover:bg-blue-600'
                         }`}
