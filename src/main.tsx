@@ -3,9 +3,9 @@ import { createRoot } from 'react-dom/client'
 <<<<<<< HEAD
 import { RouterProvider } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast';
-import AppRouter from './components/router/AppRouter'
+import AppRouter from './components/router/app-router'
 import { ErrorBoundary } from 'react-error-boundary'
-import { ErrorFallback } from './components/errors/ErrorFallback.js'
+import { ErrorFallback } from './components/errors/error-fallback'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
