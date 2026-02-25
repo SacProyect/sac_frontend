@@ -101,10 +101,10 @@ export default function LoginV2() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full lg:w-1/2 bg-slate-950 flex items-center justify-center p-6">
+      <div className="w-full min-h-screen lg:min-h-0 lg:w-1/2 bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div className="w-full max-w-md">
-          <div className="mb-8">
-            <h2 className="text-3xl font-bold text-white mb-2">Bienvenido de nuevo</h2>
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Bienvenido de nuevo</h2>
             <p className="text-slate-400">Inicia sesión para acceder al sistema</p>
           </div>
 
@@ -153,8 +153,9 @@ export default function LoginV2() {
                 />
                 <button
                   type="button"
+                  aria-label={showPassword ? "Ocultar contraseña" : "Mostrar contraseña"}
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 min-w-[44px] min-h-[44px] -m-1 flex items-center justify-center text-slate-500 hover:text-slate-300 touch-manipulation"
                   disabled={isLoading}
                 >
                   {showPassword ? (
@@ -180,7 +181,7 @@ export default function LoginV2() {
             <Button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold h-11"
+              className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold min-h-[48px] touch-manipulation"
             >
               {isLoading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </Button>

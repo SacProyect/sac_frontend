@@ -93,7 +93,7 @@ export function FiscalLeaderboardV2({ data }: FiscalLeaderboardV2Props) {
       </Card>
 
       <Dialog open={selectedFiscal !== null} onOpenChange={() => setSelectedFiscal(null)}>
-        <DialogContent className="bg-slate-800 border-slate-700 max-w-2xl transition-all duration-200">
+        <DialogContent className="bg-slate-800 border-slate-700 max-w-[calc(100%-2rem)] sm:max-w-2xl transition-all duration-200 max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-white">
               Estadísticas del Fiscal - {selectedData?.nombre}

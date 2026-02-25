@@ -10,12 +10,12 @@ export default function FinePageV2() {
   const { taxpayerId } = useParams();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Agregar Multa"
         description="Registra una nueva multa para un contribuyente"
       />
-      <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+      <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
         <EventForm title="Multa" type="fine" taxpayerId={taxpayerId || ""} />
       </Card>
     </div>
