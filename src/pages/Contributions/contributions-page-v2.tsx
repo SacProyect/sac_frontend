@@ -82,7 +82,7 @@ export default function ContributionsPageV2() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Estadísticas por Coordinación"
         description="Consulta y análisis de contribuciones por grupo"

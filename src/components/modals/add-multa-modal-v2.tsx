@@ -136,7 +136,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white transition-all duration-200">
+      <DialogContent className="bg-slate-800 border-slate-700 text-white transition-all duration-200 max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-white">Agregar Multa</DialogTitle>
         </DialogHeader>

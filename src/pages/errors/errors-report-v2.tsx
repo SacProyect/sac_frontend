@@ -114,7 +114,7 @@ export default function ErrorsReportV2() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Reportar Error"
         description="Notifica errores o problemas encontrados en el sistema"

@@ -78,25 +78,23 @@ export default function TaxpayerDetailV2() {
   ].filter(opt => canSeeAllOptions || opt.name === 'Observaciones');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Detalle del Contribuyente"
         description="Información completa y gestión de eventos"
       />
 
-      {/* Estadísticas Individuales */}
       <IndividualStats events={events} IVAReports={taxSummary} />
 
-      {/* Acciones Rápidas */}
-      <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <h3 className="text-lg font-semibold text-white mb-4">Acciones Rápidas</h3>
-        <div className="flex flex-wrap gap-3">
+      <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
+        <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Acciones Rápidas</h3>
+        <div className="flex flex-wrap gap-2 sm:gap-3">
           {quickActions.map((action) => {
             const Icon = action.icon;
             return (
-              <Link key={action.name} to={action.path}>
-                <Button className={`${action.color} text-white font-semibold rounded-md flex items-center gap-2 transition-all duration-200`}>
-                  <Icon className="h-4 w-4" />
+              <Link key={action.name} to={action.path} className="w-full sm:w-auto min-w-0">
+                <Button className={`w-full sm:w-auto ${action.color} text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-200 shadow-sm min-h-[44px]`}>
+                  <Icon className="h-4 w-4 shrink-0" />
                   {action.name}
                 </Button>
               </Link>
@@ -105,30 +103,29 @@ export default function TaxpayerDetailV2() {
         </div>
       </Card>
 
-      {/* Tabs para Historial */}
-      <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+      <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg overflow-hidden">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-3">
+          <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-3 h-auto flex-wrap gap-1 p-1">
             <TabsTrigger 
               value="fine" 
-              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300"
+              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm min-h-[44px] py-2 touch-manipulation"
             >
-              <Package className="h-4 w-4 mr-2" />
-              Historial de Multas
+              <Package className="h-4 w-4 mr-1 sm:mr-2 shrink-0" />
+              <span className="truncate">Multas</span>
             </TabsTrigger>
             <TabsTrigger 
               value="iva" 
-              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300"
+              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm min-h-[44px] py-2 touch-manipulation"
             >
-              <Receipt className="h-4 w-4 mr-2" />
-              Historial IVA
+              <Receipt className="h-4 w-4 mr-1 sm:mr-2 shrink-0" />
+              <span className="truncate">IVA</span>
             </TabsTrigger>
             <TabsTrigger 
               value="islr" 
-              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300"
+              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm min-h-[44px] py-2 touch-manipulation"
             >
-              <FileSearch className="h-4 w-4 mr-2" />
-              Historial ISLR
+              <FileSearch className="h-4 w-4 mr-1 sm:mr-2 shrink-0" />
+              <span className="truncate">ISLR</span>
             </TabsTrigger>
           </TabsList>
 

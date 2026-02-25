@@ -106,7 +106,7 @@ export default function CensusTablePageV2() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Tabla Censo"
         description="Gestión de contribuyentes censados"
@@ -235,7 +235,7 @@ export default function CensusTablePageV2() {
 
       {/* Modal de confirmación */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription className="text-slate-400">

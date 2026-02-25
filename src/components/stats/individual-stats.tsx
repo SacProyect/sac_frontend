@@ -1,5 +1,5 @@
-import React, { useEffect, useRef, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Event } from "@/types/event";
 import toast, { Toaster } from "react-hot-toast";
 import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayer-functions";
@@ -10,8 +10,8 @@ import { RepairReports } from "@/types/repair-reports";
 import { InvestigationPdf } from "@/types/investigation-pdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
-import { getIndividualIvaReport } from "../utils/api/report-functions";
 import { Parish, TaxpayerCategory } from "@/types/taxpayer";
+import { Settings } from "lucide-react";
 
 
 
@@ -42,6 +42,8 @@ interface TaxpayerData {
     parish: Parish | null;
     emition_date?: string | Date;  // ✅ Fecha del procedimiento
     updated_at?: string | Date;    // ✅ Fecha de última actualización (usada para fecha de notificación)
+    /** Índice efectivo (Soberano): propio o general, ya resuelto por el backend. */
+    currentEffectiveIndex?: number | null;
 }
 
 
@@ -58,7 +60,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showFaseModal, setShowFaseModal] = useState(false);
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
-    const [lineChartData, setLineChartData] = useState<{ month: string; variationFromPrevious: number }[]>([]);
     const [showIndexModal, setShowIndexModal] = useState(false);
     const [newIndexIva, setNewIndexIva] = useState("");
 
@@ -302,25 +303,26 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     // console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
 
-    // Get the Monthly Variation of IVA for the taxpayer
-    useEffect(() => {
-        const fecthLineChartData = async () => {
-            try {
-                const response = await getIndividualIvaReport(taxpayer) as Record<string, { variationFromPrevious: string }>;
+    // Datos para el gráfico de barras: compras y ventas por mes (desde IVAReports)
+    const barChartData = useMemo(() => {
+        if (!IVAReports || !Array.isArray(IVAReports) || IVAReports.length === 0) return [];
+        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+        const sorted = [...IVAReports].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        return sorted.map((r) => {
+            const d = new Date(r.date);
+            const monthLabel = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
+            return {
+                month: monthLabel,
+                compras: Number(r.purchases) || 0,
+                ventas: Number(r.sells) || 0,
+            };
+        });
+    }, [IVAReports]);
 
-                const dataArray = Object.entries(response).map(([month, value]) => ({
-                    month,
-                    variationFromPrevious: parseFloat(value.variationFromPrevious) // Quita el % y lo convierte a número
-                }));
-
-                setLineChartData(dataArray);
-            } catch (e) {
-                console.error(e);
-                toast.error("Ha ocurrido un error obteniendo el rendimiento mensual")
-            }
-        }
-        fecthLineChartData()
-    }, [])
+    // Índice meta para la ReferenceLine: propio (currentEffectiveIndex) o null si no hay
+    const indexMeta = taxpayerData?.currentEffectiveIndex != null && taxpayerData.currentEffectiveIndex > 0
+        ? taxpayerData.currentEffectiveIndex
+        : null;
 
     const submitNewIndexIva = async () => {
         if (!taxpayer || !newIndexIva) return;
@@ -344,110 +346,109 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         (user?.role === "SUPERVISOR" && taxpayerData?.user.supervisorId === user.id)
     ) && taxpayerData?.process === "AF";
 
+    const canEditIndex = user?.role === "ADMIN" || user?.role === "SUPERVISOR" || user?.role === "COORDINATOR" || user?.role === "FISCAL";
+
 
     return (
-        <div className="flex justify-center w-full min-h-[20vh] text-black mt-4 px-4 lg:px-0 lg:mt-0">
-            {/* Contenedor principal con flex-col en mobile y flex-row en lg */}
-            <div className="flex flex-col lg:flex-row w-full lg:w-[900px] h-full lg:h-[60vh] shadow-xl pb-0 lg:pb-4">
+        <div className="w-full min-h-[20vh] text-black mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
+            <div className="flex flex-col lg:flex-row w-full max-w-full lg:max-w-[900px] lg:mx-auto min-h-0 shadow-xl rounded-lg lg:rounded-xl pb-4 lg:pb-4 bg-white/95 lg:bg-white">
 
                 {/* Columna Izquierda - Datos del Contribuyente */}
-                <div className="w-full md:p-4 lg:p-4 lg:w-1/2">
-                    <h1 className="mb-2 text-xl font-semibold uppercase lg:text-sm xl:text-2xl">
-                        Datos del contribuyente
-                    </h1>
+                <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-1/2">
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                        <h1 className="text-base sm:text-lg md:text-xl font-semibold uppercase tracking-tight">
+                            Datos del contribuyente
+                        </h1>
+                        {canEditIndex && (
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setNewIndexIva(taxpayerData?.currentEffectiveIndex != null ? String(taxpayerData.currentEffectiveIndex) : "");
+                                    setShowIndexModal(true);
+                                }}
+                                className="p-2 rounded-md border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 hover:border-slate-400 transition-colors shadow-sm touch-manipulation min-h-[44px] min-w-[44px]"
+                                title="Editar índice IVA (meta mensual)"
+                                aria-label="Editar índice IVA"
+                            >
+                                <Settings className="h-5 w-5" />
+                            </button>
+                        )}
+                    </div>
 
-                    <div className="flex flex-col space-y-2 text-xs xl:text-sm">
-                        <p><span className="font-bold">NRO DE PROVIDENCIA:</span>{taxpayerData ? taxpayerData?.providenceNum : "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "No se pudo cargar la información"}</p>
-                        <p className="font-bold">Actividad Comercial: {taxpayerData && taxpayerData.taxpayer_category && taxpayerData.taxpayer_category.name ? taxpayerData.taxpayer_category.name : "No se encontró la actividad comercial"}</p>
-                        <p className="font-bold">Parroquia: {taxpayerData && taxpayerData.parish && taxpayerData.parish.name ? taxpayerData.parish.name : "No se encontró la parroquia"}</p>
-                        <p><span className="font-bold">TIPO DE CONTRIBUYENTE:</span> {taxpayerData
-                            ? taxpayerData.contract_type === "ORDINARY"
-                                ? "ORDINARIO"
-                                : taxpayerData.contract_type === "SPECIAL"
-                                    ? "ESPECIAL"
-                                    : taxpayerData.contract_type
-                            : "No se pudo cargar la información"}</p>
-                        <p><span className="font-bold">Dirección:</span> {taxpayerData ? taxpayerData?.address : "No se pudo cargar la información"}</p>
-                        {/* ✅ Información del Fiscal asignado */}
-                        <p><span className="font-bold">FISCAL ASIGNADO:</span> {taxpayerData?.user?.name ? taxpayerData.user.name : "No asignado"}</p>
-                        {/* ✅ Fecha del procedimiento */}
-                        <p><span className="font-bold">FECHA DEL PROCEDIMIENTO:</span> {taxpayerData?.emition_date ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'long', day: 'numeric' }) : "No disponible"}</p>
-                        {/* ✅ Fecha de notificación */}
-                        <p><span className="font-bold">FECHA DE NOTIFICACIÓN:</span> {taxpayerData?.notified && taxpayerData?.updated_at 
-                            ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'long', day: 'numeric' })
-                            : taxpayerData?.notified 
-                                ? "Notificado (fecha no disponible)" 
-                                : "No notificado"}</p>
-                        <p><span className="font-bold">Multas registradas:</span> {fines ? fines : "No se pudo cargar la información"}</p>
-                        <p>
-                            <span className="font-bold">Excedente de crédito actual:</span>{" "}
-                            {taxpayerData?.IVAReports?.[0]?.excess != null
-                                ? taxpayerData.IVAReports[0].excess.toString()
-                                : "No se pudo cargar la información"}
-                        </p>
+                    <div className="flex flex-col space-y-1.5 sm:space-y-2 text-xs sm:text-sm break-words">
+                        <p className="break-words"><span className="font-bold">NRO DE PROVIDENCIA:</span> {taxpayerData ? taxpayerData?.providenceNum : "—"}</p>
+                        <p className="break-words"><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "—"}</p>
+                        <p className="break-words"><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "—"}</p>
+                        <p className="break-words"><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "—"}</p>
+                        <p className="break-words font-bold">Actividad Comercial: {taxpayerData?.taxpayer_category?.name ?? "—"}</p>
+                        <p className="break-words font-bold">Parroquia: {taxpayerData?.parish?.name ?? "—"}</p>
+                        <p className="break-words"><span className="font-bold">TIPO:</span> {taxpayerData?.contract_type === "ORDINARY" ? "ORDINARIO" : taxpayerData?.contract_type === "SPECIAL" ? "ESPECIAL" : taxpayerData?.contract_type ?? "—"}</p>
+                        <p className="break-words"><span className="font-bold">Dirección:</span> {taxpayerData?.address ?? "—"}</p>
+                        <p className="break-words"><span className="font-bold">FISCAL ASIGNADO:</span> {taxpayerData?.user?.name ?? "No asignado"}</p>
+                        <p className="break-words"><span className="font-bold">FECHA PROCEDIMIENTO:</span> {taxpayerData?.emition_date ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }) : "—"}</p>
+                        <p className="break-words"><span className="font-bold">FECHA NOTIFICACIÓN:</span> {taxpayerData?.notified && taxpayerData?.updated_at ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }) : taxpayerData?.notified ? "Notificado" : "No notificado"}</p>
+                        <p className="break-words"><span className="font-bold">Multas:</span> {fines ?? "—"}</p>
+                        <p className="break-words"><span className="font-bold">Excedente crédito:</span> {taxpayerData?.IVAReports?.[0]?.excess != null ? taxpayerData.IVAReports[0].excess.toString() : "—"}</p>
                     </div>
 
                     {taxpayerData?.notified === true ? (
-                        <div>
-                            <p className="pt-2 text-xs font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                                Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
-                            </p>
-                        </div>
-
+                        <p className="pt-2 text-xs sm:text-sm font-semibold leading-snug text-green-800 max-h-[80px] overflow-y-auto">
+                            Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
+                        </p>
                     ) : (
-                        <div>
-                            <p className="pt-2 text-xs font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                                Este contribuyente aún no ha sido notificado acerca de su procedimiento.
-                            </p>
-                        </div>
+                        <p className="pt-2 text-xs sm:text-sm font-semibold leading-snug text-slate-700 max-h-[80px] overflow-y-auto">
+                            Este contribuyente aún no ha sido notificado acerca de su procedimiento.
+                        </p>
                     )}
 
-                    <div className={`flex items-center ${user?.role !== "ADMIN" ? "justify-start" : "justify-center"} space-x-4 text-center`}>
-
+                    <div className="pt-3 flex flex-wrap items-center gap-2">
                         {taxpayerData?.culminated === true ? (
-                            <div className="pt-2">
-                                <p className="text-sm font-semibold leading-5 max-w-[600px] max-h-[150px] overflow-auto whitespace-pre-wrap break-words">
-                                    Procedimiento Culminado.
-                                </p>
-                            </div>
+                            <p className="text-sm font-semibold text-green-700">
+                                Procedimiento Culminado.
+                            </p>
                         ) : (
                             (user?.role === "FISCAL" && user?.id === taxpayerData?.officerId) ||
                             (user?.role === "COORDINATOR" && user?.id === taxpayerData?.user?.group?.coordinatorId) ||
                             (user?.role === "SUPERVISOR" && (user?.id === taxpayerData?.officerId || user.supervised_members?.some((member) => member.id === taxpayerData?.officerId))) ||
                             user?.role === "ADMIN"
                         ) && (
-                            <div className="pt-2">
-                                <button
-                                    className="px-2 py-1 text-white bg-[#3498db] text-xs xl:text-sm"
-                                    onClick={() => handleCulminatedClick(true)}
-                                >
-                                    Culminar Procedimiento
-                                </button>
-                            </div>
+                            <button
+                                type="button"
+                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
+                                onClick={() => handleCulminatedClick(true)}
+                            >
+                                Culminar Procedimiento
+                            </button>
                         )}
 
                         {user?.role === "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length >= 1 && (
-                            <div className="pt-2">
-                                <button className="px-2 py-1 text-white bg-[#3498db] text-xs xl:text-sm" onClick={() => handleDownloadInvestigation()}>Descargar investigación</button>
-                            </div>
+                            <button
+                                type="button"
+                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
+                                onClick={() => handleDownloadInvestigation()}
+                            >
+                                Descargar investigación
+                            </button>
                         )}
-
                     </div>
 
                     {taxpayerData?.process === "AF" && (
                         taxpayerData.RepairReports.length > 0 ? (
-                            <div className="pt-2 ">
-                                <button className="px-2 py-1 text-white bg-[#3498db]" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>Descargar acta de Reparo</button>
+                            <div className="pt-2">
+                                <button
+                                    type="button"
+                                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
+                                    onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}
+                                >
+                                    Descargar acta de reparo
+                                </button>
                             </div>
                         ) : (
                             user && taxpayerData.officerId === user.id && (
                                 <div className="pt-2">
-                                    {/* Botón para abrir selector de archivo */}
                                     <button
-                                        className="px-2 py-1 bg-[#3498db] text-white"
+                                        type="button"
+                                        className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
                                         onClick={handleUploadClick}
                                     >
                                         Subir acta de reparo
@@ -467,28 +468,30 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                                     {/* Modal */}
                                     {showModal && selectedFile && (
                                         <div
-                                            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
-                                            onClick={handleCancelSend} // clic fuera cierra modal
+                                            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto"
+                                            onClick={handleCancelSend}
                                         >
                                             <div
-                                                className="p-6 bg-white rounded-lg w-80"
-                                                onClick={e => e.stopPropagation()} // evitar cerrar modal al hacer clic dentro
+                                                className="w-full max-w-sm p-4 sm:p-6 bg-white rounded-xl shadow-xl my-auto"
+                                                onClick={e => e.stopPropagation()}
                                             >
                                                 <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo a Subir</h2>
                                                 <p className="mb-4 break-words">Archivo seleccionado: <strong>{selectedFile.name}</strong></p>
 
-                                                <div className="flex justify-end space-x-4">
+                                                <div className="flex justify-end gap-2">
                                                     <button
-                                                        className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
-                                                        onClick={handleConfirmSend}
-                                                    >
-                                                        Subir archivo
-                                                    </button>
-                                                    <button
-                                                        className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700"
+                                                        type="button"
+                                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                                                         onClick={handleCancelSend}
                                                     >
                                                         Cancelar
+                                                    </button>
+                                                    <button
+                                                        type="button"
+                                                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700"
+                                                        onClick={handleConfirmSend}
+                                                    >
+                                                        Subir archivo
                                                     </button>
                                                 </div>
                                             </div>
@@ -499,25 +502,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         )
                     )}
 
-                    {user?.role === "COORDINATOR" && (
-                        <div className="pt-2">
-                            <button
-                                className="px-2 py-1 text-white bg-[#3498db]"
-                                onClick={() => setShowIndexModal(true)}
-                            >
-                                Modificar índice IVA
-                            </button>
-                        </div>
-                    )}
-
                     {canEditFase && (
-                        <div className="flex items-end justify-around w-full gap-2 text-xs pr-14 mt-14 lg:mt-2 xl:pt-8">
+                        <div className="flex flex-wrap items-center gap-2 mt-4">
                             {fases.map((fase) => (
                                 <button
                                     key={fase}
+                                    type="button"
+                                    className={`min-h-[44px] px-3 py-2.5 sm:py-2 text-sm font-medium rounded-md transition-colors touch-manipulation flex-1 min-w-[72px] sm:flex-none ${
+                                        taxpayerData?.fase === fase
+                                            ? "bg-green-600 text-white shadow-sm"
+                                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
+                                    }`}
                                     onClick={() => handleFaseClick(fase)}
-                                    className={`px-2 py-1 lg:py-0 xl:py-1 rounded font-semibold text-white transition 
-                    ${taxpayerData?.fase === fase ? "bg-green-600" : "bg-[#3498db] hover:bg-blue-700"}`}
                                 >
                                     {fase.replace("FASE_", "FASE ")}
                                 </button>
@@ -526,7 +522,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
 
                     {taxpayerData?.fase && taxpayerData.process === "AF" && (
-                        <div className="w-full pt-4 mt-2 text-sm italic text-left text-gray-700 pr-14 lg:pr-0 lg:pt-0 xl:pt-8">
+                        <div className="w-full pt-4 mt-2 text-xs sm:text-sm italic text-left text-gray-700">
                             {taxpayerData.fase === "FASE_1" && (
                                 <p className="text-xs">
                                     FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
@@ -551,46 +547,39 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     )}
                 </div>
 
-                {/* Columna Derecha - Bullets + Gráfica Pastel */}
-                <div className="flex flex-col w-full lg:w-1/2 p-0 mt-6 lg:mt-0 h-auto lg:h-[13rem] md:h-full">
+                {/* Columna Derecha - Gráficas */}
+                <div className="flex flex-col w-full min-w-0 lg:w-1/2 p-4 sm:p-5 lg:p-6 pt-0 lg:pt-6 lg:mt-0 border-t lg:border-t-0 lg:border-l border-slate-200">
 
-                    <div className="flex flex-row flex-wrap items-center justify-between w-full gap-2 px-2 py-1 md:px-4 lg:px-2">
-                        {/* Botón de notificación */}
+                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 pb-3">
                         {(
                             (user?.role === "FISCAL" && taxpayerData?.officerId === user.id) ||
                             user?.role === "ADMIN" ||
-                            (
-                                user?.role === "SUPERVISOR" &&
-                                (
-                                    user.id === taxpayerData?.officerId ||
-                                    user.supervised_members?.some(member => member.id === taxpayerData?.officerId)
-                                )
-                            )
+                            (user?.role === "SUPERVISOR" && (user.id === taxpayerData?.officerId || user.supervised_members?.some(member => member.id === taxpayerData?.officerId)))
                         ) && !taxpayerData?.notified && (
-                                <button
-                                    className="px-3 py-1 bg-[#3498db] text-white text-sm font-medium rounded"
-                                    onClick={() => handleNotifiedClick(true)}
-                                >
-                                    Reportar como notificado
-                                </button>
-                            )}
+                            <button
+                                type="button"
+                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
+                                onClick={() => handleNotifiedClick(true)}
+                            >
+                                Reportar como notificado
+                            </button>
+                        )}
 
-                        {/* Leyenda de compras y ventas */}
-                        <div className="flex flex-row items-center gap-4 text-sm">
-                            <div className="flex items-center">
-                                <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#0080c1" }} />
-                                COMPRAS (BS.S)
-                            </div>
-                            <div className="flex items-center">
-                                <span className="inline-block w-3 h-3 mr-2 rounded-full" style={{ backgroundColor: "#737373" }} />
-                                VENTAS (BS.S)
-                            </div>
+                        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 text-xs sm:text-sm text-slate-600">
+                            <span className="inline-flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "#0080c1" }} />
+                                Compras (BS)
+                            </span>
+                            <span className="inline-flex items-center gap-1.5">
+                                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "#737373" }} />
+                                Ventas (BS)
+                            </span>
                         </div>
                     </div>
 
                     {dataMock.some(item => item.value > 0) && (
-                        <div className="flex justify-center items-center w-full h-full lg:w-[30vw] md:h-full lg:h-[20vh]">
-                            <ResponsiveContainer width="100%" height="100%" aspect={2}>
+                        <div className="flex justify-center items-center w-full min-h-[180px] sm:min-h-[200px] lg:min-h-[12rem]">
+                            <ResponsiveContainer width="100%" height={200}>
                                 <PieChart>
                                     <Pie
                                         data={dataMock}
@@ -621,27 +610,57 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         </div>
                     )}
 
-                    <div className="w-full lg:px-4 mt-6 md:mt-0 lg:mt-4 md:mb-4 lg:mb-0 md:h-[50vh] h-full lg:h-[20vh]">
-                        <h3 className="mb-2 text-sm font-semibold text-center">
-                            Variación de rendimiento mensual
+                    <div className="w-full mt-4 sm:mt-6 min-h-[220px] sm:min-h-[260px]">
+                        <h3 className="mb-2 text-sm font-semibold text-center text-slate-800">
+                            Compras vs. Ventas vs. Índice (meta)
                         </h3>
-                        <ResponsiveContainer width="100%" aspect={2} className="h-[5vh]">
-                            <LineChart data={lineChartData}>
-                                <CartesianGrid strokeDasharray="3 3" />
-                                <XAxis dataKey="month" fontSize={10} />
-                                <YAxis fontSize={10} />
-                                <Tooltip />
-                                <Line type="monotone" dataKey="variationFromPrevious" stroke="#3498db" strokeWidth={2} dot={{ r: 3 }} />
-                            </LineChart>
+                        <div className="w-full h-[220px] sm:h-[260px] lg:h-[280px]">
+                        <ResponsiveContainer width="100%" height="100%">
+                            {barChartData.length === 0 ? (
+                                <div className="flex items-center justify-center h-full text-sm text-slate-500">
+                                    Sin reportes IVA mensuales para mostrar
+                                </div>
+                            ) : (
+                            <BarChart
+                                data={barChartData}
+                                margin={{ top: 12, right: 12, left: 8, bottom: 8 }}
+                            >
+                                <CartesianGrid strokeDasharray="2 2" stroke="#334155" opacity={0.4} vertical={false} />
+                                <XAxis dataKey="month" fontSize={11} tick={{ fill: "#94a3b8" }} />
+                                <YAxis fontSize={11} tick={{ fill: "#94a3b8" }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
+                                <Tooltip
+                                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "6px" }}
+                                    labelStyle={{ color: "#e2e8f0" }}
+                                    formatter={(value: number, name: string) => [value.toLocaleString("es-VE", { style: "currency", currency: "VES", maximumFractionDigits: 0 }), name === "compras" ? "Compras" : name === "ventas" ? "Ventas" : name]}
+                                />
+                                {indexMeta != null && (
+                                    <ReferenceLine
+                                        y={indexMeta}
+                                        stroke="#eab308"
+                                        strokeWidth={1.5}
+                                        strokeDasharray="4 3"
+                                        label={{ value: "Meta (índice)", position: "right", fill: "#eab308", fontSize: 10 }}
+                                    />
+                                )}
+                                <Bar dataKey="compras" name="Compras" fill="#0080c1" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                                <Bar dataKey="ventas" name="Ventas" fill="#1f2937" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                            </BarChart>
+                            )}
                         </ResponsiveContainer>
+                        </div>
+                        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500">
+                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#0080c1]" /> Compras</span>
+                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1f2937]" /> Ventas</span>
+                            {indexMeta != null && <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 border border-[#eab308] border-dashed" /> Meta (índice)</span>}
+                        </div>
                     </div>
 
 
                 </div>
             </div>
             {showFaseModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="w-full max-w-sm p-6 bg-white shadow-lg rounded-xl">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto">
+                    <div className="w-full max-w-sm p-4 sm:p-6 bg-white shadow-xl rounded-t-2xl sm:rounded-xl max-h-[90vh] overflow-y-auto">
                         <h2 className="mb-4 text-lg font-semibold text-center">Confirmar cambio de fase</h2>
                         <p className="mb-4 text-sm text-gray-700">
                             ¿Estás seguro de que deseas cambiar la fase de la auditoría fiscal?
@@ -652,19 +671,21 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                         <p className="mb-4 text-sm">
                             <span className="font-bold">Nueva fase:</span> {faseToChange?.replace("_", " ")}
                         </p>
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end gap-2">
                             <button
+                                type="button"
                                 onClick={() => {
                                     setShowFaseModal(false);
                                     setFaseToChange(null);
                                 }}
-                                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                             >
                                 Cancelar
                             </button>
                             <button
+                                type="button"
                                 onClick={confirmFaseChange}
-                                className="px-4 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700"
                             >
                                 Confirmar
                             </button>
@@ -675,55 +696,62 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
             {showCulminatedModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-6 text-center bg-white shadow-lg rounded-xl">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto">
+                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-4 sm:p-6 text-center bg-white shadow-xl rounded-t-2xl sm:rounded-xl">
                         <h2 className="mb-4 text-lg font-semibold text-center text-blue-600">Confirmar Culminación</h2>
                         <p className="mb-4 text-sm text-gray-700">¿Deseas marcar el procedimiento de este contribuyente como culminado?</p>
-                        <div className="flex justify-end space-x-2">
-                            <button onClick={() => setShowCulminatedModal(false)} className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Cancelar</button>
-                            <button onClick={confirmCulminated} className="px-4 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700">Confirmar</button>
+                        <div className="flex justify-end gap-2">
+                            <button type="button" onClick={() => setShowCulminatedModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+                            <button type="button" onClick={confirmCulminated} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700">Confirmar</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {showNotifiedModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-6 text-center bg-white shadow-lg rounded-xl">
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto">
+                    <div className="flex flex-col items-center justify-center w-full max-w-sm p-4 sm:p-6 text-center bg-white shadow-xl rounded-t-2xl sm:rounded-xl">
                         <h2 className="mb-4 text-lg font-semibold text-center text-blue-600">Confirmar Notificación</h2>
                         <p className="mb-4 text-sm text-gray-700">¿Deseas reportar al contribuyente como notificado?</p>
-                        <div className="flex justify-end space-x-2">
-                            <button onClick={() => setShowNotifiedModal(false)} className="px-4 py-1 text-sm text-white bg-red-600 rounded hover:bg-red-700">Cancelar</button>
-                            <button onClick={confirmNotified} className="px-4 py-1 text-sm text-white bg-green-600 rounded hover:bg-green-700">Confirmar</button>
+                        <div className="flex justify-end gap-2">
+                            <button type="button" onClick={() => setShowNotifiedModal(false)} className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">Cancelar</button>
+                            <button type="button" onClick={confirmNotified} className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700">Confirmar</button>
                         </div>
                     </div>
                 </div>
             )}
 
             {showIndexModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-                    <div className="w-full max-w-sm p-6 bg-white shadow-lg rounded-xl">
-                        <h2 className="mb-4 text-lg font-semibold text-center">Modificar índice IVA</h2>
+                <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto" onClick={() => setShowIndexModal(false)}>
+                    <div className="w-full max-w-sm p-4 sm:p-6 bg-white shadow-xl rounded-t-2xl sm:rounded-xl max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+                        <h2 className="mb-4 text-lg font-semibold text-center">Editar índice IVA (meta mensual)</h2>
+                        <label htmlFor="index-iva-input" className="block mb-1 text-sm text-gray-700">
+                            Nuevo monto meta mensual (BS)
+                        </label>
                         <input
+                            id="index-iva-input"
                             type="number"
                             step="0.01"
-                            placeholder="Nuevo monto IVA"
+                            min="0"
+                            placeholder="Ej. 1500"
                             value={newIndexIva}
                             onChange={(e) => setNewIndexIva(e.target.value)}
-                            className="w-full px-3 py-2 mb-4 border rounded"
+                            className="w-full px-3 py-2 mb-4 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
-                        <div className="flex justify-end space-x-2">
+                        <div className="flex justify-end gap-2">
                             <button
+                                type="button"
                                 onClick={() => setShowIndexModal(false)}
-                                className="px-4 py-1 text-sm text-gray-700 border border-gray-400 rounded hover:bg-gray-100"
+                                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
                             >
                                 Cancelar
                             </button>
                             <button
+                                type="button"
                                 onClick={submitNewIndexIva}
-                                className="px-4 py-1 text-sm text-white bg-blue-600 rounded hover:bg-blue-700"
+                                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700"
                             >
-                                Actualizar
+                                Guardar
                             </button>
                         </div>
                     </div>

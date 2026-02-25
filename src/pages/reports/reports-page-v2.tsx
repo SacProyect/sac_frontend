@@ -7,7 +7,7 @@ import GenerateReport from '@/components/reports/generate-report';
  */
 export default function ReportsPageV2() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Generar Reportes"
         description="Busca contribuyentes y genera reportes completos"
