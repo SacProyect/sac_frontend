@@ -43,8 +43,9 @@ export function ErrorState({ title = 'Ocurrió un error', message, onRetry }: Er
         {message && <p className="text-slate-300 mb-4">{message}</p>}
         {onRetry && (
           <button
+            type="button"
             onClick={onRetry}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md"
+            className="min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
           >
             Reintentar
           </button>
@@ -78,12 +79,12 @@ interface PageHeaderProps {
 
 export function PageHeader({ title, description, action }: PageHeaderProps & { action?: React.ReactNode }) {
   return (
-    <div className="flex items-start justify-between">
-      <div>
-        <h1 className="text-3xl font-bold text-white">{title}</h1>
-        {description && <p className="text-slate-400 mt-2">{description}</p>}
+    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="min-w-0">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">{title}</h1>
+        {description && <p className="text-slate-400 mt-1 sm:mt-2 text-sm sm:text-base">{description}</p>}
       </div>
-      {action && <div>{action}</div>}
+      {action && <div className="shrink-0 w-full sm:w-auto">{action}</div>}
     </div>
   );
 }
