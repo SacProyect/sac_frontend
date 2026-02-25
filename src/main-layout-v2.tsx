@@ -221,8 +221,8 @@ const MainLayoutV2 = () => {
             <DesktopSidebar />
             <div className="flex-1 flex flex-col">
                 <Header />
-                <main className="flex-1 bg-slate-950 overflow-auto">
-                    <div className="p-4 md:p-6 min-h-full">
+                <main className="flex-1 bg-slate-950 overflow-auto overflow-x-hidden">
+                    <div className="px-3 py-4 sm:px-4 sm:py-5 md:px-6 md:py-6 min-h-full max-w-full">
                         <Outlet />
                     </div>
                 </main>

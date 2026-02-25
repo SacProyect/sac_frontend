@@ -10,7 +10,7 @@ export default function PaymentPageV2() {
   const { taxpayerId } = useParams();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Registrar Pago"
         description="Registra un nuevo pago para un contribuyente"

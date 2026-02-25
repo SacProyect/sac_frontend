@@ -7,7 +7,7 @@ import IndexIvaForm from '@/components/index-iva/IndexIvaForm';
  */
 export default function IndexIvaV2() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Actualizar Índices de IVA"
         description="Gestiona los índices de IVA para contribuyentes ordinarios y especiales"

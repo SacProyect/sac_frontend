@@ -7,7 +7,7 @@ import IvaForm from '@/components/iva/IvaForm';
  */
 export default function IvaReportV2() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Reporte de IVA"
         description="Registra y gestiona reportes de IVA para contribuyentes"

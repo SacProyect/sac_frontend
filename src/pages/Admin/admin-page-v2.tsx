@@ -631,7 +631,7 @@ export default function AdminPageV2() {
 
         {/* Modal de confirmación de eliminación */}
         <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-          <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
             <DialogHeader>
               <DialogTitle>Confirmar Eliminación</DialogTitle>
               <DialogDescription className="text-slate-400">

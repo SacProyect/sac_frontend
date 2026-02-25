@@ -10,7 +10,7 @@ export default function ComitmentPageV2() {
   const { taxpayerId } = useParams();
   
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Agregar Compromiso de Pago"
         description="Registra un nuevo compromiso de pago para un contribuyente"

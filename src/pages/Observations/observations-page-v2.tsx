@@ -153,7 +153,7 @@ export default function ObservationsPageV2() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <PageHeader
         title="Gestión de Observaciones"
         description="Registra y gestiona observaciones para este contribuyente"
@@ -291,7 +291,7 @@ export default function ObservationsPageV2() {
 
       {/* Modal de confirmación de eliminación */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle>Confirmar Eliminación</DialogTitle>
             <DialogDescription className="text-slate-400">

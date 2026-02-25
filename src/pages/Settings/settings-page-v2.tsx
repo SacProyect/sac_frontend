@@ -17,7 +17,7 @@ export default function SettingsPageV2() {
   const [activeTab, setActiveTab] = useState('profile');
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
       <div>
         <h1 className="text-3xl font-bold text-white">Ajustes</h1>
         <p className="text-slate-400 mt-2">Administra tu perfil, seguridad y preferencias</p>
