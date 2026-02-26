@@ -1,326 +1,477 @@
-import React, { useEffect, useState } from 'react'
-import { getContributions } from '../utils/api/report-functions';
-import toast from 'react-hot-toast';
+import React, { useState, useMemo } from 'react'
 import { GroupData } from './contribution-types';
-import { BiSort, BiSortUp, BiSortDown } from "react-icons/bi";
-
+import { 
+  ArrowUpDown, 
+  ChevronUp, 
+  ChevronDown, 
+  UserCircle2, 
+  Layers, 
+  Receipt, 
+  Scale, 
+  Users, 
+  FileCheck2,
+  AlertTriangle,
+  History,
+  Search,
+  TrendingUp,
+  DollarSign,
+  Eye,
+  Info
+} from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Badge } from '@/components/UI/badge';
+import { Button } from '@/components/UI/button';
+import { Card } from '@/components/UI/card';
 
 interface ContributionsStatisticsProps {
     groupData: GroupData[],
     selectedGroup: string,
-    pdfMode?: boolean // <- nueva prop opcional
+    pdfMode?: boolean
     selectedSupervisorId: string | null;
     startDate: string;
     endDate: string;
 }
 
+interface KPICardProps {
+  title: string;
+  value: string | number;
+  subtitle?: string;
+  icon: React.ReactNode;
+  trend?: 'up' | 'down' | 'neutral';
+  color: 'indigo' | 'emerald' | 'amber' | 'rose' | 'slate';
+}
+
+const KPICard = ({ title, value, subtitle, icon, color }: KPICardProps) => {
+  const colorClasses = {
+    indigo: "from-indigo-500/20 to-indigo-600/5 border-indigo-500/20",
+    emerald: "from-emerald-500/20 to-emerald-600/5 border-emerald-500/20",
+    amber: "from-amber-500/20 to-amber-600/5 border-amber-500/20",
+    rose: "from-rose-500/20 to-rose-600/5 border-rose-500/20",
+    slate: "from-slate-500/20 to-slate-600/5 border-slate-500/20",
+  };
+  
+  const iconColors = {
+    indigo: "text-indigo-400 bg-indigo-500/20",
+    emerald: "text-emerald-400 bg-emerald-500/20",
+    amber: "text-amber-400 bg-amber-500/20",
+    rose: "text-rose-400 bg-rose-500/20",
+    slate: "text-slate-400 bg-slate-500/20",
+  };
+
+  return (
+    <div className={cn(
+      "relative overflow-hidden rounded-2xl border bg-gradient-to-br p-4 transition-all hover:scale-[1.02]",
+      colorClasses[color]
+    )}>
+      <div className="flex items-start justify-between">
+        <div className="space-y-1">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">{title}</p>
+          <p className="text-xl font-black text-white">{value}</p>
+          {subtitle && <p className="text-[9px] text-slate-400">{subtitle}</p>}
+        </div>
+        <div className={cn("p-2 rounded-xl", iconColors[color])}>
+          {icon}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, selectedSupervisorId, startDate, endDate }: ContributionsStatisticsProps) {
     const [typeClicked, setTypeClicked] = useState("FP")
     const [multiSortConfig, setMultiSortConfig] = useState<Record<string, 'asc' | 'desc' | null>>({});
-    const [groupId, supervisorId] = selectedGroup.split("_");
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showLegend, setShowLegend] = useState(false);
 
+    const selectedGroupData = useMemo(() => {
+      return groupData.find((group) => group.id === selectedGroup) || null;
+    }, [groupData, selectedGroup]);
 
-    // Filter the statistics to show based on the selected group
-    const groupStatistics = groupData.filter((group) => group.id === selectedGroup);
-    const selectedGroupData = groupStatistics.length > 0 ? groupStatistics[0] : null;
+    const processedData = useMemo(() => {
+        if (!selectedGroupData || !selectedGroupData.members) return [];
 
+        return selectedGroupData.members
+            .filter((member) => {
+                if (!selectedSupervisorId) return true;
+                return member.supervisorId === selectedSupervisorId;
+            }).map((member) => {
+                const taxpayers = member.taxpayer || [];
+                const filteredTaxpayers = taxpayers.filter(
+                    (taxpayer) => !typeClicked || taxpayer.process === typeClicked
+                );
 
-    // Selected data based on process type inside of taxpayers
-    const selectedData = selectedGroupData?.members
-        ?.filter((member) => {
-            // Si hay filtro por supervisor, solo tomar los que coinciden
-            if (!selectedSupervisorId) return true;
-            return member.supervisorId === selectedSupervisorId;
-        }).map((member) => {
-            // Filter taxpayers based on the selected type
-            const filteredTaxpayers = member.taxpayer.filter(
-                (taxpayer) => !typeClicked || taxpayer.process === typeClicked
-            );
+                const totalWarnings = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "WARNING").length ?? 0), 0);
+                const totalFines = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "FINE").length ?? 0), 0);
+                const totalCompromises = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "PAYMENT_COMPROMISE").length ?? 0), 0);
+                const totalTaxpayers = filteredTaxpayers.length;
 
+                const totalIVA = filteredTaxpayers.reduce((sum, t) => {
+                    return sum + (t.IVAReports?.reduce((s, r) => s + Number(r.paid || 0), 0) || 0);
+                }, 0);
 
-            const totalWarnings = filteredTaxpayers.reduce((warningSum, taxpayer) => {
-                return warningSum + (taxpayer.event?.filter(event => event.type === "WARNING").length ?? 0);
-            }, 0);
+                const totalISLR = filteredTaxpayers.reduce((sum, t) => {
+                    return sum + (t.ISLRReports?.reduce((s, r) => s + Number(r.paid || 0), 0) || 0);
+                }, 0);
 
-            const totalFines = filteredTaxpayers.reduce((finesSum, taxpayer) => {
-                return finesSum + (taxpayer.event.filter(event => event.type === "FINE").length ?? 0);
-            }, 0);
+                const totalCollectedFines = filteredTaxpayers.reduce((acc, t) => {
+                    return acc + (t.event.filter(e => e.type === "FINE").reduce((s, r) => s + Number(r.amount || 0), 0) || 0);
+                }, 0);
 
-            const totalCompromises = filteredTaxpayers.reduce((compromisesSum, taxpayer) => {
-                return compromisesSum + (taxpayer.event.filter((event) => event.type === "PAYMENT_COMPROMISE").length ?? 0);
-            }, 0);
+                return {
+                    ...member,
+                    totalWarnings,
+                    totalFines,
+                    totalCompromises,
+                    totalTaxpayers,
+                    totalCollectedFines,
+                    totalISLR,
+                    totalIVA: parseFloat(totalIVA.toFixed(2)),
+                };
+            })
+            .filter((member) => member.totalTaxpayers > 0);
+    }, [selectedGroupData, typeClicked, selectedSupervisorId]);
 
-            const totalTaxpayers = filteredTaxpayers.length;
+    // Filter by search query
+    const filteredBySearch = useMemo(() => {
+        if (!searchQuery.trim()) return processedData;
+        const query = searchQuery.toLowerCase();
+        return processedData.filter(member => 
+            member.name.toLowerCase().includes(query)
+        );
+    }, [processedData, searchQuery]);
 
+    // Calculate totals for KPI cards
+    const totals = useMemo(() => {
+        return filteredBySearch.reduce((acc, member) => ({
+            totalTaxpayers: acc.totalTaxpayers + member.totalTaxpayers,
+            totalIVA: acc.totalIVA + member.totalIVA,
+            totalISLR: acc.totalISLR + member.totalISLR,
+            totalFines: acc.totalFines + member.totalFines,
+            totalWarnings: acc.totalWarnings + member.totalWarnings,
+            totalCompromises: acc.totalCompromises + member.totalCompromises,
+            totalCollected: acc.totalCollected + member.totalCollectedFines + member.totalIVA + member.totalISLR,
+        }), {
+            totalTaxpayers: 0,
+            totalIVA: 0,
+            totalISLR: 0,
+            totalFines: 0,
+            totalWarnings: 0,
+            totalCompromises: 0,
+            totalCollected: 0,
+        });
+    }, [filteredBySearch]);
 
-            // ✅ Nuevo cálculo del total IVA
-            const totalIVA = filteredTaxpayers.reduce((ivaSum, taxpayer) => {
-                const taxpayerIVA = taxpayer.IVAReports?.reduce(
-                    (sum, report) => sum + Number(report.paid || 0),
-                    0
-                ) || 0;
-                return (ivaSum + taxpayerIVA);
-            }, 0);
-
-            const totalISLR = filteredTaxpayers.reduce((islrSum, taxpayer) => {
-                const taxpayerIslr = taxpayer.ISLRReports?.reduce(
-                    (sum, report) => sum + Number(report.paid || 0),
-                    0
-                ) || 0;
-                return (islrSum + taxpayerIslr);
-            }, 0);
-
-            const totalCollectedFines = filteredTaxpayers.reduce((acc, taxpayer) => {
-                const collectedFines = taxpayer.event.filter((ev) => ev.type === "FINE").reduce(
-                    (sum, report) => sum + Number(report.amount || 0),
-                    0
-                ) || 0;
-                return acc + collectedFines
-            }, 0)
-
-            // console.log(totalISLR)
-
-
-
-            return {
-                ...member,
-                taxpayer: filteredTaxpayers, // Keep only the filtered taxpayers
-                totalWarnings,
-                totalFines,
-                totalCompromises,
-                totalTaxpayers,
-                totalCollectedFines,
-                totalISLR,
-                totalIVA: parseFloat(totalIVA.toFixed(2)),
-            };
-        })
-        .filter((member) => member.taxpayer.length > 0); // Remove members with no taxpayers matching the filter
-
-
-    // Handle the sorting of each column
     const handleSort = (key: string) => {
         setMultiSortConfig((prev) => {
-            const currentDirection = prev[key];
-            let newDirection: 'asc' | 'desc' | null;
-
-            // If the column is already sorted, toggle its direction
-            if (currentDirection === 'asc') {
-                newDirection = 'desc';
-            } else if (currentDirection === 'desc') {
-                newDirection = null;
-            } else {
-                newDirection = 'asc';
-            }
-
-            return {
-                ...prev, // Keep existing sorting for other columns
-                [key]: newDirection, // Update the clicked column only
-            };
+            const current = prev[key];
+            const next: 'asc' | 'desc' | null = current === 'asc' ? 'desc' : current === 'desc' ? null : 'asc';
+            return { [key]: next };
         });
     };
 
+    const sortedData = useMemo(() => {
+        const sortKey = Object.keys(multiSortConfig).find(k => multiSortConfig[k]);
+        if (!sortKey) return filteredBySearch;
 
-    // Sort selectedData based on sortConfig
-    const sortedData = selectedData ? [...selectedData].sort((a, b) => {
-        const sortKeys = Object.keys(multiSortConfig).filter((key) => multiSortConfig[key]);
-
-        for (let key of sortKeys) {
-            const direction = multiSortConfig[key];
-            const valueA = a[key as keyof typeof a];
-            const valueB = b[key as keyof typeof b];
-
-            const valA = typeof valueA === "number"
-                ? valueA
-                : (valueA?.toString().toLowerCase() ?? "");
-            const valB = typeof valueB === "number"
-                ? valueB
-                : (valueB?.toString().toLowerCase() ?? "");
-
+        const direction = multiSortConfig[sortKey];
+        return [...filteredBySearch].sort((a, b) => {
+            const valA = a[sortKey as keyof typeof a] ?? 0;
+            const valB = b[sortKey as keyof typeof b] ?? 0;
+            
             if (valA < valB) return direction === 'asc' ? -1 : 1;
             if (valA > valB) return direction === 'asc' ? 1 : -1;
-        }
+            return 0;
+        });
+    }, [filteredBySearch, multiSortConfig]);
 
-        return 0;
-    }) : [];
-
-
-    // Icon to sort each column of the table
-    const SortIcon = ({ column }: { column: string }) => {
-        const direction = multiSortConfig[column];
-        if (!direction) return <BiSort />;
-        if (direction === 'asc') return <BiSortUp />;
-        return <BiSortDown />;
+    const formatCurrency = (amount: number) => {
+        return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES', maximumFractionDigits: 0 }).format(amount);
     };
 
+    const procedureTypes = [
+        { code: 'FP', label: 'Fiscalización', description: 'Procedimiento de fiscalización' },
+        { code: 'AF', label: 'Archivo', description: 'Archivo fiscal' },
+        { code: 'VDF', label: 'Verificación', description: 'Verificación de datos' },
+    ];
 
-
+    if (!selectedGroupData) {
+        return (
+            <div className='flex flex-col items-center justify-center w-full py-20 animate-in fade-in zoom-in duration-500'>
+                <div className="w-20 h-20 rounded-3xl bg-slate-900 border border-slate-800 flex items-center justify-center mb-4">
+                  <Layers className="w-10 h-10 text-indigo-500/50" />
+                </div>
+                <p className='text-base font-bold text-slate-500 uppercase tracking-widest'>Seleccione una coordinación para ver estadísticas</p>
+                <p className='text-sm text-slate-600 mt-2'>Elija un grupo del menú superior para comenzar</p>
+            </div>
+        );
+    }
 
     return (
-        <section className=' border border-gray-200 w-full lg:h-[52vh] h-[80vh] rounded-md mb-4 lg:mb-0'>
+        <section className='space-y-6 animate-in slide-in-from-bottom-2 duration-500'>
+            {/* Header & Controls */}
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2">
+                <div className="space-y-1">
+                    <h3 className='text-2xl font-black text-white flex items-center gap-3 flex-wrap'>
+                        <Badge className="bg-indigo-600 text-white border-indigo-500 text-sm">{selectedGroupData.members.length}</Badge>
+                        Fiscales en {selectedGroupData.name.replace(/GRUPO/gi, 'COORDINACIÓN')}
+                    </h3>
+                    <div className="flex items-center gap-2 text-slate-500 text-xs font-bold uppercase tracking-wider">
+                        <History className="w-3.5 h-3.5" />
+                        {startDate && endDate ? (
+                            <span>Desde {new Date(startDate).toLocaleDateString()} hasta {new Date(endDate).toLocaleDateString()}</span>
+                        ) : (
+                            "Todo el período"
+                        )}
+                    </div>
+                </div>
 
-            {/* Section header */}
-            {selectedGroupData ? (
-                <>
-                    <div className='flex justify-between w-full'>
-                        <p className='pt-4 pl-4 text-xl font-semibold'>
-                            Estadísticas para: {selectedGroupData?.name.replace(/GRUPO/gi, 'COORDINACIÓN')}
-                            {startDate && endDate
-                                ? `. Desde la fecha: ${new Date(startDate).toLocaleDateString("es-VE")} hasta la fecha: ${new Date(endDate).toLocaleDateString("es-VE")}`
-                                : ""}
-                        </p>
-                        {/* <button className='font-normal text-gray-500'>Close</button> */}
+                <div className='flex flex-wrap items-center gap-3'>
+                    {/* Search Input */}
+                    <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                        <input
+                            type="text"
+                            placeholder="Buscar fiscal..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-9 pr-4 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 focus:border-indigo-500/50 transition-all w-48"
+                        />
+                        {searchQuery && (
+                            <button
+                                onClick={() => setSearchQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                            >
+                                ×
+                            </button>
+                        )}
                     </div>
 
-                    {/* Buttons */}
-                    <div className='grid w-full grid-cols-3 px-4 py-4 text-center'>
-                        <div className={`w-full rounded-l-md`} >
-                            <button className={`w-full ${typeClicked == "FP" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("FP")}>FP</button>
-                        </div>
-                        <div className='w-full bg-gray-200'>
-                            <button className={`w-full ${typeClicked == "AF" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("AF")}>AF</button>
-                        </div>
-                        <div className='w-full bg-gray-200 rounded-r-md'>
-                            <button className={`w-full ${typeClicked == "VDF" ? "bg-white" : "bg-gray-200"}`} onClick={() => setTypeClicked("VDF")}>VDF</button>
-                        </div>
+                    {/* Filter Buttons */}
+                    <div className='flex bg-slate-900/50 p-1.5 rounded-2xl border border-slate-800 backdrop-blur-sm'>
+                        {procedureTypes.map((type) => (
+                            <button 
+                                key={type.code}
+                                onClick={() => setTypeClicked(type.code)}
+                                className={cn(
+                                    "px-5 py-2 text-xs font-bold rounded-xl transition-all duration-300 flex items-center gap-2",
+                                    typeClicked === type.code 
+                                        ? "bg-indigo-600 text-white shadow-xl shadow-indigo-600/20" 
+                                        : "text-slate-500 hover:text-slate-300 hover:bg-slate-800/50"
+                                )}
+                            >
+                                {typeClicked === type.code && <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />}
+                                {type.code}
+                            </button>
+                        ))}
                     </div>
 
+                    {/* Legend Toggle */}
+                    <button
+                        onClick={() => setShowLegend(!showLegend)}
+                        className="flex items-center gap-2 px-3 py-2.5 bg-slate-900/50 border border-slate-800 rounded-xl text-xs font-medium text-slate-400 hover:text-white hover:border-slate-700 transition-all"
+                    >
+                        <Info className="w-4 h-4" />
+                        <span>Leyenda</span>
+                    </button>
+                </div>
+            </div>
 
-
-                    {/* Table */}
-                    <div className="w-full px-4 border-collapse">
-                        <div className="w-full lg:h-[20rem] h-[24rem] border border-gray-200 rounded-md overflow-y-auto overflow-x-auto ">
-                            <div className="grid w-full grid-cols-10 text-xs" style={{ gridTemplateColumns: 'repeat(10, minmax(160px, 1fr))' }}>
-                                <div className=''>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("name")} className="text-xs">
-                                            Fiscal
-                                        </button>
-                                        <SortIcon column="name" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className='flex flex-col items-center w-full py-2 bg-gray-200 border-t-2 border-gray-300'>
-                                            <p className=''>{data.name}</p>
-                                        </div>
-                                    ))}
-                                </div>
+            {/* Legend Panel */}
+            {showLegend && (
+                <div className="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 animate-in slide-in-from-top-2 duration-200">
+                    <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-3">Tipos de Procedimiento</p>
+                    <div className="flex flex-wrap gap-4">
+                        {procedureTypes.map((type) => (
+                            <div key={type.code} className="flex items-center gap-2 bg-slate-950/50 px-3 py-2 rounded-xl border border-slate-800">
+                                <Badge className={cn(
+                                    "text-xs font-bold px-2",
+                                    typeClicked === type.code ? "bg-indigo-600" : "bg-slate-700"
+                                )}>
+                                    {type.code}
+                                </Badge>
                                 <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("type")} className="text-xs">Tipo</button>
-                                        <SortIcon column="type" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{typeClicked}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado Multas</button>
-                                        <SortIcon column="totalCollected" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCollectedFines.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado IVA</button>
-                                        <SortIcon column="totalCollected" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalIVA.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCollected")} className="text-xs">Pagado ISLR</button>
-                                        <SortIcon column="totalCollected" />
-                                    </div>
-                                    {sortedData?.map((data) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalISLR.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalWarnings")} className="text-xs">Avisos</button>
-                                        <SortIcon column="totalWarnings" />
-                                    </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalWarnings.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalFines")} className="text-xs">Multas</button>
-                                        <SortIcon column="totalFines" />
-                                    </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalFines.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalCompromises")}>Compromisos</button>
-                                        <SortIcon column="totalCompromises" />
-                                    </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{member.totalCompromises.toLocaleString()}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div>
-                                    <div className="flex items-center justify-center">
-                                        <button onClick={() => handleSort("totalTaxpayers")} className="text-xs">Contribuyentes</button>
-                                        <div className='pr-4'>
-                                            <SortIcon column="totalTaxpayers" />
-                                        </div>
-                                    </div>
-                                    {sortedData?.map((member) => (
-                                        <div className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p className="text-xs">{member.totalTaxpayers.toLocaleString()}</p>
-                                        </div>
-                                    ))}
+                                    <p className="text-xs font-bold text-white">{type.label}</p>
+                                    <p className="text-[10px] text-slate-500">{type.description}</p>
                                 </div>
                             </div>
-                        </div>
+                        ))}
                     </div>
-
-                    {/* Under the table */}
-                    <div className='flex justify-between px-6 pt-1 '>
-                        <div className=''>
-                            <p className='text-gray-600'>Cantidad de fiscales muestreados en procedimiento {typeClicked}: {selectedData?.length}</p>
-                        </div>
-                        <div className=''>
-                            <p className='text-gray-600'>*Deslice hacia abajo para ver la lista completa*</p>
-                        </div>
-                    </div>
-                </>
-            ) : (
-                <div className='flex items-center justify-center w-full h-full'>
-                    <p className='pt-4 pl-4 text-2xl'>Seleccione una coordinación por favor</p>
                 </div>
             )}
 
+            {/* KPI Summary Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                <KPICard
+                    title="Fiscales"
+                    value={sortedData.length}
+                    subtitle="Activos"
+                    icon={<Users className="w-5 h-5" />}
+                    color="indigo"
+                />
+                <KPICard
+                    title="Contribuyentes"
+                    value={totals.totalTaxpayers.toLocaleString()}
+                    subtitle="Registrados"
+                    icon={<UserCircle2 className="w-5 h-5" />}
+                    color="slate"
+                />
+                <KPICard
+                    title="Total IVA"
+                    value={formatCurrency(totals.totalIVA)}
+                    subtitle="Recaudado"
+                    icon={<Receipt className="w-5 h-5" />}
+                    color="emerald"
+                />
+                <KPICard
+                    title="Total ISLR"
+                    value={formatCurrency(totals.totalISLR)}
+                    subtitle="Recaudado"
+                    icon={<DollarSign className="w-5 h-5" />}
+                    color="indigo"
+                />
+                <KPICard
+                    title="Multas"
+                    value={totals.totalFines}
+                    subtitle="Impuestas"
+                    icon={<Scale className="w-5 h-5" />}
+                    color="amber"
+                />
+                <KPICard
+                    title="Total Recaudado"
+                    value={formatCurrency(totals.totalCollected)}
+                    subtitle="General"
+                    icon={<TrendingUp className="w-5 h-5" />}
+                    color="emerald"
+                />
+            </div>
 
+            {/* Table Container */}
+            <div className="relative overflow-hidden rounded-[2.5rem] border border-slate-800 bg-slate-900/20 backdrop-blur-xl">
+                <div className="overflow-x-auto custom-scrollbar max-h-[500px]">
+                    <table className="w-full text-left border-separate border-spacing-0">
+                        <thead className="sticky top-0 z-10">
+                            <tr className="bg-slate-950/80 backdrop-blur-sm shadow-lg">
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 rounded-tl-2xl">
+                                    <button onClick={() => handleSort("name")} className="flex items-center gap-2 hover:text-indigo-400 transition-colors">
+                                        <UserCircle2 className="w-4 h-4" /> Fiscal <ArrowUpDown className="w-3 h-3 opacity-50" />
+                                    </button>
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800">
+                                    <div className="flex items-center gap-2"><Scale className="w-4 h-4 text-amber-500" /> Multas</div>
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800">
+                                    <div className="flex items-center gap-2"><Receipt className="w-4 h-4 text-emerald-500" /> Pagos</div>
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 text-center">
+                                    <div className="flex items-center gap-2 justify-center"><AlertTriangle className="w-4 h-4 text-amber-500" /> Avisos</div>
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 text-center">
+                                    <div className="flex items-center gap-2 justify-center"><FileCheck2 className="w-4 h-4 text-emerald-400" /> Comp.</div>
+                                </th>
+                                <th className="px-6 py-4 text-[11px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-800 text-right rounded-tr-2xl">
+                                    <button onClick={() => handleSort("totalTaxpayers")} className="flex items-center gap-2 hover:text-indigo-400 transition-colors ml-auto">
+                                        <Users className="w-4 h-4" /> Contrib. <ArrowUpDown className="w-3 h-3 opacity-50" />
+                                    </button>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-slate-800/50">
+                            {sortedData?.length > 0 ? (
+                                sortedData.map((data) => (
+                                    <tr key={data.id} className="group hover:bg-slate-800/40 transition-all duration-200 cursor-pointer">
+                                        <td className="px-6 py-5">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-white group-hover:text-indigo-400 transition-colors">{data.name}</span>
+                                                <span className="text-[10px] text-slate-500 font-mono uppercase italic">{typeClicked} Procedure</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className="flex flex-col">
+                                                <span className="text-sm font-bold text-slate-200">{data.totalFines}</span>
+                                                <span className="text-[9px] text-slate-500 uppercase tracking-tighter">Multas Impuestas</span>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5">
+                                            <div className="space-y-1.5">
+                                                <div className="flex justify-between items-center min-w-[120px]">
+                                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">IVA:</span>
+                                                    <span className="text-xs font-mono text-emerald-400 font-bold">{formatCurrency(data.totalIVA)}</span>
+                                                </div>
+                                                <div className="flex justify-between items-center min-w-[120px]">
+                                                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-tight">ISLR:</span>
+                                                    <span className="text-xs font-mono text-indigo-400 font-bold">{formatCurrency(data.totalISLR)}</span>
+                                                </div>
+                                                <div className="pt-1.5 border-t border-slate-800 flex justify-between items-center min-w-[120px]">
+                                                    <span className="text-[10px] text-slate-200 font-black">TOTAL:</span>
+                                                    <span className="text-xs font-mono text-white font-black">{formatCurrency(data.totalCollectedFines + data.totalIVA + data.totalISLR)}</span>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <Badge variant="outline" className={cn(
+                                                "text-xs font-bold px-3 py-1",
+                                                data.totalWarnings > 0 
+                                                    ? "bg-amber-500/20 text-amber-400 border-amber-500/30" 
+                                                    : "bg-slate-800/50 text-slate-500 border-slate-700"
+                                            )}>
+                                                {data.totalWarnings}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-5 text-center">
+                                            <Badge variant="outline" className={cn(
+                                                "text-xs font-bold px-3 py-1",
+                                                data.totalCompromises > 0 
+                                                    ? "bg-emerald-500/20 text-emerald-400 border-emerald-500/30" 
+                                                    : "bg-slate-800/50 text-slate-500 border-slate-700"
+                                            )}>
+                                                {data.totalCompromises}
+                                            </Badge>
+                                        </td>
+                                        <td className="px-6 py-5 text-right">
+                                            <div className="inline-flex items-center gap-2">
+                                                <span className="text-sm font-black text-white bg-slate-800 px-3 py-1.5 rounded-lg ring-1 ring-slate-700">
+                                                    {data.totalTaxpayers}
+                                                </span>
+                                                <button className="p-1.5 rounded-lg bg-slate-800/50 text-slate-500 hover:text-indigo-400 hover:bg-indigo-500/20 transition-all opacity-0 group-hover:opacity-100">
+                                                    <Eye className="w-4 h-4" />
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan={6} className="px-6 py-16 text-center">
+                                        <div className="flex flex-col items-center">
+                                            <Search className="w-12 h-12 text-slate-600 mb-4" />
+                                            <p className="text-sm font-bold text-slate-400">No se encontraron fiscales</p>
+                                            <p className="text-xs text-slate-600 mt-1">Intenta con otro término de búsqueda</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
 
-
-
-
-
-
+                {/* Footer Insight */}
+                <div className="bg-slate-950/60 px-6 py-4 flex flex-col sm:flex-row justify-between items-center gap-4 border-t border-slate-800">
+                    <div className="flex items-center gap-4">
+                        <p className='text-xs font-bold text-slate-500 uppercase tracking-widest'>
+                            Mostrando: <span className="text-indigo-400">{sortedData?.length} fiscales</span> en procedimiento {typeClicked}
+                        </p>
+                        {searchQuery && (
+                            <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-[10px]">
+                                Filtrado: "{searchQuery}"
+                            </Badge>
+                        )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="h-2 w-2 rounded-full bg-indigo-500 animate-pulse" />
+                      <p className='text-[10px] font-black text-slate-600 uppercase italic'>Deslice para ver la tabla completa</p>
+                    </div>
+                </div>
+            </div>
         </section>
     )
 }
