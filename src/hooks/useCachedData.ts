@@ -1,8 +1,8 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getParishList, getTaxpayerCategories, getTaxpayers, getTaxpayerForEvents } from '@/components/utils/api/taxpayerFunctions';
-import { getOfficers } from '@/components/utils/api/userFunctions';
+import { getParishList, getTaxpayerCategories, getTaxpayers, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
+import { getOfficers } from '@/components/utils/api/user-functions';
 import type { Parish } from '@/types/parish';
-import type { TaxpayerCategories } from '@/types/taxpayerCategories';
+import type { TaxpayerCategories } from '@/types/taxpayer-categories';
 import type { Taxpayer } from '@/types/taxpayer';
 
 // Tiempo de caché: 5 minutos

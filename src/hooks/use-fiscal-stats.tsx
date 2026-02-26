@@ -10,6 +10,7 @@ import {
   getFiscalComplianceByProcess,
 } from '@/components/utils/api/report-functions';
 import toast from 'react-hot-toast';
+import { FiscalInfoExtended } from '@/types/fiscal-stats';
 
 // Tipos para los datos transformados
 export interface MonthlyRevenueData {
@@ -42,11 +43,12 @@ export interface SupervisorLeaderboardData {
 }
 
 export interface GlobalKPIData {
-  totalContribuyentes: number;
-  recaudacionTotal: number;
-  promedioExcedente: number;
-  morosityRate: number;
-  monthlyTrend: number;
+  totalTaxpayers: number;
+  totalTaxCollection: number;
+  averageCreditSurplus: number;
+  finePercentage: number;
+  growthRate: number;
+  delinquencyRate: number;
 }
 
 export interface FiscalPerformanceData {
@@ -175,11 +177,12 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       const kpiData = await getGlobalKPI(year);
       if (kpiData) {
         const kpi: GlobalKPIData = {
-          totalContribuyentes: kpiData.totalTaxpayers || kpiData.totalContribuyentes || 0,
-          recaudacionTotal: kpiData.totalCollection || kpiData.recaudacionTotal || 0,
-          promedioExcedente: kpiData.averageExcess || kpiData.promedioExcedente || 0,
-          morosityRate: kpiData.morosityRate || kpiData.morosityRate || 0,
-          monthlyTrend: kpiData.monthlyTrend || kpiData.monthlyTrend || 0,
+          totalTaxpayers: kpiData.totalTaxpayers || 0,
+          totalTaxCollection: kpiData.totalTaxCollection || 0,
+          averageCreditSurplus: kpiData.averageCreditSurplus || 0,
+          finePercentage: kpiData.finePercentage || 0,
+          growthRate: kpiData.growthRate || 0,
+          delinquencyRate: kpiData.delinquencyRate || 0,
         };
         setGlobalKPI(kpi);
       }

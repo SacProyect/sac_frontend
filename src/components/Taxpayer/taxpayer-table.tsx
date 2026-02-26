@@ -208,18 +208,15 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
             <div className="flex flex-col min-w-full text-xs">
                 {/* HEADER */}
                 <div
-                    className="hidden sticky top-0 z-10 bg-[#363F4B] rounded-t-lg text-white text-center min-w-max md:flex md:grid"
+                    className="hidden sticky top-0 z-10 bg-slate-900/90 backdrop-blur-md rounded-t-xl text-slate-400 text-[10px] h-10 uppercase tracking-widest font-bold min-w-max md:flex md:grid border-b border-slate-800/50"
                     style={{
-                        // Solo en lg: divide el ancho total disponible en partes iguales
-                        // Usa una columna por cada item en columns[]
-                        gridTemplateColumns: `repeat(${columns.length}, 0.4fr)`
+                        gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
                     }}
                 >
                     {columns.map((col) => (
                         <div
                             key={col.id}
-                            className="px-1 pl-4 py-1 font-semibold min-w-[10rem] 
-                            lg:min-w-0 xl:min-w-[3rem] lg:px-2 lg:py-2 lg:whitespace-nowrap"
+                            className="px-4 flex items-center justify-center text-center"
                         >
                             {col.label}
                         </div>
@@ -230,9 +227,8 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                 {visibleRows.map((item) => (
                     <div
                         key={item.id}
-                        className="flex flex-col p-4 mb-4 bg-white rounded-lg shadow-md transition-colors hover:bg-blue-50 md:grid md:p-0 md:rounded-none md:shadow-none"
+                        className="flex flex-col p-4 mb-4 bg-slate-900/30 rounded-xl border border-slate-800/50 shadow-lg transition-all hover:bg-indigo-500/5 hover:border-indigo-500/20 group md:grid md:p-0 md:mb-0 md:rounded-none md:shadow-none md:border-b md:border-slate-800/30"
                         style={{
-                            // Igual que el header: mismas columnas
                             gridTemplateColumns: `repeat(${columns.length}, 0.8fr)`
                         }}
                     >
@@ -275,14 +271,14 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                             return (
                                 <div
                                     key={col.id}
-                                    className={`px-1 py-1 md:px-2 md:py-2 ${
+                                    className={`px-4 py-3 md:px-2 md:py-3 ${
                                         isOptionsCol
                                             ? 'flex items-center justify-end md:justify-center'
                                             : 'flex justify-between text-left md:block md:text-center'
-                                    }`}
+                                    } text-slate-300 text-[11px] font-medium transition-colors group-hover:text-slate-100`}
                                 >
                                     {!isOptionsCol && (
-                                        <span className="font-semibold md:hidden">{col.label}:</span>
+                                        <span className="font-bold text-slate-500 md:hidden uppercase tracking-tighter mr-2">{col.label}:</span>
                                     )}
                                     {editingRows[item.id] && !nonEditableCols.includes(col.id) ? (
                                         col.id === "parish" ? (
