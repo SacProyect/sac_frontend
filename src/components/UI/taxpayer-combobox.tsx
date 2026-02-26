@@ -71,7 +71,7 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValu
                 fieldState: { invalid, error }
             }) => (
                 <ComboBox
-                    selectedKey={typeof value === "object" && value !== null ? (value as Taxpayer).providenceNum : value}
+                    selectedKey={typeof value === "object" && value !== null ? (value as unknown as Taxpayer).providenceNum : (value as string | number)}
                     onSelectionChange={onChange}
 
                     onInputChange={(value) => {
