@@ -1,13 +1,13 @@
 import { useMemo, useEffect, useState } from 'react';
-import TaxpayerTable from '../../components/Taxpayer/TaxpayerTable';
-import { useAuth } from '../../hooks/useAuth';
+import TaxpayerTable from '@/components/Taxpayer/taxpayer-table';
+import { useAuth } from '@/hooks/use-auth';
 import { Input, Label, SearchField } from 'react-aria-components';
 import { Controller, useForm } from 'react-hook-form';
 import { useFilter } from 'react-aria';
 import { useNavigate } from 'react-router-dom';
 import { Taxpayer } from '@/types/taxpayer';
-import { useDebounce } from '@/hooks/useDebounce';
-import { getTaxpayers } from '@/components/utils/api/taxpayerFunctions';
+import { useDebounce } from '@/hooks/use-debounce';
+import { getTaxpayers } from '@/components/utils/api/taxpayer-functions';
 import toast from 'react-hot-toast';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 
@@ -105,7 +105,7 @@ function HomePage() {
 
                 if (!term) return true;
 
-                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.user.name} ${item.providenceNum}`.toLowerCase();
+                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.user?.name} ${item.providenceNum}`.toLowerCase();
                 return contains(haystack, term);
             });
         return result;

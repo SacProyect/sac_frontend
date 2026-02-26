@@ -2,10 +2,10 @@
 import React from 'react'
 import { useForm } from 'react-hook-form';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
+import { useAuth } from '../../hooks/use-auth';
 import { useEffect } from 'react';
-import TextInput from '../UI/TextInput';
-import { signIn } from '../utils/api/userFunctions';
+import TextInput from '../UI/text-input';
+import { signIn } from '../utils/api/user-functions';
 import toast from 'react-hot-toast';
 
 function Login() {
