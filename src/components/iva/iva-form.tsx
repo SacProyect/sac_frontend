@@ -1,15 +1,50 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
-import { Control, useForm } from 'react-hook-form';
+import { useForm, Controller } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
-import TaxpayerCombobox from '../UI/taxpayer-combobox';
-import { EventFormData } from '../Events/event-form';
+import { 
+  Calculator, 
+  Calendar, 
+  Building2, 
+  ArrowRight, 
+  Info, 
+  DollarSign, 
+  ShoppingBag, 
+  Tag, 
+  History,
+  CheckCircle2,
+  AlertCircle,
+  Search
+} from 'lucide-react';
+import { Card, CardContent, CardTitle, CardDescription } from '@/components/UI/card';
+import { Input } from '@/components/UI/input';
+import { Label } from '@/components/UI/label';
+import { Button } from '@/components/UI/button';
+import { Badge } from '@/components/UI/badge';
+import { 
+  DropdownMenu as Popover,
+  DropdownMenuContent as PopoverContent,
+  DropdownMenuTrigger as PopoverTrigger,
+} from "@/components/UI/dropdown-menu";
+import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
-import { createIVA, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
-import { IslrReportFormData } from '../ISLR/islr-form';
+import { createIVA } from '@/components/utils/api/taxpayer-functions';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
 
+// Campos locales del formulario (interacción con el usuario)
+export interface IvaFormFields {
+    taxpayerId: string;
+    iva: string;
+    purchases: string;
+    sells: string;
+    excess: string;
+    date: string;
+    paid: string;
+}
+
+// Interfaz para el API (lo que espera taxpayer-functions)
 export interface IvaReportFormData {
     taxpayerId: string;
     iva?: Decimal;
@@ -20,35 +55,19 @@ export interface IvaReportFormData {
     paid: Decimal;
 }
 
-
+/**
+ * IvaForm - Interfaz Premium para Registro de IVA
+ */
 function IvaForm() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
-    const [nextAllowedMonth, setNextAllowedMonth] = useState<number | null>(null);
-    const [nextAllowedYear, setNextAllowedYear] = useState<number | null>(null);
-    const [search, setSearch] = useState('');
-    const [searchDebounce, setSearchDebounce] = useState('');
-    const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
-    const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
-    const [searchPage, setSearchPage] = useState(2);
-    const [searchTotalPages, setSearchTotalPages] = useState(1);
-    const [searchLoading, setSearchLoading] = useState(false);
-    const [selectedId, setSelectedId] = useState('');
+    const { taxpayersForEvents: taxpayerArray, loading: loadingTaxpayers } = useCachedTaxpayersForEvents();
+    
     const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
-    const [showDropdown, setShowDropdown] = useState(false);
+    const [loadingMonthInfo, setLoadingMonthInfo] = useState(false);
     const [decemberReached, setDecemberReached] = useState(false);
-    const [loadingMonthInfo, setLoadingMonthInfo] = useState(true);
-    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
-    const menuRef = useRef<HTMLDivElement>(null);
-
-    useEffect(() => {
-        if (!user) {
-            navigate("/login");
-        }
-    }, [user, navigate]);
-
-    if (!user) return null;
-
+    const [nextMonthLabel, setNextMonthLabel] = useState("");
+    const [searchValue, setSearchValue] = useState("");
 
     const { 
         register,
@@ -57,342 +76,334 @@ function IvaForm() {
         setValue,
         reset,
         watch,
-        clearErrors,
-        formState: { errors },
-    } = useForm<IvaReportFormData>({
+        formState: { errors, isSubmitting },
+    } = useForm<IvaFormFields>({
         mode: "onChange",
         defaultValues: {
             taxpayerId: "",
             date: "",
+            iva: "0",
+            purchases: "0",
+            sells: "0",
+            paid: "0",
+            excess: "0",
         },
     });
 
-    const onSubmit = async (data: IvaReportFormData) => {
-        const toastId = toast.loading("Creando reporte de IVA...");
+    const watchValues = watch();
 
+    const filteredTaxpayers = useMemo(() => {
+        if (!searchValue) return taxpayerArray.slice(0, 10);
+        const s = searchValue.toLowerCase();
+        return taxpayerArray.filter(t => 
+            t.name.toLowerCase().includes(s) || 
+            t.rif.toLowerCase().includes(s)
+        ).slice(0, 10);
+    }, [searchValue, taxpayerArray]);
+
+    const fiscalBalance = useMemo(() => {
         try {
-            const formattedData = {
-                taxpayerId: data.taxpayerId,
-                date: data.date,
-                iva: data.iva !== undefined && data.iva !== null
-                    ? new Decimal(String(data.iva).replace(",", "."))
-                    : undefined,
-                purchases: new Decimal(String(data.purchases).replace(",", ".")),
-                sells: new Decimal(String(data.sells).replace(",", ".")),
-                paid: new Decimal(String(data.paid).replace(",", ".")),
-                excess: data.excess && String(data.excess).trim() !== ""
-                    ? new Decimal(String(data.excess).replace(",", "."))
-                    : undefined,
-            };
-
-            const report = await createIVA(formattedData);
-            if (report) {
-                const prevTaxpayer = selectedTaxpayer;
-                reset();
-                setSelectedTaxpayer(null);
-                await refreshUser();
-                setTimeout(() => {
-                    setValue("taxpayerId", data.taxpayerId);
-                    setSelectedTaxpayer(prevTaxpayer);
-                }, 500);
-                toast.success("¡Reporte de IVA creado exitosamente!", { id: toastId });
-            } else {
-                toast.error("No se pudo crear el reporte. Intente de nuevo.", { id: toastId });
-            }
-        } catch (e: any) {
-            console.error("Error creating IVA report:", e);
-            const errorMessage =
-                e?.response?.data?.message ||
-                e?.message ||
-                "Ocurrió un error inesperado al crear el reporte.";
-            toast.error(errorMessage, { id: toastId });
+            const sells = new Decimal(watchValues.sells.replace(',', '.') || 0);
+            const purchases = new Decimal(watchValues.purchases.replace(',', '.') || 0);
+            return sells.minus(purchases);
+        } catch {
+            return new Decimal(0);
         }
-    };
+    }, [watchValues.sells, watchValues.purchases]);
 
-    const ivaValue = watch("iva");
-    const excessValue = watch("excess");
-    const dateValue = watch('date');
-
-
-    // console.log("TAXPAYERS: " + JSON.stringify(taxpayerArray));
-
-    const taxpayerId = watch("taxpayerId");
-
-
-    // Recalcular mes siguiente cuando cambie el contribuyente
     useEffect(() => {
-        setLoadingMonthInfo(true);
+        if (!user) navigate("/login");
+    }, [user, navigate]);
+
+    useEffect(() => {
         if (!selectedTaxpayer) {
-            setNextAllowedMonth(null);
-            setNextAllowedYear(null);
             setDecemberReached(false);
-            setLoadingMonthInfo(false);
-            setValue('date', '', { shouldValidate: true, shouldDirty: true });
+            setNextMonthLabel("");
+            setValue('date', '');
             return;
         }
 
+        setLoadingMonthInfo(true);
         const sorted = [...(selectedTaxpayer.IVAReports || [])]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        // console.log(selectedTaxpayer?.IVAReports)
+        const emitionDate = new Date(selectedTaxpayer.emition_date);
+        let year = emitionDate.getUTCFullYear();
+        let month = 1;
 
-        const emitionYear = new Date(selectedTaxpayer.emition_date).getUTCFullYear();
-        let year = emitionYear;
-        let monthNumber = 1;
-
-        if (sorted.length === 0) {
-            year = emitionYear;
-            monthNumber = 1;
-            setDecemberReached(false);
-        } else if (sorted.length >= 12) {
-            setNextAllowedMonth(null);
-            setNextAllowedYear(null);
-            setDecemberReached(true);
-            setLoadingMonthInfo(false);
-            setValue('date', '', { shouldValidate: true, shouldDirty: true });
-            return;
-        } else {
+        if (sorted.length > 0) {
             const [lastYearStr, lastMonthStr] = sorted[0].date.split('-');
-            const lastMonth = parseInt(lastMonthStr, 10);
             year = parseInt(lastYearStr, 10);
-            monthNumber = lastMonth + 1;
-
-            if (monthNumber > 12) {
-                setNextAllowedMonth(null);
-                setNextAllowedYear(null);
+            month = parseInt(lastMonthStr, 10) + 1;
+            
+            if (month > 12) {
                 setDecemberReached(true);
+                setNextMonthLabel("Año completo");
+                setValue('date', '');
                 setLoadingMonthInfo(false);
-                setValue('date', '', { shouldValidate: true, shouldDirty: true });
                 return;
-            } else {
-                setDecemberReached(false);
             }
         }
 
-        setNextAllowedMonth(monthNumber);
-        setNextAllowedYear(year);
-        const isoDate = new Date(Date.UTC(year, monthNumber - 1, 1)).toISOString();
-        setValue('date', isoDate, { shouldValidate: true, shouldDirty: true });
-        clearErrors('date');
+        setDecemberReached(false);
+        const nextDate = new Date(Date.UTC(year, month - 1, 1));
+        setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' }));
+        setValue('date', nextDate.toISOString());
         setLoadingMonthInfo(false);
-    }, [selectedTaxpayer, setValue, clearErrors]);
+    }, [selectedTaxpayer, setValue]);
 
-    const handleClickOutside = (event: MouseEvent) => {
-        if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-            setShowDropdown(false);
+    const onSubmit = async (data: IvaFormFields) => {
+        const toastId = toast.loading("Guardando declaración fiscal...");
+        try {
+            const formattedData: IvaReportFormData = {
+                taxpayerId: data.taxpayerId,
+                date: data.date,
+                iva: new Decimal(data.iva.replace(",", ".") || 0),
+                purchases: new Decimal(data.purchases.replace(",", ".") || 0),
+                sells: new Decimal(data.sells.replace(",", ".") || 0),
+                paid: new Decimal(data.paid.replace(",", ".") || 0),
+                excess: data.excess ? new Decimal(data.excess.replace(",", ".")) : undefined,
+            };
+
+            const success = await createIVA(formattedData);
+            if (success) {
+                toast.success("¡Declaración de IVA registrada con éxito!", { id: toastId });
+                const currentTaxId = data.taxpayerId;
+                const currentTax = selectedTaxpayer;
+                reset();
+                await refreshUser();
+                setTimeout(() => {
+                    setSelectedTaxpayer(currentTax);
+                    setValue("taxpayerId", currentTaxId);
+                }, 100);
+            }
+        } catch (e: any) {
+            toast.error(e.message || "Error al procesar la declaración", { id: toastId });
         }
-    }
+    };
 
-    useEffect(() => {
-        document.addEventListener('mousedown', handleClickOutside);
+    if (!user) return null;
 
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
-    }, []);
-    const filteredTaxpayers = useMemo(() => {
-        if (!search) return taxpayerArray;
-        const s = search.toLowerCase();
-        return taxpayerArray.filter(t => 
-            t.name.toLowerCase().includes(s) || 
-            t.rif.toLowerCase().includes(s) ||
-            t.process.toLowerCase().includes(s)
-        );
-    }, [search, taxpayerArray]);
     return (
-        <div className="flex items-center justify-center w-full h-full lg:h-[90vh] pt-10 lg:pt-0 md:my-4">
-            <form
-                onSubmit={handleSubmit(onSubmit, (formErrors) => {
-                    console.error("Errores de validación:", formErrors);
-                })}
-                className="flex flex-col w-[90vw] sm:w-[60vw] md:w-[40vw] lg:w-[35vw] bg-white border border-gray-100 rounded-2xl shadow-xl p-8 space-y-6"
-            >
-                <h1 className="text-xl font-semibold text-center text-gray-800">Agregar Reporte de IVA</h1>
-
-                <div className="relative">
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Contribuyente</label>
-                    <input
-                        type="text"
-                        placeholder="Buscar contribuyente..."
-                        value={search}
-                        onChange={(e) => setSearch(e.target.value)}
-                        onFocus={() => setShowDropdown(true)}
-                        className="w-full px-3 py-2 mb-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <input
-                        type="hidden"
-                        {...register("taxpayerId", { required: "Este campo es obligatorio" })}
-                        value={selectedId}
-                    />
-                    {errors.taxpayerId && (
-                        <p className="mt-1 text-xs text-red-500">{errors.taxpayerId.message}</p>
-                    )}
-                    {showDropdown && filteredTaxpayers.length > 0 && (
-                        <div ref={menuRef} className="absolute z-10 w-full overflow-y-auto bg-white border border-gray-300 rounded-md shadow-md max-h-52">
-                            {filteredTaxpayers.map((t) => (
-                                <div
-                                    key={t.id}
-                                    onClick={() => {
-                                        setSearch(`${t.name} — ${t.process} — ${t.providenceNum}`);
-                                        setValue("taxpayerId", t.id);
-                                        setSelectedId(t.id);
-                                        setSelectedTaxpayer(t);
-                                        setShowDropdown(false);
-                                    }}
-                                    className="px-3 py-2 text-sm cursor-pointer hover:bg-blue-500 hover:text-white"
-                                >
-                                    {t.name} — {t.process} — {t.providenceNum} - {new Date(t.emition_date).toLocaleDateString("es-VE")}
-                                </div>
-                            ))}
+        <div className="w-full flex justify-center animate-in fade-in slide-in-from-bottom-4 duration-700">
+            <Card className="w-full max-w-4xl bg-slate-900/60 border-slate-800 backdrop-blur-xl shadow-2xl overflow-hidden rounded-3xl">
+                <div className="grid grid-cols-1 lg:grid-cols-12">
+                    {/* Panel Izquierdo: Formulario */}
+                    <div className="lg:col-span-7 p-6 sm:p-8 space-y-8 bg-slate-900/40">
+                        <div className="space-y-2">
+                            <div className="flex items-center gap-2 text-indigo-400">
+                                <Calculator className="w-5 h-5" />
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">Registro Fiscal</span>
+                            </div>
+                            <CardTitle className="text-3xl font-bold text-white">Declaración de IVA</CardTitle>
+                            <CardDescription className="text-slate-400">
+                                Ingrese los totales correspondientes al periodo fiscal actual.
+                            </CardDescription>
                         </div>
-                    )}
+
+                        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <div className="space-y-3">
+                                <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
+                                    <Building2 className="w-3.5 h-3.5" /> Contribuyente
+                                </Label>
+                                <Controller
+                                    control={control}
+                                    name="taxpayerId"
+                                    rules={{ required: "Seleccione un contribuyente" }}
+                                    render={({ field }) => (
+                                        <Popover>
+                                            <PopoverTrigger asChild>
+                                                <Button
+                                                    variant="outline"
+                                                    className={cn(
+                                                        "w-full justify-between bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-11",
+                                                        !field.value && "text-slate-500"
+                                                    )}
+                                                >
+                                                    {field.value && selectedTaxpayer
+                                                        ? `${selectedTaxpayer.name} | ${selectedTaxpayer.rif}`
+                                                        : "Seleccionar contribuyente..."}
+                                                    <ArrowRight className="ml-2 h-4 w-4 shrink-0 opacity-50 rotate-90" />
+                                                </Button>
+                                            </PopoverTrigger>
+                                            <PopoverContent className="w-80 p-0 bg-slate-900 border-slate-800 shadow-2xl overflow-hidden rounded-xl">
+                                                <div className="p-2 border-b border-slate-800 bg-slate-950/50 flex items-center gap-2">
+                                                    <Search className="w-4 h-4 text-slate-500" />
+                                                    <input 
+                                                        className="bg-transparent border-none text-xs text-slate-200 focus:ring-0 w-full placeholder:text-slate-600" 
+                                                        placeholder="Filtrar..."
+                                                        value={searchValue}
+                                                        onChange={(e) => setSearchValue(e.target.value)}
+                                                    />
+                                                </div>
+                                                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                                                    {filteredTaxpayers.length === 0 ? (
+                                                        <div className="p-4 text-xs text-slate-500 text-center">No hay resultados</div>
+                                                    ) : (
+                                                        filteredTaxpayers.map((t: Taxpayer) => (
+                                                            <div
+                                                                key={t.id}
+                                                                onClick={() => {
+                                                                    setSelectedTaxpayer(t);
+                                                                    field.onChange(t.id);
+                                                                }}
+                                                                className="px-4 py-3 text-xs text-slate-300 hover:bg-indigo-600 hover:text-white cursor-pointer border-b border-slate-800/50 last:border-0"
+                                                            >
+                                                                <div className="flex flex-col gap-0.5">
+                                                                    <span className="font-semibold">{t.name}</span>
+                                                                    <span className="text-[10px] opacity-70 uppercase">{t.rif} — {t.process}</span>
+                                                                </div>
+                                                            </div>
+                                                        ))
+                                                    )}
+                                                </div>
+                                            </PopoverContent>
+                                        </Popover>
+                                    )}
+                                />
+                                {errors.taxpayerId && <p className="text-[10px] font-bold text-rose-500 uppercase">{errors.taxpayerId.message}</p>}
+                            </div>
+
+                            {selectedTaxpayer && (
+                                <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center gap-4 animate-in zoom-in-95 duration-300">
+                                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                                        <Calendar className="w-5 h-5 text-indigo-400" />
+                                    </div>
+                                    <div className="flex-1">
+                                        <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Periodo a Declarar</p>
+                                        <p className="text-sm font-semibold text-slate-200 capitalize">
+                                            {loadingMonthInfo ? "Calculando..." : decemberReached ? "Declaraciones Completas" : nextMonthLabel}
+                                        </p>
+                                    </div>
+                                    {!decemberReached && <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Sugerido</Badge>}
+                                </div>
+                            )}
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Monto de IVA (BS)</Label>
+                                    <div className="relative group">
+                                        <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                        <Input
+                                            {...register("iva", { required: true })}
+                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Monto Pagado (BS)</Label>
+                                    <div className="relative group">
+                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                                        <Input
+                                            {...register("paid", { required: true })}
+                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200 font-mono"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Ventas Brutas (BS)</Label>
+                                    <div className="relative group">
+                                        <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                        <Input
+                                            {...register("sells", { required: true })}
+                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Compras Brutas (BS)</Label>
+                                    <div className="relative group">
+                                        <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                        <Input
+                                            {...register("purchases", { required: true })}
+                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
+                                            placeholder="0.00"
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Crédito Fiscal / Excedente (BS)</Label>
+                                <div className="relative group">
+                                    <History className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                    <Input
+                                        {...register("excess")}
+                                        className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
+                                        placeholder="0.00 (Opcional)"
+                                    />
+                                </div>
+                            </div>
+
+                            <Button 
+                                type="submit" 
+                                disabled={isSubmitting || decemberReached || !selectedTaxpayer || loadingMonthInfo}
+                                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-6 rounded-2xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:grayscale"
+                            >
+                                {isSubmitting ? "Procesando..." : "Guardar Declaración"}
+                            </Button>
+                        </form>
+                    </div>
+
+                    <div className="lg:col-span-5 p-8 bg-slate-950/50 backdrop-blur-md border-l border-slate-800/50 flex flex-col justify-between">
+                        <div className="space-y-8">
+                            <h3 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
+                                <Info className="w-4 h-4" /> Resumen Fiscal
+                            </h3>
+
+                            <div className="space-y-6">
+                                <div className="p-5 rounded-3xl bg-slate-900 border border-slate-800 space-y-4">
+                                    <div className="flex justify-between items-end">
+                                        <p className="text-xs font-medium text-slate-400">Balance del Periodo</p>
+                                        <Badge variant={fiscalBalance.isPositive() ? "outline" : "destructive"} className={cn("bg-opacity-10 text-[10px]", fiscalBalance.isPositive() && "text-emerald-400 border-emerald-500/20 bg-emerald-500/10")}>
+                                            {fiscalBalance.isPositive() ? "Débito (+)" : "Crédito (-)"}
+                                        </Badge>
+                                    </div>
+                                    <p className={cn(
+                                        "text-3xl font-mono font-bold tracking-tighter",
+                                        fiscalBalance.isPositive() ? "text-white" : "text-rose-400"
+                                    )}>
+                                        {new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(fiscalBalance.toNumber())}
+                                    </p>
+                                    <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                        <div className={cn("h-full transition-all duration-500", fiscalBalance.isPositive() ? "bg-emerald-500" : "bg-rose-500")} style={{ width: '65%' }} />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-semibold text-slate-300">Validación Activa</p>
+                                            <p className="text-[11px] text-slate-500">Mapeo de meses consecutivo habilitado.</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <AlertCircle className="w-4 h-4 text-amber-500 shrink-0 mt-0.5" />
+                                        <div>
+                                            <p className="text-xs font-semibold text-slate-300">Aviso</p>
+                                            <p className="text-[11px] text-slate-500">Asegúrese de cargar el comprobante bancario después.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="mt-8 pt-8 border-t border-slate-800/50">
+                            <div className="flex items-center gap-4 p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10">
+                                <Building2 className="w-5 h-5 text-indigo-400 shrink-0" />
+                                <div className="overflow-hidden">
+                                    <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Base Imponible</p>
+                                    <p className="text-xs text-slate-400 truncate">Calculada sobre registros de ventas.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Monto de IVA (BS)</label>
-                    <input
-                        type="text"
-                        {...register("iva", {
-                            required: excessValue ? false : "Este campo es obligatorio",
-                            pattern: {
-                                value: /^[0-9]+([.,][0-9]{1,2})?$/, // acepta decimales con punto o coma
-                                message: "Debe ser un número válido, use punto o coma como decimal",
-                            },
-                            validate: (value:any) => {
-                                const parsed = parseFloat(String(value).replace(",", "."));
-                                if (isNaN(parsed) || parsed < 0) return "Debe ser un número positivo";
-                                return true;
-                            }
-                        })}
-                        placeholder="Introduzca el monto de IVA..."
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <p className="block mb-0 text-sm font-medium text-gray-600">Compras (BS)</p>
-                    <input
-                        type="text"
-                        {...register("purchases", {
-                            required: "Este campo es obligatorio",
-                            pattern: {
-                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
-                                message: "Debe ser un número válido con punto o coma decimal"
-                            },
-                            validate: (value:any) => {
-                                const parsed = parseFloat(String(value).replace(",", "."));
-                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                            }
-                        })}
-                        placeholder="Monto de compras..."
-                        className="w-full px-3 py-2 mt-0 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Ventas (BS)</label>
-                    <input
-                        type="text"
-                        {...register("sells", {
-                            required: "Este campo es obligatorio",
-                            pattern: {
-                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
-                                message: "Debe ser un número válido con punto o coma decimal"
-                            },
-                            validate: (value:any) => {
-                                const parsed = parseFloat(String(value).replace(",", "."));
-                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                            }
-                        })}
-                        placeholder="Monto de ventas..."
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Pagado (BS)</label>
-                    <input
-                        type="text"
-                        {...register("paid", {
-                            required: "Este campo es obligatorio",
-                            pattern: {
-                                value: /^[0-9.,]+$/,
-                                message: "Solo se permiten números, puntos o comas"
-                            },
-                            validate: (value:any) => {
-                                const parsed = parseFloat(String(value).replace(",", "."));
-                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                            }
-                        })}
-                        placeholder="Ej: 1000.50"
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                </div>
-
-                <div>
-                    <label className="block mb-1 text-sm font-medium text-gray-600">Excedente (BS)</label>
-                    <input
-                        type="text"
-                        {...register("excess", {
-                            pattern: {
-                                value: /^[0-9]+([.,][0-9]{1,2})?$/,
-                                message: "Debe ser un número válido con punto o coma decimal"
-                            },
-                            validate: (value:any) => {
-                                if (!value) return true;
-                                const parsed = parseFloat(String(value).replace(",", "."));
-                                return !isNaN(parsed) && parsed >= 0 || "Debe ser un número válido y positivo";
-                            }
-                        })}
-                        placeholder="Monto de excedente (opcional)..."
-                        className="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-200"
-                    />
-                    {/* // disabled={typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0} */}
-                    {/* {typeof ivaValue === "number" && !isNaN(ivaValue) && ivaValue > 0 && (
-                        <p className="mt-1 text-xs text-yellow-600">
-                            Este campo está deshabilitado porque ya se introdujo un monto de IVA.
-                        </p>
-                    )} */}
-                </div>
-
-
-                <input
-                    type="hidden"
-                    {...register('date', { required: 'Debe seleccionar un contribuyente para calcular la fecha del reporte' })}
-                />
-                {errors.date && (
-                    <p className="mt-1 text-xs text-red-500">{errors.date.message}</p>
-                )}
-
-
-                {nextAllowedMonth !== null && nextAllowedYear !== null && (
-                    <p className="mt-1 text-sm text-gray-600">
-                        La fecha del reporte debe ser del mes de: <strong>
-                            {new Date(nextAllowedYear, nextAllowedMonth - 1)
-                                .toLocaleString('es-ES', { month: 'long', year: 'numeric' })}
-                        </strong>
-                    </p>
-                )}
-
-
-
-                <button
-                    type="submit"
-                    disabled={loadingMonthInfo || decemberReached || !dateValue}
-                    className={`w-full py-2 mt-4 text-sm font-medium text-white rounded-lg transition ${loadingMonthInfo || decemberReached || !dateValue
-                        ? 'bg-gray-400 cursor-not-allowed'
-                        : 'bg-blue-500 hover:bg-blue-600'
-                        }`}
-                >
-                    {loadingMonthInfo
-                        ? "Cargando información..."
-                        : decemberReached
-                            ? "Todos los reportes del año han sido cargados"
-                            : "Enviar"}
-                </button>
-            </form>
+            </Card>
         </div>
     );
 }

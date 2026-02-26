@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import { Button as DialogButton } from '@/components/UI/button';
-import { MoreHorizontal, ChevronDown } from 'lucide-react';
+import { MoreVertical, ChevronDown } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -369,8 +369,8 @@ export default function AdminPageV2() {
                 <TableCell className="text-right">
                   <DropdownMenu>
                     <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <MoreHorizontal className="h-4 w-4" />
+                      <Button variant="ghost" size="icon" className="h-9 w-9 text-white bg-slate-800/80 border border-slate-700/50 rounded-full hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all shadow-md">
+                        <MoreVertical className="h-5 w-5" />
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-32 bg-slate-800 border-slate-700">

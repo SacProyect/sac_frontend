@@ -1,6 +1,5 @@
-import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
-import IndexIvaForm from '@/components/index-iva/IndexIvaForm';
+import IndexIvaForm from '@/components/index-iva/index-iva-form';
 
 /**
  * IndexIvaV2 - Página de Índice IVA con diseño Shadcn UI v2.0
@@ -12,9 +11,9 @@ export default function IndexIvaV2() {
         title="Actualizar Índices de IVA"
         description="Gestiona los índices de IVA para contribuyentes ordinarios y especiales"
       />
-      <Card className="bg-slate-800 border-slate-700 p-6 max-w-md mx-auto transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+      <div className="pt-2">
         <IndexIvaForm />
-      </Card>
+      </div>
     </div>
   );
 }

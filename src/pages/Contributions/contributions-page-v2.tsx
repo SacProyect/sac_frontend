@@ -1,15 +1,12 @@
-import { Card } from '@/components/UI/card';
-import { PageHeader } from '@/components/UI/v2';
-import ContributionsFilter from '@/components/contributions/ContributionsFilter';
-import ContributionsHeader from '@/components/contributions/ContributionsHeader';
-import ContributionsStatistics from '@/components/contributions/ContributionsStatistics';
-import { GroupData } from '@/components/contributions/ContributionTypes';
-import { getContributions } from '@/components/utils/api/reportFunctions';
-import { useAuth } from '@/hooks/useAuth';
+import { LoadingState, PageHeader } from '@/components/UI/v2';
+import ContributionsFilter from '@/components/contributions/contributions-filter';
+import ContributionsStatistics from '@/components/contributions/contributions-statistics';
+import { GroupData } from '@/components/contributions/contribution-types';
+import { getContributions } from '@/components/utils/api/report-functions';
+import { useAuth } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent } from '@/components/UI/sheet';
 
 /**
  * ContributionsPageV2 - Página de Contribuciones con diseño Shadcn UI v2.0
@@ -78,17 +75,25 @@ export default function ContributionsPageV2() {
   }, [startDate, endDate, selectedSupervisorId, user, navigate]);
 
   if (loading) {
-    return <LoadingState message="Cargando contribuciones..." />;
+    return (
+      <div className="flex flex-col gap-6 w-full">
+        <PageHeader
+          title="Estadísticas por Coordinación"
+          description="Consulta y análisis de contribuciones por grupo"
+        />
+        <LoadingState message="Cargando métricas de contribución..." />
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+    <div className="space-y-8 w-full animate-in fade-in duration-700">
       <PageHeader
-        title="Estadísticas por Coordinación"
-        description="Consulta y análisis de contribuciones por grupo"
+        title="Contribuciones"
+        description="Seguimiento detallado de recaudación por fiscal y coordinación"
       />
-      <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <ContributionsHeader />
+      
+      <div className="space-y-10">
         <ContributionsFilter
           groupData={groupData}
           setStartDate={setStartDate}
@@ -96,7 +101,8 @@ export default function ContributionsPageV2() {
           setSelectedGroup={setSelectedGroup}
           setSelectedSupervisorId={setSelectedSupervisorId}
         />
-        <div className="pt-8">
+        
+        <div className="pt-4">
           <ContributionsStatistics
             groupData={groupData}
             selectedGroup={selectedGroup}
@@ -105,7 +111,7 @@ export default function ContributionsPageV2() {
             endDate={endDate}
           />
         </div>
-      </Card>
+      </div>
     </div>
   );
 }

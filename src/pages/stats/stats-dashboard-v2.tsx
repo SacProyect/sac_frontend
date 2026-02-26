@@ -18,19 +18,13 @@ export default function StatsDashboardV2() {
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const { loading, error, monthlyRevenue, complianceDistribution, fiscalLeaderboard, supervisorLeaderboard, globalKPI } = useFiscalStats(selectedYear);
 
-  // Calcular KPIs desde los datos
-  const totalContribuyentes = globalKPI?.totalContribuyentes || 0;
-  const recaudacionTotal = globalKPI?.recaudacionTotal || fiscalLeaderboard.reduce((sum, f) => sum + f.recaudacion, 0);
-  const promedioExcedente = globalKPI?.promedioExcedente || 
-    (fiscalLeaderboard.length > 0
-      ? Math.round(
-          (fiscalLeaderboard.reduce((sum, f) => sum + (f.recaudacion - f.meta), 0) / fiscalLeaderboard.length / (fiscalLeaderboard[0]?.meta || 1)) * 100
-        )
-      : 0);
-  const totalVdfFuera = fiscalLeaderboard.reduce((sum, f) => sum + f.vdfFueraPlazoProceso + f.vdfFueraPlazoDejada, 0);
-  const totalVdf = fiscalLeaderboard.reduce((sum, f) => sum + f.vdfEnPlazo + f.vdfFueraPlazoProceso + f.vdfFueraPlazoDejada, 0);
-  const morosityRate = totalVdf > 0 ? Math.round((totalVdfFuera / totalVdf) * 100) : 0;
-  const monthlyTrend = globalKPI?.monthlyTrend || 0;
+  // KPIs desde los datos del API
+  const totalTaxpayers = globalKPI?.totalTaxpayers || 0;
+  const totalTaxCollection = globalKPI?.totalTaxCollection || fiscalLeaderboard.reduce((sum, f) => sum + f.recaudacion, 0);
+  const averageCreditSurplus = globalKPI?.averageCreditSurplus || 0;
+  const delinquencyRate = globalKPI?.delinquencyRate || 0;
+  const growthRate = globalKPI?.growthRate || 0;
+  const finePercentage = globalKPI?.finePercentage || 0;
 
   if (loading) {
     return <LoadingState message="Cargando estadísticas..." />;
@@ -53,29 +47,28 @@ export default function StatsDashboardV2() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCardV2
           title="Total Contribuyentes"
-          value={totalContribuyentes}
+          value={totalTaxpayers}
           format="number"
           icon={<Users className="h-5 w-5" />}
         />
         <MetricCardV2
           title="Recaudación Total"
-          value={recaudacionTotal}
+          value={totalTaxCollection}
           format="currency"
-          trend={{ value: monthlyTrend, direction: monthlyTrend >= 0 ? 'up' : 'down' }}
+          trend={{ value: growthRate, direction: growthRate >= 0 ? 'up' : 'down' }}
           icon={<BarChart3 className="h-5 w-5" />}
         />
         <MetricCardV2
-          title="Promedio Excedente vs Meta"
-          value={promedioExcedente}
-          format="percentage"
-          trend={{ value: 5, direction: 'up' }}
+          title="Promedio Excedente"
+          value={averageCreditSurplus}
+          format="currency"
+          trend={{ value: finePercentage, direction: 'up' }}
           icon={<TrendingUp className="h-5 w-5" />}
         />
         <MetricCardV2
-          title="% Morosidad VDF"
-          value={morosityRate}
+          title="% Morosidad"
+          value={delinquencyRate}
           format="percentage"
-          trend={{ value: 2, direction: 'down' }}
           icon={<AlertCircle className="h-5 w-5" />}
         />
       </div>
