@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useAuth } from '../../hooks/use-auth';
 import { Control, useForm } from 'react-hook-form';
 import TextInput from '../UI/text-input';
@@ -17,6 +17,7 @@ import toast from 'react-hot-toast';
 import { IvaReportFormData } from '../iva/iva-form';
 import { IslrReportFormData } from '../ISLR/islr-form';
 import TaxpayerList from '../UI/taxpayer-list';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 
 
 
@@ -192,6 +193,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
             const filteredPayments = auxPayments.filter((event: Event) => {
                 if (type === "payment_compromise") {
+                    if (!event.expires_at) return false;
                     const currentDate = new Date();
 
                     const expirationDate = new Date(event.expires_at);

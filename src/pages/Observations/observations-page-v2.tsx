@@ -6,7 +6,7 @@ import {
   getObservations,
   updateObservation,
   deleteObservations,
-} from '@/components/utils/api/taxpayerFunctions';
+} from '@/components/utils/api/taxpayer-functions';
 import { Card } from '@/components/UI/card';
 import { Input } from '@/components/UI/input';
 import { Button } from '@/components/UI/button';
