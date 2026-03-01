@@ -76,6 +76,8 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
   // Datos individuales del fiscal
   const [fiscalPerformance, setFiscalPerformance] = useState<FiscalPerformanceData[]>([]);
   const [fiscalInfo, setFiscalInfo] = useState<FiscalInfoExtended | null>(null);
+  const [fiscalMonthlyCollect, setFiscalMonthlyCollect] = useState<any>(null);
+  const [fiscalComplianceByProcess, setFiscalComplianceByProcess] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -208,6 +210,22 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       }));
       setFiscalPerformance(perfData);
     }
+
+    try {
+      const monthlyCollect = await getFiscalMonthlyCollect(fiscalId, year);
+      setFiscalMonthlyCollect(monthlyCollect);
+    } catch(e) {
+      console.warn(e);
+      setFiscalMonthlyCollect(null);
+    }
+
+    try {
+      const compliance = await getFiscalComplianceByProcess(fiscalId, year);
+      setFiscalComplianceByProcess(compliance);
+    } catch(e) {
+      console.warn(e);
+      setFiscalComplianceByProcess(null);
+    }
   };
 
   return {
@@ -222,5 +240,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
     // Datos individuales
     fiscalPerformance,
     fiscalInfo,
+    fiscalMonthlyCollect,
+    fiscalComplianceByProcess,
   };
 }
