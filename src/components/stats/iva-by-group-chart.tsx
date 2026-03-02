@@ -47,20 +47,9 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         if (active && payload && payload.length) {
             const data = payload[0].payload;
             return (
-                <div
-                    style={{
-                        backgroundColor: "#292d33",
-                        padding: "10px",
-                        borderRadius: "4px",
-                        border: "1px solid #b7c0cd",
-                        fontSize: 12,
-                        color: "#fff",
-                    }}
-                >
-                    <p style={{ marginBottom: "4px", fontWeight: "bold" }}>
-                        {data.group_name}
-                    </p>
-                    <p style={{ color: "#ffc74d" }}>
+                <div className="bg-slate-800 border border-slate-600 px-3 py-2 rounded-lg text-xs text-white shadow-xl">
+                    <p className="mb-1 font-bold">{data.group_name}</p>
+                    <p className="text-amber-400">
                         IVA Recaudado:{" "}
                         {Number(data.totalIva).toLocaleString("es-VE", {
                             style: "currency",
@@ -76,7 +65,7 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center w-full h-full bg-[#1c1c1b]">
+            <div className="flex items-center justify-center w-full h-full bg-slate-900">
                 <p className="text-lg text-center text-white">Cargando datos...</p>
             </div>
         );
@@ -84,25 +73,25 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
 
     if (chartData.length === 0) {
         return (
-            <div className="flex items-center justify-center w-full h-full bg-[#1c1c1b]">
-                <p className="text-lg text-center text-gray-400">No hay datos para mostrar</p>
+            <div className="flex items-center justify-center w-full h-full bg-slate-900">
+                <p className="text-lg text-center text-slate-400">No hay datos para mostrar</p>
             </div>
         );
     }
 
     return (
         <div className="flex items-center justify-center w-full h-full max-w-full max-h-full lg:max-w-full lg:max-h-full">
-            <div className="w-full h-full bg-[#1c1c1b] p-0 flex flex-col overflow-hidden">
+            <div className="w-full h-full bg-slate-900 p-0 flex flex-col overflow-hidden">
                 {/* Título */}
                 <div className="flex items-center justify-center pt-4 mb-1 text-xl font-semibold text-center text-white font-inter">
-                    <div className="w-[90vw] lg:w-[35vw] border border-[#b7c0cd] bg-[#292d33] rounded-md px-2 py-1">
+                    <div className="w-[90vw] lg:w-[35vw] border border-slate-600 bg-slate-800 rounded-md px-2 py-1">
                         <p className="text-[14px] lg:text-sm font-semibold text-white text-center whitespace-nowrap overflow-hidden text-ellipsis">
                             RENDIMIENTO DE IVA POR GRUPO
                         </p>
                     </div>
                 </div>
                 {/* Subtítulo */}
-                <p className="text-center text-[8px] leading-[11px] text-[#838382] px-2 mb-1">
+                <p className="text-center text-[8px] leading-[11px] text-slate-500 px-2 mb-1">
                     Esta gráfica muestra el total de IVA recaudado comparando cada grupo entre sí.
                 </p>
                 {/* Gráfico */}
@@ -113,19 +102,19 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
                             margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
                             barSize={30}
                         >
-                            <CartesianGrid stroke="#333" strokeDasharray="3 3" />
+                            <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
                             <XAxis
                                 dataKey="group_name"
-                                stroke="#888"
-                                tick={{ fill: "#ccc", fontSize: 10 }}
+                                stroke="#475569"
+                                tick={{ fill: "#94a3b8", fontSize: 10 }}
                                 angle={-45}
                                 textAnchor="end"
                                 height={80}
                             />
                             <YAxis
                                 type="number"
-                                stroke="#888"
-                                tick={{ fill: "#ccc", fontSize: 10 }}
+                                stroke="#475569"
+                                tick={{ fill: "#94a3b8", fontSize: 10 }}
                                 tickFormatter={(value) =>
                                     Number(value).toLocaleString("es-VE", {
                                         maximumFractionDigits: 0,

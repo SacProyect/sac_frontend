@@ -70,6 +70,7 @@ const IvaReportV2 = lazy(() => import("@/pages/iva/iva-report-v2"));
 const IslrReportV2 = lazy(() => import("@/pages/ISLR/islr-report-v2"));
 const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
 const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
+const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
 
 type LoaderData = {
     events: Event[],
@@ -255,6 +256,16 @@ export const router = createBrowserRouter([
                             </div>
                         }>
                             <ReportsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "getGroupReport/:id",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte de Grupo...
+                            </div>
+                        }>
+                            <GroupReportPageV2 />
                         </Suspense>,
                     },
                     {

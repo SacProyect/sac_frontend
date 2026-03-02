@@ -56,7 +56,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
         if (active && payload && payload.length) {
             const p = payload[0]?.payload ?? {};
             return (
-                <div className="rounded bg-black/80 px-3 py-2 text-[11px] text-white">
+                <div className="rounded bg-slate-800 border border-slate-600 px-3 py-2 text-[11px] text-white shadow-xl">
                     <div className="mb-1 font-semibold">Mes: {label}</div>
                     <div>Pagado (IVA): {fmtCurrency(p.realAmount)}</div>
                     <div>Esperado: {fmtCurrency(p.expectedAmount)}</div>
@@ -68,15 +68,15 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full lg:w-full h-[50vh] lg:h-full bg-[#1c1c1b] pt-8 lg:pb-12 lg:pt-4 text-white font-inter">
+        <div className="flex flex-col items-center w-full lg:w-full h-[50vh] lg:h-full bg-slate-900 pt-8 lg:pb-12 lg:pt-4 text-white font-inter">
             {/* Title and Description */}
             <div className="w-full mb-4 text-center">
-                <div className="w-full border border-[#b7c0cd] bg-[#292d33] rounded-md">
+                <div className="w-full border border-slate-600 bg-slate-800 rounded-md">
                     <h1 className="px-4 py-2 text-sm font-semibold text-white lg:text-sm font-inter whitespace-nowrap">
                         RENDIMIENTO GLOBAL DE IVA
                     </h1>
                 </div>
-                <p className="mt-2 text-[9.4px] leading-[12.9px] text-[#838382] font-inter">
+                <p className="mt-2 text-[9.4px] leading-[12.9px] text-slate-500 font-inter">
                     Recaudación mensual de IVA en barras horizontales. Pasa el mouse para ver esperado y contribuyentes emitidos.
                 </p>
             </div>
@@ -89,15 +89,15 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                         layout="vertical" // horizontal bars
                         margin={{ top: 10, right: 24, left: 16, bottom: 10 }}
                     >
-                        <CartesianGrid stroke="#333" strokeDasharray="3 3" />
+                        <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
                         {/* Y axis: months (categories) */}
                         <YAxis
                             type="category"
                             dataKey="monthLabel"
                             width={32}
-                            tick={{ fill: "#cfd3da", fontSize: 10 }}
-                            axisLine={{ stroke: "#555" }}
-                            tickLine={{ stroke: "#555" }}
+                            tick={{ fill: "#94a3b8", fontSize: 10 }}
+                            axisLine={{ stroke: "#475569" }}
+                            tickLine={{ stroke: "#475569" }}
                         />
                         {/* X axis: amounts (numbers) */}
                         <XAxis
@@ -106,9 +106,9 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                             tickFormatter={(v) =>
                                 Number(v).toLocaleString("es-VE", { maximumFractionDigits: 0 })
                             }
-                            tick={{ fill: "#cfd3da", fontSize: 10 }}
-                            axisLine={{ stroke: "#555" }}
-                            tickLine={{ stroke: "#555" }}
+                            tick={{ fill: "#94a3b8", fontSize: 10 }}
+                            axisLine={{ stroke: "#475569" }}
+                            tickLine={{ stroke: "#475569" }}
                         />
                         <Tooltip content={<CustomTooltip />} />
                         <Bar
