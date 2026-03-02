@@ -94,6 +94,17 @@ export const getTopFiscals = async (year?: number) => {
 	}
 }
 
+export const getTopCoordinators = async () => {
+	try {
+		const requestURL = 'reports/get-top-coordinators'
+		const response = await apiConnection.get(requestURL);
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los mejores coordinadores.")
+	}
+}
+
 export const getTopFiveByGroup = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-top-five-by-group'
