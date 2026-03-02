@@ -1,88 +1,166 @@
-import { useState } from 'react';
-import { useFiscalStats } from '@/hooks/use-fiscal-stats';
-import { MetricCardV2, MonthlyRevenueChartV2, ComplianceDistributionChartV2, FiscalLeaderboardV2, SupervisorLeaderboardV2 } from '@/components/stats';
-import { YearSelector, LoadingState, ErrorState, PageHeader } from '@/components/UI/v2';
-import { BarChart3, Users, TrendingUp, AlertCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Button } from '@/components/UI/button';
+import { LoadingState } from '@/components/UI/v2';
 
-/**
- * StatsDashboardV2 - Dashboard de Estadísticas Globales
- * 
- * Muestra:
- * - KPIs principales (Total Contribuyentes, Recaudación, Excedente, Morosidad)
- * - Gráfico de Recaudación Mensual
- * - Gráfico de Distribución de Cumplimiento
- * - Leaderboard de Fiscales
- * - Leaderboard de Coordinadores
- */
-export default function StatsDashboardV2() {
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
-  const { loading, error, monthlyRevenue, complianceDistribution, fiscalLeaderboard, supervisorLeaderboard, globalKPI } = useFiscalStats(selectedYear);
+import {
+  getGlobalPerformance,
+  getGlobalTaxpayerPerformance,
+  getGroupPerformance,
+} from '@/components/utils/api/report-functions';
 
-  // KPIs desde los datos del API
-  const totalTaxpayers = globalKPI?.totalTaxpayers || 0;
-  const totalTaxCollection = globalKPI?.totalTaxCollection || fiscalLeaderboard.reduce((sum, f) => sum + f.recaudacion, 0);
-  const averageCreditSurplus = globalKPI?.averageCreditSurplus || 0;
-  const delinquencyRate = globalKPI?.delinquencyRate || 0;
-  const growthRate = globalKPI?.growthRate || 0;
-  const finePercentage = globalKPI?.finePercentage || 0;
+import PageOneStats, { ChartData } from '@/components/stats/global-perfomance';
+import { PageTwoStats, MonthlyIvaStats } from '@/components/stats/global-taxpayer-performance';
+import { GroupPerformanceStats, GroupStat } from '@/components/stats/group-performance-stats';
+import { IvaByGroupChart } from '@/components/stats/iva-by-group-chart';
 
-  if (loading) {
-    return <LoadingState message="Cargando estadísticas..." />;
-  }
+import StatsPage2Rankings from './stats-page2-rankings';
+import StatsPage3Cumplimiento from './stats-page3-cumplimiento';
 
-  if (error) {
-    return <ErrorState title="Error al cargar las estadísticas" message={error} onRetry={() => window.location.reload()} />;
-  }
+// ─── Page 1: 2×2 Grid ─────────────────────────────────────────────────────────
+
+function StatsPage1Charts({ year }: { year: number }) {
+  const [chartData, setChartData] = useState<ChartData[]>([]);
+  const [ivaStats, setIvaStats] = useState<MonthlyIvaStats | null>(null);
+  const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      try {
+        const [globalPerf, , groupPerf] = await Promise.allSettled([
+          getGlobalPerformance(year),
+          getGlobalTaxpayerPerformance(year),
+          getGroupPerformance(year),
+        ]);
+
+        if (globalPerf.status === 'fulfilled' && Array.isArray(globalPerf.value)) {
+          const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
+          const mapped: ChartData[] = (globalPerf.value as any[]).map((d) => ({
+            month: `${year}-${String(d.month).padStart(2,'0')}`,
+            realAmount: d.realAmount ?? 0,
+            expectedAmount: d.expectedAmount ?? 0,
+            taxpayersEmitted: d.taxpayersEmitted ?? 0,
+          }));
+          setChartData(mapped);
+
+          const monthStats: MonthlyIvaStats = {
+            year,
+            months: (globalPerf.value as any[]).map((d) => ({
+              monthIndex: d.month - 1,
+              monthName: months[d.month - 1] ?? `Mes ${d.month}`,
+              ivaCollected: d.realAmount ?? 0,
+            })),
+            totalIvaCollected: (globalPerf.value as any[]).reduce((s: number, d: any) => s + (d.realAmount ?? 0), 0),
+          };
+          setIvaStats(monthStats);
+        }
+
+        if (groupPerf.status === 'fulfilled' && Array.isArray(groupPerf.value)) {
+          setGroupStats(groupPerf.value as GroupStat[]);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetch();
+  }, [year]);
+
+  if (loading) return <LoadingState message="Cargando gráficas..." />;
 
   return (
-    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
-      {/* Header */}
-      <PageHeader
-        title="Estadísticas Globales"
-        description="Dashboard de indicadores clave y análisis de desempeño"
-        action={<YearSelector value={selectedYear} onChange={setSelectedYear} />}
-      />
-
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCardV2
-          title="Total Contribuyentes"
-          value={totalTaxpayers}
-          format="number"
-          icon={<Users className="h-5 w-5" />}
-        />
-        <MetricCardV2
-          title="Recaudación Total"
-          value={totalTaxCollection}
-          format="currency"
-          trend={{ value: growthRate, direction: growthRate >= 0 ? 'up' : 'down' }}
-          icon={<BarChart3 className="h-5 w-5" />}
-        />
-        <MetricCardV2
-          title="Promedio Excedente"
-          value={averageCreditSurplus}
-          format="currency"
-          trend={{ value: finePercentage, direction: 'up' }}
-          icon={<TrendingUp className="h-5 w-5" />}
-        />
-        <MetricCardV2
-          title="% Morosidad"
-          value={delinquencyRate}
-          format="percentage"
-          icon={<AlertCircle className="h-5 w-5" />}
-        />
+    <div className="grid grid-cols-2 grid-rows-2 h-full">
+      {/* Top-left */}
+      <div className="overflow-hidden border-r border-b border-slate-700">
+        <PageOneStats chartData={chartData} />
       </div>
 
-      {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <MonthlyRevenueChartV2 data={monthlyRevenue} />
-        <ComplianceDistributionChartV2 data={complianceDistribution} />
+      {/* Top-right */}
+      <div className="overflow-hidden border-b border-slate-700">
+        {ivaStats ? (
+          <PageTwoStats stats={ivaStats} />
+        ) : (
+          <div className="flex items-center justify-center h-full text-slate-400 text-sm">Sin datos</div>
+        )}
       </div>
 
-      {/* Leaderboards Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <FiscalLeaderboardV2 data={fiscalLeaderboard} />
-        <SupervisorLeaderboardV2 data={supervisorLeaderboard} />
+      {/* Bottom-left */}
+      <div className="overflow-y-auto border-r border-slate-700 custom-scrollbar">
+        <GroupPerformanceStats groupStats={groupStats} />
+      </div>
+
+      {/* Bottom-right */}
+      <div className="overflow-hidden">
+        <IvaByGroupChart year={year} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Page labels ──────────────────────────────────────────────────────────────
+
+const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
+
+// ─── Main Dashboard ───────────────────────────────────────────────────────────
+
+export default function StatsDashboardV2() {
+  const [page, setPage] = useState(1);
+  const [year] = useState(new Date().getFullYear());
+
+  return (
+    <div
+      className="flex flex-col bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden"
+      style={{ height: 'calc(100vh - 80px)' }}
+    >
+      {/* ── Page content ─────────────────────────────────────────────── */}
+      <div className="flex-1 min-h-0">
+        {page === 1 && <StatsPage1Charts year={year} />}
+        {page === 2 && <StatsPage2Rankings year={year} />}
+        {page === 3 && <StatsPage3Cumplimiento year={year} />}
+      </div>
+
+      {/* ── Pagination bar ────────────────────────────────────────────── */}
+      <div className="shrink-0 flex justify-center items-center py-2.5 border-t border-slate-700 bg-slate-900/80">
+        <div className="flex items-center gap-1 bg-slate-800 border border-slate-700 rounded-xl px-3 py-1.5 shadow-lg">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30 h-7 text-xs"
+          >
+            <ChevronLeft className="h-3.5 w-3.5 mr-1" />
+            Anterior
+          </Button>
+
+          {PAGES.map((label, i) => (
+            <button
+              key={i}
+              onClick={() => setPage(i + 1)}
+              className={`h-7 min-w-[28px] px-3 rounded-lg text-xs font-semibold transition-all ${
+                page === i + 1
+                  ? 'bg-blue-600 text-white shadow-md shadow-blue-900/40'
+                  : 'text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPage(p => Math.min(3, p + 1))}
+            disabled={page === 3}
+            className="text-slate-300 hover:text-white hover:bg-slate-700 disabled:opacity-30 h-7 text-xs"
+          >
+            Siguiente
+            <ChevronRight className="h-3.5 w-3.5 ml-1" />
+          </Button>
+        </div>
       </div>
     </div>
   );
