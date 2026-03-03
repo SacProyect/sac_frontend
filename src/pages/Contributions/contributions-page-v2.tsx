@@ -16,8 +16,8 @@ export default function ContributionsPageV2() {
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string>('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState('2025-01-01');
+  const [endDate, setEndDate] = useState('2025-12-31');
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -30,17 +30,15 @@ export default function ContributionsPageV2() {
     const shouldFetch = user.role === 'ADMIN' || user.role === 'COORDINATOR';
     const hasValidDates = startDate && endDate;
 
-    if (!shouldFetch || (user.role === 'ADMIN' && !hasValidDates)) return;
+    if (!shouldFetch || !hasValidDates) return;
 
     const fetchGroups = async () => {
       try {
         setLoading(true);
-        const query: Record<string, string> = {};
-
-        if (hasValidDates) {
-          query.startDate = startDate;
-          query.endDate = endDate;
-        }
+        const query: Record<string, string> = {
+          startDate,
+          endDate
+        };
 
         if (selectedSupervisorId) {
           query.supervisorId = selectedSupervisorId;
@@ -54,6 +52,7 @@ export default function ContributionsPageV2() {
 
           if (!groupId) {
             toast.error('No se encontró el grupo coordinado para este usuario.');
+            setLoading(false);
             return;
           }
           query.id = groupId;
@@ -74,18 +73,6 @@ export default function ContributionsPageV2() {
     fetchGroups();
   }, [startDate, endDate, selectedSupervisorId, user, navigate]);
 
-  if (loading) {
-    return (
-      <div className="flex flex-col gap-6 w-full">
-        <PageHeader
-          title="Estadísticas por Coordinación"
-          description="Consulta y análisis de contribuciones por grupo"
-        />
-        <LoadingState message="Cargando métricas de contribución..." />
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-8 w-full animate-in fade-in duration-700">
       <PageHeader
@@ -103,13 +90,17 @@ export default function ContributionsPageV2() {
         />
         
         <div className="pt-4">
-          <ContributionsStatistics
-            groupData={groupData}
-            selectedGroup={selectedGroup}
-            selectedSupervisorId={selectedSupervisorId}
-            startDate={startDate}
-            endDate={endDate}
-          />
+          {loading ? (
+            <LoadingState message="Cargando métricas de contribución..." />
+          ) : (
+            <ContributionsStatistics
+              groupData={groupData}
+              selectedGroup={selectedGroup}
+              selectedSupervisorId={selectedSupervisorId}
+              startDate={startDate}
+              endDate={endDate}
+            />
+          )}
         </div>
       </div>
     </div>
