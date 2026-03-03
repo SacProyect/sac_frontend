@@ -182,15 +182,8 @@ export default function FiscalReviewPageV2() {
     fetchFiscals();
   }, [user, navigate, currentPage]);
 
-  if (loading) {
-    return <LoadingState message="Cargando fiscales..." />;
-  }
-
-  if (selectedFiscalId) {
-    return <FiscalDetailsView fiscalId={selectedFiscalId} onBack={() => setSelectedFiscalId(null)} />;
-  }
-
-  // Filtro local solo para búsqueda instantánea (antes del debounce)
+  // Filtro local solo para búsqueda instantánea
+  // IMPORTANTE: debe estar ANTES de cualquier return condicional (Reglas de Hooks)
   const displayFiscals = useMemo(() => {
     const q = searchValue.trim().toLowerCase();
     if (!q) return [...fiscalArray].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -203,6 +196,14 @@ export default function FiscalReviewPageV2() {
       )
       .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
   }, [fiscalArray, searchValue]);
+
+  if (loading) {
+    return <LoadingState message="Cargando fiscales..." />;
+  }
+
+  if (selectedFiscalId) {
+    return <FiscalDetailsView fiscalId={selectedFiscalId} onBack={() => setSelectedFiscalId(null)} />;
+  }
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-300">
