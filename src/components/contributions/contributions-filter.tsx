@@ -51,6 +51,29 @@ function ContributionsFilter({
     const startYear = new Date().getFullYear();
     const startMonth = 0;
 
+    // ── Decimal.js converter ─────────────────────────────────────────────────
+    // El backend devuelve montos en formato { s, e, d[] }. Formula:
+    // value = s * d_concatenated * 10^(e - d_concatenated.length + 1)
+    const decimalToNumber = (val: unknown): number => {
+        if (val === null || val === undefined) return 0;
+        if (typeof val === 'number') return val;
+        if (typeof val === 'string') return parseFloat(val) || 0;
+        if (
+            typeof val === 'object' && val !== null &&
+            's' in val && 'e' in val && 'd' in val
+        ) {
+            const d = val as { s: number; e: number; d: number[] };
+            if (!Array.isArray(d.d) || d.d.length === 0) return 0;
+            let str = d.d[0].toString();
+            for (let i = 1; i < d.d.length; i++) {
+                str += d.d[i].toString().padStart(7, '0');
+            }
+            const exp = d.e - str.length + 1;
+            return d.s * parseFloat(str) * Math.pow(10, exp);
+        }
+        return 0;
+    };
+
     useEffect(() => {
         if (!user) {
             navigate("/login");
@@ -76,7 +99,7 @@ function ContributionsFilter({
         }
     }, [selectedYear, selectedMonth, optionClicked, user, navigate, setStartDate, setEndDate]);
 
-    const getAvailableYears = () => [startYear];
+    const getAvailableYears = () => [startYear - 2, startYear - 1, startYear];
     const getAvailableMonths = (year: number) => {
         const allMonths = [
             'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
@@ -100,8 +123,13 @@ function ContributionsFilter({
         };
     }, [calendarOpen]);
 
-    const formatCurrency = (amount: number | string) => {
-        return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES', maximumFractionDigits: 0 }).format(Number(amount));
+    const formatCurrency = (amount: unknown) => {
+        const num = decimalToNumber(amount);
+        return new Intl.NumberFormat('es-VE', {
+            style: 'currency',
+            currency: 'VES',
+            maximumFractionDigits: 0
+        }).format(num);
     };
 
     const toggleGroupExpand = (groupId: string) => {
@@ -245,14 +273,14 @@ function ContributionsFilter({
                                             <ShieldAlert className="w-3.5 h-3.5 text-amber-500" />
                                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Multas</p>
                                         </div>
-                                        <p className="text-lg font-black text-slate-200">{Number(fines).toLocaleString()}</p>
+                                        <p className="text-lg font-black text-slate-200">{decimalToNumber(fines).toLocaleString('es-VE', { maximumFractionDigits: 0 })}</p>
                                     </div>
                                     <div className="bg-slate-950/40 p-3 rounded-xl border border-slate-800/50 group-hover:border-emerald-500/10 transition-colors">
                                         <div className="flex items-center gap-2 mb-1">
                                             <TrendingUp className="w-3.5 h-3.5 text-emerald-500" />
                                             <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Recaudado</p>
                                         </div>
-                                        <p className="text-lg font-black text-slate-200">{Number(collectedFines).toLocaleString()}</p>
+                                        <p className="text-lg font-black text-slate-200">{decimalToNumber(collectedFines).toLocaleString('es-VE', { maximumFractionDigits: 0 })}</p>
                                     </div>
                                 </div>
 

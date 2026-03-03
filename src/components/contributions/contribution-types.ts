@@ -1,28 +1,35 @@
 import { ISLRReports } from "@/types/islr-reports";
 import { IVAReports } from "@/types/iva-reports";
-import Decimal from "decimal.js";
+
+/** Formato Decimal.js que usa el backend para los montos monetarios */
+export interface DecimalValue {
+    s: number;   // signo: 1 = positivo, -1 = negativo
+    e: number;   // exponente del primer grupo de dígitos
+    d: number[]; // grupos de dígitos (d[0] libre, d[1..] con padding de 7)
+}
 
 export interface GroupData {
     id: string;
     name: string;
-    coordinatorId: string;
-    created_at: string; // puede mantenerse como string (ISO) si no parseas a Date
-    members: Member[]; // no lo usas directamente aún
-    collected: string;
-    totalFines: string;
-    collectedFines: string;
-    totalIva: string;
-    totalIslr: string;
+    coordinatorId?: string;
+    coordinator?: { name: string };
+    created_at?: string;
+    members: Member[];
+    collected: DecimalValue;
+    totalFines: DecimalValue;
+    collectedFines: DecimalValue;
+    totalIva: DecimalValue;
+    totalIslr: DecimalValue;
     supervisorsStats: SupervisorsStat[];
 }
 
 export interface SupervisorsStat {
     supervisorId: string;
-    totalCollected: string;
-    collectedIva: string;
-    collectedISLR: string;
-    collectedFines: string;
-    totalFines: string;
+    totalCollected: DecimalValue;
+    collectedIva: DecimalValue;
+    collectedISLR: DecimalValue;
+    collectedFines: DecimalValue;
+    totalFines: DecimalValue;
     supervisorName: string;
 }
 
