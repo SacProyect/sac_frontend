@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import { Button as DialogButton } from '@/components/UI/button';
-import { MoreVertical, ChevronDown } from 'lucide-react';
+import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -66,7 +66,12 @@ export default function AdminPageV2() {
   const [isAddContribuyenteOpen, setIsAddContribuyenteOpen] = useState(false);
   const [isAddAvisoOpen, setIsAddAvisoOpen] = useState(false);
   const [isAddMultaOpen, setIsAddMultaOpen] = useState(false);
-  const [isUpdateIvaOpen, setIsUpdateIvaOpen] = useState(false);
+
+  // Paginación del servidor
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 50;
 
   // Detectar mobile
   useEffect(() => {
@@ -78,13 +83,25 @@ export default function AdminPageV2() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Cargar contribuyentes
+  // Debounce para búsqueda
+  const debouncedSearch = useDebounce(searchValue.toLowerCase(), 500);
+
+  // Resetear página cuando cambian los filtros
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch, yearValue]);
+
+  // Cargar contribuyentes con paginación del servidor
   useEffect(() => {
     const loadTaxpayers = async () => {
       try {
         setLoading(true);
-        const response = await getTaxpayers();
+        const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
+        const searchFilter = debouncedSearch.trim() || undefined;
+        const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
         setTaxpayers(response.data ?? []);
+        setTotal(response.total ?? 0);
+        setTotalPages(response.totalPages ?? 1);
       } catch (e) {
         console.error(e);
         toast.error('No se pudieron obtener los contribuyentes.');
@@ -96,39 +113,16 @@ export default function AdminPageV2() {
     if (user) {
       loadTaxpayers();
     }
-  }, [user]);
+  }, [user, currentPage, debouncedSearch, yearValue]);
 
-  // Debounce para búsqueda
-  const debouncedSearch = useDebounce(searchValue.toLowerCase(), 300);
-
-  // Filtrar datos
+  // El filtro por status (Activos/Inactivos) se aplica localmente
+  // ya que el backend no soporta ese filtro aún
   const filteredData = useMemo(() => {
-    return taxpayers
-      .map((item) => {
-        const itemYear = new Date(item.emition_date || '').getFullYear().toString();
-        const yearMatches = yearValue === 'Todos' || itemYear === yearValue;
-        if (!yearMatches) return null;
-
-        // Filtro por estado
-        const statusMatches =
-          statusValue === 'Todos' ||
-          (statusValue === 'Activos' && item.status === true) ||
-          (statusValue === 'Inactivos' && item.status === false);
-        if (!statusMatches) return null;
-
-        if (!debouncedSearch.trim()) return item;
-
-        const searchLower = debouncedSearch;
-        const matchesSearch =
-          item.name?.toLowerCase().includes(searchLower) ||
-          item.rif?.toLowerCase().includes(searchLower) ||
-          item.providenceNum?.toString().includes(searchLower) ||
-          item.process?.toLowerCase().includes(searchLower);
-
-        return matchesSearch ? item : null;
-      })
-      .filter((item): item is Taxpayer => item !== null);
-  }, [taxpayers, debouncedSearch, yearValue, statusValue]);
+    if (statusValue === 'Todos') return taxpayers;
+    return taxpayers.filter(item =>
+      statusValue === 'Activos' ? item.status === true : item.status === false
+    );
+  }, [taxpayers, statusValue]);
 
   // Generar años disponibles
   const years = useMemo(() => {
@@ -180,8 +174,6 @@ export default function AdminPageV2() {
       setTaxpayers((prev) => prev.filter((t) => t.id !== taxpayerToDelete.id));
       setDeleteConfirmOpen(false);
       setTaxpayerToDelete(null);
-      // Recargar página para refrescar datos
-      window.location.reload();
     } catch (error) {
       console.error(error);
       toast.error('Error al eliminar el contribuyente');
@@ -536,30 +528,77 @@ export default function AdminPageV2() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
             <p className="text-slate-400 text-sm">Total Contribuyentes</p>
-            <p className="text-2xl font-bold text-white mt-2">{filteredData.length}</p>
+            <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Especiales</p>
+            <p className="text-slate-400 text-sm">Especiales (pág.)</p>
             <p className="text-2xl font-bold text-purple-400 mt-2">
               {filteredData.filter((x) => x.contract_type === contract_type.SPECIAL).length}
             </p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Ordinarios</p>
+            <p className="text-slate-400 text-sm">Ordinarios (pág.)</p>
             <p className="text-2xl font-bold text-blue-400 mt-2">
               {filteredData.filter((x) => x.contract_type === contract_type.ORDINARY).length}
             </p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Activos</p>
+            <p className="text-slate-400 text-sm">Activos (pág.)</p>
             <p className="text-2xl font-bold text-green-400 mt-2">
               {filteredData.filter((x) => x.status === true).length}
             </p>
           </Card>
         </div>
 
+        {/* Controles de Paginación */}
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
+          <p className="text-sm text-slate-400">
+            {loading ? 'Cargando...' : total > 0 ? (
+              <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total.toLocaleString()}</span> contribuyentes</>
+            ) : '0 resultados'}
+          </p>
+          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
+            <button
+              onClick={() => setCurrentPage(1)}
+              disabled={currentPage === 1 || loading}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+              title="Primera página"
+            >
+              <ChevronsLeft className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+              disabled={currentPage === 1 || loading}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+              title="Anterior"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <div className="px-3 min-w-[110px] text-center">
+              <span className="text-xs font-bold text-slate-300">Pág. {currentPage} / {totalPages}</span>
+            </div>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+              disabled={currentPage === totalPages || loading}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+              title="Siguiente"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+            <button
+              onClick={() => setCurrentPage(totalPages)}
+              disabled={currentPage === totalPages || loading}
+              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+              title="Última página"
+            >
+              <ChevronsRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
         {/* Tabla */}
         {isMobile ? <MobileTable /> : <DesktopTable />}
+
 
         {/* Modal de confirmación de eliminación */}
         <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
@@ -597,17 +636,17 @@ export default function AdminPageV2() {
         <AddContribuyenteModalV2
           isOpen={isAddContribuyenteOpen}
           onClose={() => setIsAddContribuyenteOpen(false)}
-          onSuccess={() => {
-            // Recargar contribuyentes
-            const loadTaxpayers = async () => {
-              try {
-                const response = await getTaxpayers();
-                setTaxpayers(response.data ?? []);
-              } catch (e) {
-                console.error(e);
-              }
-            };
-            loadTaxpayers();
+          onSuccess={async () => {
+            try {
+              const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
+              const searchFilter = debouncedSearch.trim() || undefined;
+              const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
+              setTaxpayers(response.data ?? []);
+              setTotal(response.total ?? 0);
+              setTotalPages(response.totalPages ?? 1);
+            } catch (e) {
+              console.error(e);
+            }
           }}
         />
 

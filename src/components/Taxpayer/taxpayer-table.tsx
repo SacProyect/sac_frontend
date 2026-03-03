@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react'; // useRef kept for containerRef (overflow scroll)
 import InfoTableOptMenu from '../UI/InfoTable/info-table-opt-menu';
 import { Parish, Taxpayer } from '../../types/taxpayer';
 import { useAuth } from '@/hooks/use-auth';
@@ -8,8 +8,6 @@ import { TaxpayerCategories } from '@/types/taxpayer-categories';
 
 interface TaxpayerTableProps {
     propRows: Taxpayer[];
-    visibleCount: number;
-    setVisibleCount: React.Dispatch<React.SetStateAction<number>>;
 }
 
 const columns = [
@@ -26,12 +24,10 @@ const columns = [
     { label: 'Opciones', id: 'options' },
 ];
 
-const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, setVisibleCount }) => {
+const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     const { user } = useAuth();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [isLoadingMore, setIsLoadingMore] = useState(false);
-    const loadingMoreLock = useRef(false); // lock para evitar múltiples cargas simultáneas
-    const [editingRows, setEditingRows] = useState<{ [key: string]: Partial<Taxpayer> }>({});;
+    const [editingRows, setEditingRows] = useState<{ [key: string]: Partial<Taxpayer> }>({});
     const [parishList, setParishList] = useState<Parish[]>([]);
     const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
     const [rows, setRows] = useState<Taxpayer[]>(propRows);
@@ -63,54 +59,10 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
         setRows(propRows);
     }, [propRows]);
 
-    // console.log(propRows)
-
+    // Todos los registros de la página actual se muestran (paginación del servidor)
     const visibleRows = useMemo(() => {
-        const sorted = [...rows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));
-        return sorted.slice(0, visibleCount);
-    }, [rows, visibleCount]);
-
-    useEffect(() => {
-        const el = containerRef.current;
-        if (!el) return;
-
-        let debounceTimeout: ReturnType<typeof setTimeout>;
-
-        const handleScroll = () => {
-            // Debounce para no disparar muchas veces el evento
-            clearTimeout(debounceTimeout);
-            debounceTimeout = setTimeout(() => {
-                if (loadingMoreLock.current || isLoadingMore) return;
-
-                const scrollTop = el.scrollTop;
-                const scrollHeight = el.scrollHeight;
-                const clientHeight = el.clientHeight;
-
-                // Distancia desde el scroll al final
-                const distanceToBottom = scrollHeight - (scrollTop + clientHeight);
-
-                // Si estamos a menos de 100px del fondo y hay más filas para cargar
-                if (distanceToBottom < 100 && visibleCount < propRows.length) {
-                    loadingMoreLock.current = true; // bloqueamos
-                    setIsLoadingMore(true);
-
-                    // Simula carga asincrónica
-                    setTimeout(() => {
-                        setVisibleCount((prev) => Math.min(prev + 25, propRows.length));
-                        setIsLoadingMore(false);
-                        loadingMoreLock.current = false; // desbloqueamos
-                    }, 500);
-                }
-            }, 150); // 150ms debounce, ajusta si quieres
-        };
-
-        el.addEventListener('scroll', handleScroll);
-
-        return () => {
-            clearTimeout(debounceTimeout);
-            el.removeEventListener('scroll', handleScroll);
-        };
-    }, [visibleCount, propRows.length, isLoadingMore]);
+        return [...rows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));
+    }, [rows]);
 
     useEffect(() => {
         const fetchCategoriesAndParish = async () => {
@@ -366,12 +318,6 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows, visibleCount, s
                     </div>
                 ))}
 
-                {/* Loader */}
-                {isLoadingMore && (
-                    <div className="flex justify-center py-2">
-                        <div className="w-5 h-5 border-2 border-blue-500 rounded-full border-t-transparent animate-spin" />
-                    </div>
-                )}
             </div>
         </div>
     );
