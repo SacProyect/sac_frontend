@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { getFiscalsForReview } from '@/components/utils/api/taxpayer-functions';
@@ -7,11 +7,12 @@ import { Card } from '@/components/UI/card';
 import { Input } from '@/components/UI/input';
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
-import { Search, TrendingUp, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, TrendingUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
 import { EmptyState, LoadingState, PageHeader } from '@/components/UI/v2';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import toast from 'react-hot-toast';
+import { useDebounce } from '@/hooks/use-debounce';
 
 // Subcomponents for the 3 pages
 import { useFiscalStats } from '@/hooks/use-fiscal-stats';
@@ -142,9 +143,20 @@ export default function FiscalReviewPageV2() {
   const [fiscalArray, setFiscalArray] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
-  
-  // Estado para controlar si se seleccionó un fiscal específico
   const [selectedFiscalId, setSelectedFiscalId] = useState<string | null>(null);
+
+  // Paginación del servidor
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 50;
+
+  const debouncedSearch = useDebounce(searchValue.toLowerCase(), 500);
+
+  // Resetear página al buscar
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearch]);
 
   useEffect(() => {
     if (!user) {
@@ -152,12 +164,13 @@ export default function FiscalReviewPageV2() {
       return;
     }
 
-    const fetchTaxpayers = async () => {
+    const fetchFiscals = async () => {
       try {
         setLoading(true);
-        const response = await getFiscalsForReview();
-        // El API retorna { data: User[], total: number, ... }
+        const response = await getFiscalsForReview(undefined, currentPage, limit);
         setFiscalArray(response.data || []);
+        setTotal(response.total ?? 0);
+        setTotalPages(response.totalPages ?? 1);
       } catch (e) {
         console.error(e);
         toast.error('No se pudieron obtener los fiscales.');
@@ -166,34 +179,30 @@ export default function FiscalReviewPageV2() {
       }
     };
 
-    fetchTaxpayers();
-  }, [user, navigate]);
+    fetchFiscals();
+  }, [user, navigate, currentPage]);
 
   if (loading) {
     return <LoadingState message="Cargando fiscales..." />;
   }
 
-  // Si se seleccionó un fiscal, renderizamos su vista detallada
   if (selectedFiscalId) {
     return <FiscalDetailsView fiscalId={selectedFiscalId} onBack={() => setSelectedFiscalId(null)} />;
   }
 
-  // Filtrar fiscales
-  const filteredFiscals = (fiscalArray || []).filter((f) => {
+  // Filtro local solo para búsqueda instantánea (antes del debounce)
+  const displayFiscals = useMemo(() => {
     const q = searchValue.trim().toLowerCase();
-    return (
-      f.name?.toLowerCase().includes(q) ||
-      f.group?.name?.toLowerCase().includes(q) ||
-      f.role.toLowerCase().includes(q) ||
-      f.supervisor?.name.toLowerCase().includes(q) ||
-      f.personId?.toString().includes(q)
-    );
-  });
-
-  // Ordenar por nombre
-  const sortedFiscals = [...filteredFiscals].sort((a, b) =>
-    (a.name ?? '').localeCompare(b.name ?? '')
-  );
+    if (!q) return [...fiscalArray].sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+    return fiscalArray
+      .filter(f =>
+        f.name?.toLowerCase().includes(q) ||
+        f.group?.name?.toLowerCase().includes(q) ||
+        f.supervisor?.name?.toLowerCase().includes(q) ||
+        f.personId?.toString().includes(q)
+      )
+      .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
+  }, [fiscalArray, searchValue]);
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-300">
@@ -219,91 +228,113 @@ export default function FiscalReviewPageV2() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 border-l-4 border-l-blue-500 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Total Fiscales</p>
-          <p className="text-2xl font-bold text-white mt-2">{filteredFiscals.length}</p>
+          <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total}</p>
         </Card>
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 border-l-4 border-l-green-500 hover:border-slate-600 hover:shadow-md">
-          <p className="text-slate-400 text-sm">Fiscales Activos</p>
+          <p className="text-slate-400 text-sm">Fiscales (pág.)</p>
           <p className="text-2xl font-bold text-green-400 mt-2">
-            {filteredFiscals.filter((f) => f.role === 'FISCAL').length}
+            {displayFiscals.filter((f) => f.role === 'FISCAL').length}
           </p>
         </Card>
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 border-l-4 border-l-purple-500 hover:border-slate-600 hover:shadow-md">
-          <p className="text-slate-400 text-sm">Supervisores</p>
+          <p className="text-slate-400 text-sm">Supervisores (pág.)</p>
           <p className="text-2xl font-bold text-purple-400 mt-2">
-            {filteredFiscals.filter((f) => f.role === 'SUPERVISOR').length}
+            {displayFiscals.filter((f) => f.role === 'SUPERVISOR').length}
           </p>
         </Card>
       </div>
 
-      {/* Tabla de Fiscales */}
-      {sortedFiscals.length === 0 ? (
+      {/* Paginación + Tabla */}
+      {displayFiscals.length === 0 && !loading ? (
         <EmptyState title="No se encontraron fiscales" message="Intenta ajustar los filtros de búsqueda" />
       ) : (
-        <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="border-b border-slate-700 bg-slate-800/50">
-                  <th className="text-left p-4 text-slate-300 font-semibold">Cédula</th>
-                  <th className="text-left p-4 text-slate-300 font-semibold">Nombre</th>
-                  <th className="text-left p-4 text-slate-300 font-semibold">Grupo</th>
-                  <th className="text-left p-4 text-slate-300 font-semibold">Supervisor</th>
-                  <th className="text-left p-4 text-slate-300 font-semibold">Rol</th>
-                  <th className="text-right p-4 text-slate-300 font-semibold">Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {sortedFiscals
-                  .filter((t) => t.id && t.personId)
-                  .map((fiscal) => (
-                    <tr
-                      key={fiscal.id}
-                      className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200"
-                    >
-                      <td className="p-4 text-slate-200">
-                        {fiscal.personId
-                          ? Number(fiscal.personId).toLocaleString()
-                          : 'N/A'}
-                      </td>
-                      <td className="p-4 text-slate-200 font-medium">{fiscal.name ?? 'N/A'}</td>
-                      <td className="p-4 text-slate-400 text-sm">
-                        {fiscal.group?.name ?? 'N/A'}
-                      </td>
-                      <td className="p-4 text-slate-400 text-sm">
-                        {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
-                          ? fiscal.supervisor.name
-                          : fiscal.role === 'SUPERVISOR'
-                          ? fiscal.name
-                          : 'N/A'}
-                      </td>
-                      <td className="p-4">
-                        <Badge
-                          className={
-                            fiscal.role === 'FISCAL'
-                              ? 'bg-blue-900/50 text-blue-200 border-blue-800'
-                              : fiscal.role === 'SUPERVISOR'
-                              ? 'bg-purple-900/50 text-purple-200 border-purple-800'
-                              : 'bg-slate-700 text-slate-300 border-slate-600'
-                          }
-                        >
-                          {fiscal.role}
-                        </Badge>
-                      </td>
-                      <td className="p-4 text-right">
-                        <Button
-                          onClick={() => setSelectedFiscalId(fiscal.id)}
-                          className="bg-blue-600 hover:bg-blue-700 text-white text-sm transition-all shadow-md hover:shadow-lg"
-                        >
-                          <TrendingUp className="h-4 w-4 mr-2" />
-                          Ver Estadísticas
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-            </table>
+        <>
+          {/* Controles de paginación */}
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pb-1">
+            <p className="text-sm text-slate-400">
+              {loading ? 'Cargando...' : total > 0 ? (
+                <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total}</span> fiscales</>
+              ) : '0 resultados'}
+            </p>
+            <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
+              <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || loading}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Primera página">
+                <ChevronsLeft className="w-4 h-4" />
+              </button>
+              <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1 || loading}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Anterior">
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+              <div className="px-3 min-w-[110px] text-center">
+                <span className="text-xs font-bold text-slate-300">Pág. {currentPage} / {totalPages}</span>
+              </div>
+              <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || loading}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Siguiente">
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages || loading}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Última página">
+                <ChevronsRight className="w-4 h-4" />
+              </button>
+            </div>
           </div>
-        </Card>
+
+          <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-slate-700 bg-slate-800/50">
+                    <th className="text-left p-4 text-slate-300 font-semibold">Cédula</th>
+                    <th className="text-left p-4 text-slate-300 font-semibold">Nombre</th>
+                    <th className="text-left p-4 text-slate-300 font-semibold">Grupo</th>
+                    <th className="text-left p-4 text-slate-300 font-semibold">Supervisor</th>
+                    <th className="text-left p-4 text-slate-300 font-semibold">Rol</th>
+                    <th className="text-right p-4 text-slate-300 font-semibold">Acción</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {displayFiscals
+                    .filter((t) => t.id && t.personId)
+                    .map((fiscal) => (
+                      <tr key={fiscal.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200">
+                        <td className="p-4 text-slate-200">
+                          {fiscal.personId ? Number(fiscal.personId).toLocaleString() : 'N/A'}
+                        </td>
+                        <td className="p-4 text-slate-200 font-medium">{fiscal.name ?? 'N/A'}</td>
+                        <td className="p-4 text-slate-400 text-sm">{fiscal.group?.name ?? 'N/A'}</td>
+                        <td className="p-4 text-slate-400 text-sm">
+                          {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
+                            ? fiscal.supervisor.name
+                            : fiscal.role === 'SUPERVISOR'
+                            ? fiscal.name
+                            : 'N/A'}
+                        </td>
+                        <td className="p-4">
+                          <Badge className={fiscal.role === 'FISCAL'
+                            ? 'bg-blue-900/50 text-blue-200 border-blue-800'
+                            : fiscal.role === 'SUPERVISOR'
+                            ? 'bg-purple-900/50 text-purple-200 border-purple-800'
+                            : 'bg-slate-700 text-slate-300 border-slate-600'
+                          }>
+                            {fiscal.role}
+                          </Badge>
+                        </td>
+                        <td className="p-4 text-right">
+                          <Button
+                            onClick={() => setSelectedFiscalId(fiscal.id)}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm transition-all shadow-md hover:shadow-lg"
+                          >
+                            <TrendingUp className="h-4 w-4 mr-2" />
+                            Ver Estadísticas
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                </tbody>
+              </table>
+            </div>
+          </Card>
+        </>
       )}
     </div>
   );
