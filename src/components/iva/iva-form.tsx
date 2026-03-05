@@ -235,28 +235,42 @@ function IvaForm() {
         const sorted = [...(selectedTaxpayer.IVAReports || [])]
             .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
-        const emitionDate = new Date(selectedTaxpayer.emition_date);
+        // Manejar emition_date inválido o faltante
+        const rawEmitionDate = selectedTaxpayer.emition_date ? new Date(selectedTaxpayer.emition_date) : new Date();
+        const emitionDate = isNaN(rawEmitionDate.getTime()) ? new Date() : rawEmitionDate;
+        
         let year = emitionDate.getUTCFullYear();
         let month = 1;
 
         if (sorted.length > 0) {
-            const [lastYearStr, lastMonthStr] = sorted[0].date.split('-');
-            year = parseInt(lastYearStr, 10);
-            month = parseInt(lastMonthStr, 10) + 1;
-            
-            if (month > 12) {
-                setDecemberReached(true);
-                setNextMonthLabel("Año completo");
-                setValue('date', '');
-                setLoadingMonthInfo(false);
-                return;
+            const lastReportDate = sorted[0].date;
+            if (lastReportDate && lastReportDate.includes('-')) {
+                const [lastYearStr, lastMonthStr] = lastReportDate.split('-');
+                year = parseInt(lastYearStr, 10);
+                month = parseInt(lastMonthStr, 10) + 1;
+                
+                if (month > 12) {
+                    setDecemberReached(true);
+                    setNextMonthLabel("Año completo");
+                    setValue('date', '');
+                    setLoadingMonthInfo(false);
+                    return;
+                }
             }
         }
 
         setDecemberReached(false);
         const nextDate = new Date(Date.UTC(year, month - 1, 1));
-        setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' }));
-        setValue('date', nextDate.toISOString());
+        
+        // Verificación final de seguridad antes de toISOString()
+        if (!isNaN(nextDate.getTime())) {
+            setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' }));
+            setValue('date', nextDate.toISOString());
+        } else {
+            console.warn("No se pudo calcular la fecha siguiente para el contribuyente:", selectedTaxpayer.name);
+            setNextMonthLabel("Error en fecha");
+            setValue('date', '');
+        }
         setLoadingMonthInfo(false);
     }, [selectedTaxpayer, setValue]);
 
@@ -402,7 +416,17 @@ function IvaForm() {
                                     <div className="relative group">
                                         <Tag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                         <Input
-                                            {...register("iva", { required: true })}
+                                            {...register("iva", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("iva", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("iva", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -413,7 +437,17 @@ function IvaForm() {
                                     <div className="relative group">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                                         <Input
-                                            {...register("paid", { required: true })}
+                                            {...register("paid", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("paid", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("paid", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200 font-mono"
                                             placeholder="0.00"
                                         />
@@ -424,7 +458,17 @@ function IvaForm() {
                                     <div className="relative group">
                                         <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                         <Input
-                                            {...register("sells", { required: true })}
+                                            {...register("sells", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("sells", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("sells", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -435,7 +479,17 @@ function IvaForm() {
                                     <div className="relative group">
                                         <ShoppingBag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                         <Input
-                                            {...register("purchases", { required: true })}
+                                            {...register("purchases", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("purchases", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("purchases", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -448,7 +502,16 @@ function IvaForm() {
                                 <div className="relative group">
                                     <History className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                     <Input
-                                        {...register("excess")}
+                                        {...register("excess", {
+                                            onChange: (e) => {
+                                                const val = e.target.value;
+                                                if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                    setValue("excess", val.substring(1));
+                                                }
+                                            }
+                                        })}
+                                        onFocus={(e) => e.target.select()}
+                                        onBlur={(e) => { if (e.target.value.trim() === "") setValue("excess", "0"); }}
                                         className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
                                         placeholder="0.00 (Opcional)"
                                     />

@@ -346,7 +346,17 @@ function IslrForm() {
                                     <div className="relative group">
                                         <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                                         <Input
-                                            {...register("incomes", { required: true })}
+                                            {...register("incomes", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("incomes", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("incomes", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -357,7 +367,17 @@ function IslrForm() {
                                     <div className="relative group">
                                         <TrendingDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-rose-400 transition-colors" />
                                         <Input
-                                            {...register("costs", { required: true })}
+                                            {...register("costs", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("costs", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("costs", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-rose-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -371,7 +391,17 @@ function IslrForm() {
                                     <div className="relative group">
                                         <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
                                         <Input
-                                            {...register("expent", { required: true })}
+                                            {...register("expent", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("expent", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("expent", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
                                             placeholder="0.00"
                                         />
@@ -382,7 +412,17 @@ function IslrForm() {
                                     <div className="relative group">
                                         <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
                                         <Input
-                                            {...register("paid", { required: true })}
+                                            {...register("paid", { 
+                                                required: true,
+                                                onChange: (e) => {
+                                                    const val = e.target.value;
+                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
+                                                        setValue("paid", val.substring(1));
+                                                    }
+                                                }
+                                            })}
+                                            onFocus={(e) => e.target.select()}
+                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("paid", "0"); }}
                                             className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200 font-mono"
                                             placeholder="0.00"
                                         />
