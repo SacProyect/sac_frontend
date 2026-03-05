@@ -433,7 +433,7 @@ export default function AdminPageV2() {
         </div>
 
         {/* Acciones Rápidas y Filtros */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
           <Card className="bg-slate-800 border-slate-700 p-4 flex-1">
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             <div>
@@ -508,8 +508,8 @@ export default function AdminPageV2() {
 
           {/* Mobile/Tablet: Show dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild className="lg:hidden">
-              <Button className="bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-md flex items-center gap-2">
+            <DropdownMenuTrigger asChild className="lg:hidden w-full">
+              <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 h-11">
                 Acciones Rápidas
                 <ChevronDown className="h-4 w-4" />
               </Button>
