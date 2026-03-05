@@ -6,7 +6,8 @@ import { Button } from '@/components/UI/button';
 import { Breadcrumb, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/UI/breadcrumb';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/UI/dropdown-menu';
-import { Menu, LogOut, Settings, LayoutDashboard, Users, CheckCircle, FileBarChart, Settings2, BarChart3, FileText, ClipboardList, Wallet, Landmark } from 'lucide-react';
+import { Menu, LogOut, Settings, Landmark } from 'lucide-react';
+import { useNavItems } from '@/hooks/use-nav-items';
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -26,55 +27,8 @@ const MainLayoutV2 = () => {
     const { user, logout } = useAuth();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-    // Mapeo de rutas: v0_reference -> rutas reales del proyecto
-    const getNavItems = () => {
-        if (!user) return [];
-
-        // Rutas base según el rol del usuario
-        const baseRoutes = [
-            { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
-            { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },
-            { href: '/fiscal-review', label: 'Revisión Fiscal', icon: <CheckCircle className="w-4 h-4" /> },
-            { href: '/gen-reports', label: 'Reportes', icon: <FileBarChart className="w-4 h-4" /> },
-            { href: '/settings', label: 'Ajustes', icon: <Settings2 className="w-4 h-4" /> },
-            { href: '/stats', label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
-        ];
-
-        // Rutas adicionales según rol
-        if (user.role === 'ADMIN' || user.role === 'COORDINATOR') {
-            baseRoutes.push(
-                { href: '/iva', label: 'Reporte IVA', icon: <FileText className="w-4 h-4" /> },
-                { href: '/islr', label: 'Reporte ISLR', icon: <FileText className="w-4 h-4" /> },
-                { href: '/index-iva', label: 'Índice IVA', icon: <ClipboardList className="w-4 h-4" /> },
-                { href: '/contributions', label: 'Contribuciones', icon: <Wallet className="w-4 h-4" /> }
-            );
-        } else if (user.role === 'SUPERVISOR') {
-            baseRoutes.push(
-                { href: `/stats/fiscal/${user.id}`, label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
-                { href: '/iva', label: 'Reporte IVA', icon: <FileText className="w-4 h-4" /> },
-                { href: '/islr', label: 'Reporte ISLR', icon: <FileText className="w-4 h-4" /> },
-                { href: '/contributions', label: 'Contribuciones', icon: <Wallet className="w-4 h-4" /> }
-            );
-        } else {
-            // FISCAL role
-            baseRoutes.push(
-                { href: `/stats/fiscal/${user.id}`, label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
-                { href: '/iva', label: 'Reporte IVA', icon: <FileText className="w-4 h-4" /> },
-                { href: '/islr', label: 'Reporte ISLR', icon: <FileText className="w-4 h-4" /> }
-            );
-        }
-
-        // Filtro especial para usuario específico (igual que en Sidebar.tsx original)
-        if (user.id === "dc6734e1-77be-42bb-b708-27979e931f08") {
-            return baseRoutes.filter(
-                (opt) => !["/fine", "/iva", "/islr", "/census", "/show-census", "/taxpayer", "/index-iva", "/warning"].includes(opt.href)
-            );
-        }
-
-        return baseRoutes;
-    };
-
-    const navItems = getNavItems();
+    // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
+    const navItems = useNavItems();
 
     const handleLogout = () => {
         logout();
