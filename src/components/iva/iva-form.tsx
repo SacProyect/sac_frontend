@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
@@ -29,7 +29,7 @@ import {
 } from "@/components/UI/dropdown-menu";
 import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
-import { createIVA } from '@/components/utils/api/taxpayer-functions';
+import { createIVA, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
 
@@ -61,13 +61,26 @@ export interface IvaReportFormData {
 function IvaForm() {
     const { user, refreshUser } = useAuth();
     const navigate = useNavigate();
-    const { taxpayersForEvents: taxpayerArray, loading: loadingTaxpayers } = useCachedTaxpayersForEvents();
+    const { taxpayersForEvents: firstPageTaxpayers, totalPages, loading: loadingFirstPage } = useCachedTaxpayersForEvents(50);
     
     const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(false);
     const [decemberReached, setDecemberReached] = useState(false);
     const [nextMonthLabel, setNextMonthLabel] = useState("");
     const [searchValue, setSearchValue] = useState("");
+    const [searchDebounce, setSearchDebounce] = useState("");
+
+    // Pagination states
+    const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
+    const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
+    const [searchPage, setSearchPage] = useState(2);
+    const [searchTotalPages, setSearchTotalPages] = useState(1);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
+    const [currentPage, setCurrentPage] = useState(2);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+
+    const listRef = useRef<HTMLDivElement>(null);
 
     const { 
         register,
@@ -92,14 +105,109 @@ function IvaForm() {
 
     const watchValues = watch();
 
+    // Unified list of taxpayers
+    const isSearching = searchDebounce.trim() !== '';
+    const firstPageFiltered = useMemo(
+        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
+        [firstPageTaxpayers]
+    );
+
+    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
+
+    const taxpayerArray = useMemo(
+        () => [...displayedFirst, ...displayedExtra],
+        [displayedFirst, displayedExtra]
+    );
+
+    const hasMore = useMemo(() => {
+        const loadedPagesCount = 1 + Math.floor(displayedExtra.length / 50);
+        return loadedPagesCount < totalPagesDisplayed;
+    }, [displayedExtra.length, totalPagesDisplayed]);
+
     const filteredTaxpayers = useMemo(() => {
-        if (!searchValue) return taxpayerArray.slice(0, 10);
+        if (!searchValue) return taxpayerArray;
         const s = searchValue.toLowerCase();
         return taxpayerArray.filter(t => 
             t.name.toLowerCase().includes(s) || 
             t.rif.toLowerCase().includes(s)
-        ).slice(0, 10);
+        );
     }, [searchValue, taxpayerArray]);
+
+    const loadMoreTaxpayers = useCallback(async () => {
+        if (!hasMore || isLoadingMore) return;
+        setIsLoadingMore(true);
+        const term = searchDebounce.trim() || undefined;
+        const pageToFetch = isSearching ? searchPage : currentPage;
+        try {
+            const response = await getTaxpayerForEvents(pageToFetch, 50, term);
+            const data = (response?.data?.data ?? []) as Taxpayer[];
+            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            if (isSearching) {
+                setSearchAdditionalPages(prev => [...prev, ...filtered]);
+                setSearchPage(prev => prev + 1);
+            } else {
+                setAdditionalPages(prev => [...prev, ...filtered]);
+                setCurrentPage(prev => prev + 1);
+            }
+        } catch (e) {
+            toast.error("No se pudieron cargar más contribuyentes.");
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [hasMore, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage]);
+
+    const handleScroll = useCallback(() => {
+        const el = listRef.current;
+        if (!el || !hasMore || isLoadingMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const threshold = 40;
+        if (scrollTop + clientHeight >= scrollHeight - threshold) {
+            loadMoreTaxpayers();
+        }
+    }, [hasMore, isLoadingMore, loadMoreTaxpayers]);
+
+    // Search debounce effect
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setSearchDebounce(searchValue);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [searchValue]);
+
+    // Fetch search results when searchDebounce changes
+    useEffect(() => {
+        const term = searchDebounce.trim();
+        if (term === '') {
+            setSearchResults(null);
+            setSearchAdditionalPages([]);
+            setSearchPage(2);
+            setAdditionalPages([]);
+            setCurrentPage(2);
+            return;
+        }
+        let cancelled = false;
+        const fetchSearchFirst = async () => {
+            setSearchLoading(true);
+            try {
+                const response = await getTaxpayerForEvents(1, 50, term);
+                if (cancelled) return;
+                const data = (response?.data?.data ?? []) as Taxpayer[];
+                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                setSearchResults(filtered);
+                setSearchTotalPages(response?.data?.totalPages ?? 1);
+                setSearchAdditionalPages([]);
+                setSearchPage(2);
+            } catch (e) {
+                if (!cancelled) toast.error("No se pudieron obtener los contribuyentes.");
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        };
+        fetchSearchFirst();
+        return () => { cancelled = true; };
+    }, [searchDebounce]);
 
     const fiscalBalance = useMemo(() => {
         try {
@@ -236,7 +344,11 @@ function IvaForm() {
                                                         onChange={(e) => setSearchValue(e.target.value)}
                                                     />
                                                 </div>
-                                                <div className="max-h-60 overflow-y-auto custom-scrollbar">
+                                                <div 
+                                                    ref={listRef}
+                                                    onScroll={handleScroll}
+                                                    className="max-h-60 overflow-y-auto custom-scrollbar"
+                                                >
                                                     {filteredTaxpayers.length === 0 ? (
                                                         <div className="p-4 text-xs text-slate-500 text-center">No hay resultados</div>
                                                     ) : (
@@ -255,6 +367,11 @@ function IvaForm() {
                                                                 </div>
                                                             </div>
                                                         ))
+                                                    )}
+                                                    {isLoadingMore && (
+                                                        <div className="p-3 text-[10px] text-center text-slate-500 uppercase tracking-widest animate-pulse">
+                                                            Cargando más...
+                                                        </div>
                                                     )}
                                                 </div>
                                             </PopoverContent>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
 import { useAuth } from '@/hooks/use-auth';
@@ -28,6 +28,7 @@ function GenerateReport() {
     const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
     const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const listRef = useRef<HTMLDivElement>(null);
 
     const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
     const firstPageFiltered = useMemo(
@@ -138,6 +139,16 @@ function GenerateReport() {
         }
     }, [hasMorePages, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage]);
 
+    const handleScroll = useCallback(() => {
+        const el = listRef.current;
+        if (!el || !hasMorePages || isLoadingMore) return;
+        const { scrollTop, scrollHeight, clientHeight } = el;
+        const threshold = 60;
+        if (scrollTop + clientHeight >= scrollHeight - threshold) {
+            loadMoreTaxpayers();
+        }
+    }, [hasMorePages, isLoadingMore, loadMoreTaxpayers]);
+
     if (!user) return null;
 
     if (groupData) {
@@ -218,7 +229,11 @@ function GenerateReport() {
                             </div>
                         </div>
 
-                        <div className='w-full h-[40vh] mt-6 overflow-y-auto custom-scrollbar border border-slate-800 rounded-xl bg-slate-950/20'>
+                        <div 
+                            ref={listRef}
+                            onScroll={handleScroll}
+                            className='w-full h-[40vh] mt-6 overflow-y-auto custom-scrollbar border border-slate-800 rounded-xl bg-slate-950/20'
+                        >
 
                             <div className='sticky top-0 z-10 items-center hidden w-full px-6 py-3 font-bold bg-slate-800/90 backdrop-blur text-slate-400 text-[10px] uppercase tracking-widest lg:flex border-b border-slate-700/50'>
                                 <div className='w-[150px]'><p>RIF</p></div>
@@ -254,15 +269,10 @@ function GenerateReport() {
                                 ))
                             )}
                             
-                            {hasMorePages && (
-                                <div className="p-4 flex justify-center">
-                                    <button 
-                                        onClick={loadMoreTaxpayers}
-                                        disabled={isLoadingMore}
-                                        className="text-xs font-bold text-slate-400 hover:text-white transition-colors"
-                                    >
-                                        {isLoadingMore ? "Cargando..." : "Cargar más resultados"}
-                                    </button>
+                            {isLoadingMore && (
+                                <div className="p-6 flex justify-center items-center gap-3">
+                                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-spin" />
+                                    <p className="text-xs font-bold text-slate-500 uppercase tracking-widest">Cargando más contribuyentes...</p>
                                 </div>
                             )}
                         </div>
