@@ -2,14 +2,13 @@ import { FiscalInfoExtended } from '@/types/fiscal-stats';
 import { Card } from '@/components/UI/card';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend } from 'recharts';
+import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface FiscalReviewPage2Props {
   fiscalInfo: FiscalInfoExtended;
 }
 
 export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2Props) {
-  // Mock data as seen on the second page image
   const highCompliance = [
     { id: '1', name: 'Taller Hermanos Contreras, CA', rif: 'J295609213', value: 83.33, total: 0 }
   ];
@@ -30,9 +29,9 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
   ];
 
   const chartData = [
-    { name: 'Bajo Cumplimiento (<33%)', value: 67, color: '#ef4444' }, // Red
-    { name: 'Medio Cumplimiento (34-66%)', value: 4, color: '#eab308' }, // Yellow
-    { name: 'Alto Cumplimiento (>67%)', value: 1, color: '#22c55e' } // Green
+    { name: 'Bajo (<33%)', value: 67, color: '#ef4444' },
+    { name: 'Medio (34-66%)', value: 4, color: '#eab308' },
+    { name: 'Alto (>67%)', value: 1, color: '#22c55e' }
   ];
 
   const formatCurrency = (val: number) => {
@@ -41,33 +40,14 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
 
   const renderTaxpayerList = (title: string, count: number, color: 'green' | 'yellow' | 'red', items: any[]) => {
     const colorClasses = {
-      green: {
-        text: 'text-green-400',
-        border: 'border-green-500/50',
-        bg: 'bg-green-500/10',
-        icon: 'text-green-500',
-        iconBg: 'bg-green-600'
-      },
-      yellow: {
-        text: 'text-yellow-400',
-        border: 'border-yellow-500/50',
-        bg: 'bg-yellow-500/10',
-        icon: 'text-yellow-500',
-        iconBg: 'bg-yellow-600'
-      },
-      red: {
-        text: 'text-red-400',
-        border: 'border-red-500/50',
-        bg: 'bg-red-500/10',
-        icon: 'text-red-500',
-        iconBg: 'bg-red-600'
-      }
+      green: { text: 'text-green-400', border: 'border-green-500/50', icon: 'text-green-500', iconBg: 'bg-green-600' },
+      yellow: { text: 'text-yellow-400', border: 'border-yellow-500/50', icon: 'text-yellow-500', iconBg: 'bg-yellow-600' },
+      red: { text: 'text-red-400', border: 'border-red-500/50', icon: 'text-red-500', iconBg: 'bg-red-600' }
     };
-    
     const theme = colorClasses[color];
 
     return (
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[320px] shadow-sm">
+      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
         <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/80">
           <div className="flex items-center gap-2">
             <span className={theme.icon}>↗</span>
@@ -115,41 +95,45 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
     if (active && payload && payload.length) {
       return (
         <div className="bg-slate-800 border border-slate-700 p-2 rounded shadow-lg">
-          <p className="text-slate-300 text-xs font-medium">{`${payload[0].name}`}</p>
-          <p className="text-white font-bold text-sm">{`${payload[0].value} contribuyentes`}</p>
+          <p className="text-slate-300 text-xs font-medium">{payload[0].name}</p>
+          <p className="text-white font-bold text-sm">{payload[0].value} contribuyentes</p>
         </div>
       );
     }
     return null;
   };
 
+  const total = chartData.reduce((acc, d) => acc + d.value, 0);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-in fade-in duration-300">
       {/* Contribuyentes Alto Cumplimiento */}
-      {renderTaxpayerList('Contribuyentes Alto Cumplimiento (>67%)', highCompliance.length, 'green', highCompliance)}
+      {renderTaxpayerList('Alto Cumplimiento (>67%)', highCompliance.length, 'green', highCompliance)}
 
       {/* Contribuyentes Medio Cumplimiento */}
-      {renderTaxpayerList('Contribuyentes Medio Cumplimiento (34-66%)', 4, 'yellow', mediumCompliance)}
+      {renderTaxpayerList('Medio Cumplimiento (34-66%)', mediumCompliance.length, 'yellow', mediumCompliance)}
 
       {/* Contribuyentes Bajo Cumplimiento */}
-      {renderTaxpayerList('Contribuyentes Bajo Cumplimiento (<33%)', 67, 'red', lowCompliance)}
+      {renderTaxpayerList('Bajo Cumplimiento (<33%)', lowCompliance.length, 'red', lowCompliance)}
 
-      {/* Distribución de Cumplimiento */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[320px] shadow-sm">
-        <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
+      {/* Distribución de Cumplimiento — gráfico de dona */}
+      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+        <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80 shrink-0">
           <span className="text-purple-400">⏱</span>
           <h3 className="font-semibold text-white text-sm">Distribución de Cumplimiento</h3>
         </div>
-        <div className="flex-1 p-2 flex flex-col items-center justify-center relative w-full h-full">
+
+        {/* Área del gráfico — toma todo el espacio restante */}
+        <div className="flex-1 relative min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
               <Pie
                 data={chartData}
                 cx="50%"
-                cy="45%"
-                innerRadius={60}
-                outerRadius={85}
-                paddingAngle={2}
+                cy="50%"
+                innerRadius={55}
+                outerRadius={80}
+                paddingAngle={3}
                 dataKey="value"
                 stroke="none"
               >
@@ -158,33 +142,31 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend 
-                verticalAlign="bottom" 
-                height={72}
-                content={(props) => {
-                  const { payload } = props;
-                  return (
-                    <ul className="flex flex-col gap-1.5 w-full px-6 mt-2">
-                      {payload?.map((entry: any, index: number) => (
-                        <li key={`item-${index}`} className="flex items-center text-[11px] text-slate-300">
-                          <span 
-                            className="w-2.5 h-2.5 rounded-full mr-2 shrink-0" 
-                            style={{ backgroundColor: entry.color }}
-                          />
-                          <span className="truncate flex-1">{entry.value}</span>
-                          <span className="font-bold text-white ml-2">{entry.payload.value}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  );
-                }}
-              />
             </PieChart>
           </ResponsiveContainer>
-          <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-            <span className="text-slate-400 text-[10px] block">Total</span>
-            <span className="text-white text-xl font-bold">72</span>
+
+          {/* Etiqueta central absoluta */}
+          <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <span className="text-slate-400 text-[10px] uppercase tracking-widest">Total</span>
+            <span className="text-white text-4xl font-bold leading-none mt-0.5">{total}</span>
+            <span className="text-slate-500 text-[10px] mt-1">contribuyentes</span>
           </div>
+        </div>
+
+        {/* Leyenda fija en la parte inferior */}
+        <div className="px-5 pb-4 pt-3 border-t border-slate-700/50 space-y-2 shrink-0">
+          {chartData.map((entry, index) => (
+            <div key={index} className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span
+                  className="w-3 h-3 rounded-full shrink-0"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-slate-300 text-xs">{entry.name}</span>
+              </div>
+              <span className="font-bold text-white text-sm">{entry.value}</span>
+            </div>
+          ))}
         </div>
       </Card>
     </div>

@@ -230,7 +230,7 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* Cobro Mensual */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col justify-between h-[400px] shadow-sm">
+      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
         <div className="flex flex-col h-full">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
             <span className="text-green-400 font-bold">$</span>
@@ -279,12 +279,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* Evolución Mensual del Rendimiento */}
-      <Card className="bg-slate-800 border-slate-700 h-[220px] shadow-sm">
+      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
           <span className="text-purple-400 text-sm">📄</span>
           <h3 className="font-semibold text-white text-sm">Evolución Mensual del Rendimiento</h3>
         </div>
-        <div className="p-5 h-[calc(100%-45px)] flex flex-col justify-center">
+        <div className="p-5 flex-1 flex flex-col justify-center overflow-hidden">
           <div className="bg-slate-800/50 border border-green-500/20 rounded-lg p-5 transition-colors hover:bg-slate-800/80">
             <div className="flex justify-between items-start mb-6">
               <div className="flex items-center gap-2.5">
@@ -315,12 +315,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* % Cumplimiento por Procedimiento */}
-      <Card className="bg-slate-800 border-slate-700 h-[220px] shadow-sm">
+      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
           <span className="text-yellow-400 text-sm">⏱</span>
           <h3 className="font-semibold text-white text-sm">% Cumplimiento por Procedimiento</h3>
         </div>
-        <div className="p-5 h-[calc(100%-45px)] flex flex-col justify-center">
+        <div className="p-5 flex-1 flex flex-col justify-center overflow-hidden">
           <div className="bg-slate-800/50 border border-green-500/30 rounded-lg p-5 relative overflow-hidden transition-colors hover:bg-slate-800/80">
             <div className="flex justify-between items-start mb-5 relative z-10">
               <div className="flex items-center gap-3.5">
