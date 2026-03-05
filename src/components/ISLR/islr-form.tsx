@@ -453,7 +453,7 @@ function IslrForm() {
                     </div>
 
                     {/* Panel Derecho: Resumen Financiero */}
-                    <div className="lg:col-span-5 p-8 bg-slate-950/50 backdrop-blur-md border-l border-slate-800/50 flex flex-col justify-between">
+                    <div className="lg:col-span-5 p-8 bg-slate-950/50 backdrop-blur-md border-t lg:border-t-0 lg:border-l border-slate-800/50 flex flex-col justify-between">
                         <div className="space-y-8">
                             <h3 className="text-sm font-bold text-slate-400 uppercase tracking-[0.2em] flex items-center gap-2">
                                 <PieChart className="w-4 h-4" /> Análisis Fiscal
