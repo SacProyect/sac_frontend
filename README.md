@@ -1,8 +1,17 @@
-# React + Vite
+# SAC - Interface de Gestión Tributaria 🏛️
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Frontend del **Sistema de Administración Central (SAC)**. Una plataforma robusta diseñada para la visualización y gestión de procesos tributarios complejos.
 
-Currently, two official plugins are available:
+## 🚀 Stack Tecnológico
+- **Framework:** React (Vite) + TypeScript
+- **Estilos:** Tailwind CSS
+- **Herramientas de IA:** v0 & Vercel
+- **Estado & API:** React Query / Axios
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## 🔒 Propiedad Intelectual
+**Copyright (c) 2026 Gabriel Longa. Todos los derechos reservados.**
+
+Este repositorio contiene la lógica de interfaz y diseño desarrollada íntegramente por **Gabriel Longa**. Queda prohibida la reproducción, copia o distribución de este código sin autorización previa. El sistema cuenta con registro de patente vigente.
+
+---
+*Desarrollado por [Gabriel Longa](https://github.com/gabo3454675)*
