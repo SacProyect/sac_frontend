@@ -647,3 +647,12 @@ export const deleteISLR = async (id: string) => {
 }
 
 
+export const getIndexIva = async () => {
+	try {
+		const response = await apiConnection.get('/taxpayer/get-index-iva');
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los índices de IVA actual.");
+	}
+}
