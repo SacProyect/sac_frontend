@@ -163,7 +163,7 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 h-full gap-0">
+      <div className="grid grid-cols-1 md:grid-cols-2 h-full gap-0 divide-y md:divide-y-0 md:divide-x divide-slate-700">
         {[1, 2].map(i => (
           <div key={i} className="p-4 space-y-3">
             {[1, 2, 3, 4].map(j => (
@@ -176,8 +176,8 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
   }
 
   return (
-    // Two fixed-height columns, each scrolls internally
-    <div className="grid grid-cols-2 h-full divide-x divide-slate-700">
+    // Two fixed-height columns on desktop, stacked on mobile
+    <div className="grid grid-cols-1 md:grid-cols-2 h-full divide-y md:divide-y-0 md:divide-x divide-slate-700 overflow-y-auto md:overflow-hidden custom-scrollbar">
 
       {/* ── LEFT col: split into top half / bottom half ──────────────── */}
       <div className="flex flex-col h-full divide-y divide-slate-700">

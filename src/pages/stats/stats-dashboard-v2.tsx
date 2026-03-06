@@ -72,28 +72,28 @@ function StatsPage1Charts({ year }: { year: number }) {
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
   return (
-    <div className="grid grid-cols-2 grid-rows-2 h-full">
+    <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
       {/* Top-left */}
-      <div className="overflow-hidden border-r border-b border-slate-700">
+      <div className="overflow-hidden border-b md:border-r border-slate-700 min-h-[400px] md:min-h-0">
         <PageOneStats chartData={chartData} />
       </div>
 
       {/* Top-right */}
-      <div className="overflow-hidden border-b border-slate-700">
+      <div className="overflow-hidden border-b border-slate-700 min-h-[400px] md:min-h-0">
         {ivaStats ? (
           <PageTwoStats stats={ivaStats} />
         ) : (
-          <div className="flex items-center justify-center h-full text-slate-400 text-sm">Sin datos</div>
+          <div className="flex items-center justify-center h-full text-slate-400 text-sm py-20 md:py-0">Sin datos</div>
         )}
       </div>
 
       {/* Bottom-left */}
-      <div className="overflow-y-auto border-r border-slate-700 custom-scrollbar">
+      <div className="overflow-y-auto border-b md:border-b-0 md:border-r border-slate-700 custom-scrollbar min-h-[400px] md:min-h-0">
         <GroupPerformanceStats groupStats={groupStats} />
       </div>
 
       {/* Bottom-right */}
-      <div className="overflow-hidden">
+      <div className="overflow-hidden min-h-[400px] md:min-h-0">
         <IvaByGroupChart year={year} />
       </div>
     </div>
@@ -112,8 +112,7 @@ export default function StatsDashboardV2() {
 
   return (
     <div
-      className="flex flex-col bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden"
-      style={{ height: 'calc(100vh - 80px)' }}
+      className="flex flex-col bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden h-auto min-h-[calc(100vh-120px)] md:h-[calc(100vh-80px)]"
     >
       {/* ── Page content ─────────────────────────────────────────────── */}
       <div className="flex-1 min-h-0">

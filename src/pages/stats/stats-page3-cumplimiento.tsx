@@ -216,9 +216,9 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
 
   if (loading) {
     return (
-      <div className="grid grid-cols-2 grid-rows-2 gap-3 p-4 h-full">
+      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-4 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
         {[1,2,3,4].map(i => (
-          <div key={i} className="rounded-xl bg-slate-800 animate-pulse border border-slate-700" />
+          <div key={i} className="rounded-xl bg-slate-800 animate-pulse border border-slate-700 min-h-[300px] md:min-h-0" />
         ))}
       </div>
     );
@@ -227,30 +227,38 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
   const { high, medium, low } = data;
 
   return (
-    // 2×2 grid that fills parent height — each cell has its own scroll
-    <div className="grid grid-cols-2 grid-rows-2 gap-3 p-3 h-full">
-      <TierPanel
-        title="Cumplimiento Alto"
-        count={high.length}
-        color="green"
-        items={high}
-        icon={<ShieldCheck className="w-3.5 h-3.5" />}
-      />
-      <TierPanel
-        title="Cumplimiento Medio"
-        count={medium.length}
-        color="yellow"
-        items={medium}
-        icon={<AlertCircle className="w-3.5 h-3.5" />}
-      />
-      <TierPanel
-        title="Cumplimiento Bajo"
-        count={low.length}
-        color="red"
-        items={low}
-        icon={<XCircle className="w-3.5 h-3.5" />}
-      />
-      <DistributionPanel high={high.length} medium={medium.length} low={low.length} />
+    // 2×2 grid on desktop, single column scrollable on mobile
+    <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-3 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
+      <div className="min-h-[400px] md:min-h-0">
+        <TierPanel
+          title="Cumplimiento Alto"
+          count={high.length}
+          color="green"
+          items={high}
+          icon={<ShieldCheck className="w-3.5 h-3.5" />}
+        />
+      </div>
+      <div className="min-h-[400px] md:min-h-0">
+        <TierPanel
+          title="Cumplimiento Medio"
+          count={medium.length}
+          color="yellow"
+          items={medium}
+          icon={<AlertCircle className="w-3.5 h-3.5" />}
+        />
+      </div>
+      <div className="min-h-[400px] md:min-h-0">
+        <TierPanel
+          title="Cumplimiento Bajo"
+          count={low.length}
+          color="red"
+          items={low}
+          icon={<XCircle className="w-3.5 h-3.5" />}
+        />
+      </div>
+      <div className="min-h-[400px] md:min-h-0">
+        <DistributionPanel high={high.length} medium={medium.length} low={low.length} />
+      </div>
     </div>
   );
 }
