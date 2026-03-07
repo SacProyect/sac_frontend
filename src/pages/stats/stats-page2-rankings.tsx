@@ -141,13 +141,47 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
         ]);
         if (supRes.status === 'fulfilled') {
           const raw = (supRes.value as any)?.data ?? supRes.value;
-          const arr = Array.isArray(raw) ? raw : [];
-          setSupervisors(arr);
-          if (arr.length > 0) setExpandedGroup(arr[0].groupId);
+
+          const mapSup = (s: any) => s ? {
+            name: s.name ?? '',
+            collectedIva:   decimalToNumber(s.collectedIva),
+            collectedIslr:  decimalToNumber(s.collectedIslr),
+            collectedFines: decimalToNumber(s.collectedFines),
+            total:          decimalToNumber(s.total),
+          } : null;
+
+          // API returns object: { "COORDINACION N": { best, worse, supervisors[] } }
+          const mapped = raw && typeof raw === 'object' && !Array.isArray(raw)
+            ? Object.entries(raw).map(([groupName, groupData]: [string, any]) => {
+                const supervisors: any[] = groupData.supervisors ?? [];
+                const bestSup  = supervisors.find(s => s.name === groupData.best)  ?? supervisors[0] ?? null;
+                const worstSup = supervisors.find(s => s.name === groupData.worse) ?? supervisors[1] ?? null;
+                return {
+                  groupId:   groupName,
+                  groupName,
+                  best:  mapSup(bestSup),
+                  worst: mapSup(worstSup),
+                };
+              })
+            : Array.isArray(raw) ? raw : [];
+
+          setSupervisors(mapped);
+          if (mapped.length > 0) setExpandedGroup(mapped[0].groupId);
         }
         if (topGroupRes.status === 'fulfilled') {
           const raw = (topGroupRes.value as any)?.data ?? topGroupRes.value;
-          setTopByGroup(Array.isArray(raw) ? raw : []);
+          // API returns a plain object: { "COORDINACION 1": [...fiscals], "COORDINACION 2": [...] }
+          const mapped = raw && typeof raw === 'object' && !Array.isArray(raw)
+            ? Object.entries(raw).map(([groupName, fiscals]) => ({
+                groupId: groupName,
+                groupName,
+                fiscals: (fiscals as any[]).map((f) => ({
+                  name: f.name ?? '',
+                  total: decimalToNumber(f.totalCollected),
+                })),
+              }))
+            : Array.isArray(raw) ? raw : [];
+          setTopByGroup(mapped);
         }
         if (topFRes.status === 'fulfilled') {
           const raw = (topFRes.value as any)?.data ?? topFRes.value;
