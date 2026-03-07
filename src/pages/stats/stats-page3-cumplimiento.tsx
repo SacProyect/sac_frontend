@@ -2,8 +2,7 @@ import { useState, useEffect } from 'react';
 import { getTaxpayersCompliance } from '@/components/utils/api/report-functions';
 import { decimalToNumber } from '@/components/utils/number.utils';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { ShieldCheck, AlertCircle, XCircle, Download, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/UI/button';
+import { ShieldCheck, AlertCircle, XCircle, TrendingDown, TrendingUp, Download, AlertTriangle, Building2, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -13,10 +12,10 @@ interface TaxpayerItem {
   name: string;
   rif?: string;
   compliance: number;
-  collectedIva?: string|number;
-  collectedIslr?: string|number;
-  collectedFines?: string|number;
-  total?: string|number;
+  collectedIva?: string | number;
+  collectedIslr?: string | number;
+  collectedFines?: string | number;
+  total?: string | number;
 }
 
 interface ComplianceData { high: TaxpayerItem[]; medium: TaxpayerItem[]; low: TaxpayerItem[] }
@@ -25,7 +24,10 @@ interface ComplianceData { high: TaxpayerItem[]; medium: TaxpayerItem[]; low: Ta
 
 const fmtBs = (val?: unknown) => {
   const n = decimalToNumber(val);
-  return `Bs.S ${n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  if (n === 0) return '—';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
+  return n.toLocaleString('es-VE', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
 };
 
 const normalize = (arr: any[]): TaxpayerItem[] =>
@@ -40,72 +42,101 @@ const normalize = (arr: any[]): TaxpayerItem[] =>
     total: t.total ?? t.totalCollection ?? 0,
   })).sort((a, b) => b.compliance - a.compliance);
 
-// ─── Theme map ───────────────────────────────────────────────────────────────
+// ─── Tier config ─────────────────────────────────────────────────────────────
 
-const theme = {
-  green:  { text: 'text-green-400', border: 'border-green-700/40', bg: 'bg-green-900/10', badge: 'bg-green-600', headerBg: 'bg-green-900/20' },
-  yellow: { text: 'text-amber-400', border: 'border-amber-600/40', bg: 'bg-amber-900/10', badge: 'bg-amber-500', headerBg: 'bg-amber-900/15' },
-  red:    { text: 'text-red-400',   border: 'border-red-700/40',   bg: 'bg-red-900/10',   badge: 'bg-red-600',   headerBg: 'bg-red-900/20'  },
-};
+const TIER_CFG = {
+  green: {
+    label: 'text-emerald-400',
+    labelMuted: 'text-emerald-400/50',
+    border: 'border-emerald-800/50',
+    headerBg: 'from-emerald-950/80 to-slate-900',
+    accentBar: 'bg-emerald-500',
+    badge: 'bg-emerald-600 text-white',
+    progress: 'bg-emerald-500',
+    icon: 'text-emerald-400',
+    glow: 'shadow-emerald-900/20',
+    rowHover: 'hover:border-emerald-700/40',
+  },
+  yellow: {
+    label: 'text-amber-400',
+    labelMuted: 'text-amber-400/50',
+    border: 'border-amber-800/50',
+    headerBg: 'from-amber-950/80 to-slate-900',
+    accentBar: 'bg-amber-500',
+    badge: 'bg-amber-500 text-black',
+    progress: 'bg-amber-500',
+    icon: 'text-amber-400',
+    glow: 'shadow-amber-900/20',
+    rowHover: 'hover:border-amber-700/40',
+  },
+  red: {
+    label: 'text-red-400',
+    labelMuted: 'text-red-400/50',
+    border: 'border-red-900/60',
+    headerBg: 'from-red-950/80 to-slate-900',
+    accentBar: 'bg-red-500',
+    badge: 'bg-red-600 text-white',
+    progress: 'bg-red-500',
+    icon: 'text-red-400',
+    glow: 'shadow-red-900/20',
+    rowHover: 'hover:border-red-700/40',
+  },
+} as const;
 
-// ─── Tier Panel ───────────────────────────────────────────────────────────────
+// ─── Taxpayer Row ─────────────────────────────────────────────────────────────
 
-function TierPanel({
-  title, count, color, items, icon
+function TaxpayerRow({
+  item, index, color,
 }: {
-  title: string; count: number; color: 'green'|'yellow'|'red'; items: TaxpayerItem[]; icon: React.ReactNode
+  item: TaxpayerItem; index: number; color: keyof typeof TIER_CFG;
 }) {
-  const c = theme[color];
+  const c = TIER_CFG[color];
+  const pct = Math.min(100, Math.max(0, item.compliance));
+
   return (
-    <div className={cn('flex flex-col h-full rounded-xl border overflow-hidden', c.border)}>
-      {/* Panel header */}
-      <div className={cn('flex items-center justify-between px-3 py-2 shrink-0 border-b border-slate-700', c.headerBg)}>
-        <div className="flex items-center gap-1.5">
-          <span className={c.text}>{icon}</span>
-          <h3 className="font-bold text-white text-xs">
-            {title} <span className={cn('font-black', c.text)}>({count})</span>
-          </h3>
+    <div
+      className={cn(
+        'group rounded-lg border border-slate-700/60 bg-slate-800/60 p-2.5 transition-all duration-150',
+        c.rowHover, 'hover:bg-slate-700/40 hover:shadow-md'
+      )}
+    >
+      {/* Top row: rank + name + compliance */}
+      <div className="flex items-center gap-2 mb-2">
+        <span className={cn('w-5 h-5 rounded-full flex items-center justify-center text-[9px] font-black shrink-0', c.badge)}>
+          {index + 1}
+        </span>
+        <div className="flex-1 min-w-0">
+          <p className="text-white font-semibold text-[11px] truncate leading-tight">{item.name}</p>
+          {item.rif && (
+            <p className="text-slate-500 text-[9px] font-mono leading-none mt-0.5">{item.rif}</p>
+          )}
         </div>
-        <div className="flex gap-1">
-          <Button size="icon" variant="ghost" className="h-5 w-5 bg-blue-600 hover:bg-blue-700 text-white rounded">
-            <Download className="h-2.5 w-2.5" />
-          </Button>
-          <Button size="icon" variant="ghost" className="h-5 w-5 bg-green-600 hover:bg-green-700 text-white rounded">
-            <Download className="h-2.5 w-2.5" />
-          </Button>
-        </div>
+        <span className={cn('font-black text-sm tabular-nums shrink-0', c.label)}>
+          {pct.toFixed(1)}%
+        </span>
       </div>
 
-      {/* Scrollable list */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1.5">
-        {items.length === 0 ? (
-          <p className="text-slate-500 text-xs text-center py-6">Sin contribuyentes en este nivel</p>
-        ) : items.map((t, i) => (
-          <div key={t.id || i} className="rounded-lg border border-slate-700 bg-slate-800 hover:bg-slate-700/50 transition-colors p-2">
-            {/* Name + compliance */}
-            <div className="flex items-center gap-2 mb-1.5">
-              <div className={cn('w-4 h-4 rounded-full flex items-center justify-center text-[8px] font-black text-white shrink-0', c.badge)}>
-                {i + 1}
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-white font-semibold text-xs truncate leading-tight">{t.name}</p>
-                {t.rif && <p className="text-slate-500 text-[9px] leading-none mt-0.5">{t.rif}</p>}
-              </div>
-              <div className="text-right shrink-0">
-                <p className={cn('font-black text-sm tabular-nums', c.text)}>{t.compliance?.toFixed(2)}%</p>
-              </div>
-            </div>
-            {/* Financials */}
-            <div className="grid grid-cols-4 gap-px bg-slate-700 rounded overflow-hidden">
-              {[['IVA', t.collectedIva], ['ISLR', t.collectedIslr], ['Multas', t.collectedFines], ['Total', t.total]].map(([label, val], j) => (
-                <div key={j} className="bg-slate-900 px-1.5 py-1">
-                  <p className="text-slate-600 text-[7px] uppercase">{label}</p>
-                  <p className={cn('text-[8px] font-bold tabular-nums leading-tight', j === 3 ? c.text : 'text-slate-300')}>
-                    {fmtBs(val as any)}
-                  </p>
-                </div>
-              ))}
-            </div>
+      {/* Progress bar */}
+      <div className="h-1 bg-slate-700 rounded-full overflow-hidden mb-2">
+        <div
+          className={cn('h-full rounded-full transition-all duration-500', c.progress)}
+          style={{ width: `${pct}%` }}
+        />
+      </div>
+
+      {/* Financial row */}
+      <div className="grid grid-cols-4 gap-1">
+        {([
+          ['IVA', item.collectedIva, 'text-sky-400'],
+          ['ISLR', item.collectedIslr, 'text-violet-400'],
+          ['Multas', item.collectedFines, 'text-orange-400'],
+          ['Total', item.total, c.label],
+        ] as const).map(([lbl, val, cls], j) => (
+          <div key={j} className="bg-slate-900/70 rounded px-1.5 py-1">
+            <p className="text-slate-600 text-[7px] uppercase font-medium mb-0.5">{lbl}</p>
+            <p className={cn('text-[9px] font-bold tabular-nums leading-none', cls)}>
+              {fmtBs(val as any)}
+            </p>
           </div>
         ))}
       </div>
@@ -113,76 +144,163 @@ function TierPanel({
   );
 }
 
-// ─── Donut + KPI panel ────────────────────────────────────────────────────────
+// ─── Tier Panel ───────────────────────────────────────────────────────────────
+
+function TierPanel({
+  title, count, color, items, icon, emptyMsg,
+}: {
+  title: string; count: number; color: keyof typeof TIER_CFG;
+  items: TaxpayerItem[]; icon: React.ReactNode; emptyMsg?: string;
+}) {
+  const c = TIER_CFG[color];
+  return (
+    <div className={cn('flex flex-col h-full rounded-xl border overflow-hidden shadow-lg', c.border, c.glow)}>
+      {/* Header with gradient band */}
+      <div className={cn('bg-gradient-to-r px-3 py-2.5 shrink-0 border-b border-slate-700/60', c.headerBg)}>
+        <div className="flex items-center gap-2">
+          {/* Accent dot */}
+          <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', c.accentBar)} />
+          <span className={cn('shrink-0', c.icon)}>{icon}</span>
+          <h3 className="font-bold text-white text-xs tracking-tight flex-1">
+            {title}
+          </h3>
+          <span className={cn(
+            'text-[10px] font-black tabular-nums px-2 py-0.5 rounded-full border',
+            color === 'green' ? 'bg-emerald-900/40 border-emerald-700/40 text-emerald-300' :
+            color === 'yellow' ? 'bg-amber-900/40 border-amber-700/40 text-amber-300' :
+            'bg-red-900/40 border-red-700/40 text-red-300'
+          )}>
+            {count}
+          </span>
+          <div className="flex gap-1 ml-1">
+            <button className="h-5 w-5 flex items-center justify-center bg-blue-600/80 hover:bg-blue-500 text-white rounded transition-colors">
+              <Download className="h-2.5 w-2.5" />
+            </button>
+            <button className="h-5 w-5 flex items-center justify-center bg-emerald-600/80 hover:bg-emerald-500 text-white rounded transition-colors">
+              <Download className="h-2.5 w-2.5" />
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Scrollable list */}
+      <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1.5 bg-slate-900/40">
+        {items.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-full py-8 gap-2">
+            <Building2 className={cn('w-8 h-8', c.labelMuted)} />
+            <p className="text-slate-500 text-xs text-center">
+              {emptyMsg ?? 'Sin contribuyentes en este nivel'}
+            </p>
+          </div>
+        ) : items.map((item, i) => (
+          <TaxpayerRow key={item.id || i} item={item} index={i} color={color} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ─── Distribution Panel ───────────────────────────────────────────────────────
 
 function DistributionPanel({ high, medium, low }: { high: number; medium: number; low: number }) {
   const total = high + medium + low;
+  const pctHigh = total ? ((high / total) * 100).toFixed(0) : '0';
+  const pctMed  = total ? ((medium / total) * 100).toFixed(0) : '0';
+  const pctLow  = total ? ((low / total) * 100).toFixed(0) : '0';
+
   const data = [
-    { name: 'Alto', value: high || 0,  color: '#22c55e' },
-    { name: 'Medio', value: medium || 0, color: '#eab308' },
-    { name: 'Bajo', value: low || Math.max(total, 1), color: '#ef4444' },
+    { name: 'Alto',  fullName: 'Alto Cumplimiento',  value: high   || 0,              color: '#22c55e', pct: pctHigh },
+    { name: 'Medio', fullName: 'Medio Cumplimiento', value: medium || 0,              color: '#eab308', pct: pctMed  },
+    { name: 'Bajo',  fullName: 'Bajo Cumplimiento',  value: low    || Math.max(total, 1), color: '#ef4444', pct: pctLow  },
   ];
+
+  // Custom label rendered on each segment
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, pct: pctVal }: any) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    if (Number(pctVal) < 3) return null;
+    return (
+      <text x={x} y={y} fill="#fff" textAnchor="middle" dominantBaseline="central"
+        fontSize={11} fontWeight={700}>
+        {pctVal}%
+      </text>
+    );
+  };
 
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
     return (
-      <div className="bg-slate-800 border border-slate-700 px-3 py-2 rounded-lg text-xs text-white shadow-xl">
-        <p className="font-bold">{payload[0].payload.name}</p>
-        <p className="text-slate-300">{payload[0].value} contribuyentes</p>
+      <div className="bg-slate-800 border border-slate-700 px-3 py-2 rounded-lg text-xs shadow-xl">
+        <p className="text-white font-bold">{d.fullName}</p>
+        <p className="text-slate-300 mt-0.5">{d.value} contribuyentes · {d.pct}%</p>
       </div>
     );
   };
 
   return (
-    <div className="flex flex-col h-full rounded-xl border border-slate-700 bg-slate-800 overflow-hidden">
+    <div className="flex flex-col h-full rounded-xl border border-slate-700/60 bg-slate-800/60 overflow-hidden shadow-lg">
       {/* Header */}
-      <div className="px-3 py-2 border-b border-slate-700 shrink-0">
-        <h3 className="text-white font-bold text-xs">Distribución de Cumplimiento</h3>
+      <div className="bg-gradient-to-r from-slate-800 to-slate-900 px-3 py-2.5 shrink-0 border-b border-slate-700/60">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shrink-0" />
+          <BarChart3 className="w-3.5 h-3.5 text-blue-400" />
+          <h3 className="text-white font-bold text-xs tracking-tight">Distribución de Cumplimiento</h3>
+        </div>
       </div>
 
-      {/* Donut */}
-      <div className="flex-1 relative min-h-0">
+      {/* Donut chart — takes all remaining space */}
+      <div className="flex-1 relative min-h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius="45%" outerRadius="65%" paddingAngle={3} dataKey="value" stroke="none">
-              {data.map((entry, i) => <Cell key={i} fill={entry.color} />)}
+            <Pie
+              data={data}
+              cx="50%"
+              cy="50%"
+              innerRadius="38%"
+              outerRadius="70%"
+              paddingAngle={2}
+              dataKey="value"
+              stroke="none"
+              label={renderLabel}
+              labelLine={false}
+            >
+              {data.map((entry, i) => (
+                <Cell key={i} fill={entry.color} />
+              ))}
             </Pie>
             <Tooltip content={<CustomTooltip />} />
           </PieChart>
         </ResponsiveContainer>
-        {/* Center label */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="text-center">
-            <span className="text-slate-500 text-[9px] block">Total</span>
-            <span className="text-white text-2xl font-black leading-none">{total}</span>
-          </div>
-        </div>
       </div>
 
-      {/* Legend */}
-      <div className="px-4 py-2 space-y-1 shrink-0 border-t border-slate-700">
+      {/* Legend — horizontal, single row */}
+      <div className="flex items-center justify-center gap-4 px-3 py-2 shrink-0 border-t border-slate-700/60 flex-wrap">
         {data.map((d) => (
-          <div key={d.name} className="flex items-center gap-2 text-[11px]">
-            <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
-            <span className="text-slate-400 flex-1">{d.name} Cumplimiento</span>
-            <span className="font-bold text-white tabular-nums">{d.value}</span>
+          <div key={d.name} className="flex items-center gap-1.5">
+            <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: d.color }} />
+            <span className="text-slate-300 text-[11px]">
+              {d.fullName}: <span className="font-bold text-white">{d.value}</span>
+            </span>
           </div>
         ))}
       </div>
 
-      {/* KPI tiles */}
-      <div className="grid grid-cols-3 gap-1.5 px-3 pb-3 shrink-0">
-        <div className="bg-green-900/20 border border-green-700/40 rounded-lg p-2 text-center">
-          <p className="text-green-400 font-black text-xl leading-none">{high}</p>
-          <p className="text-green-400/60 text-[9px] mt-0.5">Alto</p>
+      {/* KPI tiles — simple, no icons */}
+      <div className="grid grid-cols-3 gap-2 px-3 pb-3 shrink-0">
+        <div className="rounded-lg border border-emerald-700/50 bg-slate-900/60 py-3 text-center">
+          <p className="text-emerald-400 font-black text-2xl leading-none tabular-nums">{high}</p>
+          <p className="text-emerald-400/60 text-[10px] mt-1">Alto</p>
         </div>
-        <div className="bg-amber-900/15 border border-amber-600/40 rounded-lg p-2 text-center">
-          <p className="text-amber-400 font-black text-xl leading-none">{medium}</p>
-          <p className="text-amber-400/60 text-[9px] mt-0.5">Medio</p>
+        <div className="rounded-lg border border-amber-600/50 bg-slate-900/60 py-3 text-center">
+          <p className="text-amber-400 font-black text-2xl leading-none tabular-nums">{medium}</p>
+          <p className="text-amber-400/60 text-[10px] mt-1">Medio</p>
         </div>
-        <div className="bg-red-900/20 border border-red-700/40 rounded-lg p-2 text-center">
-          <p className="text-red-400 font-black text-xl leading-none">{low}</p>
-          <p className="text-red-400/60 text-[9px] mt-0.5">Bajo</p>
+        <div className="rounded-lg border border-red-700/50 bg-slate-900/60 py-3 text-center">
+          <p className="text-red-400 font-black text-2xl leading-none tabular-nums">{low}</p>
+          <p className="text-red-400/60 text-[10px] mt-1">Bajo</p>
         </div>
       </div>
     </div>
@@ -218,8 +336,8 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
   if (loading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-4 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
-        {[1,2,3,4].map(i => (
-          <div key={i} className="rounded-xl bg-slate-800 animate-pulse border border-slate-700 min-h-[300px] md:min-h-0" />
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="rounded-xl bg-slate-800/60 animate-pulse border border-slate-700/60 min-h-[300px] md:min-h-0" />
         ))}
       </div>
     );
@@ -228,7 +346,6 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
   const { high, medium, low } = data;
 
   return (
-    // 2×2 grid on desktop, single column scrollable on mobile
     <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-3 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
       <div className="min-h-[400px] md:min-h-0">
         <TierPanel
@@ -237,6 +354,7 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
           color="green"
           items={high}
           icon={<ShieldCheck className="w-3.5 h-3.5" />}
+          emptyMsg="No hay contribuyentes con cumplimiento alto"
         />
       </div>
       <div className="min-h-[400px] md:min-h-0">
@@ -246,6 +364,7 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
           color="yellow"
           items={medium}
           icon={<AlertCircle className="w-3.5 h-3.5" />}
+          emptyMsg="No hay contribuyentes con cumplimiento medio"
         />
       </div>
       <div className="min-h-[400px] md:min-h-0">
@@ -255,6 +374,7 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
           color="red"
           items={low}
           icon={<XCircle className="w-3.5 h-3.5" />}
+          emptyMsg="No hay contribuyentes con cumplimiento bajo"
         />
       </div>
       <div className="min-h-[400px] md:min-h-0">
