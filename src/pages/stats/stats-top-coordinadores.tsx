@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTopCoordinators } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
 import { Card } from '@/components/UI/card';
 import { Users, TrendingUp, AlertTriangle, Crown, ShieldCheck } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -37,7 +38,11 @@ export default function StatsTopCoordinadores() {
       try {
         const res = await getTopCoordinators();
         const data = (res as any)?.data ?? res ?? [];
-        setCoordinators(Array.isArray(data) ? data : []);
+        const mapped = (Array.isArray(data) ? data : []).map(c => ({
+          ...c,
+          performance: decimalToNumber(c.performance)
+        }));
+        setCoordinators(mapped);
       } catch (e: any) {
         setError(e.message ?? 'Error al cargar los datos');
       } finally {

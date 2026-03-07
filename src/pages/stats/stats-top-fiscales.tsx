@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { getTopFiscals } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
 import { Card } from '@/components/UI/card';
 import { Trophy, TrendingUp, AlertTriangle, Filter, ChevronDown, Medal } from 'lucide-react';
 import { cn } from '@/lib/utils';
@@ -17,8 +18,8 @@ interface TopFiscal {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const fmt = (val: string | number) => {
-  const num = typeof val === 'string' ? parseFloat(val) || 0 : val;
+const fmt = (val: unknown) => {
+  const num = decimalToNumber(val);
   return new Intl.NumberFormat('es-VE', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,

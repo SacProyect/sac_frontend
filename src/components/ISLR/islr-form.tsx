@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
-import { useForm, Controller } from 'react-hook-form';
+import { useForm, Controller, useController } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
 import { 
   Calculator, 
@@ -55,6 +55,139 @@ export interface IslrReportFormData {
     paid: string;
 }
 
+// -------------------------------------------------------------------
+// Utilidades de formateo venezolano: punto=miles, coma=decimal
+// -------------------------------------------------------------------
+
+/** Convierte "20.000,50" → 20000.50 para parsear como float */
+function parseVES(display: string): number {
+  return parseFloat(display.replace(/\./g, "").replace(",", "."));
+}
+
+/** Formatea el número mientras escribe:
+ *  - Solo permite dígitos y una coma decimal
+ *  - Agrega puntos de miles en la parte entera automáticamente
+ *  Retorna { display, raw } donde raw es el número limpio ("20000.50")
+ */
+function formatInput(value: string): { display: string; raw: string } {
+  // Permitir solo dígitos y una coma
+  let clean = value.replace(/[^0-9,]/g, "");
+  // Asegurar una sola coma
+  const parts = clean.split(",");
+  const integerStr = parts[0];
+  const decimalStr = parts.length > 1 ? parts[1] : null;
+
+  // Añadir puntos de miles a la parte entera
+  const intFormatted = integerStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+
+  // Construir display
+  const display =
+    decimalStr !== null ? `${intFormatted},${decimalStr}` : intFormatted;
+
+  // Construir raw (valor numérico limpio, punto como decimal)
+  const rawNum = integerStr + (decimalStr !== null ? "." + decimalStr : "");
+  const raw = rawNum === "" || rawNum === "." ? "" : rawNum;
+
+  return { display, raw };
+}
+
+// -------------------------------------------------------------------
+// Sub-componente de input controlado con formateo
+// -------------------------------------------------------------------
+interface AmountFieldProps {
+  name: keyof IslrFormFields;
+  label: string;
+  placeholder: string;
+  accentClass: string;
+  iconColor: string;
+  icon: React.ReactNode;
+  control: any;
+  error?: string;
+  resetKey?: number;
+}
+
+function AmountField({
+  name,
+  label,
+  placeholder,
+  accentClass,
+  iconColor,
+  icon,
+  control,
+  error,
+  resetKey,
+}: AmountFieldProps) {
+  const [display, setDisplay] = useState("");
+
+  // Limpiar el display cuando el formulario padre indica reset
+  useEffect(() => {
+    if (resetKey !== undefined && resetKey > 0) {
+      setDisplay("");
+    }
+  }, [resetKey]);
+
+  const {
+    field: { onChange, onBlur, ref },
+  } = useController({
+    name,
+    control,
+    rules: {
+      required: "Campo obligatorio",
+      validate: (v) => {
+        const n = parseFloat(v);
+        if (!v || isNaN(n) || n <= 0) return "El monto debe ser mayor a 0";
+        return true;
+      },
+    },
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { display: formatted, raw } = formatInput(e.target.value);
+    setDisplay(formatted);
+    onChange(raw); // Guarda el valor numérico limpio en RHF (punto para decimales)
+  };
+
+  const handleFocus = () => {
+    // Al enfocar, si el display es "0" o vacío → limpiar
+    if (display === "0" || display === "") setDisplay("");
+  };
+
+  const handleBlur = () => {
+    onBlur();
+    // Al salir, si el display está vacío marcarlo como vacío en RHF
+    if (!display) onChange("");
+  };
+
+  return (
+    <div className="space-y-2">
+      <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">
+        {label}
+      </Label>
+      <div className="relative group">
+        <div className={`absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 flex items-center justify-center text-slate-500 group-focus-within:${iconColor} transition-colors`}>
+          {icon}
+        </div>
+        <Input
+          ref={ref}
+          type="text"
+          inputMode="decimal"
+          placeholder={placeholder}
+          value={display}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
+          className={cn("pl-10 bg-slate-950/30 border-slate-800 rounded-xl h-11 text-slate-200", accentClass)}
+        />
+      </div>
+      {error && (
+        <p className="px-1 text-[10px] font-bold text-rose-500 uppercase flex items-center gap-1">
+          <AlertCircle className="w-3 h-3" /> {error}
+        </p>
+      )}
+    </div>
+  );
+}
+
 /**
  * IslrForm - Interfaz Premium para Registro de ISLR
  */
@@ -76,6 +209,8 @@ function IslrForm() {
     const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
     const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+    const [resetKey, setResetKey] = useState(0);
 
     const listRef = useRef<HTMLDivElement>(null);
 
@@ -208,9 +343,9 @@ function IslrForm() {
     // Cálculos en tiempo real
     const fiscalAnalysis = useMemo(() => {
         try {
-            const inc = new Decimal(watchValues.incomes.replace(',', '.') || 0);
-            const cos = new Decimal(watchValues.costs.replace(',', '.') || 0);
-            const exp = new Decimal(watchValues.expent.replace(',', '.') || 0);
+            const inc = new Decimal(watchValues.incomes || 0);
+            const cos = new Decimal(watchValues.costs || 0);
+            const exp = new Decimal(watchValues.expent || 0);
             
             const grossProfit = inc.minus(cos);
             const netProfit = grossProfit.minus(exp);
@@ -230,17 +365,18 @@ function IslrForm() {
         try {
             const formattedData: IslrReportFormData = {
                 taxpayerId: data.taxpayerId,
-                incomes: new Decimal(data.incomes.replace(",", ".")).toString(),
-                costs: new Decimal(data.costs.replace(",", ".")).toString(),
-                expent: new Decimal(data.expent.replace(",", ".")).toString(),
+                incomes: new Decimal(data.incomes || 0).toString(),
+                costs: new Decimal(data.costs || 0).toString(),
+                expent: new Decimal(data.expent || 0).toString(),
                 emition_date: new Date(data.emition_date).toISOString(),
-                paid: new Decimal(data.paid.replace(",", ".")).toString(),
+                paid: new Decimal(data.paid || 0).toString(),
             };
 
             const success = await createISLR(formattedData);
             if (success) {
                 toast.success("¡Declaración de ISLR registrada con éxito!", { id: toastId });
                 reset();
+                setResetKey(prev => prev + 1);
                 setSelectedTaxpayer(null);
                 await refreshUser();
             }
@@ -278,7 +414,7 @@ function IslrForm() {
                                     name="taxpayerId"
                                     rules={{ required: "Seleccione un contribuyente" }}
                                     render={({ field }) => (
-                                        <Popover>
+                                        <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                                             <PopoverTrigger asChild>
                                                 <Button
                                                     variant="outline"
@@ -319,6 +455,7 @@ function IslrForm() {
                                                                 onClick={() => {
                                                                     setSelectedTaxpayer(t);
                                                                     field.onChange(t.id);
+                                                                    setIsPopoverOpen(false);
                                                                 }}
                                                                 className="px-4 py-3 text-xs text-slate-300 hover:bg-emerald-600 hover:text-white cursor-pointer border-b border-slate-800/50 last:border-0"
                                                             >
@@ -342,93 +479,53 @@ function IslrForm() {
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Ingresos Totales (BS)</Label>
-                                    <div className="relative group">
-                                        <TrendingUp className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
-                                        <Input
-                                            {...register("incomes", { 
-                                                required: true,
-                                                onChange: (e) => {
-                                                    const val = e.target.value;
-                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
-                                                        setValue("incomes", val.substring(1));
-                                                    }
-                                                }
-                                            })}
-                                            onFocus={(e) => e.target.select()}
-                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("incomes", "0"); }}
-                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Costos de Ventas (BS)</Label>
-                                    <div className="relative group">
-                                        <TrendingDown className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-rose-400 transition-colors" />
-                                        <Input
-                                            {...register("costs", { 
-                                                required: true,
-                                                onChange: (e) => {
-                                                    const val = e.target.value;
-                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
-                                                        setValue("costs", val.substring(1));
-                                                    }
-                                                }
-                                            })}
-                                            onFocus={(e) => e.target.select()}
-                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("costs", "0"); }}
-                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-rose-500/50 rounded-xl h-11 text-slate-200"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
+                                <AmountField 
+                                    name="incomes"
+                                    label="Ingresos Totales (BS)"
+                                    placeholder="0.00"
+                                    accentClass="focus:ring-emerald-500/50"
+                                    iconColor="text-emerald-400"
+                                    icon={<TrendingUp className="w-4 h-4" />}
+                                    control={control}
+                                    error={errors.incomes?.message}
+                                    resetKey={resetKey}
+                                />
+                                <AmountField 
+                                    name="costs"
+                                    label="Costos de Ventas (BS)"
+                                    placeholder="0.00"
+                                    accentClass="focus:ring-rose-500/50"
+                                    iconColor="text-rose-400"
+                                    icon={<TrendingDown className="w-4 h-4" />}
+                                    control={control}
+                                    error={errors.costs?.message}
+                                    resetKey={resetKey}
+                                />
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Gastos Operativos (BS)</Label>
-                                    <div className="relative group">
-                                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
-                                        <Input
-                                            {...register("expent", { 
-                                                required: true,
-                                                onChange: (e) => {
-                                                    const val = e.target.value;
-                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
-                                                        setValue("expent", val.substring(1));
-                                                    }
-                                                }
-                                            })}
-                                            onFocus={(e) => e.target.select()}
-                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("expent", "0"); }}
-                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-indigo-500/50 rounded-xl h-11 text-slate-200"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="space-y-2">
-                                    <Label className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-1">Impuesto Pagado (BS)</Label>
-                                    <div className="relative group">
-                                        <CheckCircle2 className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
-                                        <Input
-                                            {...register("paid", { 
-                                                required: true,
-                                                onChange: (e) => {
-                                                    const val = e.target.value;
-                                                    if (val.length > 1 && val.startsWith("0") && val[1] !== "." && val[1] !== ",") {
-                                                        setValue("paid", val.substring(1));
-                                                    }
-                                                }
-                                            })}
-                                            onFocus={(e) => e.target.select()}
-                                            onBlur={(e) => { if (e.target.value.trim() === "") setValue("paid", "0"); }}
-                                            className="pl-10 bg-slate-950/30 border-slate-800 focus:ring-emerald-500/50 rounded-xl h-11 text-slate-200 font-mono"
-                                            placeholder="0.00"
-                                        />
-                                    </div>
-                                </div>
+                                <AmountField 
+                                    name="expent"
+                                    label="Gastos Operativos (BS)"
+                                    placeholder="0.00"
+                                    accentClass="focus:ring-indigo-500/50"
+                                    iconColor="text-indigo-400"
+                                    icon={<DollarSign className="w-4 h-4" />}
+                                    control={control}
+                                    error={errors.expent?.message}
+                                    resetKey={resetKey}
+                                />
+                                <AmountField 
+                                    name="paid"
+                                    label="Impuesto Pagado (BS)"
+                                    placeholder="0.00"
+                                    accentClass="focus:ring-emerald-500/50"
+                                    iconColor="text-emerald-400"
+                                    icon={<CheckCircle2 className="w-4 h-4" />}
+                                    control={control}
+                                    error={errors.paid?.message}
+                                    resetKey={resetKey}
+                                />
                             </div>
 
                             <div className="space-y-2">
@@ -469,17 +566,17 @@ function IslrForm() {
                                         </Badge>
                                     </div>
                                     <p className={cn(
-                                        "text-2xl font-mono font-bold tracking-tighter",
+                                        "text-2xl font-mono font-bold tracking-tighter truncate",
                                         fiscalAnalysis.grossProfit.isPositive() ? "text-white" : "text-rose-400"
                                     )}>
                                         {new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(fiscalAnalysis.grossProfit.toNumber())}
                                     </p>
                                 </div>
 
-                                <div className="p-5 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 space-y-4">
+                                <div className="p-5 rounded-3xl bg-emerald-500/5 border border-emerald-500/10 space-y-4 overflow-hidden">
                                     <p className="text-xs font-medium text-emerald-400/70">Estimación Utilidad Neta</p>
                                     <p className={cn(
-                                        "text-4xl font-mono font-bold tracking-tighter",
+                                        "text-2xl sm:text-3xl font-mono font-bold tracking-tighter truncate",
                                         fiscalAnalysis.netProfit.isPositive() ? "text-emerald-400" : "text-rose-400"
                                     )}>
                                         {new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(fiscalAnalysis.netProfit.toNumber())}

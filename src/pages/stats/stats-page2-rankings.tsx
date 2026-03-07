@@ -4,6 +4,7 @@ import {
   getTopFiveByGroup,
   getTopFiscals,
 } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
 import { Trophy, Users, TrendingUp, AlertTriangle, ChevronDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,8 +33,8 @@ interface TopFiscal {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-const fmtBs = (val: string|number|undefined) => {
-  const n = val === undefined || val === null ? 0 : typeof val === 'string' ? parseFloat(val) || 0 : val;
+const fmtBs = (val: unknown) => {
+  const n = decimalToNumber(val);
   return n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 };
 
@@ -180,7 +181,7 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
     <div className="grid grid-cols-1 md:grid-cols-2 h-full divide-y md:divide-y-0 md:divide-x divide-slate-700 overflow-y-auto md:overflow-hidden custom-scrollbar">
 
       {/* ── LEFT col: split into top half / bottom half ──────────────── */}
-      <div className="flex flex-col h-full divide-y divide-slate-700">
+      <div className="flex flex-col h-full divide-y divide-slate-700 min-h-0">
 
         {/* Supervisors — top half */}
         <div className="flex flex-col flex-1 min-h-0">
@@ -228,7 +229,7 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
       </div>
 
       {/* ── RIGHT col: Top Fiscales Ranking General ───────────────────── */}
-      <div className="flex flex-col h-full">
+      <div className="flex flex-col h-full min-h-0">
         <SectionHeader
           icon={<TrendingUp className="w-3.5 h-3.5 text-indigo-400" />}
           title="Top Fiscales — Ranking General"
