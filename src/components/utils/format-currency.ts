@@ -1,13 +1,15 @@
+import { decimalToNumber } from "./number.utils";
+
 /**
- * ✅ SANITIZACIÓN CRÍTICA: Formatea valores monetarios manejando NaN, null, undefined
- * @param amount - Valor a formatear (puede ser number, null, undefined, NaN)
+ * ✅ SANITIZACIÓN CRÍTICA: Formatea valores monetarios manejando Decimal.js, NaN, null, undefined
+ * @param amount - Valor a formatear (number, string, DecimalObject, null, undefined, NaN)
  * @returns String formateado como moneda venezolana, o "Bs. 0,00" si el valor es inválido
  */
 export const formatCurrency = (amount: unknown): string => {
-    const n = typeof amount === "number" ? amount : Number(amount);
+    const n = decimalToNumber(amount);
 
     // ✅ Seguro de vida visual (anti Bs.SNaN / null / undefined)
-    if (amount === null || amount === undefined || Number.isNaN(n) || !Number.isFinite(n)) {
+    if (Number.isNaN(n) || !Number.isFinite(n)) {
         return new Intl.NumberFormat("es-VE", {
             style: "currency",
             currency: "VES",

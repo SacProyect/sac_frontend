@@ -9,6 +9,7 @@ import {
   getFiscalMonthlyPerformance,
   getFiscalComplianceByProcess,
 } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
 import toast from 'react-hot-toast';
 import { FiscalInfoExtended } from '@/types/fiscal-stats';
 
@@ -111,7 +112,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
       const revenueData: MonthlyRevenueData[] = globalPerf.map((item: any) => ({
         mes: months[item.month - 1] || `Mes ${item.month}`,
-        recaudacion: item.realAmount || 0,
+        recaudacion: decimalToNumber(item.realAmount),
       }));
       setMonthlyRevenue(revenueData);
     }
@@ -153,12 +154,12 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
           (group.fiscals || []).map((fiscal: any) => ({
             id: fiscal.id || fiscal.fiscalId,
             nombre: fiscal.name || fiscal.nombre || 'N/A',
-            recaudacion: fiscal.totalCollection || fiscal.recaudacion || 0,
-            cumplimiento: fiscal.complianceRate || fiscal.cumplimiento || 0,
-            vdfEnPlazo: fiscal.vdfInTime || fiscal.vdfEnPlazo || 0,
-            vdfFueraPlazoProceso: fiscal.vdfOutOfTimeProcess || fiscal.vdfFueraPlazoProceso || 0,
-            vdfFueraPlazoDejada: fiscal.vdfOutOfTimeLeft || fiscal.vdfFueraPlazoDejada || 0,
-            meta: fiscal.target || fiscal.meta || 0,
+            recaudacion: decimalToNumber(fiscal.totalCollection || fiscal.recaudacion),
+            cumplimiento: decimalToNumber(fiscal.complianceRate || fiscal.cumplimiento),
+            vdfEnPlazo: decimalToNumber(fiscal.vdfInTime || fiscal.vdfEnPlazo),
+            vdfFueraPlazoProceso: decimalToNumber(fiscal.vdfOutOfTimeProcess || fiscal.vdfFueraPlazoProceso),
+            vdfFueraPlazoDejada: decimalToNumber(fiscal.vdfOutOfTimeLeft || fiscal.vdfFueraPlazoDejada),
+            meta: decimalToNumber(fiscal.target || fiscal.meta),
           }))
         )
         .sort((a, b) => b.recaudacion - a.recaudacion);
@@ -168,8 +169,8 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       const supervisorData: SupervisorLeaderboardData[] = groupPerf.map((group: any) => ({
         id: group.id || group.groupId,
         nombre: group.name || group.nombre || 'N/A',
-        cumplimiento: group.complianceRate || group.cumplimiento || 0,
-        recaudacionMensual: group.totalCollection || group.recaudacionMensual || 0,
+        cumplimiento: decimalToNumber(group.complianceRate || group.cumplimiento),
+        recaudacionMensual: decimalToNumber(group.totalCollection || group.recaudacionMensual),
       }));
       setSupervisorLeaderboard(supervisorData);
     }
@@ -179,12 +180,12 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       const kpiData = await getGlobalKPI(year);
       if (kpiData) {
         const kpi: GlobalKPIData = {
-          totalTaxpayers: kpiData.totalTaxpayers || 0,
-          totalTaxCollection: kpiData.totalTaxCollection || 0,
-          averageCreditSurplus: kpiData.averageCreditSurplus || 0,
-          finePercentage: kpiData.finePercentage || 0,
-          growthRate: kpiData.growthRate || 0,
-          delinquencyRate: kpiData.delinquencyRate || 0,
+          totalTaxpayers: decimalToNumber(kpiData.totalTaxpayers),
+          totalTaxCollection: decimalToNumber(kpiData.totalTaxCollection),
+          averageCreditSurplus: decimalToNumber(kpiData.averageCreditSurplus),
+          finePercentage: decimalToNumber(kpiData.finePercentage),
+          growthRate: decimalToNumber(kpiData.growthRate),
+          delinquencyRate: decimalToNumber(kpiData.delinquencyRate),
         };
         setGlobalKPI(kpi);
       }
@@ -205,8 +206,8 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
       const perfData: FiscalPerformanceData[] = monthlyPerf.map((item: any) => ({
         mes: months[item.month - 1] || `Mes ${item.month}`,
-        desempeño: item.performance || item.realAmount || 0,
-        meta: item.target || item.expectedAmount || 0,
+        desempeño: decimalToNumber(item.performance || item.realAmount),
+        meta: decimalToNumber(item.target || item.expectedAmount),
       }));
       setFiscalPerformance(perfData);
     }
