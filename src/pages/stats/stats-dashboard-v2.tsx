@@ -8,6 +8,16 @@ import {
   getGlobalTaxpayerPerformance,
   getGroupPerformance,
 } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/UI/select";
+import { Filter, CalendarDays, Activity } from 'lucide-react';
 
 import PageOneStats, { ChartData } from '@/components/stats/global-perfomance';
 import { PageTwoStats, MonthlyIvaStats } from '@/components/stats/global-taxpayer-performance';
@@ -39,8 +49,8 @@ function StatsPage1Charts({ year }: { year: number }) {
           const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
           const mapped: ChartData[] = (globalPerf.value as any[]).map((d) => ({
             month: `${year}-${String(d.month).padStart(2,'0')}`,
-            realAmount: d.realAmount ?? 0,
-            expectedAmount: d.expectedAmount ?? 0,
+            realAmount: decimalToNumber(d.realAmount),
+            expectedAmount: decimalToNumber(d.expectedAmount),
             taxpayersEmitted: d.taxpayersEmitted ?? 0,
           }));
           setChartData(mapped);
@@ -50,15 +60,22 @@ function StatsPage1Charts({ year }: { year: number }) {
             months: (globalPerf.value as any[]).map((d) => ({
               monthIndex: d.month - 1,
               monthName: months[d.month - 1] ?? `Mes ${d.month}`,
-              ivaCollected: d.realAmount ?? 0,
+              ivaCollected: decimalToNumber(d.realAmount),
             })),
-            totalIvaCollected: (globalPerf.value as any[]).reduce((s: number, d: any) => s + (d.realAmount ?? 0), 0),
+            totalIvaCollected: (globalPerf.value as any[]).reduce((s: number, d: any) => s + decimalToNumber(d.realAmount), 0),
           };
           setIvaStats(monthStats);
         }
 
         if (groupPerf.status === 'fulfilled' && Array.isArray(groupPerf.value)) {
-          setGroupStats(groupPerf.value as GroupStat[]);
+          const mappedGroups = (groupPerf.value as any[]).map(g => ({
+            ...g,
+            totalPaidFines: decimalToNumber(g.totalPaidFines),
+            totalPaidAmount: decimalToNumber(g.totalPaidAmount),
+            totalIvaCollected: decimalToNumber(g.totalIvaCollected),
+            totalIslrCollected: decimalToNumber(g.totalIslrCollected),
+          }));
+          setGroupStats(mappedGroups as GroupStat[]);
         }
       } catch (e) {
         console.error(e);
@@ -108,12 +125,59 @@ const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
 
 export default function StatsDashboardV2() {
   const [page, setPage] = useState(1);
-  const [year] = useState(new Date().getFullYear());
+  const [year, setYear] = useState(new Date().getFullYear());
+
+  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
 
   return (
     <div
       className="flex flex-col bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden h-auto min-h-[calc(100vh-120px)] md:h-[calc(100vh-80px)]"
     >
+      {/* ── Filter Bar ──────────────────────────────────────────────── */}
+      <div className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-slate-700 bg-slate-900/50 backdrop-blur-md">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
+            <Filter className="w-4 h-4" />
+          </div>
+          <div>
+            <h2 className="text-sm font-bold text-white tracking-tight">Filtros de Análisis</h2>
+            <p className="text-[10px] text-slate-500 uppercase font-black tracking-widest">Estadísticas Consolidadas</p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-4">
+          <form 
+            className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-1.5 transition-all focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20"
+            onSubmit={(e) => e.preventDefault()}
+          >
+            <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
+            <label htmlFor="year-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">Período</label>
+            <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
+              <SelectTrigger id="year-select" className="h-7 w-[110px] bg-slate-950/50 border-slate-700 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors rounded-lg">
+                <SelectValue placeholder="Año" />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-700 text-slate-300">
+                {years.map(y => (
+                  <SelectItem key={y} value={y.toString()} className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer">
+                    Año {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </form>
+          
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="h-9 px-3 border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl gap-2 text-xs"
+            onClick={() => window.location.reload()}
+          >
+            <Activity className="w-3.5 h-3.5" />
+            Actualizar
+          </Button>
+        </div>
+      </div>
+
       {/* ── Page content ─────────────────────────────────────────────── */}
       <div className="flex-1 min-h-0">
         {page === 1 && <StatsPage1Charts year={year} />}

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getTaxpayersCompliance } from '@/components/utils/api/report-functions';
+import { decimalToNumber } from '@/components/utils/number.utils';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
 import { ShieldCheck, AlertCircle, XCircle, Download, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/UI/button';
@@ -22,8 +23,8 @@ interface ComplianceData { high: TaxpayerItem[]; medium: TaxpayerItem[]; low: Ta
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-const fmtBs = (val?: string|number) => {
-  const n = val == null ? 0 : typeof val === 'string' ? parseFloat(val) || 0 : val;
+const fmtBs = (val?: unknown) => {
+  const n = decimalToNumber(val);
   return `Bs.S ${n.toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 };
 
