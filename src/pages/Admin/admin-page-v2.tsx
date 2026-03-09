@@ -71,6 +71,8 @@ export default function AdminPageV2() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
+  const [totalSpecial, setTotalSpecial] = useState(0);
+  const [totalOrdinary, setTotalOrdinary] = useState(0);
   const limit = 50;
 
   // Detectar mobile
@@ -102,6 +104,8 @@ export default function AdminPageV2() {
         setTaxpayers(response.data ?? []);
         setTotal(response.total ?? 0);
         setTotalPages(response.totalPages ?? 1);
+        setTotalSpecial(response.totalSpecial ?? 0);
+        setTotalOrdinary(response.totalOrdinary ?? 0);
       } catch (e) {
         console.error(e);
         toast.error('No se pudieron obtener los contribuyentes.');
@@ -531,15 +535,15 @@ export default function AdminPageV2() {
             <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Especiales (pág.)</p>
+            <p className="text-slate-400 text-sm">Especiales</p>
             <p className="text-2xl font-bold text-purple-400 mt-2">
-              {filteredData.filter((x) => x.contract_type === contract_type.SPECIAL).length}
+              {loading ? '—' : totalSpecial.toLocaleString()}
             </p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Ordinarios (pág.)</p>
+            <p className="text-slate-400 text-sm">Ordinarios</p>
             <p className="text-2xl font-bold text-blue-400 mt-2">
-              {filteredData.filter((x) => x.contract_type === contract_type.ORDINARY).length}
+              {loading ? '—' : totalOrdinary.toLocaleString()}
             </p>
           </Card>
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
@@ -644,6 +648,8 @@ export default function AdminPageV2() {
               setTaxpayers(response.data ?? []);
               setTotal(response.total ?? 0);
               setTotalPages(response.totalPages ?? 1);
+              setTotalSpecial(response.totalSpecial ?? 0);
+              setTotalOrdinary(response.totalOrdinary ?? 0);
             } catch (e) {
               console.error(e);
             }

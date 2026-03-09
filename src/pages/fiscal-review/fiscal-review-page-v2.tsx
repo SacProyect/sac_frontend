@@ -192,6 +192,7 @@ export default function FiscalReviewPageV2() {
         f.name?.toLowerCase().includes(q) ||
         f.group?.name?.toLowerCase().includes(q) ||
         f.supervisor?.name?.toLowerCase().includes(q) ||
+        f.group?.coordinator?.name?.toLowerCase().includes(q) ||
         f.personId?.toString().includes(q)
       )
       .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
@@ -288,6 +289,7 @@ export default function FiscalReviewPageV2() {
                     <th className="text-left p-4 text-slate-300 font-semibold">Cédula</th>
                     <th className="text-left p-4 text-slate-300 font-semibold">Nombre</th>
                     <th className="text-left p-4 text-slate-300 font-semibold">Grupo</th>
+                    <th className="text-left p-4 text-slate-300 font-semibold">Coordinador</th>
                     <th className="text-left p-4 text-slate-300 font-semibold">Supervisor</th>
                     <th className="text-left p-4 text-slate-300 font-semibold">Rol</th>
                     <th className="text-right p-4 text-slate-300 font-semibold">Acción</th>
@@ -303,6 +305,7 @@ export default function FiscalReviewPageV2() {
                         </td>
                         <td className="p-4 text-slate-200 font-medium">{fiscal.name ?? 'N/A'}</td>
                         <td className="p-4 text-slate-400 text-sm">{fiscal.group?.name ?? 'N/A'}</td>
+                        <td className="p-4 text-slate-400 text-sm">{fiscal.group?.coordinator?.name ?? 'N/A'}</td>
                         <td className="p-4 text-slate-400 text-sm">
                           {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
                             ? fiscal.supervisor.name
