@@ -1,7 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, ReferenceLine } from "recharts";
 import { Event } from "@/types/event";
-import toast, { Toaster } from "react-hot-toast";
+import toast from "react-hot-toast";
 import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayer-functions";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
@@ -12,6 +11,7 @@ import { User } from "@/types/user";
 import Decimal from "decimal.js";
 import { Parish, TaxpayerCategory } from "@/types/taxpayer";
 import { Settings } from "lucide-react";
+import { ObservationsPanel } from "@/components/observations/observations-panel";
 
 
 
@@ -350,312 +350,334 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     return (
-        <div className="w-full min-h-[20vh] text-black mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
-            <div className="flex flex-col lg:flex-row w-full max-w-full lg:max-w-[900px] lg:mx-auto min-h-0 shadow-xl rounded-lg lg:rounded-xl pb-4 lg:pb-4 bg-white/95 lg:bg-white">
+        <div className="w-full text-black mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
 
-                {/* Columna Izquierda - Datos del Contribuyente */}
-                <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-1/2">
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                        <h1 className="text-base sm:text-lg md:text-xl font-semibold uppercase tracking-tight">
-                            Datos del contribuyente
-                        </h1>
-                        {canEditIndex && (
-                            <button
-                                type="button"
-                                onClick={() => {
-                                    setNewIndexIva(taxpayerData?.currentEffectiveIndex != null ? String(taxpayerData.currentEffectiveIndex) : "");
-                                    setShowIndexModal(true);
-                                }}
-                                className="p-2 rounded-md border border-slate-300 bg-white text-slate-600 hover:bg-slate-100 hover:border-slate-400 transition-colors shadow-sm touch-manipulation min-h-[44px] min-w-[44px]"
-                                title="Editar índice IVA (meta mensual)"
-                                aria-label="Editar índice IVA"
-                            >
-                                <Settings className="h-5 w-5" />
-                            </button>
-                        )}
+          {/* ── Design tokens ── */}
+          <style>{`
+            .is-card {
+              --card-bg: #ffffff;
+              --card-border: rgba(15,23,42,0.08);
+              --tag-bg: rgba(15,23,42,0.05);
+              --label-color: #64748b;
+              --value-color: #0f172a;
+              --accent: #1d4ed8;
+              --accent-dim: rgba(29,78,216,0.08);
+              --badge-special-bg: rgba(245,158,11,0.12);
+              --badge-special-color: #b45309;
+              --badge-ordinary-bg: rgba(16,185,129,0.10);
+              --badge-ordinary-color: #065f46;
+              --badge-notif-bg: rgba(16,185,129,0.10);
+              --badge-notif-color: #065f46;
+              --badge-pending-bg: rgba(239,68,68,0.08);
+              --badge-pending-color: #b91c1c;
+              font-family: 'Inter', system-ui, sans-serif;
+            }
+            .is-field { display: flex; flex-direction: column; gap: 2px; }
+            .is-field-label {
+              font-size: 10px;
+              font-weight: 700;
+              text-transform: uppercase;
+              letter-spacing: 0.07em;
+              color: var(--label-color);
+            }
+            .is-field-value {
+              font-size: 13px;
+              font-weight: 500;
+              color: var(--value-color);
+              line-height: 1.35;
+              word-break: break-word;
+            }
+            .is-field-value.prominent {
+              font-size: 15px;
+              font-weight: 700;
+            }
+            .is-divider {
+              height: 1px;
+              background: var(--card-border);
+              border: none;
+              margin: 2px 0;
+            }
+            .is-badge {
+              display: inline-flex; align-items: center;
+              padding: 2px 8px;
+              border-radius: 999px;
+              font-size: 11px;
+              font-weight: 700;
+              letter-spacing: 0.03em;
+            }
+            .is-badge.special  { background: var(--badge-special-bg);  color: var(--badge-special-color); }
+            .is-badge.ordinary { background: var(--badge-ordinary-bg); color: var(--badge-ordinary-color); }
+            .is-badge.notif    { background: var(--badge-notif-bg);    color: var(--badge-notif-color); }
+            .is-badge.pending  { background: var(--badge-pending-bg);  color: var(--badge-pending-color); }
+            .is-badge.culminated { background: var(--badge-notif-bg); color: var(--badge-notif-color); }
+            .is-badge.active     { background: var(--accent-dim); color: var(--accent); }
+            .is-fase-strip { display: flex; flex-wrap: wrap; gap: 6px; }
+            .is-fase-btn {
+              padding: 4px 12px;
+              border-radius: 6px;
+              font-size: 11px;
+              font-weight: 700;
+              border: 1.5px solid rgba(29,78,216,0.25);
+              background: var(--accent-dim);
+              color: var(--accent);
+              cursor: pointer;
+              transition: background 0.15s, border-color 0.15s;
+            }
+            .is-fase-btn.active-fase {
+              background: var(--accent);
+              color: #fff;
+              border-color: var(--accent);
+            }
+            .is-fase-btn:hover:not(.active-fase) { border-color: var(--accent); }
+            .is-action-btn {
+              padding: 6px 14px;
+              border-radius: 7px;
+              font-size: 12px;
+              font-weight: 600;
+              border: none;
+              cursor: pointer;
+              transition: opacity 0.15s;
+            }
+            .is-action-btn:hover { opacity: 0.85; }
+            .is-action-btn.primary { background: #2563eb; color: #fff; }
+            .is-action-btn.success { background: #059669; color: #fff; }
+            .is-action-btn.ghost {
+              background: transparent;
+              border: 1.5px solid rgba(15,23,42,0.15);
+              color: #475569;
+            }
+            /* settings cog */
+            .is-cog-btn {
+              padding: 5px;
+              border-radius: 6px;
+              border: 1px solid var(--card-border);
+              background: white;
+              color: #64748b;
+              cursor: pointer;
+              transition: background 0.15s;
+              display: flex; align-items: center; justify-content: center;
+            }
+            .is-cog-btn:hover { background: var(--tag-bg); }
+            /* obs panel wrapper */
+            .obs-panel-outer {
+              background: #0f172a;
+              border-radius: 0;
+            }
+            @media (min-width: 1024px) {
+              .obs-panel-outer {
+                border-radius: 0 12px 12px 0;
+                border-left: 1px solid rgba(148,163,184,0.10);
+              }
+            }
+          `}</style>
+
+          <div className="is-card flex flex-col lg:flex-row w-full max-w-full lg:max-w-[960px] lg:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(15,23,42,0.09)' }}>
+
+                {/* ── Columna Izquierda — Datos del Contribuyente ── */}
+                <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4">
+
+                  {/* Header */}
+                  <div className="flex items-center justify-between gap-2">
+                    <div>
+                      <p className="is-field-label" style={{color:'#94a3b8',fontSize:'10px'}}>CONTRIBUYENTE</p>
+                      <p className="is-field-value prominent" style={{fontSize:'15px',fontWeight:700,color:'#0f172a'}}>
+                        {taxpayerData?.name ?? '—'}
+                      </p>
                     </div>
-
-                    <div className="flex flex-col space-y-1.5 sm:space-y-2 text-xs sm:text-sm break-words">
-                        <p className="break-words"><span className="font-bold">NRO DE PROVIDENCIA:</span> {taxpayerData ? taxpayerData?.providenceNum : "—"}</p>
-                        <p className="break-words"><span className="font-bold">PROCEDIMIENTO:</span> {taxpayerData ? taxpayerData?.process : "—"}</p>
-                        <p className="break-words"><span className="font-bold">RAZÓN SOCIAL:</span> {taxpayerData ? taxpayerData?.name : "—"}</p>
-                        <p className="break-words"><span className="font-bold">RIF:</span> {taxpayerData ? taxpayerData?.rif : "—"}</p>
-                        <p className="break-words font-bold">Actividad Comercial: {taxpayerData?.taxpayer_category?.name ?? "—"}</p>
-                        <p className="break-words font-bold">Parroquia: {taxpayerData?.parish?.name ?? "—"}</p>
-                        <p className="break-words"><span className="font-bold">TIPO:</span> {taxpayerData?.contract_type === "ORDINARY" ? "ORDINARIO" : taxpayerData?.contract_type === "SPECIAL" ? "ESPECIAL" : taxpayerData?.contract_type ?? "—"}</p>
-                        <p className="break-words"><span className="font-bold">Dirección:</span> {taxpayerData?.address ?? "—"}</p>
-                        <p className="break-words"><span className="font-bold">FISCAL ASIGNADO:</span> {taxpayerData?.user?.name ?? "No asignado"}</p>
-                        <p className="break-words"><span className="font-bold">FECHA PROCEDIMIENTO:</span> {taxpayerData?.emition_date ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }) : "—"}</p>
-                        <p className="break-words"><span className="font-bold">FECHA NOTIFICACIÓN:</span> {taxpayerData?.notified && taxpayerData?.updated_at ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' }) : taxpayerData?.notified ? "Notificado" : "No notificado"}</p>
-                        <p className="break-words"><span className="font-bold">Multas:</span> {fines ?? "—"}</p>
-                        <p className="break-words"><span className="font-bold">Excedente crédito:</span> {taxpayerData?.IVAReports?.[0]?.excess != null ? taxpayerData.IVAReports[0].excess.toString() : "—"}</p>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Contract type badge */}
+                      {taxpayerData?.contract_type && (
+                        <span className={`is-badge ${taxpayerData.contract_type === 'SPECIAL' ? 'special' : 'ordinary'}`}>
+                          {taxpayerData.contract_type === 'SPECIAL' ? 'ESPECIAL' : 'ORDINARIO'}
+                        </span>
+                      )}
+                      {/* Culminated badge */}
+                      {taxpayerData?.culminated && (
+                        <span className="is-badge culminated">CULMINADO</span>
+                      )}
+                      {canEditIndex && (
+                        <button
+                          type="button"
+                          className="is-cog-btn"
+                          title="Editar índice IVA"
+                          onClick={() => {
+                            setNewIndexIva(taxpayerData?.currentEffectiveIndex != null ? String(taxpayerData.currentEffectiveIndex) : '');
+                            setShowIndexModal(true);
+                          }}
+                        >
+                          <Settings size={15} />
+                        </button>
+                      )}
                     </div>
+                  </div>
 
-                    {taxpayerData?.notified === true ? (
-                        <p className="pt-2 text-xs sm:text-sm font-semibold leading-snug text-green-800 max-h-[80px] overflow-y-auto">
-                            Este contribuyente ha sido notificado exitosamente acerca de su procedimiento.
-                        </p>
+                  <hr className="is-divider" />
+
+                  {/* Fields grid */}
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                    <div className="is-field">
+                      <span className="is-field-label">RIF</span>
+                      <span className="is-field-value" style={{fontFamily:'monospace'}}>{taxpayerData?.rif ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">N° Providencia</span>
+                      <span className="is-field-value">{taxpayerData?.providenceNum ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Procedimiento</span>
+                      <span className="is-field-value">{taxpayerData?.process ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Fase</span>
+                      <span className="is-field-value">
+                        {taxpayerData?.fase
+                          ? <span className="is-badge active">{taxpayerData.fase.replace('_', ' ')}</span>
+                          : '—'}
+                      </span>
+                    </div>
+                    <div className="is-field col-span-2">
+                      <span className="is-field-label">Actividad Comercial</span>
+                      <span className="is-field-value">{taxpayerData?.taxpayer_category?.name ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Parroquia</span>
+                      <span className="is-field-value">{taxpayerData?.parish?.name ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Multas</span>
+                      <span className="is-field-value">{fines}</span>
+                    </div>
+                    <div className="is-field col-span-2">
+                      <span className="is-field-label">Dirección</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.address ?? '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Fiscal Asignado</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.user?.name ?? 'No asignado'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Excedente IVA</span>
+                      <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? taxpayerData.IVAReports[0].excess.toString() : '—'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Fecha Procedimiento</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.emition_date
+                          ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })
+                          : '—'}
+                      </span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Notificación</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.notified && taxpayerData?.updated_at
+                          ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })
+                          : (
+                            <span className={`is-badge ${taxpayerData?.notified ? 'notif' : 'pending'}`}>
+                              {taxpayerData?.notified ? 'Notificado' : 'Pendiente'}
+                            </span>
+                          )}
+                      </span>
+                    </div>
+                  </div>
+
+                  <hr className="is-divider" />
+
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-2">
+                    {taxpayerData?.culminated === true ? (
+                      <span className="is-badge culminated" style={{fontSize:'12px',padding:'4px 12px'}}>Procedimiento Culminado</span>
                     ) : (
-                        <p className="pt-2 text-xs sm:text-sm font-semibold leading-snug text-slate-700 max-h-[80px] overflow-y-auto">
-                            Este contribuyente aún no ha sido notificado acerca de su procedimiento.
-                        </p>
+                      ((
+                        (user?.role === 'FISCAL' && user?.id === taxpayerData?.officerId) ||
+                        (user?.role === 'COORDINATOR' && user?.id === taxpayerData?.user?.group?.coordinatorId) ||
+                        (user?.role === 'SUPERVISOR' && (user?.id === taxpayerData?.officerId || user.supervised_members?.some((m) => m.id === taxpayerData?.officerId))) ||
+                        user?.role === 'ADMIN'
+                      ) && (
+                        <button type="button" className="is-action-btn primary" onClick={() => handleCulminatedClick(true)}>
+                          Culminar Procedimiento
+                        </button>
+                      ))
                     )}
 
-                    <div className="pt-3 flex flex-wrap items-center gap-2">
-                        {taxpayerData?.culminated === true ? (
-                            <p className="text-sm font-semibold text-green-700">
-                                Procedimiento Culminado.
-                            </p>
-                        ) : (
-                            (user?.role === "FISCAL" && user?.id === taxpayerData?.officerId) ||
-                            (user?.role === "COORDINATOR" && user?.id === taxpayerData?.user?.group?.coordinatorId) ||
-                            (user?.role === "SUPERVISOR" && (user?.id === taxpayerData?.officerId || user.supervised_members?.some((member) => member.id === taxpayerData?.officerId))) ||
-                            user?.role === "ADMIN"
-                        ) && (
-                            <button
-                                type="button"
-                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 active:bg-blue-800 transition-colors touch-manipulation"
-                                onClick={() => handleCulminatedClick(true)}
-                            >
-                                Culminar Procedimiento
-                            </button>
-                        )}
+                    {(
+                      (user?.role === 'FISCAL' && taxpayerData?.officerId === user?.id) ||
+                      user?.role === 'ADMIN' ||
+                      (user?.role === 'SUPERVISOR' && (user?.id === taxpayerData?.officerId || user.supervised_members?.some(m => m.id === taxpayerData?.officerId)))
+                    ) && !taxpayerData?.notified && (
+                      <button type="button" className="is-action-btn ghost" onClick={() => handleNotifiedClick(true)}>
+                        Reportar notificado
+                      </button>
+                    )}
 
-                        {user?.role === "ADMIN" && taxpayerData && taxpayerData?.investigation_pdfs.length >= 1 && (
-                            <button
-                                type="button"
-                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
-                                onClick={() => handleDownloadInvestigation()}
-                            >
-                                Descargar investigación
-                            </button>
-                        )}
-                    </div>
+                    {user?.role === 'ADMIN' && taxpayerData && taxpayerData.investigation_pdfs.length >= 1 && (
+                      <button type="button" className="is-action-btn ghost" onClick={handleDownloadInvestigation}>
+                        Descargar investigación
+                      </button>
+                    )}
+                  </div>
 
-                    {taxpayerData?.process === "AF" && (
-                        taxpayerData.RepairReports.length > 0 ? (
-                            <div className="pt-2">
-                                <button
-                                    type="button"
-                                    className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
-                                    onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}
-                                >
-                                    Descargar acta de reparo
-                                </button>
-                            </div>
-                        ) : (
-                            user && taxpayerData.officerId === user.id && (
-                                <div className="pt-2">
-                                    <button
-                                        type="button"
-                                        className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
-                                        onClick={handleUploadClick}
-                                    >
-                                        Subir acta de reparo
-                                    </button>
-
-                                    {/* Input file oculto */}
-                                    <input
-                                        type="file"
-                                        accept=".pdf"         // Solo PDF
-                                        ref={fileInputRef}
-                                        style={{ display: "none" }}
-                                        onChange={handleFileChange}
-                                    // No se pone "multiple" para limitar a un solo archivo
-                                    />
-
-                                    {/* Mostrar archivo seleccionado y botón para enviar */}
-                                    {/* Modal */}
-                                    {showModal && selectedFile && (
-                                        <div
-                                            className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-black/50 overflow-y-auto"
-                                            onClick={handleCancelSend}
-                                        >
-                                            <div
-                                                className="w-full max-w-sm p-4 sm:p-6 bg-white rounded-xl shadow-xl my-auto"
-                                                onClick={e => e.stopPropagation()}
-                                            >
-                                                <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo a Subir</h2>
-                                                <p className="mb-4 break-words">Archivo seleccionado: <strong>{selectedFile.name}</strong></p>
-
-                                                <div className="flex justify-end gap-2">
-                                                    <button
-                                                        type="button"
-                                                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-                                                        onClick={handleCancelSend}
-                                                    >
-                                                        Cancelar
-                                                    </button>
-                                                    <button
-                                                        type="button"
-                                                        className="px-4 py-2 text-sm font-medium text-white bg-green-600 rounded-md shadow-sm hover:bg-green-700"
-                                                        onClick={handleConfirmSend}
-                                                    >
-                                                        Subir archivo
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    )}
+                  {/* AF-specific: repair + fase */}
+                  {taxpayerData?.process === 'AF' && (
+                    <>
+                      {taxpayerData.RepairReports.length > 0 ? (
+                        <button type="button" className="is-action-btn ghost" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>
+                          Descargar acta de reparo
+                        </button>
+                      ) : (
+                        user && taxpayerData.officerId === user.id && (
+                          <div>
+                            <button type="button" className="is-action-btn ghost" onClick={handleUploadClick}>Subir acta de reparo</button>
+                            <input type="file" accept=".pdf" ref={fileInputRef} style={{ display: 'none' }} onChange={handleFileChange} />
+                            {showModal && selectedFile && (
+                              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={handleCancelSend}>
+                                <div className="w-full max-w-sm p-6 bg-white rounded-xl shadow-xl" onClick={e => e.stopPropagation()}>
+                                  <h2 className="mb-4 text-lg font-semibold">Confirmar Acta de Reparo</h2>
+                                  <p className="mb-4 break-words">Archivo: <strong>{selectedFile.name}</strong></p>
+                                  <div className="flex justify-end gap-2">
+                                    <button type="button" className="is-action-btn ghost" onClick={handleCancelSend}>Cancelar</button>
+                                    <button type="button" className="is-action-btn success" onClick={handleConfirmSend}>Subir archivo</button>
+                                  </div>
                                 </div>
-                            )
+                              </div>
+                            )}
+                          </div>
                         )
-                    )}
+                      )}
 
-                    {canEditFase && (
-                        <div className="flex flex-wrap items-center gap-2 mt-4">
-                            {fases.map((fase) => (
-                                <button
-                                    key={fase}
-                                    type="button"
-                                    className={`min-h-[44px] px-3 py-2.5 sm:py-2 text-sm font-medium rounded-md transition-colors touch-manipulation flex-1 min-w-[72px] sm:flex-none ${
-                                        taxpayerData?.fase === fase
-                                            ? "bg-green-600 text-white shadow-sm"
-                                            : "bg-blue-600 text-white hover:bg-blue-700 shadow-sm"
-                                    }`}
-                                    onClick={() => handleFaseClick(fase)}
-                                >
-                                    {fase.replace("FASE_", "FASE ")}
+                      {canEditFase && (
+                        <>
+                          <hr className="is-divider" />
+                          <div>
+                            <p className="is-field-label" style={{marginBottom:'8px'}}>AVANCE DE FASE</p>
+                            <div className="is-fase-strip">
+                              {fases.map(fase => (
+                                <button key={fase} type="button"
+                                  className={`is-fase-btn${taxpayerData?.fase === fase ? ' active-fase' : ''}`}
+                                  onClick={() => handleFaseClick(fase)}>
+                                  {fase.replace('FASE_', 'Fase ')}
                                 </button>
-                            ))}
-                        </div>
-                    )}
-
-                    {taxpayerData?.fase && taxpayerData.process === "AF" && (
-                        <div className="w-full pt-4 mt-2 text-xs sm:text-sm italic text-left text-gray-700">
-                            {taxpayerData.fase === "FASE_1" && (
-                                <p className="text-xs">
-                                    FASE 1: Notificación de providencia. Realizar acta de requerimientos. Actas Constancias y Actas de Recepción. Se debe realizar un informe si no se notifica en el lapso de 20 días.
-                                </p>)
-                            }
-                            {taxpayerData.fase === "FASE_2" && (
-                                <p className="text-xs">
-                                    FASE 2: Análisis y Desarrollo de hojas de trabajo y una breve predeterminación (con su respectivo soporte).
-                                </p>)
-                            }
-                            {taxpayerData.fase === "FASE_3" && (
-                                <p className="text-xs">
-                                    FASE 3: Determinación y reparo definitivo (Acta de reparo, informe y requerimiento finales)
-                                </p>)
-                            }
-                            {taxpayerData.fase === "FASE_4" && (
-                                <p className="text-xs">
-                                    FASE 4: Declaración de sustitutiva; resolución de imposición de sanción de allanamiento; culminación de expediente.
-                                </p>)
-                            }
-                        </div>
-                    )}
+                              ))}
+                            </div>
+                            {taxpayerData?.fase && (
+                              <p className="text-xs italic mt-2" style={{color:'#64748b',lineHeight:1.5}}>
+                                {taxpayerData.fase === 'FASE_1' && 'Notificación de providencia, acta de requerimientos, constancias y actas de recepción.'}
+                                {taxpayerData.fase === 'FASE_2' && 'Análisis y desarrollo de hojas de trabajo y predeterminación con soportes.'}
+                                {taxpayerData.fase === 'FASE_3' && 'Determinación y reparo definitivo: acta de reparo, informe y requerimiento finales.'}
+                                {taxpayerData.fase === 'FASE_4' && 'Declaración sustitutiva; resolución de sanción de allanamiento; culminación de expediente.'}
+                              </p>
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </>
+                  )}
                 </div>
 
-                {/* Columna Derecha - Gráficas */}
-                <div className="flex flex-col w-full min-w-0 lg:w-1/2 p-4 sm:p-5 lg:p-6 pt-0 lg:pt-6 lg:mt-0 border-t lg:border-t-0 lg:border-l border-slate-200">
+                {/* ── Columna Derecha — Observaciones ── */}
+                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0" style={{minHeight:'420px'}}>
 
-                    <div className="flex flex-col sm:flex-row flex-wrap items-stretch sm:items-center justify-between gap-3 pb-3">
-                        {(
-                            (user?.role === "FISCAL" && taxpayerData?.officerId === user.id) ||
-                            user?.role === "ADMIN" ||
-                            (user?.role === "SUPERVISOR" && (user.id === taxpayerData?.officerId || user.supervised_members?.some(member => member.id === taxpayerData?.officerId)))
-                        ) && !taxpayerData?.notified && (
-                            <button
-                                type="button"
-                                className="w-full sm:w-auto min-h-[44px] px-4 py-2.5 sm:py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-700 transition-colors touch-manipulation"
-                                onClick={() => handleNotifiedClick(true)}
-                            >
-                                Reportar como notificado
-                            </button>
-                        )}
-
-                        <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 sm:gap-4 text-xs sm:text-sm text-slate-600">
-                            <span className="inline-flex items-center gap-1.5">
-                                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "#0080c1" }} />
-                                Compras (BS)
-                            </span>
-                            <span className="inline-flex items-center gap-1.5">
-                                <span className="w-3 h-3 rounded-full shrink-0" style={{ backgroundColor: "#737373" }} />
-                                Ventas (BS)
-                            </span>
-                        </div>
-                    </div>
-
-                    {dataMock.some(item => item.value > 0) && (
-                        <div className="flex justify-center items-center w-full min-h-[180px] sm:min-h-[200px] lg:min-h-[12rem]">
-                            <ResponsiveContainer width="100%" height={200}>
-                                <PieChart>
-                                    <Pie
-                                        data={dataMock}
-                                        dataKey="value"
-                                        nameKey="name"
-                                        cx="50%"
-                                        cy="50%"
-                                        className="text-xs"
-                                        outerRadius={50}
-                                        label={({ value }) =>
-                                            value.toLocaleString("es-VE", {
-                                                style: "currency",
-                                                currency: "VES",
-                                                maximumFractionDigits: 0,
-                                            })
-                                        }
-                                    >
-                                        {dataMock.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.color} />
-                                        ))}
-                                    </Pie>
-                                    <Tooltip
-                                        formatter={(value: number) =>
-                                            value.toLocaleString("es-VE", { style: "currency", currency: "VES", minimumFractionDigits: 2 })}
-                                    />
-                                </PieChart>
-                            </ResponsiveContainer>
-                        </div>
-                    )}
-
-                    <div className="w-full mt-4 sm:mt-6 min-h-[220px] sm:min-h-[260px]">
-                        <h3 className="mb-2 text-sm font-semibold text-center text-slate-800">
-                            Compras vs. Ventas vs. Índice (meta)
-                        </h3>
-                        <div className="w-full h-[220px] sm:h-[260px] lg:h-[280px]">
-                        <ResponsiveContainer width="100%" height="100%">
-                            {barChartData.length === 0 ? (
-                                <div className="flex items-center justify-center h-full text-sm text-slate-500">
-                                    Sin reportes IVA mensuales para mostrar
-                                </div>
-                            ) : (
-                            <BarChart
-                                data={barChartData}
-                                margin={{ top: 12, right: 12, left: 8, bottom: 8 }}
-                            >
-                                <CartesianGrid strokeDasharray="2 2" stroke="#334155" opacity={0.4} vertical={false} />
-                                <XAxis dataKey="month" fontSize={11} tick={{ fill: "#94a3b8" }} />
-                                <YAxis fontSize={11} tick={{ fill: "#94a3b8" }} tickFormatter={(v) => v >= 1000 ? `${(v / 1000).toFixed(0)}k` : String(v)} />
-                                <Tooltip
-                                    contentStyle={{ backgroundColor: "#1e293b", border: "1px solid #334155", borderRadius: "6px" }}
-                                    labelStyle={{ color: "#e2e8f0" }}
-                                    formatter={(value: number, name: string) => [value.toLocaleString("es-VE", { style: "currency", currency: "VES", maximumFractionDigits: 0 }), name === "compras" ? "Compras" : name === "ventas" ? "Ventas" : name]}
-                                />
-                                {indexMeta != null && (
-                                    <ReferenceLine
-                                        y={indexMeta}
-                                        stroke="#eab308"
-                                        strokeWidth={1.5}
-                                        strokeDasharray="4 3"
-                                        label={{ value: "Meta (índice)", position: "right", fill: "#eab308", fontSize: 10 }}
-                                    />
-                                )}
-                                <Bar dataKey="compras" name="Compras" fill="#0080c1" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                                <Bar dataKey="ventas" name="Ventas" fill="#1f2937" radius={[2, 2, 0, 0]} maxBarSize={36} />
-                            </BarChart>
-                            )}
-                        </ResponsiveContainer>
-                        </div>
-                        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4 mt-2 text-xs text-slate-500">
-                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#0080c1]" /> Compras</span>
-                            <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-[#1f2937]" /> Ventas</span>
-                            {indexMeta != null && <span className="inline-flex items-center gap-1.5"><span className="w-2.5 h-2.5 border border-[#eab308] border-dashed" /> Meta (índice)</span>}
-                        </div>
-                    </div>
-
-
+                  <ObservationsPanel taxpayerId={taxpayer} />
                 </div>
             </div>
             {showFaseModal && (
