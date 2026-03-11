@@ -21,8 +21,10 @@ export const sharedRoutes: NavItem[] = [
     { href: '/fiscal-review',label: 'Revisión Fiscal',icon: <CheckCircle className="w-4 h-4" /> },
     { href: '/gen-reports',  label: 'Reportes',       icon: <FileBarChart className="w-4 h-4" /> },
     { href: '/stats',        label: 'Estadísticas',   icon: <BarChart3 className="w-4 h-4" /> },
-    { href: '/settings',     label: 'Ajustes',        icon: <Settings2 className="w-4 h-4" /> },
 ];
+
+/** Ruta de ajustes — siempre visible para todos los roles, siempre al final. */
+export const settingsRoute: NavItem = { href: '/settings', label: 'Ajustes', icon: <Settings2 className="w-4 h-4" /> };
 
 /**
  * Bloques de rutas reutilizables por múltiples roles.
