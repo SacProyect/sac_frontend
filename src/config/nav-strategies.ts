@@ -1,6 +1,6 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, RESTRICTED_ROUTES, RESTRICTED_USER_IDS } from '@/config/nav-routes';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS } from '@/config/nav-routes';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -93,5 +93,8 @@ export const resolveNavItems = (user: User | null): NavItem[] => {
     }
 
     const items = strategy(user);
-    return applyUserRestrictions(items, user.id);
+    const filtered = applyUserRestrictions(items, user.id);
+
+    // Ajustes siempre al último, visible para todos los roles
+    return [...filtered, settingsRoute];
 };
