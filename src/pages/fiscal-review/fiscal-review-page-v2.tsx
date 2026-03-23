@@ -26,7 +26,7 @@ import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-rev
 function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () => void }) {
   const [page, setPage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { loading, fiscalInfo, fiscalPerformance, fiscalMonthlyCollect, fiscalComplianceByProcess } = useFiscalStats(selectedYear, fiscalId);
+  const { loading, fiscalInfo, fiscalPerformance, fiscalTaxpayers, fiscalMonthlyCollect, fiscalComplianceByProcess } = useFiscalStats(selectedYear, fiscalId);
 
   if (loading || !fiscalInfo) return <LoadingState message="Cargando información del fiscal..." />;
 
@@ -88,7 +88,7 @@ function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () 
 
        {/* Render current page */}
        <div className="min-h-[400px]">
-         {page === 1 && <FiscalReviewPage1Resumen fiscalInfo={fiscalInfo} performance={fiscalPerformance} selectedYear={selectedYear} setSelectedYear={setSelectedYear} fiscalMonthlyCollect={fiscalMonthlyCollect} fiscalComplianceByProcess={fiscalComplianceByProcess} />}
+        {page === 1 && <FiscalReviewPage1Resumen fiscalInfo={fiscalInfo} performance={fiscalPerformance} selectedYear={selectedYear} setSelectedYear={setSelectedYear} fiscalTaxpayers={fiscalTaxpayers} fiscalMonthlyCollect={fiscalMonthlyCollect} fiscalComplianceByProcess={fiscalComplianceByProcess} />}
          {page === 2 && <FiscalReviewPage2Cumplimiento fiscalInfo={fiscalInfo} />}
          {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} />}
        </div>
@@ -144,6 +144,7 @@ export default function FiscalReviewPageV2() {
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [selectedFiscalId, setSelectedFiscalId] = useState<string | null>(null);
+  const currentYear = new Date().getFullYear();
 
   // Paginación del servidor
   const [currentPage, setCurrentPage] = useState(1);
@@ -167,7 +168,8 @@ export default function FiscalReviewPageV2() {
     const fetchFiscals = async () => {
       try {
         setLoading(true);
-        const response = await getFiscalsForReview(undefined, currentPage, limit);
+        // Always request fiscals filtered by active year to avoid IDs without cases.
+        const response = await getFiscalsForReview(currentYear, currentPage, limit);
         setFiscalArray(response.data || []);
         setTotal(response.total ?? 0);
         setTotalPages(response.totalPages ?? 1);
@@ -180,7 +182,7 @@ export default function FiscalReviewPageV2() {
     };
 
     fetchFiscals();
-  }, [user, navigate, currentPage]);
+  }, [user, navigate, currentPage, currentYear]);
 
   // Filtro local solo para búsqueda instantánea
   // IMPORTANTE: debe estar ANTES de cualquier return condicional (Reglas de Hooks)
@@ -297,6 +299,7 @@ export default function FiscalReviewPageV2() {
                 </thead>
                 <tbody>
                   {displayFiscals
+                    .filter((f) => f.role === 'FISCAL')
                     .filter((t) => t.id && t.personId)
                     .map((fiscal) => (
                       <tr key={fiscal.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200">
