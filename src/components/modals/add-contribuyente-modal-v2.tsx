@@ -226,7 +226,8 @@ export function AddContribuyenteModalV2({
       // Como no tenemos el nombre exacto del campo del backend aquí, adjuntamos bajo claves habituales.
       // Si el backend espera otra clave, ajústala en este punto.
       if (selectedPdf) {
-        formDataToSend.append('pdf', selectedPdf);
+        // formDataToSend.append('pdf', selectedPdf);
+        
         formDataToSend.append('pdfs', selectedPdf);
       }
 

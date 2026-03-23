@@ -80,42 +80,22 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
-		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
-			headers: {
-				'Content-Type': "multipart/form-data",
-			}
-		}));
-
-		if (response.status === 200 || response.status === 201) {
-			return { success: true, data: response.data };
-		} else {
-			console.error("API ERROR: ", response.status, response.data);
-			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
-		}
-
+	  const response = await apiConnection.post(`/taxpayer`, taxpayerData);
+	  if (response.status === 200 || response.status === 201) return { success: true, data: response.data };
+	  return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
 	} catch (error: any) {
-		// Handle Axios errors properly
-		if (error.response) {
-			// Server responded with a status code outside 2xx
-			const errorData = error.response.data;
-
-			const msg = typeof errorData?.error === "string"
-				? errorData.error
-				: errorData?.message || "Ocurrió un error.";
-
-			return {
-				success: false,
-				message: msg,
-			};
-		} else if (error.request) {
-			// No response received
-			return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
-		} else {
-			// Other unexpected errors
-			return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
-		}
+	  if (error.response) {
+		const errorData = error.response.data;
+		const msg = typeof errorData?.error === "string"
+		  ? errorData.error
+		  : errorData?.message || "Ocurrió un error.";
+		return { success: false, message: msg };
+	  } else if (error.request) {
+		return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
+	  }
+	  return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
 	}
-}
+  };
 
 export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string) => {
 	try {
