@@ -128,8 +128,8 @@ export function AddContribuyenteModalV2({
       formDataToSend.append('name', formData.name);
       formDataToSend.append('rif', `${formData.rifPrefix}-${formData.rif}`);
       formDataToSend.append('address', formData.address);
-      formDataToSend.append('parish', selectedParish.name); // API espera nombre, no ID
-      formDataToSend.append('category', selectedCategory.name); // API espera nombre, no ID
+      formDataToSend.append('parish', selectedParish.id); 
+      formDataToSend.append('category', selectedCategory.id); 
       formDataToSend.append('emition_date', formData.emition_date);
       formDataToSend.append('contract_type', formData.contract_type);
       formDataToSend.append('officerId', formData.officerId);
