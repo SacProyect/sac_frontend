@@ -335,7 +335,6 @@ export default function FiscalReviewPageV2() {
                 </thead>
                 <tbody>
                   {displayFiscals
-                    .filter((f) => f.role === 'FISCAL')
                     .filter((t) => t.id && t.personId)
                     .map((fiscal) => (
                       <tr key={fiscal.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200">
