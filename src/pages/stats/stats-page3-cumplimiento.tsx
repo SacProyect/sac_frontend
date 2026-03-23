@@ -35,11 +35,11 @@ const normalize = (arr: any[]): TaxpayerItem[] =>
     id: t.id ?? t.taxpayerId ?? '',
     name: t.name ?? t.businessName ?? t.razonSocial ?? '',
     rif: t.rif ?? t.taxpayerRif ?? '',
-    compliance: Number(t.compliance ?? t.cumplimiento ?? t.complianceRate ?? 0),
-    collectedIva: t.collectedIva ?? t.iva ?? 0,
-    collectedIslr: t.collectedIslr ?? t.islr ?? 0,
-    collectedFines: t.collectedFines ?? t.fines ?? t.multas ?? 0,
-    total: t.total ?? t.totalCollection ?? 0,
+    compliance: Number(t.compliance ?? t.complianceScore ?? t.cumplimiento ?? t.complianceRate ?? 0),
+    collectedIva: t.collectedIva ?? t.iva ?? t.totalIVA ?? 0,
+    collectedIslr: t.collectedIslr ?? t.islr ?? t.totalISLR ?? 0,
+    collectedFines: t.collectedFines ?? t.fines ?? t.multas ?? t.totalFines ?? 0,
+    total: t.total ?? t.totalCollection ?? t.totalCollected ?? 0,
   })).sort((a, b) => b.compliance - a.compliance);
 
 // ─── Tier config ─────────────────────────────────────────────────────────────
@@ -211,7 +211,7 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
   const data = [
     { name: 'Alto',  fullName: 'Alto Cumplimiento',  value: high   || 0,              color: '#22c55e', pct: pctHigh },
     { name: 'Medio', fullName: 'Medio Cumplimiento', value: medium || 0,              color: '#eab308', pct: pctMed  },
-    { name: 'Bajo',  fullName: 'Bajo Cumplimiento',  value: low    || Math.max(total, 1), color: '#ef4444', pct: pctLow  },
+    { name: 'Bajo',  fullName: 'Bajo Cumplimiento',  value: low    || 0,              color: '#ef4444', pct: pctLow  },
   ];
 
   // Custom label rendered on each segment
