@@ -251,7 +251,7 @@ export default function AdminPageV2() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 text-xs h-8 bg-transparent"
+                    className="flex-1 text-xs h-8 bg-transparent text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleView(item.originalData);
@@ -262,7 +262,7 @@ export default function AdminPageV2() {
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 text-xs h-8 bg-transparent"
+                    className="flex-1 text-xs h-8 bg-transparent text-white"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleEdit(item.originalData);
