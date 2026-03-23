@@ -1,6 +1,6 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, RESTRICTED_ROUTES, RESTRICTED_USER_IDS } from '@/config/nav-routes';
+import { sharedRoutes, routeBlocks, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem } from '@/config/nav-routes';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -15,6 +15,7 @@ type NavStrategy = (user: User) => NavItem[];
  */
 const adminStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    auditTrailNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
@@ -25,6 +26,7 @@ const adminStrategy: NavStrategy = () => [
  */
 const coordinatorStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    auditTrailNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,

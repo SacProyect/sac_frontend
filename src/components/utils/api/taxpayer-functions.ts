@@ -27,6 +27,13 @@ type CreateIndexIva = {
 	specialAmount: Decimal,
 }
 
+const generateIdempotencyKey = () => {
+	if (typeof globalThis !== "undefined" && globalThis.crypto?.randomUUID) {
+		return globalThis.crypto.randomUUID();
+	}
+	return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 export const updateTaxpayer = async (id: string, data: any) => {
 	try {
 		const requestUrl = `/taxpayer/update-taxpayer/${id}`;
@@ -80,9 +87,11 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
+		const idempotencyKey = generateIdempotencyKey();
 		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
 			headers: {
 				'Content-Type': "multipart/form-data",
+				'X-Idempotency-Key': idempotencyKey,
 			}
 		}));
 
@@ -623,7 +632,7 @@ export const deleteIva = async (id: string) => {
 
 		const response = await apiConnection.delete(`${requestURL}/${id}`);
 
-		return response;
+		return response.status === 204 || response.status === 200;
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudo eliminar el reporte de iva")
@@ -636,7 +645,7 @@ export const deleteISLR = async (id: string) => {
 
 		const response = await apiConnection.delete(`${requestURL}/${id}`);
 
-		return response;
+		return response.status === 204 || response.status === 200;
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudo borrar el reporte de ISLR.")

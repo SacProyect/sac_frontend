@@ -72,6 +72,7 @@ const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
 const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
+const AuditTrailPageV2 = lazy(() => import("@/pages/audit/audit-trail-page-v2"));
 
 type LoaderData = {
     events: Event[],
@@ -117,6 +118,16 @@ export const router = createBrowserRouter([
                             </div>
                         }>
                             <AdminPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "auditoria",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando auditoría...
+                            </div>
+                        }>
+                            <AuditTrailPageV2 />
                         </Suspense>,
                     },
                     {
