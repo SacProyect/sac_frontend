@@ -5,6 +5,7 @@ import {
   getGroupPerformance,
   getGlobalKPI,
   getFiscalInfo,
+  getFiscalTaxpayers,
   getFiscalMonthlyCollect,
   getFiscalMonthlyPerformance,
   getFiscalComplianceByProcess,
@@ -77,6 +78,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
   // Datos individuales del fiscal
   const [fiscalPerformance, setFiscalPerformance] = useState<FiscalPerformanceData[]>([]);
   const [fiscalInfo, setFiscalInfo] = useState<FiscalInfoExtended | null>(null);
+  const [fiscalTaxpayers, setFiscalTaxpayers] = useState<any[]>([]);
   const [fiscalMonthlyCollect, setFiscalMonthlyCollect] = useState<any>(null);
   const [fiscalComplianceByProcess, setFiscalComplianceByProcess] = useState<any>(null);
 
@@ -199,17 +201,33 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
     // Información del fiscal
     const info = await getFiscalInfo(fiscalId, year);
     setFiscalInfo(info);
+    
+    // Contribuyentes del fiscal filtrados por año (data para revisión/estadísticas)
+    try {
+      const taxpayers = await getFiscalTaxpayers(fiscalId, year);
+      setFiscalTaxpayers(Array.isArray(taxpayers) ? taxpayers : []);
+    } catch (e) {
+      console.warn(e);
+      setFiscalTaxpayers([]);
+    }
 
     // Desempeño mensual
-    const monthlyPerf = await getFiscalMonthlyPerformance(fiscalId, year);
-    if (Array.isArray(monthlyPerf)) {
-      const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-      const perfData: FiscalPerformanceData[] = monthlyPerf.map((item: any) => ({
-        mes: months[item.month - 1] || `Mes ${item.month}`,
-        desempeño: decimalToNumber(item.performance || item.realAmount),
-        meta: decimalToNumber(item.target || item.expectedAmount),
-      }));
-      setFiscalPerformance(perfData);
+    try {
+      const monthlyPerf = await getFiscalMonthlyPerformance(fiscalId, year);
+      if (Array.isArray(monthlyPerf)) {
+        const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+        const perfData: FiscalPerformanceData[] = monthlyPerf.map((item: any) => ({
+          mes: months[item.month - 1] || `Mes ${item.month}`,
+          desempeño: decimalToNumber(item.performance || item.realAmount),
+          meta: decimalToNumber(item.target || item.expectedAmount),
+        }));
+        setFiscalPerformance(perfData);
+      } else {
+        setFiscalPerformance([]);
+      }
+    } catch (e) {
+      console.warn(e);
+      setFiscalPerformance([]);
     }
 
     try {
@@ -241,6 +259,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
     // Datos individuales
     fiscalPerformance,
     fiscalInfo,
+    fiscalTaxpayers,
     fiscalMonthlyCollect,
     fiscalComplianceByProcess,
   };

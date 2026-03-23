@@ -12,6 +12,7 @@ interface FiscalReviewPage1Props {
   performance: FiscalPerformanceData[];
   selectedYear: number;
   setSelectedYear: (year: number) => void;
+  fiscalTaxpayers?: any[];
   fiscalMonthlyCollect?: any;
   fiscalComplianceByProcess?: any;
 }
@@ -30,7 +31,7 @@ interface AssignedTaxpayer {
   date: string;
 }
 
-export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear, setSelectedYear, fiscalMonthlyCollect, fiscalComplianceByProcess }: FiscalReviewPage1Props) {
+export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear, setSelectedYear, fiscalTaxpayers, fiscalMonthlyCollect, fiscalComplianceByProcess }: FiscalReviewPage1Props) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -49,7 +50,7 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
         document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [calendarOpen]);
-  const taxpayersList: any[] = (fiscalInfo as any).taxpayers || [];
+  const taxpayersList: any[] = Array.isArray(fiscalTaxpayers) ? fiscalTaxpayers : [];
   const currentMonthName = performance.length > 0 ? performance[performance.length - 1].mes : 'N/A';
   
   // Utilizando datos reales del backend
@@ -88,6 +89,8 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
     }
     return val.total || val.totalAmount || 0;
   };
+
+  const mapMoney = (val: any) => parseNumberObj(val);
 
   const cobroMensual = {
     total: (currentMonthData as any)?.total || 0,
@@ -195,7 +198,7 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
                     </div>
                   </div>
                   <div className="text-right">
-                    <p className="text-green-400 font-bold text-sm tracking-tight">{formatCurrency(t.total || 0)}</p>
+                    <p className="text-green-400 font-bold text-sm tracking-tight">{formatCurrency(mapMoney(t.totalCollected ?? t.total ?? 0))}</p>
                     <p className="text-slate-500 text-[10px] text-right uppercase tracking-wider mt-0.5">Total</p>
                   </div>
                 </div>
@@ -203,24 +206,24 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
                 <div className="grid grid-cols-3 gap-2 bg-slate-900/40 rounded-md p-2 border border-slate-700/50">
                   <div className="px-1">
                     <p className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">IVA</p>
-                    <p className="text-slate-200 text-xs font-medium tracking-tight">{formatCurrency(t.iva || 0)}</p>
+                    <p className="text-slate-200 text-xs font-medium tracking-tight">{formatCurrency(mapMoney(t.collectedIva ?? t.iva ?? 0))}</p>
                   </div>
                   <div className="px-1 border-l border-slate-700/50">
                     <p className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">ISLR</p>
-                    <p className="text-slate-200 text-xs font-medium tracking-tight">{formatCurrency(t.islr || 0)}</p>
+                    <p className="text-slate-200 text-xs font-medium tracking-tight">{formatCurrency(mapMoney(t.collectedIslr ?? t.islr ?? 0))}</p>
                   </div>
                   <div className="px-1 border-l border-slate-700/50">
                     <p className="text-slate-500 text-[9px] uppercase tracking-wider mb-0.5">Multas</p>
-                    <p className="text-orange-400 text-xs font-medium tracking-tight">{formatCurrency(t.multas || 0)}</p>
+                    <p className="text-orange-400 text-xs font-medium tracking-tight">{formatCurrency(mapMoney(t.collectedFines ?? t.multas ?? 0))}</p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-slate-400 text-[10px] pt-1 border-t border-slate-700/30">
                   <div className="flex items-center gap-1.5">
-                    <MapPin className="w-3 h-3 text-slate-500" /> {t.location || 'N/A'}
+                    <MapPin className="w-3 h-3 text-slate-500" /> {t.address || t.location || 'N/A'}
                   </div>
                   <div className="flex items-center gap-1.5">
-                    <Calendar className="w-3 h-3 text-slate-500" /> {t.date || 'N/A'}
+                    <Calendar className="w-3 h-3 text-slate-500" /> {t.emition_date ? new Date(t.emition_date).toLocaleDateString('es-VE') : (t.date || 'N/A')}
                   </div>
                 </div>
               </div>
