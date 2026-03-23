@@ -3,35 +3,47 @@ import { Card } from '@/components/UI/card';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
+import { decimalToNumber } from '@/components/utils/number.utils';
 
 interface FiscalReviewPage2Props {
   fiscalInfo: FiscalInfoExtended;
+  fiscalTaxpayerCompliance?: {
+    high?: any[];
+    medium?: any[];
+    low?: any[];
+  } | null;
+  fiscalCollectAnalisis?: any;
 }
 
-export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2Props) {
-  const highCompliance = [
-    { id: '1', name: 'Taller Hermanos Contreras, CA', rif: 'J295609213', value: 83.33, total: 0 }
-  ];
-  
-  const mediumCompliance = [
-    { id: '1', name: 'INVERSIONES TAJOMAR C.A.', rif: 'J001335072', value: 70.83, total: 0 },
-    { id: '2', name: 'CORPORACION MAXIPLAST 22 C.A', rif: 'J405400211', value: 64.57, total: 0 },
-    { id: '3', name: 'DISTRIBUIDORA J.A, C.A', rif: 'J408821211', value: 45.10, total: 0 },
-    { id: '4', name: 'MUNDO DEPORTIVO, C.A', rif: 'J304412311', value: 38.50, total: 0 }
-  ];
+export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompliance, fiscalCollectAnalisis }: FiscalReviewPage2Props) {
+  const highCompliance = (fiscalTaxpayerCompliance?.high ?? []).map((t: any) => ({
+    id: t.id ?? t.taxpayerId ?? '',
+    name: t.name ?? t.businessName ?? t.razonSocial ?? 'N/A',
+    rif: t.rif ?? 'N/A',
+    value: decimalToNumber(t.complianceRate ?? t.compliance ?? 0),
+    total: decimalToNumber(t.totalCollected ?? t.total ?? 0),
+  }));
 
-  const lowCompliance = [
-    { id: '1', name: 'CANDELARIA ME, C.A', rif: 'J504759678', value: 49.88, total: 0 },
-    { id: '2', name: 'IMPORPRODUCTOS J.M, C.A', rif: 'J407021234', value: 37.80, total: 0 },
-    { id: '3', name: 'COMERCIALIZADORA AAA, C.A', rif: 'J509923112', value: 20.10, total: 0 },
-    { id: '4', name: 'INVERSIONES EL SOL, C.A', rif: 'J202231211', value: 15.00, total: 0 },
-    { id: '5', name: 'SERVICIOS MULTIPLES, C.A', rif: 'J305541211', value: 5.50, total: 0 }
-  ];
+  const mediumCompliance = (fiscalTaxpayerCompliance?.medium ?? []).map((t: any) => ({
+    id: t.id ?? t.taxpayerId ?? '',
+    name: t.name ?? t.businessName ?? t.razonSocial ?? 'N/A',
+    rif: t.rif ?? 'N/A',
+    value: decimalToNumber(t.complianceRate ?? t.compliance ?? 0),
+    total: decimalToNumber(t.totalCollected ?? t.total ?? 0),
+  }));
+
+  const lowCompliance = (fiscalTaxpayerCompliance?.low ?? []).map((t: any) => ({
+    id: t.id ?? t.taxpayerId ?? '',
+    name: t.name ?? t.businessName ?? t.razonSocial ?? 'N/A',
+    rif: t.rif ?? 'N/A',
+    value: decimalToNumber(t.complianceRate ?? t.compliance ?? 0),
+    total: decimalToNumber(t.totalCollected ?? t.total ?? 0),
+  }));
 
   const chartData = [
-    { name: 'Bajo (<33%)', value: 67, color: '#ef4444' },
-    { name: 'Medio (34-66%)', value: 4, color: '#eab308' },
-    { name: 'Alto (>67%)', value: 1, color: '#22c55e' }
+    { name: 'Bajo (<33%)', value: lowCompliance.length, color: '#ef4444' },
+    { name: 'Medio (34-66%)', value: mediumCompliance.length, color: '#eab308' },
+    { name: 'Alto (>67%)', value: highCompliance.length, color: '#22c55e' }
   ];
 
   const formatCurrency = (val: number) => {
@@ -63,7 +75,11 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
           </div>
         </div>
         <div className="flex-1 overflow-y-auto p-3 space-y-2.5 custom-scrollbar">
-          {items.map((t, idx) => (
+          {items.length === 0 ? (
+            <div className="flex items-center justify-center h-full text-slate-500 text-sm italic">
+              Sin contribuyentes en esta clasificación.
+            </div>
+          ) : items.map((t, idx) => (
             <div key={idx} className={`rounded-lg p-3 border ${theme.border} bg-slate-800 transition-colors hover:bg-slate-700/80`}>
               <div className="flex justify-between items-start mb-3">
                 <div className="flex gap-3">
@@ -76,7 +92,7 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo }: FiscalReviewPage2P
                   </div>
                 </div>
                 <div className="text-right shrink-0">
-                  <p className={`${theme.text} font-bold text-sm`}>{t.value}%</p>
+                  <p className={`${theme.text} font-bold text-sm`}>{Number(t.value).toFixed(1)}%</p>
                   <p className="text-slate-400 text-[9px]">Cumplimiento</p>
                 </div>
               </div>

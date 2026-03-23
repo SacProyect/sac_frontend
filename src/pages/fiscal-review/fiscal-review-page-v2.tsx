@@ -23,10 +23,27 @@ import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-rev
 /**
  * Vista de detalles de un fiscal específico (3 páginas)
  */
-function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () => void }) {
+function FiscalDetailsView({
+  fiscalId,
+  onBack,
+  initialYear,
+}: {
+  fiscalId: string;
+  onBack: () => void;
+  initialYear: number;
+}) {
   const [page, setPage] = useState(1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-  const { loading, fiscalInfo, fiscalPerformance, fiscalTaxpayers, fiscalMonthlyCollect, fiscalComplianceByProcess } = useFiscalStats(selectedYear, fiscalId);
+  const [selectedYear, setSelectedYear] = useState(initialYear);
+  const {
+    loading,
+    fiscalInfo,
+    fiscalPerformance,
+    fiscalTaxpayers,
+    fiscalMonthlyCollect,
+    fiscalComplianceByProcess,
+    fiscalTaxpayerCompliance,
+    fiscalCollectAnalisis,
+  } = useFiscalStats(selectedYear, fiscalId);
 
   if (loading || !fiscalInfo) return <LoadingState message="Cargando información del fiscal..." />;
 
@@ -89,7 +106,7 @@ function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () 
        {/* Render current page */}
        <div className="min-h-[400px]">
         {page === 1 && <FiscalReviewPage1Resumen fiscalInfo={fiscalInfo} performance={fiscalPerformance} selectedYear={selectedYear} setSelectedYear={setSelectedYear} fiscalTaxpayers={fiscalTaxpayers} fiscalMonthlyCollect={fiscalMonthlyCollect} fiscalComplianceByProcess={fiscalComplianceByProcess} />}
-         {page === 2 && <FiscalReviewPage2Cumplimiento fiscalInfo={fiscalInfo} />}
+        {page === 2 && <FiscalReviewPage2Cumplimiento fiscalInfo={fiscalInfo} fiscalTaxpayerCompliance={fiscalTaxpayerCompliance} fiscalCollectAnalisis={fiscalCollectAnalisis} />}
          {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} />}
        </div>
 
@@ -144,7 +161,7 @@ export default function FiscalReviewPageV2() {
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [selectedFiscalId, setSelectedFiscalId] = useState<string | null>(null);
-  const currentYear = new Date().getFullYear();
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
 
   // Paginación del servidor
   const [currentPage, setCurrentPage] = useState(1);
@@ -157,7 +174,7 @@ export default function FiscalReviewPageV2() {
   // Resetear página al buscar
   useEffect(() => {
     setCurrentPage(1);
-  }, [debouncedSearch]);
+  }, [debouncedSearch, selectedYear]);
 
   useEffect(() => {
     if (!user) {
@@ -169,7 +186,7 @@ export default function FiscalReviewPageV2() {
       try {
         setLoading(true);
         // Always request fiscals filtered by active year to avoid IDs without cases.
-        const response = await getFiscalsForReview(currentYear, currentPage, limit);
+        const response = await getFiscalsForReview(selectedYear, currentPage, limit);
         setFiscalArray(response.data || []);
         setTotal(response.total ?? 0);
         setTotalPages(response.totalPages ?? 1);
@@ -182,7 +199,7 @@ export default function FiscalReviewPageV2() {
     };
 
     fetchFiscals();
-  }, [user, navigate, currentPage, currentYear]);
+  }, [user, navigate, currentPage, selectedYear]);
 
   // Filtro local solo para búsqueda instantánea
   // IMPORTANTE: debe estar ANTES de cualquier return condicional (Reglas de Hooks)
@@ -205,7 +222,13 @@ export default function FiscalReviewPageV2() {
   }
 
   if (selectedFiscalId) {
-    return <FiscalDetailsView fiscalId={selectedFiscalId} onBack={() => setSelectedFiscalId(null)} />;
+    return (
+      <FiscalDetailsView
+        fiscalId={selectedFiscalId}
+        onBack={() => setSelectedFiscalId(null)}
+        initialYear={selectedYear}
+      />
+    );
   }
 
   return (
@@ -217,14 +240,27 @@ export default function FiscalReviewPageV2() {
 
       {/* Filtros */}
       <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Buscar por nombre, cédula, grupo o supervisor..."
-            value={searchValue}
-            onChange={(e) => setSearchValue(e.target.value)}
-            className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
-          />
+        <div className="flex flex-col md:flex-row items-start md:items-center gap-3">
+          <div className="flex items-center gap-2 w-full">
+            <Search className="h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Buscar por nombre, cédula, grupo o supervisor..."
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
+              className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+            />
+          </div>
+          <select
+            value={selectedYear}
+            onChange={(e) => setSelectedYear(Number(e.target.value))}
+            className="h-10 min-w-[120px] rounded-md border border-slate-600 bg-slate-700 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            {[2024, 2025, 2026].map((year) => (
+              <option key={year} value={year}>
+                Año {year}
+              </option>
+            ))}
+          </select>
         </div>
       </Card>
 
