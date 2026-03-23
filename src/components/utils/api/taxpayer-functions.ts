@@ -80,7 +80,11 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
-	  const response = await apiConnection.post(`/taxpayer`, taxpayerData);
+	  const response = await apiConnection.post(`/taxpayer`, taxpayerData, {
+		headers: {
+			"Content-Type": "multipart/form-data"
+		}
+	  });
 	  if (response.status === 200 || response.status === 201) return { success: true, data: response.data };
 	  return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
 	} catch (error: any) {
