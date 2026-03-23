@@ -9,6 +9,7 @@ import {
   getFiscalMonthlyCollect,
   getFiscalMonthlyPerformance,
   getFiscalComplianceByProcess,
+  getFiscalTaxpayerCompliance,
 } from '@/components/utils/api/report-functions';
 import { decimalToNumber } from '@/components/utils/number.utils';
 import toast from 'react-hot-toast';
@@ -81,6 +82,8 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
   const [fiscalTaxpayers, setFiscalTaxpayers] = useState<any[]>([]);
   const [fiscalMonthlyCollect, setFiscalMonthlyCollect] = useState<any>(null);
   const [fiscalComplianceByProcess, setFiscalComplianceByProcess] = useState<any>(null);
+  const [fiscalTaxpayerCompliance, setFiscalTaxpayerCompliance] = useState<any>(null);
+  const [fiscalCollectAnalisis, setFiscalCollectAnalisis] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -245,6 +248,14 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
       console.warn(e);
       setFiscalComplianceByProcess(null);
     }
+
+    try {
+      const taxpayerCompliance = await getFiscalTaxpayerCompliance(fiscalId, year);
+      setFiscalTaxpayerCompliance(taxpayerCompliance);
+    } catch (e) {
+      console.warn(e);
+      setFiscalTaxpayerCompliance({ high: [], medium: [], low: [] });
+    }
   };
 
   return {
@@ -262,5 +273,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
     fiscalTaxpayers,
     fiscalMonthlyCollect,
     fiscalComplianceByProcess,
+    fiscalTaxpayerCompliance,
+    fiscalCollectAnalisis,
   };
 }
