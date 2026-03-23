@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
 import { Badge } from '@/components/UI/badge';
 import { Trophy, TrendingUp } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/UI/dialog';
-import { FiscalLeaderboardData } from '@/hooks/useFiscalStats';
+import { FiscalLeaderboardData } from '@/hooks/use-fiscal-stats';
 
 interface FiscalLeaderboardV2Props {
   data: FiscalLeaderboardData[];
@@ -54,7 +54,7 @@ export function FiscalLeaderboardV2({ data }: FiscalLeaderboardV2Props) {
               onClick={() => {
                 setSelectedFiscal(fiscal.id);
                 // También navegar a la página de estadísticas individuales
-                navigate(`/v2/stats/fiscal/${fiscal.id}`);
+                navigate(`/stats/fiscal/${fiscal.id}`);
               }}
             >
               <div className="flex items-center gap-4">
@@ -96,7 +96,7 @@ export function FiscalLeaderboardV2({ data }: FiscalLeaderboardV2Props) {
         <DialogContent className="bg-slate-800 border-slate-700 max-w-[calc(100%-2rem)] sm:max-w-2xl transition-all duration-200 max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader>
             <DialogTitle className="text-white">
-              Estadísticas del Fiscal - {selectedData?.nombre}
+              Estadísticas del Fiscal - {selectedData?.nombre || 'N/A'}
             </DialogTitle>
           </DialogHeader>
           {selectedData && (

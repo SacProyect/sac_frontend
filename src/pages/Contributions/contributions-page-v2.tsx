@@ -1,15 +1,12 @@
-import { Card } from '@/components/UI/card';
-import { PageHeader } from '@/components/UI/v2';
-import ContributionsFilter from '@/components/contributions/ContributionsFilter';
-import ContributionsHeader from '@/components/contributions/ContributionsHeader';
-import ContributionsStatistics from '@/components/contributions/ContributionsStatistics';
-import { GroupData } from '@/components/contributions/ContributionTypes';
-import { getContributions } from '@/components/utils/api/reportFunctions';
-import { useAuth } from '@/hooks/useAuth';
+import { LoadingState, PageHeader } from '@/components/UI/v2';
+import ContributionsFilter from '@/components/contributions/contributions-filter';
+import ContributionsStatistics from '@/components/contributions/contributions-statistics';
+import { GroupData } from '@/components/contributions/contribution-types';
+import { getContributions } from '@/components/utils/api/report-functions';
+import { useAuth } from '@/hooks/use-auth';
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { Sheet, SheetContent } from '@/components/UI/sheet';
 
 /**
  * ContributionsPageV2 - Página de Contribuciones con diseño Shadcn UI v2.0
@@ -19,11 +16,10 @@ export default function ContributionsPageV2() {
   const navigate = useNavigate();
   const [groupData, setGroupData] = useState<GroupData[]>([]);
   const [selectedGroup, setSelectedGroup] = useState<string>('');
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [startDate, setStartDate] = useState('2025-01-01');
+  const [endDate, setEndDate] = useState('2025-12-31');
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [statisticsPanelOpen, setStatisticsPanelOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -34,19 +30,15 @@ export default function ContributionsPageV2() {
     const shouldFetch = user.role === 'ADMIN' || user.role === 'COORDINATOR';
     const hasValidDates = startDate && endDate;
 
-    if (!shouldFetch || (user.role === 'ADMIN' && !hasValidDates)) return;
-
-    // Feedback UX: mostrar loading en cuanto cambia filtro (año, mes o supervisor)
-    setLoading(true);
+    if (!shouldFetch || !hasValidDates) return;
 
     const fetchGroups = async () => {
       try {
-        const query: Record<string, string> = {};
-
-        if (hasValidDates) {
-          query.startDate = startDate;
-          query.endDate = endDate;
-        }
+        setLoading(true);
+        const query: Record<string, string> = {
+          startDate,
+          endDate
+        };
 
         if (selectedSupervisorId) {
           query.supervisorId = selectedSupervisorId;
@@ -60,6 +52,7 @@ export default function ContributionsPageV2() {
 
           if (!groupId) {
             toast.error('No se encontró el grupo coordinado para este usuario.');
+            setLoading(false);
             return;
           }
           query.id = groupId;
@@ -81,56 +74,35 @@ export default function ContributionsPageV2() {
   }, [startDate, endDate, selectedSupervisorId, user, navigate]);
 
   return (
-    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+    <div className="space-y-8 w-full animate-in fade-in duration-700">
       <PageHeader
-        title="Estadísticas por Coordinación"
-        description="Consulta y análisis de contribuciones por grupo"
+        title="Contribuciones"
+        description="Seguimiento detallado de recaudación por fiscal y coordinación"
       />
-      <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <ContributionsHeader />
+      
+      <div className="space-y-10">
         <ContributionsFilter
           groupData={groupData}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
-          setSelectedGroup={(id) => {
-            setSelectedGroup(id);
-            if (id) setStatisticsPanelOpen(true);
-          }}
+          setSelectedGroup={setSelectedGroup}
           setSelectedSupervisorId={setSelectedSupervisorId}
         />
-      </Card>
-
-      {/* Panel de estadísticas: se abre al seleccionar una coordinación, se cierra con la X */}
-      <Sheet
-        open={statisticsPanelOpen && !!selectedGroup}
-        onOpenChange={(open) => {
-          if (!open) {
-            setStatisticsPanelOpen(false);
-            setSelectedGroup('');
-            setSelectedSupervisorId(null);
-          }
-        }}
-      >
-        <SheetContent
-          side="right"
-          className="w-full overflow-y-auto border-slate-700 bg-white sm:max-w-4xl"
-        >
-          <div className="pr-8 pt-2">
+        
+        <div className="pt-4">
+          {loading ? (
+            <LoadingState message="Cargando métricas de contribución..." />
+          ) : (
             <ContributionsStatistics
               groupData={groupData}
               selectedGroup={selectedGroup}
               selectedSupervisorId={selectedSupervisorId}
               startDate={startDate}
               endDate={endDate}
-              onClearSelection={() => {
-                setStatisticsPanelOpen(false);
-                setSelectedGroup('');
-                setSelectedSupervisorId(null);
-              }}
             />
-          </div>
-        </SheetContent>
-      </Sheet>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

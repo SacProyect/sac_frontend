@@ -1,23 +1,23 @@
-import { useRef } from 'react'
-import { useAuth } from '../../hooks/useAuth';
+import { useMemo, useRef } from 'react'
+import { useAuth } from '../../hooks/use-auth';
 import { Control, useForm } from 'react-hook-form';
-import TextInput from '../UI/TextInput';
-import FormContainer from '../UI/FormContainer';
+import TextInput from '../UI/text-input';
+import FormContainer from '../UI/form-container';
 import { Form, Label, Button } from 'react-aria-components'
-import DateInputUI from '../UI/DateInputUI';
-import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
-import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import DateInputUI from '../UI/date-input-ui';
+import TaxpayerCombobox from '../UI/taxpayer-combobox';
+import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import SelectInput from '../UI/SelectInput';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import SelectInput from '../UI/select-input';
+import { useCallback, useEffect, useState } from 'react';
 import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
 import { parseDate, CalendarDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
-import { IvaReportFormData } from '../iva/IvaForm';
-import { IslrReportFormData } from '../ISLR/IslrForm';
-import TaxpayerList from '../UI/TaxpayerList';
+import { IvaReportFormData } from '../iva/iva-form';
+import { IslrReportFormData } from '../ISLR/islr-form';
+import TaxpayerList from '../UI/taxpayer-list';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 
 
 
@@ -193,6 +193,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
             const filteredPayments = auxPayments.filter((event: Event) => {
                 if (type === "payment_compromise") {
+                    if (!event.expires_at) return false;
                     const currentDate = new Date();
 
                     const expirationDate = new Date(event.expires_at);

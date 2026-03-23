@@ -1,13 +1,12 @@
 import { useMemo, useEffect, useState } from 'react';
-import TaxpayerTable from '../../components/Taxpayer/TaxpayerTable';
-import { useAuth } from '../../hooks/useAuth';
+import TaxpayerTable from '@/components/Taxpayer/taxpayer-table';
+import { useAuth } from '@/hooks/use-auth';
 import { Input, Label, SearchField } from 'react-aria-components';
 import { Controller, useForm } from 'react-hook-form';
-import { useFilter } from 'react-aria';
 import { useNavigate } from 'react-router-dom';
 import { Taxpayer } from '@/types/taxpayer';
-import { useDebounce } from '@/hooks/useDebounce';
-import { getTaxpayers } from '@/components/utils/api/taxpayerFunctions';
+import { useDebounce } from '@/hooks/use-debounce';
+import { getTaxpayers } from '@/components/utils/api/taxpayer-functions';
 import toast from 'react-hot-toast';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 import { 
@@ -27,30 +26,21 @@ import { Card } from '@/components/UI/card';
 import { Badge } from '@/components/UI/badge';
 
 function HomePage() {
-    const { user, refreshUser } = useAuth();
+    const { user } = useAuth();
     const navigate = useNavigate();
-    const [visibleCount, setVisibleCount] = useState(25);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [limit] = useState(50);
     const [loading, setLoading] = useState(false);
 
-
-
-
     if (!user) {
         navigate("/login");
         return null;
     }
 
-    // useEffect(() => {
-    //     refreshUser();
-    // }, []);
-
     const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
 
-    const { contains } = useFilter({ sensitivity: "base" });
     const { control, watch } = useForm({
         defaultValues: {
             search: '',
@@ -94,37 +84,14 @@ function HomePage() {
         // selectedYear es un string (por ejemplo "2025" o "Todos")
     }, [currentPage, limit, selectedYear, debouncedSearch]);
 
-    const filteredItems = useMemo(() => {
-        const term = debouncedSearch.trim();
-
-        const result = taxpayers
-            .map(item => {
-                const officerName = item.user?.name || "Desconocido";
-
-                return {
-                    ...item,
-                    contractTypeLabel: item.contract_type === "ORDINARY" ? 'ORDINARIO' : 'ESPECIAL',
-                    address: item.address || 'N/A',
-                    officerName,
-                };
-            })
-            .filter(item => {
-                // ✅ CORRECCIÓN CRÍTICA 2026: Usar UTC para obtener el año fiscal correcto
-                // El problema era que getFullYear() usaba la zona horaria local, causando que
-                // fechas como "2025-12-31T23:00:00.000Z" se interpretaran como 2025 en lugar de 2026
-                const emitionDate = item.emition_date ? new Date(item.emition_date) : null;
-                const itemYear = emitionDate ? emitionDate.getUTCFullYear().toString() : '';
-
-                const yearMatches = selectedYear === 'Todos' || itemYear === selectedYear;
-                if (!yearMatches) return false;
-
-                if (!term) return true;
-
-                const haystack = `${item.rif} ${item.process} ${item.name} ${item.address} ${item.user.name} ${item.providenceNum}`.toLowerCase();
-                return contains(haystack, term);
-            });
-        return result;
-    }, [taxpayers, debouncedSearch, user, contains, selectedYear]);
+    // El filtrado por año y búsqueda lo maneja el backend via query params.
+    // Aquí solo normalizamos los datos para la tabla.
+    const tableRows = useMemo(() => {
+        return taxpayers.map(item => ({
+            ...item,
+            address: item.address || 'N/A',
+        }));
+    }, [taxpayers]);
 
     const years = useMemo(() => {
         const currentYear = new Date().getFullYear();
@@ -135,9 +102,6 @@ function HomePage() {
 
 
     useEffect(() => {
-        // reset cuando se filtra o cambia de año
-        setVisibleCount(25);
-
         // Al cambiar de año o filtro de búsqueda, volvemos a la primera página
         setCurrentPage(1);
     }, [debouncedSearch, selectedYear]);
@@ -306,9 +270,7 @@ function HomePage() {
                         </div>
                     ) : (
                         <div className="p-0 overflow-x-auto custom-scrollbar">
-                            <TaxpayerTable propRows={filteredItems} visibleCount={visibleCount}
-                                setVisibleCount={setVisibleCount}
-                            />
+                            <TaxpayerTable propRows={tableRows} />
                         </div>
                     )}
                 </div>

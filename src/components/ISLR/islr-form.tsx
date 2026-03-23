@@ -33,7 +33,6 @@ import toast from 'react-hot-toast';
 import { createISLR, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
-import { IvaReportFormData } from '../iva/IvaForm';
 
 // Campos locales del formulario (interacción con el usuario)
 export interface IslrFormFields {

@@ -16,11 +16,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/UI/select';
-import { createTaxpayer } from '@/components/utils/api/taxpayerFunctions';
-import { contract_type, taxpayer_process } from '@/types/taxpayer';
+import { createTaxpayer, getParishList, getTaxpayerCategories } from '@/components/utils/api/taxpayer-functions';
+import { contract_type, Parish, taxpayer_process } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
-import { useCachedFormData, invalidateCache } from '@/hooks/useCachedData';
+import { getOfficers } from '../utils/api/user-functions';
+import { TaxpayerCategories } from '@/types/taxpayer-categories';
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -63,9 +64,30 @@ export function AddContribuyenteModalV2({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // ✅ Usar hook cacheado que carga todos los datos de una vez
-  const { parishes: parishList, categories: taxpayerCategories, officers, loading: dataLoading } = useCachedFormData();
+  const [parishList, setParishList] = useState<Parish[]>([]);
+  const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+  const [officers, setOfficers] = useState<Array<{ id: string; name: string; personId: string }>>([]);
+
+  // Cargar datos necesarios
+  useEffect(() => {
+    if (isOpen) {
+      const loadData = async () => {
+        try {
+          const [parishRes, categoriesRes, officersRes] = await Promise.all([
+            getParishList(),
+            getTaxpayerCategories(),
+            getOfficers(),
+          ]);
+          if (parishRes?.data) setParishList(parishRes.data);
+          if (categoriesRes?.data) setTaxpayerCategories(categoriesRes.data);
+          if (officersRes) setOfficers(officersRes);
+        } catch (error) {
+          console.error('Error cargando datos:', error);
+        }
+      };
+      loadData();
+    }
+  }, [isOpen]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -102,8 +124,8 @@ export function AddContribuyenteModalV2({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
 
     if (!validateForm()) return;
 
@@ -141,10 +163,6 @@ export function AddContribuyenteModalV2({
 
       if (result.success) {
         toast.success('Contribuyente creado exitosamente');
-        
-        // ✅ Invalidar caché de contribuyentes para refrescar listas
-        invalidateCache('taxpayers');
-        
         // Reset form
         setFormData({
           providenceNum: '',

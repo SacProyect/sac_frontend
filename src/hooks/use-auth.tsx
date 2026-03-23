@@ -1,10 +1,10 @@
 import { createContext, useCallback, useContext, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLocalStorage } from "./useLocalStorage";
+import { useLocalStorage } from "./use-local-storage";
 import { useOutlet } from "react-router-dom";
 import { User } from "../types/user";
 import { ReactNode } from "react";
-import apiConnection from "@/components/utils/api/apiConnection";
+import apiConnection from "@/components/utils/api/api-connection";
 
 
 interface AuthContextType {
@@ -35,27 +35,16 @@ const FAKE_ADMIN_USER: User = {
 };
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    // En modo desarrollo, siempre usar usuario fake
     const [storedUser, setStoredUser] = useLocalStorage("user", null);
     const [storedToken, setStoredToken] = useLocalStorage("authToken", null);
-    
-    // Si está en modo desarrollo y no hay usuario, usar el fake
-    const user = DEV_MODE && !storedUser ? FAKE_ADMIN_USER : storedUser;
-    const token = DEV_MODE && !storedToken ? "fake-dev-token" : storedToken;
-    
+    const user = storedUser;
+    const token = storedToken;
+
     const setUser = (newUser: User | null) => {
-        if (DEV_MODE && newUser === FAKE_ADMIN_USER) {
-            // No guardar el usuario fake en localStorage
-            return;
-        }
         setStoredUser(newUser);
     };
-    
+
     const setToken = (newToken: string | null) => {
-        if (DEV_MODE && newToken === "fake-dev-token") {
-            // No guardar el token fake en localStorage
-            return;
-        }
         setStoredToken(newToken);
     };
     
@@ -74,8 +63,6 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     const refreshUser = useCallback(async () => {
-        // En modo desarrollo, no hacer refresh (usuario fake siempre disponible)
-        if (DEV_MODE) return;
         if (!token) return;
         try {
             const resp = await apiConnection.get<{

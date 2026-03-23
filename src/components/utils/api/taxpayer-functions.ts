@@ -1,12 +1,12 @@
-import { apiConnection } from "./apiConnection"
-import { contract_type, Taxpayer, taxpayer_process } from "../../../types/taxpayer";
+import { apiConnection } from "./api-connection"
+import { contract_type, Taxpayer, TaxpayersListResponse, taxpayer_process } from "../../../types/taxpayer";
 import { Event } from "../../../types/event";
-import { NewEvent } from "../../Events/EventForm";
-import { ObservationsForm } from "@/components/observations/ObservationsHeader";
-import { IvaReportFormData } from "@/components/iva/IvaForm";
-import { IslrReportFormData } from "@/components/ISLR/IslrForm";
-import { IVAReports } from "@/types/IvaReports";
-import { ISLRReports } from "@/types/ISLRReports";
+import { NewEvent } from "../../Events/event-form";
+import { ObservationsForm } from "@/components/observations/observations-header";
+import { IvaReportFormData } from "@/components/iva/iva-form";
+import { IslrReportFormData } from "@/components/ISLR/islr-form";
+import { IVAReports } from "@/types/iva-reports";
+import { ISLRReports } from "@/types/islr-reports";
 import Decimal from "decimal.js";
 
 interface TaxpayerData {
@@ -187,22 +187,19 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 /**
  * ✅ CORRECCIÓN 2026: Agregado parámetro opcional de año para filtrar fiscales
  * @param year - Año opcional para filtrar (2025 o 2026). Si no se especifica, retorna todos los fiscales.
- * @param page - Página (default 1)
- * @param limit - Registros por página (default 50)
  */
 export const getFiscalsForReview = async (year?: number, page: number = 1, limit: number = 50) => {
 
 	try {
-		let requestUrl = "/user/get-fiscals-for-review"
+		const params: Record<string, number | string> = { page, limit };
 
-		const params: Record<string, number> = { page, limit };
 		if (year !== undefined) {
 			params.year = year;
 		}
 
-		const response = await apiConnection.get(requestUrl, { params });
+		const response = await apiConnection.get("/user/get-fiscals-for-review", { params });
 
-		return response;
+		return response.data;
 
 	} catch (e) {
 		console.error(e);
@@ -230,7 +227,7 @@ export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50,
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se encontraron contribuyentes")
+		throw new Error("No se encontraron contribuyentes");
 	}
 }
 

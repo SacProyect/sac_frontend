@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Event } from '@/types/event';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/use-auth';
 import toast from 'react-hot-toast';
-import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
-import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
 import { Taxpayer } from '@/types/taxpayer';
 
 interface EventTableProps {
@@ -27,7 +26,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   const [editValues, setEditValues] = useState<Partial<Event>>({});
   const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
   const menuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-  const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
+  const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
   const [pendingStatusChange, setPendingStatusChange] = useState<{
     id: string;
     newStatus: "paid" | "not_paid";
@@ -133,36 +132,18 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   };
 
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
-  const taxpayerArray = useMemo(
-    () => [...(firstPageTaxpayers || []), ...additionalPages],
-    [firstPageTaxpayers, additionalPages]
-  );
-  const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
-
   useEffect(() => {
-    if (currentPage <= 1) return;
-    const fetchPage = async () => {
+    const fetchTaxpayers = async () => {
       try {
-        const response = await getTaxpayerForEvents(currentPage, 50, undefined);
-        const data = response?.data?.data ?? [];
-        setAdditionalPages(prev => (currentPage === 2 ? data : [...prev, ...data]));
+        const response = await getTaxpayerForEvents();
+        setTaxpayerArray(response.data ?? []);
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }
     };
-    fetchPage();
-  }, [currentPage]);
 
-  const loadMoreTaxpayers = async () => {
-    if (!hasMorePages || isLoadingMore) return;
-    setIsLoadingMore(true);
-    setCurrentPage(prev => prev + 1);
-    setIsLoadingMore(false);
-  };
+    fetchTaxpayers();
+  }, []);
 
 
   return (

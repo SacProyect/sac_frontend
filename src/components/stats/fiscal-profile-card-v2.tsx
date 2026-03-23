@@ -1,17 +1,20 @@
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import { Card } from '@/components/UI/card';
 import { Badge } from '@/components/UI/badge';
-import { FiscalInfoExtended } from '@/types/fiscalStats';
+import { FiscalInfoExtended } from '@/types/fiscal-stats';
 
 interface FiscalProfileCardV2Props {
   fiscal: FiscalInfoExtended;
 }
 
 export function FiscalProfileCardV2({ fiscal }: FiscalProfileCardV2Props) {
-  const completionRate = fiscal.completionRate || 
-    (fiscal.totalAssigned > 0 ? Math.round((fiscal.completed / fiscal.totalAssigned) * 100) : 0);
+  const totalAssigned = fiscal.totalAssigned ?? fiscal.totalAsignados ?? 0;
+  const completed = fiscal.completed ?? fiscal.completados ?? 0;
+  
+  const completionRate = fiscal.completionRate ?? 
+    (totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0);
 
-  const initials = fiscal.name
+  const initials = fiscal.fiscalName
     ?.split(' ')
     .map((n: string) => n[0])
     .join('')
@@ -26,7 +29,7 @@ export function FiscalProfileCardV2({ fiscal }: FiscalProfileCardV2Props) {
             <AvatarFallback className="text-white font-bold text-lg">{initials}</AvatarFallback>
           </Avatar>
           <div className="flex-1">
-            <h2 className="text-2xl font-bold text-white">{fiscal.name || fiscal.nombre || 'N/A'}</h2>
+            <h2 className="text-2xl font-bold text-white">{fiscal.fiscalName || fiscal.name || fiscal.nombre || 'N/A'}</h2>
             <p className="text-slate-400 text-sm mt-1">ID: {fiscal.id || fiscal.fiscalId || 'N/A'}</p>
             <div className="flex gap-2 mt-3">
               <Badge className="bg-blue-600 text-white">

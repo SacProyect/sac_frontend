@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
-import { getTaxpayerCensus } from '@/components/utils/api/taxpayerCensusFunctions';
-import { deleteTaxpayerCensus } from '@/components/utils/api/taxpayerCensusFunctions';
-import type { TaxpayerCensus } from '@/types/taxpayerCensus';
+import { getTaxpayerCensus } from '@/components/utils/api/taxpayer-census-functions';
+import { deleteTaxpayerCensus } from '@/components/utils/api/taxpayer-census-functions';
+import type { TaxpayerCensus } from '@/types/taxpayer-census';
 import { Card } from '@/components/UI/card';
 import { Input } from '@/components/UI/input';
 import {
@@ -29,8 +29,8 @@ import {
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
 import { MoreHorizontal, Search, Trash2 } from 'lucide-react';
-import { useAuth } from '@/hooks/useAuth';
-import { useDebounce } from '@/hooks/useDebounce';
+import { useAuth } from '@/hooks/use-auth';
+import { useDebounce } from '@/hooks/use-debounce';
 import { LoadingState, EmptyState, PageHeader } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 

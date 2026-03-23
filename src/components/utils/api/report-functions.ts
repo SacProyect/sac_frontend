@@ -1,4 +1,3 @@
-import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./api-connection";
 import { GroupData } from "@/components/contributions/contribution-types";
 import { GroupRecordsApiResponse } from "@/types/group-records";

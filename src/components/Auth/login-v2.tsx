@@ -19,7 +19,7 @@ export default function LoginV2() {
   const navigate = useNavigate();
   const { login, user } = useAuth()!;
   const location = useLocation();
-  const from = location.state?.from?.pathname || "/v2/admin";
+  const from = location.state?.from?.pathname || "/admin";
   
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
