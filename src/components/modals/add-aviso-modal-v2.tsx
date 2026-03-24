@@ -20,7 +20,6 @@ import { createEvent, getTaxpayers } from '@/components/utils/api/taxpayer-funct
 import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
-import { useCachedTaxpayers } from '@/hooks/useCachedData';
 
 interface AddAvisoModalV2Props {
   isOpen: boolean;
@@ -36,6 +35,7 @@ export interface AvisoFormData {
 }
 
 export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2Props) {
+  const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
   const [formData, setFormData] = useState<AvisoFormData>({
     taxpayerId: '',
     date: '',

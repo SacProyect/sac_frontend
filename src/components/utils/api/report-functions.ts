@@ -46,20 +46,19 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 	}
 }
 
-export const getIslrReports = async (taxpayerId: string) => {
+// export const getIslrReports = async (taxpayerId: string) => {
+// 	try {
+// 		let requestURL = `taxpayer/get-islr`;
 
-	try {
-		let requestURL = `taxpayer/get-islr`;
+// 		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
 
-		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
-
-		const response = await apiConnection.get(requestURL);
-		return response;
-	} catch (e) {
-		console.error(e);
-		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
-	}
-}
+// 		const response = await apiConnection.get(requestURL);
+// 		return response;
+// 	} catch (e) {
+// 		console.error(e);
+// 		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
+// 	}
+// }
 
 export const getBestSupervisors = async (year?: number) => {
 	try {

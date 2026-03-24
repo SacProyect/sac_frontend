@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { getOfficers } from '../utils/api/user-functions';
 import { TaxpayerCategories } from '@/types/taxpayer-categories';
 import { useAuth } from '@/hooks/use-auth';
+import { invalidateCache } from '@/hooks/useCachedData';
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -533,7 +534,7 @@ export function AddContribuyenteModalV2({
                   >
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
+                  <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                     {filteredOfficers.map((officer) => (
                       <SelectItem key={officer.id} value={officer.id}>
                         {officer.name} - C.I.: {officer.personId}

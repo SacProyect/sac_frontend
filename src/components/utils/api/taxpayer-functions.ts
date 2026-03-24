@@ -87,7 +87,6 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
-<<<<<<< HEAD
 		const idempotencyKey = generateIdempotencyKey();
 		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
 			headers: {
@@ -101,28 +100,12 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 		} else {
 			console.error("API ERROR: ", response.status, response.data);
 			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
-=======
-	  const response = await apiConnection.post(`/taxpayer`, taxpayerData, {
-		headers: {
-			"Content-Type": "multipart/form-data"
->>>>>>> mi-fork/main
 		}
-	  });
-	  if (response.status === 200 || response.status === 201) return { success: true, data: response.data };
-	  return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
-	} catch (error: any) {
-	  if (error.response) {
-		const errorData = error.response.data;
-		const msg = typeof errorData?.error === "string"
-		  ? errorData.error
-		  : errorData?.message || "Ocurrió un error.";
-		return { success: false, message: msg };
-	  } else if (error.request) {
-		return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
-	  }
-	  return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo crear el contribuyente.")
 	}
-  };
+}
 
 export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string) => {
 	try {
@@ -200,23 +183,14 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 export const getFiscalsForReview = async (year?: number, page: number = 1, limit: number = 50) => {
 
 	try {
-<<<<<<< HEAD
 		let requestUrl = "/user/get-fiscals-for-review"
 
 		const params: Record<string, number> = { page, limit };
-=======
-		const params: Record<string, number | string> = { page, limit };
-
->>>>>>> mi-fork/main
 		if (year !== undefined) {
 			params.year = year;
 		}
 
-<<<<<<< HEAD
 		const response = await apiConnection.get(requestUrl, { params });
-=======
-		const response = await apiConnection.get("/user/get-fiscals-for-review", { params });
->>>>>>> mi-fork/main
 
 		return response.data;
 

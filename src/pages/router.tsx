@@ -72,6 +72,7 @@ const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
 const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
+const AuditTrailPageV2 = lazy(() => import("@/pages/audit/audit-trail-page-v2"));
 
 type LoaderData = {
     events: Event[],
