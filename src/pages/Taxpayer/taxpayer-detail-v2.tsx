@@ -70,11 +70,11 @@ export default function TaxpayerDetailV2() {
     user.role === "ADMIN" || (matchedTaxpayer && matchedTaxpayer.officerId === user.id);
 
   const quickActions = [
-    { name: 'Aviso', path: `/v2/warning/${taxpayer}`, icon: Bell, color: 'bg-blue-600 hover:bg-blue-700' },
-    { name: 'Multa', path: `/v2/fine/${taxpayer}`, icon: AlertTriangle, color: 'bg-red-600 hover:bg-red-700' },
-    { name: 'Pago', path: `/v2/payment/${taxpayer}`, icon: DollarSign, color: 'bg-green-600 hover:bg-green-700' },
-    { name: 'Compromiso de pago', path: `/v2/payment_compromise/${taxpayer}`, icon: FileText, color: 'bg-purple-600 hover:bg-purple-700' },
-    { name: 'Observaciones', path: `/v2/observations/${taxpayer}`, icon: Eye, color: 'bg-slate-600 hover:bg-slate-700' },
+    { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: 'bg-blue-600 hover:bg-blue-700' },
+    { name: 'Multa', path: `/fine/${taxpayer}`, icon: AlertTriangle, color: 'bg-red-600 hover:bg-red-700' },
+    { name: 'Pago', path: `/payment/${taxpayer}`, icon: DollarSign, color: 'bg-green-600 hover:bg-green-700' },
+    { name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`, icon: FileText, color: 'bg-purple-600 hover:bg-purple-700' },
+    // { name: 'Observaciones', path: `/observations/${taxpayer}`, icon: Eye, color: 'bg-slate-600 hover:bg-slate-700' },
   ].filter(opt => canSeeAllOptions || opt.name === 'Observaciones');
 
   return (

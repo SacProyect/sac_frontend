@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -16,11 +16,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/UI/select';
-import { createTaxpayer } from '@/components/utils/api/taxpayerFunctions';
-import { contract_type, taxpayer_process } from '@/types/taxpayer';
+import { createTaxpayer, getParishList, getTaxpayerCategories } from '@/components/utils/api/taxpayer-functions';
+import { contract_type, Parish, taxpayer_process } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
-import { useCachedFormData, invalidateCache } from '@/hooks/useCachedData';
+import { getOfficers } from '../utils/api/user-functions';
+import { TaxpayerCategories } from '@/types/taxpayer-categories';
+import { useAuth } from '@/hooks/use-auth';
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -47,6 +49,8 @@ export function AddContribuyenteModalV2({
   onClose,
   onSuccess,
 }: AddContribuyenteModalV2Props) {
+  const { user } = useAuth();
+
   const [formData, setFormData] = useState<ContribuyenteFormData>({
     providenceNum: '',
     process: taxpayer_process.NA,
@@ -63,9 +67,90 @@ export function AddContribuyenteModalV2({
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // ✅ Usar hook cacheado que carga todos los datos de una vez
-  const { parishes: parishList, categories: taxpayerCategories, officers, loading: dataLoading } = useCachedFormData();
+  const [selectedPdf, setSelectedPdf] = useState<File | null>(null);
+  const [pdfInputKey, setPdfInputKey] = useState(0);
+  const [parishList, setParishList] = useState<Parish[]>([]);
+  const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+  const [officers, setOfficers] = useState<Array<{ id: string; name: string; personId: string }>>([]);
+
+  const allowedOfficerIds = useMemo(() => {
+    if (!user) return null;
+    if (user.role === 'ADMIN') return null; // sin filtro
+
+    if (user.role === 'FISCAL') {
+      return new Set<string>([user.id]);
+    }
+
+    if (user.role === 'SUPERVISOR') {
+      const ids = new Set<string>();
+      // Puede haber casos donde el backend asigne incluso al supervisor.
+      if (user.id) ids.add(user.id);
+      user.supervised_members?.forEach((m) => {
+        if (m?.id) ids.add(m.id);
+      });
+      return ids;
+    }
+
+    // COORDINATOR
+    const ids = new Set<string>();
+    // Backend suele incluir group.members
+    user.group?.members?.forEach((m) => {
+      if (m?.id) ids.add(m.id);
+    });
+    // Backend también suele incluir coordinatedGroup.members (según tu mensaje)
+    const coordinatedGroup = user.coordinatedGroup;
+    if (coordinatedGroup && typeof coordinatedGroup === 'object' && 'members' in coordinatedGroup) {
+      // members pertenece al tipo CoordinatedGroup, pero el union puede no traerlo.
+      (coordinatedGroup as any).members?.forEach((m: any) => {
+        if (m?.id) ids.add(m.id);
+      });
+    }
+    return ids;
+  }, [user]);
+
+  const filteredOfficers = useMemo(() => {
+    if (!allowedOfficerIds) return officers;
+    return officers.filter((o) => allowedOfficerIds.has(o.id));
+  }, [officers, allowedOfficerIds]);
+
+  // Cargar datos necesarios
+  useEffect(() => {
+    if (isOpen) {
+      const loadData = async () => {
+        try {
+          const [parishRes, categoriesRes, officersRes] = await Promise.all([
+            getParishList(),
+            getTaxpayerCategories(),
+            getOfficers(),
+          ]);
+          if (parishRes?.data) setParishList(parishRes.data);
+          if (categoriesRes?.data) setTaxpayerCategories(categoriesRes.data);
+          if (officersRes) setOfficers(officersRes);
+        } catch (error) {
+          console.error('Error cargando datos:', error);
+        }
+      };
+      loadData();
+    }
+  }, [isOpen]);
+
+  // Ajustar "Funcionario" según rol cuando se abra el modal.
+  useEffect(() => {
+    if (!isOpen || !user) return;
+
+    if (user.role === 'FISCAL') {
+      setFormData((prev) => ({ ...prev, officerId: user.id }));
+      return;
+    }
+
+    if (user.role === 'ADMIN') return;
+
+    // COORDINATOR / SUPERVISOR: si el officerId actual no está permitido, toma el primero permitido.
+    if (allowedOfficerIds && formData.officerId && allowedOfficerIds.has(formData.officerId)) return;
+
+    const firstAllowed = filteredOfficers[0]?.id;
+    setFormData((prev) => ({ ...prev, officerId: firstAllowed ?? '' }));
+  }, [allowedOfficerIds, filteredOfficers, formData.officerId, isOpen, user]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -97,13 +182,16 @@ export function AddContribuyenteModalV2({
     if (!formData.officerId) {
       newErrors.officerId = 'Funcionario es requerido';
     }
+    if (!selectedPdf) {
+      newErrors.pdf = 'Debe subir al menos un PDF';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    e?.preventDefault();
 
     if (!validateForm()) return;
 
@@ -133,9 +221,15 @@ export function AddContribuyenteModalV2({
       formDataToSend.append('emition_date', formData.emition_date);
       formDataToSend.append('contract_type', formData.contract_type);
       formDataToSend.append('officerId', formData.officerId);
-      
-      // Nota: El API requiere al menos un PDF, pero por ahora dejamos esto como placeholder
-      // En producción, deberías agregar un campo de upload de PDFs
+
+      // El backend exige al menos 1 PDF.
+      // Como no tenemos el nombre exacto del campo del backend aquí, adjuntamos bajo claves habituales.
+      // Si el backend espera otra clave, ajústala en este punto.
+      if (selectedPdf) {
+        // formDataToSend.append('pdf', selectedPdf);
+        
+        formDataToSend.append('pdfs', selectedPdf);
+      }
 
       const result = await createTaxpayer(formDataToSend);
 
@@ -160,6 +254,8 @@ export function AddContribuyenteModalV2({
           officerId: '',
         });
         setErrors({});
+        setSelectedPdf(null);
+        setPdfInputKey((k) => k + 1);
         onSuccess?.();
         onClose();
       } else {
@@ -177,6 +273,14 @@ export function AddContribuyenteModalV2({
     setFormData((prev) => ({ ...prev, [field]: value }));
     if (errors[field]) {
       setErrors((prev) => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const handlePdfChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+    setSelectedPdf(file);
+    if (errors.pdf) {
+      setErrors((prev) => ({ ...prev, pdf: '' }));
     }
   };
 
@@ -407,29 +511,65 @@ export function AddContribuyenteModalV2({
               <Label htmlFor="officerId" className="text-slate-300 mb-2 block">
                 Funcionario
               </Label>
-              <Select
-                value={formData.officerId}
-                onValueChange={(value) => handleChange('officerId', value)}
-              >
-                <SelectTrigger
-                  className={`w-full bg-slate-700 border-slate-600 text-white ${
-                    errors.officerId ? 'border-red-500' : ''
-                  }`}
+
+              {user?.role === 'FISCAL' ? (
+                <>
+                  <p className="text-slate-200 text-sm bg-slate-700/40 border border-slate-600 rounded-md px-3 py-2">
+                    {user.name} (solo puedes agregarte a ti)
+                  </p>
+                  {errors.officerId && (
+                    <p className="text-red-400 text-xs mt-1">{errors.officerId}</p>
+                  )}
+                </>
+              ) : (
+                <Select
+                  value={formData.officerId}
+                  onValueChange={(value) => handleChange('officerId', value)}
                 >
-                  <SelectValue placeholder="Seleccionar..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
-                  {officers.map((officer) => (
-                    <SelectItem key={officer.id} value={officer.id}>
-                      {officer.name} - C.I.: {officer.personId}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {errors.officerId && (
+                  <SelectTrigger
+                    className={`bg-slate-700 border-slate-600 text-white ${
+                      errors.officerId ? 'border-red-500' : ''
+                    }`}
+                  >
+                    <SelectValue placeholder="Seleccionar..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-700 border-slate-600">
+                    {filteredOfficers.map((officer) => (
+                      <SelectItem key={officer.id} value={officer.id}>
+                        {officer.name} - C.I.: {officer.personId}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+
+              {user?.role !== 'FISCAL' && errors.officerId && (
                 <p className="text-red-400 text-xs mt-1">{errors.officerId}</p>
               )}
             </div>
+          </div>
+
+          {/* Row 7: PDF requerido por el backend */}
+          <div>
+            <Label htmlFor="pdf" className="text-slate-300 mb-2 block">
+              Soporte PDF
+            </Label>
+            <Input
+              key={pdfInputKey}
+              id="pdf"
+              type="file"
+              accept=".pdf,application/pdf"
+              onChange={handlePdfChange}
+              className={`bg-slate-700 border-slate-600 text-white ${
+                errors.pdf ? 'border-red-500' : ''
+              }`}
+            />
+            {selectedPdf && (
+              <p className="text-slate-200 text-xs mt-2 break-words">
+                Archivo seleccionado: <span className="text-white">{selectedPdf.name}</span>
+              </p>
+            )}
+            {errors.pdf && <p className="text-red-400 text-xs mt-1">{errors.pdf}</p>}
           </div>
         </form>
 

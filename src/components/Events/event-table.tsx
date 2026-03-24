@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Event } from '@/types/event';
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/use-auth';
 import toast from 'react-hot-toast';
-import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayerFunctions';
-import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
 import { Taxpayer } from '@/types/taxpayer';
 
 interface EventTableProps {
@@ -147,9 +146,8 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     if (currentPage <= 1) return;
     const fetchPage = async () => {
       try {
-        const response = await getTaxpayerForEvents(currentPage, 50, undefined);
-        const data = response?.data?.data ?? [];
-        setAdditionalPages(prev => (currentPage === 2 ? data : [...prev, ...data]));
+        const response = await getTaxpayerForEvents();
+        setTaxpayerArray(response.data ?? []);
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }

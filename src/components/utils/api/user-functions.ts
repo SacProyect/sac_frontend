@@ -1,5 +1,5 @@
 import axios from "axios";
-import { apiConnection } from "./apiConnection"
+import { apiConnection } from "./api-connection"
 
 export const signIn = async (user: string, password: string) => {
     try {

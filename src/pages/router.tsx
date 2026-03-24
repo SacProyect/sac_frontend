@@ -1,61 +1,77 @@
-import LoginPage from '@/components/Auth/Login'
 import { ProtectedRoute } from '@/components/Navigation/protected-route';
-import HomePage from '@/pages/Home/HomePage';
 import { getPendingPayments, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
-import { createBrowserRouter, LoaderFunctionArgs, RouterProvider } from 'react-router-dom';
+import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout } from '@/hooks/use-auth';
 import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/report-functions';
-import { getOfficers } from '@/components/utils/api/user-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
-import MainLayout from '@/MainLayout';
-import MainLayoutV2 from '@/MainLayoutV2';
+import MainLayoutV2 from '@/main-layout-v2';
 import { lazy, Suspense } from 'react';
-import ContributionsPage from '@/pages/Contributions/ContributionsPage';
-import { IVAReports } from '@/types/IvaReports';
-import ReportModal from '@/components/reports/ReportModal';
-import ReportModalGroups from '@/components/reports/ReportModalGroups';
-import { ISLRReports } from '@/types/ISLRReports';
-import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
-import { PresentationProvider } from '@/components/context/PresentationContext';
+// import ContributionsPage from '@/pages/Contributions/Contributions-Page-V2';
+import { IVAReports } from '@/types/iva-reports';
+// import ReportModal from '@/components/reports/ReportModal';
+// import ReportModalGroups from '@/components/reports/ReportModalGroups';
+import { ISLRReports } from '@/types/islr-reports';
+// import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
+// import { PresentationProvider } from '@/components/context/PresentationContext';
 
-const FinePage = lazy(() => import('@/pages/Events/FinePage'));
-const ComitmentPage = lazy(() => import('@/pages/Events/ComitmentPage'));
-const PaymentPage = lazy(() => import('@/pages/Events/PaymentPage'));
-const NoticePage = lazy(() => import('@/pages/Events/NoticePage'));
-const TaxpayerForm = lazy(() => import('@/components/Taxpayer/TaxpayerForm'));
-const TaxpayerDetail = lazy(() => import('@/pages/Taxpayer/TaxpayerDetail'));
-const ErrorsReport = lazy(() => import("@/components/errors/report/ErrorsReport"));
-const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
-const ObservationsPage = lazy(() => import("@/pages/Observations/ObservationsPage"));
-const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
-const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"));
-const IslrReport = lazy(() => import("@/pages/ISLR/IslrReport"));
-const TaxpayerCensus = lazy(() => import("@/pages/Census/CensusPage"));
-const CensusTable = lazy(() => import("@/pages/CensusTable/CensusTablePage"));
-const IndexIva = lazy(() => import("@/pages/index-iva/IndexIva"));
-const FiscalStats = lazy(() => import("@/pages/fiscal-stats/FiscalStatsPage"));
-const AdminPageV2 = lazy(() => import("@/pages/Admin/AdminPageV2"));
-const SettingsPageV2 = lazy(() => import("@/pages/Settings/SettingsPageV2"));
-const StatsDashboardV2 = lazy(() => import("@/pages/stats/StatsDashboardV2"));
-const FiscalStatsDashboardV2 = lazy(() => import("@/pages/stats/FiscalStatsDashboardV2"));
-const CensusTablePageV2 = lazy(() => import("@/pages/CensusTable/CensusTablePageV2"));
-const FiscalReviewPageV2 = lazy(() => import("@/pages/fiscal-review/FiscalReviewPageV2"));
-const ObservationsPageV2 = lazy(() => import("@/pages/Observations/ObservationsPageV2"));
-const TaxpayerDetailV2 = lazy(() => import("@/pages/Taxpayer/TaxpayerDetailV2"));
-const FinePageV2 = lazy(() => import("@/pages/Events/FinePageV2"));
-const NoticePageV2 = lazy(() => import("@/pages/Events/NoticePageV2"));
-const PaymentPageV2 = lazy(() => import("@/pages/Events/PaymentPageV2"));
-const ComitmentPageV2 = lazy(() => import("@/pages/Events/ComitmentPageV2"));
-const ReportsPageV2 = lazy(() => import("@/pages/reports/ReportsPageV2"));
-const ContributionsPageV2 = lazy(() => import("@/pages/Contributions/ContributionsPageV2"));
-const IvaReportV2 = lazy(() => import("@/pages/iva/IvaReportV2"));
-const IslrReportV2 = lazy(() => import("@/pages/ISLR/IslrReportV2"));
-const IndexIvaV2 = lazy(() => import("@/pages/index-iva/IndexIvaV2"));
-const ErrorsReportV2 = lazy(() => import("@/pages/errors/ErrorsReportV2"));
-const LoginPageV2 = lazy(() => import("@/pages/Auth/LoginPageV2"));
+// const FinePage = lazy(() => import('@/pages/Events/FinePage'));
+// const ComitmentPage = lazy(() => import('@/pages/Events/ComitmentPage'));
+// const PaymentPage = lazy(() => import('@/pages/Events/PaymentPage'));
+// const NoticePage = lazy(() => import('@/pages/Events/NoticePage'));
+// const TaxpayerForm = lazy(() => import('@/components/Taxpayer/TaxpayerForm'));
+// const TaxpayerDetail = lazy(() => import('@/pages/Taxpayer/TaxpayerDetail'));
+// const ErrorsReport = lazy(() => import("@/components/errors/report/ErrorsReport"));
+// const StatsPage = lazy(() => import("@/pages/stats/StatsPage"));
+// const ObservationsPage = lazy(() => import("@/pages/Observations/ObservationsPage"));
+// const IvaReport = lazy(() => import("@/pages/iva/IvaReport"));
+// const ReportsPage = lazy(() => import("@/pages/reports/ReportsPage"));
+// const IslrReport = lazy(() => import("@/pages/islr/islr-report"));
+// const TaxpayerCensus = lazy(() => import("@/pages/Census/CensusPage"));
+// const CensusTable = lazy(() => import("@/pages/CensusTable/CensusTablePage"));
+// const IndexIva = lazy(() => import("@/pages/index-iva/IndexIva"));
+// const FiscalStats = lazy(() => import("@/pages/fiscal-stats/FiscalStatsPage"));
+// const AdminPageV2 = lazy(() => import("@/pages/Admin/AdminPageV2"));
+// const SettingsPageV2 = lazy(() => import("@/pages/Settings/SettingsPageV2"));
+// const StatsDashboardV2 = lazy(() => import("@/pages/stats/StatsDashboardV2"));
+// const FiscalStatsDashboardV2 = lazy(() => import("@/pages/stats/FiscalStatsDashboardV2"));
+// const CensusTablePageV2 = lazy(() => import("@/pages/CensusTable/CensusTablePageV2"));
+// const FiscalReviewPageV2 = lazy(() => import("@/pages/fiscal-review/FiscalReviewPageV2"));
+// const ObservationsPageV2 = lazy(() => import("@/pages/Observations/ObservationsPageV2"));
+// const TaxpayerDetailV2 = lazy(() => import("@/pages/Taxpayer/TaxpayerDetailV2"));
+// const FinePageV2 = lazy(() => import("@/pages/Events/fine-page-v2"));
+// const NoticePageV2 = lazy(() => import("@/pages/Events/notice-page-v2"));
+// const PaymentPageV2 = lazy(() => import("@/pages/Events/payment-page-v2"));
+// const ComitmentPageV2 = lazy(() => import("@/pages/Events/comitment-page-v2"));
+// const ReportsPageV2 = lazy(() => import("@/pages/reports/reports-page-v2"));
+// const ContributionsPageV2 = lazy(() => import("@/pages/Contributions/ContributionsPageV2"));
+// const IvaReportV2 = lazy(() => import("@/pages/iva/iva-report-v2"));
+// const IslrReportV2 = lazy(() => import("@/pages/islr/islr-report-v2"));
+// const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
+// const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
+// const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
 
-const AuditTrailPageV2 = lazy(() => import("@/pages/audit/audit-trail-page-v2"));
+const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
+const AdminPageV2 = lazy(() => import("@/pages/Admin/admin-page-v2"));
+const SettingsPageV2 = lazy(() => import("@/pages/Settings/settings-page-v2"));
+const StatsDashboardV2 = lazy(() => import("@/pages/stats/stats-dashboard-v2"));
+const FiscalStatsDashboardV2 = lazy(() => import("@/pages/stats/fiscal-stats-dashboard-v2"));
+const CensusTablePageV2 = lazy(() => import("@/pages/CensusTable/census-table-page-v2"));
+const FiscalReviewPageV2 = lazy(() => import("@/pages/fiscal-review/fiscal-review-page-v2"));
+const ObservationsPageV2 = lazy(() => import("@/pages/Observations/observations-page-v2"));
+const TaxpayerDetailV2 = lazy(() => import("@/pages/Taxpayer/taxpayer-detail-v2"));
+const FinePageV2 = lazy(() => import("@/pages/Events/fine-page-v2"));
+const NoticePageV2 = lazy(() => import("@/pages/Events/notice-page-v2"));
+const PaymentPageV2 = lazy(() => import("@/pages/Events/payment-page-v2"));
+const ComitmentPageV2 = lazy(() => import("@/pages/Events/comitment-page-v2"));
+const ReportsPageV2 = lazy(() => import("@/pages/reports/reports-page-v2"));
+const ContributionsPageV2 = lazy(() => import("@/pages/Contributions/contributions-page-v2"));
+const IvaReportV2 = lazy(() => import("@/pages/iva/iva-report-v2"));
+const IslrReportV2 = lazy(() => import("@/pages/ISLR/islr-report-v2"));
+const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
+const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
+const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
+const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
 
 type LoaderData = {
     events: Event[],
@@ -83,243 +99,16 @@ export const router = createBrowserRouter([
         children: [
             {
                 path: "/login",
-                element: <LoginPage />,
-            },
-            {
-                path: "/login/v2",
-                element: <LoginPageV2 />,
+                element: <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-slate-950 text-white">Cargando...</div>}><LoginPageV2 /></Suspense>,
             },
             {
                 path: "/",
-                element: <ProtectedRoute><MainLayout /></ProtectedRoute >,
+                element: <ProtectedRoute><MainLayoutV2 /></ProtectedRoute>,
                 children: [
                     {
                         index: true,
-                        element: <HomePage />,
+                        element: <Navigate to="/admin" replace />,
                     },
-                    {
-                        path: "fine/:taxpayerId?",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white' > Cargando Página de multas...</div>} > <FinePage /> </Suspense>,
-                    },
-                    {
-                        path: "/contributions",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white' > Cargando Página de contribuciones...</div>} > <ContributionsPage /> </Suspense>,
-                    },
-                    {
-                        path: "/show-census",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white' > Cargando Página de censo...</div>} > <CensusTable /> </Suspense>,
-                    },
-                    {
-                        path: "payment_compromise/:taxpayerId?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white' > Cargando Página de compromisos de pago...</div>} ><ComitmentPage /> </Suspense>,
-                    },
-                    {
-                        path: "payment/:taxpayerId?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl text-center items-center justify-center z-50 bg-white' > Cargando Página de pagos...</div>} > <PaymentPage /> </Suspense>,
-                        loader: async ({ params }) => {
-                            try {
-                                const taxpayerId = params.taxpayer;
-
-                                // console.log("TAXPAYER ID APP.TSX: " + taxpayerId)
-
-
-
-                                if (!taxpayerId) return [];
-                                const pendingPayments = await getPendingPayments(taxpayerId);
-                                return pendingPayments.map((event: Event) => ({
-                                    id: event.id,
-                                    value: event.id,
-                                    name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer}`,
-                                }));
-                            } catch (error) {
-                                console.error("No se pudieron obtener los taxpayers: " + error);
-                                return [];
-                            }
-                        },
-                    },
-                    {
-                        path: "warning/:taxpayerId?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Avisos...</div>} ><NoticePage /> </Suspense>,
-                    },
-                    {
-                        path: "observations/:taxpayerId?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Observaciones...</div>} ><ObservationsPage /> </Suspense>,
-                    },
-                    {
-                        path: "report/errors",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Aviso de error...</div>} ><ErrorsReport /> </Suspense>,
-                    },
-                    {
-                        path: "/stats",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Estadísticas...</div>} >
-                            <PresentationProvider>
-                                <StatsPage />
-                            </PresentationProvider>
-                        </Suspense>
-                    },
-                    {
-                        path: "/fiscal-review",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Revisión de fiscales...</div>} ><FiscalReviewPage /> </Suspense>
-                    },
-                    {
-                        path: "/fiscal-stats/:fiscalId",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Estadísticas...</div>} ><FiscalStats /> </Suspense>
-                    },
-                    {
-                        path: "/index-iva",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Indice de IVA...</div>} ><IndexIva /> </Suspense>
-                    },
-                    {
-                        path: "/iva",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Reporte de IVA...</div>} ><IvaReport /> </Suspense>
-                    },
-                    {
-                        path: "/getGroupReport/:groupId",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Reporte de Grupos...</div>} ><ReportModalGroups /> </Suspense>
-                    },
-                    {
-                        path: "taxpayer/",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Formulario de Contribuyentes...</div>} >
-                            <div className='w-full h-full' >
-                                <TaxpayerForm />
-                            </div>
-                        </Suspense>,
-                        loader: async () => {
-                            try {
-                                const response = await getOfficers();
-                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
-                                    value: String(item.id),
-                                    name: `${item.name} C.I.:${item.personId}`,
-                                    id: String(item.id),
-                                }));
-                            } catch (error) {
-                                console.error("No se pudieron obtener los funcionarios: " + error);
-                                return [];
-                            }
-                        },
-                    },
-                    {
-                        path: "census/",
-                        element: <Suspense fallback={<div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Formulario de Contribuyentes Para Censo...</div>} >
-                            <div className='w-full h-full' >
-                                <TaxpayerCensus />
-                            </div>
-                        </Suspense>,
-                        loader: async () => {
-                            try {
-                                const response = await getOfficers();
-                                return response.map((item: { id: number | string; name: string; personId: string }) => ({
-                                    value: String(item.id),
-                                    name: `${item.name} C.I.:${item.personId}`,
-                                    id: String(item.id),
-                                }));
-                            } catch (error) {
-                                console.error("No se pudieron obtener los funcionarios: " + error);
-                                return [];
-                            }
-                        },
-                    },
-                    {
-                        path: "/islr",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Reporte de ISLR...</div>} ><IslrReport /> </Suspense>
-                    },
-                    {
-                        path: "taxpayer/:taxpayer?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Detalles del Contribuyente...</div>} ><TaxpayerDetail /> </Suspense>,
-                        loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
-                            try {
-                                const taxpayerId = params.taxpayer;
-                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                                const events: Event[] = await getTaxpayerEvents(taxpayerId);
-                                events.forEach((event) => (event.id = `${event.id}`));
-
-                                const fines = await getFineHistory(taxpayerId);
-                                const payments = await getPaymentHistory(taxpayerId);
-                                const taxSummary = (await getTaxHistory(taxpayerId)).data;
-                                const islrReports = (await getIslrReports(taxpayerId)).data
-
-                                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
-
-                                return { events, fines, payments, taxSummary, islrReports };
-                            } catch (error) {
-                                console.error(error);
-                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                            }
-                        },
-                    },
-                    {
-                        path: "/gen-reports/:taxpayer?",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Generación de Reportes...</div>} ><ReportsPage /> </Suspense>,
-                        loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
-                            try {
-                                const taxpayerId = params.taxpayer;
-                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                                const events: Event[] = await getTaxpayerEvents(taxpayerId);
-                                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
-
-                                const fines = await getFineHistory(taxpayerId);
-                                const payments = await getPaymentHistory(taxpayerId);
-                                const taxSummary = (await getTaxHistory(taxpayerId)).data;
-                                const islrReports = (await getIslrReports(taxpayerId)).data
-
-                                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
-
-                                return { events, fines, payments, taxSummary, islrReports };
-                            } catch (error) {
-                                console.error(error);
-                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                            }
-                        },
-                    },
-                    {
-                        path: "/reports/gen/:taxpayer",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-white' > Cargando Página de Generación de Reportes...</div>} ><ReportModal /> </Suspense>,
-                        loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
-                            try {
-
-                                const taxpayerId = params.taxpayer;
-
-                                // console.log("PARAMS:", params);
-                                // console.log("TAXPAYER ID:", taxpayerId);
-                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                                const events: Event[] = await getTaxpayerEvents(taxpayerId);
-                                events.forEach((event) => (event.id = `${event.id}_${event.type}`));
-
-                                const fines = await getFineHistory(taxpayerId);
-                                const payments = await getPaymentHistory(taxpayerId);
-                                const taxSummary = (await getTaxHistory(taxpayerId)).data;
-                                const islrReports = (await getIslrReports(taxpayerId)).data
-
-                                // console.log("EVENTS FROM APP.TSX: " + JSON.stringify(events))
-
-                                return { events, fines, payments, taxSummary, islrReports };
-                            } catch (error) {
-                                console.error(error);
-                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
-                            }
-                        },
-                    },
-                ],
-            },
-            // Layout V2 - Nuevo diseño Shadcn UI
-            {
-                path: "/v2",
-                element: <ProtectedRoute><MainLayoutV2 /></ProtectedRoute>,
-                children: [
                     {
                         path: "admin",
                         element: <Suspense fallback={
@@ -471,13 +260,33 @@ export const router = createBrowserRouter([
                         },
                     },
                     {
-                        path: "gen-reports/:taxpayer?",
+                        path: "gen-reports",
                         element: <Suspense fallback={
                             <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reportes...
                             </div>
                         }>
                             <ReportsPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "gen-reports/:taxpayer",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte del Contribuyente...
+                            </div>
+                        }>
+                            <TaxpayerReportPage />
+                        </Suspense>,
+                    },
+                    {
+                        path: "getGroupReport/:id",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Reporte de Grupo...
+                            </div>
+                        }>
+                            <GroupReportPageV2 />
                         </Suspense>,
                     },
                     {
@@ -557,33 +366,6 @@ export const router = createBrowserRouter([
                                 return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [] };
                             }
                         },
-                    },
-                ],
-            },
-            // Ruta temporal sin protección para verificar diseño V2
-            {
-                path: "/v2-preview",
-                element: <MainLayoutV2 />,
-                children: [
-                    {
-                        index: true,
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
-                                Cargando Vista Previa...
-                            </div>
-                        }>
-                            <AdminPageV2 />
-                        </Suspense>,
-                    },
-                    {
-                        path: "admin",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
-                                Cargando Administración...
-                            </div>
-                        }>
-                            <AdminPageV2 />
-                        </Suspense>,
                     },
                 ],
             },

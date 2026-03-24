@@ -8,7 +8,6 @@ import {
     FileText,
     ClipboardList,
     Wallet,
-    Shield,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -16,13 +15,6 @@ import { NavItem } from '@/types/nav';
  * Rutas compartidas por TODOS los roles.
  * Si una ruta debe aparecer para todos, va aquí.
  */
-/** Solo ADMIN y COORDINATOR (se añade en estrategias, no en shared). */
-export const auditTrailNavItem: NavItem = {
-    href: '/auditoria',
-    label: 'Auditoría',
-    icon: <Shield className="w-4 h-4" />,
-};
-
 export const sharedRoutes: NavItem[] = [
     { href: '/admin',        label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
     { href: '/census',       label: 'Tabla Censo',    icon: <Users className="w-4 h-4" /> },

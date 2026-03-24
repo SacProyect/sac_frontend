@@ -1,22 +1,23 @@
-import { useRef } from 'react'
-import { useAuth } from '../../hooks/useAuth';
+import { useMemo, useRef } from 'react'
+import { useAuth } from '../../hooks/use-auth';
 import { Control, useForm } from 'react-hook-form';
-import TextInput from '../UI/TextInput';
-import FormContainer from '../UI/FormContainer';
+import TextInput from '../UI/text-input';
+import FormContainer from '../UI/form-container';
 import { Form, Label, Button } from 'react-aria-components'
-import DateInputUI from '../UI/DateInputUI';
-import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
+import DateInputUI from '../UI/date-input-ui';
+import TaxpayerCombobox from '../UI/taxpayer-combobox';
+import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
-import SelectInput from '../UI/SelectInput';
+import SelectInput from '../UI/select-input';
 import { useCallback, useEffect, useState } from 'react';
 import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
 import { parseDate, CalendarDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
-import { IvaReportFormData } from '../iva/IvaForm';
-import { IslrReportFormData } from '../ISLR/IslrForm';
-import TaxpayerList from '../UI/TaxpayerList';
+import { IvaReportFormData } from '../iva/iva-form';
+import { IslrReportFormData } from '../ISLR/islr-form';
+import TaxpayerList from '../UI/taxpayer-list';
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 
 
 
@@ -66,28 +67,101 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
     const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
-    const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
+    const [search, setSearch] = useState('');
+    const [searchDebounce, setSearchDebounce] = useState('');
+    const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
+    const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
+    const [searchPage, setSearchPage] = useState(2);
+    const [searchTotalPages, setSearchTotalPages] = useState(1);
+    const [searchLoading, setSearchLoading] = useState(false);
+    const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
+    const [currentPage, setCurrentPage] = useState(2);
+    const [loadingMore, setLoadingMore] = useState(false);
+
+    const { taxpayersForEvents: firstPageTaxpayers, totalPages, loading: loadingTaxpayers } = useCachedTaxpayersForEvents(50);
+    const firstPageFiltered = useMemo(
+        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
+        [firstPageTaxpayers]
+    );
+
+    const isSearching = searchDebounce.trim() !== '';
+    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
+    const taxpayerArray = useMemo(
+        () => [...displayedFirst, ...displayedExtra],
+        [displayedFirst, displayedExtra]
+    );
+    const loadedPagesCount = 1 + Math.floor(displayedExtra.length / 50);
+    const hasMore = loadedPagesCount < totalPagesDisplayed;
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            setSearchDebounce(search);
+        }, 500);
+        return () => clearTimeout(timeout);
+    }, [search]);
+
+    // Sin búsqueda: se usa la primera página del cache. Con búsqueda: se pide página 1 al backend
+    useEffect(() => {
+        const term = searchDebounce.trim();
+        if (term === '') {
+            setSearchResults(null);
+            setSearchAdditionalPages([]);
+            setSearchPage(2);
+            setAdditionalPages([]);
+            setCurrentPage(2);
+            return;
+        }
+        let cancelled = false;
+        const fetchSearchFirst = async () => {
+            setSearchLoading(true);
+            try {
+                const response = await getTaxpayerForEvents(1, 50, term);
+                if (cancelled) return;
+                const data = (response?.data?.data ?? []) as Taxpayer[];
+                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                setSearchResults(filtered);
+                setSearchTotalPages(response?.data?.totalPages ?? 1);
+                setSearchAdditionalPages([]);
+                setSearchPage(2);
+            } catch (e) {
+                if (!cancelled) toast.error("No se pudieron obtener los contribuyentes.");
+            } finally {
+                if (!cancelled) setSearchLoading(false);
+            }
+        };
+        fetchSearchFirst();
+        return () => { cancelled = true; };
+    }, [searchDebounce]);
+
+    const loadMore = useCallback(async () => {
+        if (!hasMore || loadingMore) return;
+        setLoadingMore(true);
+        const term = searchDebounce.trim() || undefined;
+        const pageToFetch = isSearching ? searchPage : currentPage;
+        try {
+            const response = await getTaxpayerForEvents(pageToFetch, 50, term);
+            const data = (response?.data?.data ?? []) as Taxpayer[];
+            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            if (isSearching) {
+                setSearchAdditionalPages(prev => [...prev, ...filtered]);
+                setSearchPage(prev => prev + 1);
+            } else {
+                setAdditionalPages(prev => [...prev, ...filtered]);
+                setCurrentPage(prev => prev + 1);
+            }
+        } catch (e) {
+            toast.error("No se pudieron cargar más contribuyentes.");
+        } finally {
+            setLoadingMore(false);
+        }
+    }, [hasMore, loadingMore, searchDebounce, isSearching, searchPage, currentPage]);
+
     if (!user) {
         navigate("/login");
         return null;
     }
-
-    useEffect(() => {
-        const fetchTaxpayers = async () => {
-            try {
-                const response = await getTaxpayerForEvents();
-                const filtered = response.data.filter((t: Taxpayer) => t.process !== "FP");
-                setTaxpayerArray(filtered);
-            } catch (e) {
-                toast.error("No se pudieron obtener los contribuyentes.");
-            }
-        };
-
-        fetchTaxpayers();
-    }, []);
-
-    // ✅ Filtrar los contribuyentes con process !== "FP"
-    taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
 
     const {
         register,
@@ -119,6 +193,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
             const filteredPayments = auxPayments.filter((event: Event) => {
                 if (type === "payment_compromise") {
+                    if (!event.expires_at) return false;
                     const currentDate = new Date();
 
                     const expirationDate = new Date(event.expires_at);
@@ -308,7 +383,18 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 {/* Select the taxpayer by it's ID */}
                 {
                     taxpayerId == "" &&
-                    <TaxpayerList name={"taxpayerId"} control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>} label={"Contribuyente"} taxpayers={taxpayerArray} />
+                    <TaxpayerList
+                        name={"taxpayerId"}
+                        control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>}
+                        label={"Contribuyente"}
+                        taxpayers={taxpayerArray}
+                        onSearchChange={setSearch}
+                        searchLoading={searchLoading}
+                        placeholder="Buscar contribuyente..."
+                        onLoadMore={loadMore}
+                        hasMore={hasMore}
+                        loadingMore={loadingMore}
+                    />
                 }
 
                 {/* If the type is payment, show the pending payments */}

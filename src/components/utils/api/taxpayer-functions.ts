@@ -1,12 +1,12 @@
-import { apiConnection } from "./apiConnection"
-import { contract_type, Taxpayer, taxpayer_process } from "../../../types/taxpayer";
+import { apiConnection } from "./api-connection"
+import { contract_type, Taxpayer, TaxpayersListResponse, taxpayer_process } from "../../../types/taxpayer";
 import { Event } from "../../../types/event";
-import { NewEvent } from "../../Events/EventForm";
-import { ObservationsForm } from "@/components/observations/ObservationsHeader";
-import { IvaReportFormData } from "@/components/iva/IvaForm";
-import { IslrReportFormData } from "@/components/ISLR/IslrForm";
-import { IVAReports } from "@/types/IvaReports";
-import { ISLRReports } from "@/types/ISLRReports";
+import { NewEvent } from "../../Events/event-form";
+import { ObservationsForm } from "@/components/observations/observations-header";
+import { IvaReportFormData } from "@/components/iva/iva-form";
+import { IslrReportFormData } from "@/components/ISLR/islr-form";
+import { IVAReports } from "@/types/iva-reports";
+import { ISLRReports } from "@/types/islr-reports";
 import Decimal from "decimal.js";
 
 interface TaxpayerData {
@@ -87,6 +87,7 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
+<<<<<<< HEAD
 		const idempotencyKey = generateIdempotencyKey();
 		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
 			headers: {
@@ -100,31 +101,28 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 		} else {
 			console.error("API ERROR: ", response.status, response.data);
 			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
+=======
+	  const response = await apiConnection.post(`/taxpayer`, taxpayerData, {
+		headers: {
+			"Content-Type": "multipart/form-data"
+>>>>>>> mi-fork/main
 		}
-
+	  });
+	  if (response.status === 200 || response.status === 201) return { success: true, data: response.data };
+	  return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
 	} catch (error: any) {
-		// Handle Axios errors properly
-		if (error.response) {
-			// Server responded with a status code outside 2xx
-			const errorData = error.response.data;
-
-			const msg = typeof errorData?.error === "string"
-				? errorData.error
-				: errorData?.message || "Ocurrió un error.";
-
-			return {
-				success: false,
-				message: msg,
-			};
-		} else if (error.request) {
-			// No response received
-			return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
-		} else {
-			// Other unexpected errors
-			return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
-		}
+	  if (error.response) {
+		const errorData = error.response.data;
+		const msg = typeof errorData?.error === "string"
+		  ? errorData.error
+		  : errorData?.message || "Ocurrió un error.";
+		return { success: false, message: msg };
+	  } else if (error.request) {
+		return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
+	  }
+	  return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
 	}
-}
+  };
 
 export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string) => {
 	try {
@@ -140,16 +138,39 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 	}
 }
 
-export const getTaxpayers = async () => {
+/**
+ * Obtener contribuyentes con paginación y filtros opcionales por año y término de búsqueda.
+ * - `year`: se envía como query param `date`; el backend filtrará por `emition_date` dentro de ese año y ajustará `total` y `totalPages`.
+ * - `search`: el backend filtrará por nombre, RIF o número de providencia según la lógica del endpoint.
+ */
+export const getTaxpayers = async (
+	page: number = 1,
+	limit: number = 50,
+	year?: number,
+	search?: string
+) => {
 	try {
-		let requestURL = "/taxpayer/get-taxpayers"
+		let requestURL = "/taxpayer/get-taxpayers";
 
-		const response = await (await apiConnection.get(requestURL)).data
+		const params: Record<string, number | string> = {
+			page,
+			limit,
+		};
+		if (year !== undefined && !Number.isNaN(year)) {
+			params.year = year;
+		}
+		if (search !== undefined && search.trim() !== "") {
+			params.search = search;
+		}
+
+		const response = await (await apiConnection.get(requestURL, {
+			params,
+		})).data;
 
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se pudieron obtener los contribuyentes.")
+		throw new Error("No se pudieron obtener los contribuyentes.");
 	}
 }
 
@@ -158,7 +179,7 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 		let requestUrl = `/taxpayer/get-fiscal-taxpayers-for-stats/${fiscalId}`
 
 		if (year) {
-			requestUrl += `?date=${year}`
+			requestUrl += `?year=${year}` 
 		}
 
 		const response = await apiConnection.get(requestUrl);
@@ -179,16 +200,25 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 export const getFiscalsForReview = async (year?: number, page: number = 1, limit: number = 50) => {
 
 	try {
+<<<<<<< HEAD
 		let requestUrl = "/user/get-fiscals-for-review"
 
 		const params: Record<string, number> = { page, limit };
+=======
+		const params: Record<string, number | string> = { page, limit };
+
+>>>>>>> mi-fork/main
 		if (year !== undefined) {
 			params.year = year;
 		}
 
+<<<<<<< HEAD
 		const response = await apiConnection.get(requestUrl, { params });
+=======
+		const response = await apiConnection.get("/user/get-fiscals-for-review", { params });
+>>>>>>> mi-fork/main
 
-		return response;
+		return response.data;
 
 	} catch (e) {
 		console.error(e);
@@ -200,16 +230,23 @@ export const getFiscalsForReview = async (year?: number, page: number = 1, limit
 
 
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
-export const getTaxpayerForEvents = async () => {
+export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50, search?: string) => {
 	try {
 		let requestURL = "taxpayer/get-taxpayers-for-events"
 
-		const response = await apiConnection.get(requestURL);
+		const params: Record<string, number | string> = { page, limit };
+		if (search !== undefined && search.trim() !== "") {
+			params.search = search;
+		}
+
+		const response = await apiConnection.get(requestURL, {
+			params,
+		});
 
 		return response;
 	} catch (e) {
 		console.error(e);
-		throw new Error("No se encontraron contribuyentes")
+		throw new Error("No se encontraron contribuyentes");
 	}
 }
 
@@ -678,3 +715,12 @@ export const deleteISLR = async (id: string) => {
 }
 
 
+export const getIndexIva = async () => {
+	try {
+		const response = await apiConnection.get('/taxpayer/get-index-iva');
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los índices de IVA actual.");
+	}
+}

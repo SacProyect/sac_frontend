@@ -2,11 +2,11 @@
  * Barrel file para modales V2
  */
 
-export { AddContribuyenteModalV2 } from './AddContribuyenteModalV2';
-export type { ContribuyenteFormData } from './AddContribuyenteModalV2';
+export { AddContribuyenteModalV2 } from './add-contribuyente-modal-v2';
+export type { ContribuyenteFormData } from './add-contribuyente-modal-v2';
 
-export { AddMultaModalV2 } from './AddMultaModalV2';
-export type { MultaFormData } from './AddMultaModalV2';
+export { AddMultaModalV2 } from './add-multa-modal-v2';
+export type { MultaFormData } from './add-multa-modal-v2';
 
-export { AddAvisoModalV2 } from './AddAvisoModalV2';
-export type { AvisoFormData } from './AddAvisoModalV2';
+export { AddAvisoModalV2 } from './add-aviso-modal-v2';
+export type { AvisoFormData } from './add-aviso-modal-v2';

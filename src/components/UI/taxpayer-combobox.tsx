@@ -5,9 +5,9 @@ import { Controller, Control } from 'react-hook-form'
 import { Popover, Label, ListBox, ListBoxItem, Button } from 'react-aria-components'
 import { useFilter } from 'react-aria'
 import { Taxpayer } from '../../types/taxpayer'
-import { EventFormData } from '../Events/EventForm'
-import { IvaReportFormData } from '../iva/IvaForm'
-import { IslrReportFormData } from '../ISLR/IslrForm'
+import { EventFormData } from '../Events/event-form'
+import { IvaReportFormData } from '../iva/iva-form'
+import { IslrReportFormData } from '../ISLR/islr-form'
 
 
 

@@ -30,7 +30,7 @@ export default function FiscalStatsDashboardV2() {
   useEffect(() => {
     if (user?.role === 'FISCAL' && user.id !== fiscalId && fiscalId) {
       toast.error('No puede acceder a esta página.');
-      navigate('/v2/stats');
+      navigate('/stats');
     }
   }, [user, fiscalId, navigate]);
 
@@ -54,7 +54,7 @@ export default function FiscalStatsDashboardV2() {
         description="Análisis detallado del desempeño individual"
         action={
           <div className="flex items-center gap-4">
-            <BackButton to="/v2/stats" />
+            <BackButton to="/stats" />
             <YearSelector value={selectedYear} onChange={setSelectedYear} />
           </div>
         }

@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { CiSearch } from "react-icons/ci";
 import { IoDocumentTextOutline } from "react-icons/io5";
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/use-auth';
 import { Taxpayer } from '@/types/taxpayer';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { GroupData } from '@/types/stats';
-import { getContributions } from '@/components/utils/api/reportFunctions';
-import { getFiscalsForReview } from '@/components/utils/api/taxpayerFunctions';
+import { getContributions } from '@/components/utils/api/report-functions';
+import { getFiscalsForReview, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
+import LoadingCircularComponent from '../UI/Loading/loading-circular-component';
 import { User } from '@/types/user';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 
@@ -46,9 +47,7 @@ function FiscalReviewComponent() {
                 const year = selectedYear !== null ? selectedYear : undefined;
                 const response = await getFiscalsForReview(year, currentPage, limit);
 
-                setFiscalArray(response.data.data);
-                setTotal(response.data.total);
-                setTotalPages(response.data.totalPages);
+                setFiscalArray(response.data || []);
                 setIsLoadingFiscals(false);
             } catch (e) {
                 toast.error("No se pudieron obtener los fiscales.");
@@ -210,7 +209,7 @@ function FiscalReviewComponent() {
                                                     // ✅ CORRECCIÓN 2026: Pasar año seleccionado como query parameter
                                                     // Si hay un año seleccionado, pasarlo para que la página de estadísticas lo use
                                                     const yearParam = selectedYear !== null ? `?year=${selectedYear}` : '';
-                                                    navigate(`/fiscal-stats/${fiscal.id}${yearParam}`);
+                                                    navigate(`/stats/fiscal/${fiscal.id}${yearParam}`);
                                                 }}
                                             >
                                                 Ver Estadísticas

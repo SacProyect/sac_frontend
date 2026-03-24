@@ -1,4 +1,3 @@
-import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./api-connection";
 import { GroupData } from "@/components/contributions/contribution-types";
 import { GroupRecordsApiResponse } from "@/types/group-records";
@@ -473,3 +472,31 @@ export const getGlobalKPI = async (year?: number) => {
 	}
 
 }
+
+/**
+ * Obtiene los eventos pendientes de un contribuyente (multas/compromisos sin pagar)
+ * GET /reports/pending/:id
+ */
+export const getPendingEvents = async (taxpayerId: string) => {
+	try {
+		const response = await apiConnection.get(`reports/pending/${taxpayerId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener eventos pendientes:', e);
+		throw new Error("No se pudieron obtener los eventos pendientes.");
+	}
+};
+
+/**
+ * Obtiene datos completos del contribuyente incluyendo IVA, ISLR, PDFs y usuario asignado
+ * GET /taxpayer/data/:id
+ */
+export const getTaxpayerData = async (taxpayerId: string) => {
+	try {
+		const response = await apiConnection.get(`taxpayer/data/${taxpayerId}`);
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener datos del contribuyente:', e);
+		throw new Error("No se pudieron obtener los datos completos del contribuyente.");
+	}
+};

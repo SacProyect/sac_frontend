@@ -11,7 +11,7 @@ import {
 } from './select';
 
 // Re-export ModalFooter from v2 directory
-export { ModalFooter } from './v2/ModalFooter';
+export { ModalFooter } from '@/components/UI/v2/modal-footer';
 
 interface LoadingStateProps {
   message?: string;
