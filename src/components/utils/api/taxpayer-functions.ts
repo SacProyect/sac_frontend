@@ -101,18 +101,36 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 			return { success: true, data: response.data };
 		} else {
 			console.error("API ERROR: ", response.status, response.data);
-			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
+			const d = response.data as { message?: string; error?: string | { message?: string } };
+			const nested = d?.error;
+			const msg =
+				typeof nested === "object" && nested !== null && typeof nested.message === "string"
+					? nested.message
+					: typeof nested === "string"
+						? nested
+						: typeof d?.message === "string"
+							? d.message
+							: "Error al crear el contribuyente.";
+			return { success: false, message: msg };
 		}
 
 	} catch (error: any) {
 		// Handle Axios errors properly
 		if (error.response) {
 			// Server responded with a status code outside 2xx
-			const errorData = error.response.data;
-
-			const msg = typeof errorData?.error === "string"
-				? errorData.error
-				: errorData?.message || "Ocurrió un error.";
+			const errorData = error.response.data as {
+				message?: string;
+				error?: string | { message?: string };
+			};
+			const nested = errorData?.error;
+			const msg =
+				typeof nested === "object" && nested !== null && typeof nested.message === "string"
+					? nested.message
+					: typeof nested === "string"
+						? nested
+						: typeof errorData?.message === "string"
+							? errorData.message
+							: "Ocurrió un error.";
 
 			return {
 				success: false,
