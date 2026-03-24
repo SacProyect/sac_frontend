@@ -33,14 +33,14 @@ import toast from "react-hot-toast";
 import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
 
 const ENTIDADES = [
-  { value: "", label: "Todas" },
+  { value: "ALL", label: "Todas" },
   { value: "Contribuyente", label: "Contribuyente" },
   { value: "Declaracion_IVA", label: "Declaración IVA" },
   { value: "Declaracion_ISLR", label: "Declaración ISLR" },
 ];
 
 const ACCIONES = [
-  { value: "", label: "Todas" },
+  { value: "ALL", label: "Todas" },
   { value: "EDITAR_CONTRIBUYENTE", label: "Editar contribuyente" },
   { value: "BORRAR_CONTRIBUYENTE", label: "Borrar contribuyente (lógico)" },
   { value: "EDITAR_IVA", label: "Editar IVA" },
@@ -67,8 +67,8 @@ export default function AuditTrailPageV2() {
   const limit = 25;
 
   /** Filtros de selects (recarga al cambiar) */
-  const [entidad, setEntidad] = useState("");
-  const [accion, setAccion] = useState("");
+  const [entidad, setEntidad] = useState("ALL");
+  const [accion, setAccion] = useState("ALL");
   /** Filtros de texto/fecha: solo al pulsar «Aplicar filtros» */
   const [actorId, setActorId] = useState("");
   const [entidadId, setEntidadId] = useState("");
@@ -90,8 +90,8 @@ export default function AuditTrailPageV2() {
       const res = await getAuditoria({
         page,
         limit,
-        entidad: entidad || undefined,
-        accion: accion || undefined,
+        entidad: entidad === "ALL" ? undefined : entidad,
+        accion: accion === "ALL" ? undefined : accion,
         actorId: appliedActorId || undefined,
         entidadId: appliedEntidadId || undefined,
         dateFrom: appliedDateFrom || undefined,
@@ -258,10 +258,10 @@ export default function AuditTrailPageV2() {
           <Button
             type="button"
             variant="outline"
-            className="border-slate-600 text-slate-200"
+            className="border-slate-600 text-black"
             onClick={() => {
-              setEntidad("");
-              setAccion("");
+              setEntidad("ALL");
+              setAccion("ALL");
               setActorId("");
               setEntidadId("");
               setDateFrom("");
