@@ -58,6 +58,54 @@ export interface FiscalPerformanceData {
   meta: number;
 }
 
+/** Meses en el orden que devuelve `getMontlyPerformance` (español, minúsculas). */
+const MONTH_ORDER_ES = [
+  'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+] as const;
+
+const MONTH_LABELS_ES = [
+  'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+  'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre',
+];
+
+/**
+ * La API devuelve `month` en español y `currentCollected` (no `performance`/`realAmount`).
+ */
+function normalizeFiscalMonthlyPerformance(raw: unknown): FiscalPerformanceData[] {
+  const arr: unknown[] = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object' && Array.isArray((raw as { data?: unknown }).data)
+      ? ((raw as { data: unknown[] }).data)
+      : [];
+  if (arr.length === 0) return [];
+
+  const sorted = [...arr].sort((a: any, b: any) => {
+    const ma = String(a?.month ?? '').toLowerCase();
+    const mb = String(b?.month ?? '').toLowerCase();
+    return MONTH_ORDER_ES.indexOf(ma as (typeof MONTH_ORDER_ES)[number]) -
+      MONTH_ORDER_ES.indexOf(mb as (typeof MONTH_ORDER_ES)[number]);
+  });
+
+  return sorted.map((item: Record<string, unknown>) => {
+    const mRaw = item.month ?? item.monthName;
+    let mes = 'Mes';
+    if (typeof mRaw === 'string') {
+      const idx = MONTH_ORDER_ES.indexOf(mRaw.toLowerCase() as (typeof MONTH_ORDER_ES)[number]);
+      mes = idx >= 0 ? MONTH_LABELS_ES[idx] : mRaw.charAt(0).toUpperCase() + mRaw.slice(1);
+    } else if (typeof mRaw === 'number' && mRaw >= 1 && mRaw <= 12) {
+      mes = MONTH_LABELS_ES[mRaw - 1] ?? `Mes ${mRaw}`;
+    }
+    const desempeño = decimalToNumber(
+      item.currentCollected ?? item.performance ?? item.realAmount ?? 0,
+    );
+    const meta = decimalToNumber(
+      item.target ?? item.expectedAmount ?? item.meta ?? 0,
+    );
+    return { mes, desempeño, meta };
+  });
+}
+
 /**
  * Hook personalizado para obtener y transformar estadísticas fiscales
  * @param year - Año para filtrar las estadísticas (opcional)
@@ -202,15 +250,7 @@ export function useFiscalStats(year?: number, fiscalId?: string) {
 
     // Desempeño mensual
     const monthlyPerf = await getFiscalMonthlyPerformance(fiscalId, year);
-    if (Array.isArray(monthlyPerf)) {
-      const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
-      const perfData: FiscalPerformanceData[] = monthlyPerf.map((item: any) => ({
-        mes: months[item.month - 1] || `Mes ${item.month}`,
-        desempeño: decimalToNumber(item.performance || item.realAmount),
-        meta: decimalToNumber(item.target || item.expectedAmount),
-      }));
-      setFiscalPerformance(perfData);
-    }
+    setFiscalPerformance(normalizeFiscalMonthlyPerformance(monthlyPerf));
 
     try {
       const monthlyCollect = await getFiscalMonthlyCollect(fiscalId, year);

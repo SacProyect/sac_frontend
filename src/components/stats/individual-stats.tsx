@@ -357,7 +357,12 @@ export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: In
         (user?.role === "SUPERVISOR" && taxpayerData?.user.supervisorId === user.id)
     ) && taxpayerData?.process === "AF";
 
-    const canEditIndex = user?.role === "ADMIN" || user?.role === "SUPERVISOR" || user?.role === "COORDINATOR" || user?.role === "FISCAL";
+    /** Índice IVA individual: fiscal solo si es el asignado (`viewer`), resto según rol. */
+    const canEditIndex =
+        user?.role === "ADMIN" ||
+        user?.role === "SUPERVISOR" ||
+        user?.role === "COORDINATOR" ||
+        (user?.role === "FISCAL" && taxpayerData?.viewer?.canUseQuickActions === true);
 
 
     return (

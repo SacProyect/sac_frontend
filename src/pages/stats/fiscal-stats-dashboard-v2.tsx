@@ -64,7 +64,7 @@ export default function FiscalStatsDashboardV2() {
       <FiscalProfileCardV2 fiscal={fiscalInfo} />
 
       {/* Performance Chart */}
-      <FiscalPerformanceChartV2 data={fiscalPerformance} />
+      <FiscalPerformanceChartV2 data={fiscalPerformance} year={selectedYear} />
 
       {/* Rankings Card */}
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">

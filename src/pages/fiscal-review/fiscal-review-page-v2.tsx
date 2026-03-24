@@ -23,7 +23,15 @@ import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-rev
 /**
  * Vista de detalles de un fiscal específico (3 páginas)
  */
-function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () => void }) {
+function FiscalDetailsView({
+  fiscalId,
+  onBack,
+  backLabel = 'Volver a la lista',
+}: {
+  fiscalId: string;
+  onBack: () => void;
+  backLabel?: string;
+}) {
   const [page, setPage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
   const { loading, fiscalInfo, fiscalPerformance, fiscalMonthlyCollect, fiscalComplianceByProcess } = useFiscalStats(selectedYear, fiscalId);
@@ -51,7 +59,7 @@ function FiscalDetailsView({ fiscalId, onBack }: { fiscalId: string; onBack: () 
          />
          <Button variant="outline" onClick={onBack} className="border-slate-600 text-slate-300 bg-transparent hover:bg-slate-700">
            <ChevronLeft className="h-4 w-4 mr-2" />
-           Volver a la lista
+           {backLabel}
          </Button>
        </div>
 
@@ -163,6 +171,10 @@ export default function FiscalReviewPageV2() {
       navigate('/login');
       return;
     }
+    if (user.role === 'FISCAL') {
+      setLoading(false);
+      return;
+    }
 
     const fetchFiscals = async () => {
       try {
@@ -196,6 +208,16 @@ export default function FiscalReviewPageV2() {
       )
       .sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''));
   }, [fiscalArray, searchValue]);
+
+  if (user?.role === 'FISCAL' && user.id) {
+    return (
+      <FiscalDetailsView
+        fiscalId={user.id}
+        onBack={() => navigate('/admin')}
+        backLabel="Volver al inicio"
+      />
+    );
+  }
 
   if (loading) {
     return <LoadingState message="Cargando fiscales..." />;

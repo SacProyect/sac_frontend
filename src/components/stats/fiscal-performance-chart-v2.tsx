@@ -4,14 +4,17 @@ import { FiscalPerformanceData } from '@/hooks/useFiscalStats';
 
 interface FiscalPerformanceChartV2Props {
   data: FiscalPerformanceData[];
+  /** Año del filtro (por defecto año actual). */
+  year?: number;
 }
 
-export function FiscalPerformanceChartV2({ data }: FiscalPerformanceChartV2Props) {
+export function FiscalPerformanceChartV2({ data, year }: FiscalPerformanceChartV2Props) {
+  const titleYear = year ?? new Date().getFullYear();
   if (data.length === 0) {
     return (
       <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-white">Desempeño Personal</CardTitle>
+          <CardTitle className="text-white">Desempeño Personal {titleYear}</CardTitle>
           <CardDescription className="text-slate-400">
             Comparativo de desempeño vs meta mensual
           </CardDescription>
@@ -26,7 +29,7 @@ export function FiscalPerformanceChartV2({ data }: FiscalPerformanceChartV2Props
   return (
     <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
       <CardHeader>
-        <CardTitle className="text-white">Desempeño Personal {new Date().getFullYear()}</CardTitle>
+        <CardTitle className="text-white">Desempeño Personal {titleYear}</CardTitle>
         <CardDescription className="text-slate-400">
           Comparativo de desempeño vs meta mensual
         </CardDescription>

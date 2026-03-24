@@ -9,9 +9,11 @@ interface Props {
     rows: IVAReports[];
     pdfMode?: boolean;
     setRows?: React.Dispatch<React.SetStateAction<IVAReports[]>>;
+    /** Fiscal asignado / roles con `viewer.canUseQuickActions` en detalle: permite editar filas (IVA). */
+    canEditReports?: boolean;
 }
 
-const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
+const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows, canEditReports }) => {
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
@@ -28,31 +30,23 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
 
     if (!user) return null;
 
+    const baseCols: { name: string; id: keyof IVAReports | 'options' }[] = [
+        { name: 'Fecha', id: 'date' },
+        { name: 'IVA', id: 'iva' },
+        { name: 'Excedente de Crédito', id: 'excess' },
+        { name: 'Compras', id: 'purchases' },
+        { name: 'Ventas', id: 'sells' },
+        { name: 'Pagado', id: 'paid' },
+    ];
+
+    const showActions =
+        user.role === 'ADMIN' || (canEditReports === true && ['FISCAL', 'COORDINATOR', 'SUPERVISOR'].includes(user.role));
+
     let columns: { name: string; id: keyof IVAReports | 'options' }[];
-
-    if (user.role === "FISCAL" || user.role === "COORDINATOR" || user.role === "SUPERVISOR") {
-        columns = [
-            { name: 'Fecha', id: 'date' },
-            { name: 'IVA', id: 'iva' },
-            { name: 'Excedente de Crédito', id: 'excess' },
-            { name: 'Compras', id: 'purchases' },
-            { name: 'Ventas', id: 'sells' },
-            { name: 'Pagado', id: 'paid' },
-        ];
-    } else if (user.role === "ADMIN") {
-        columns = [
-            { name: 'Fecha', id: 'date' },
-            { name: 'IVA', id: 'iva' },
-            { name: 'Excedente de Crédito', id: 'excess' },
-            { name: 'Compras', id: 'purchases' },
-            { name: 'Ventas', id: 'sells' },
-            { name: 'Pagado', id: 'paid' },
-            { name: 'Acciones', id: 'options' },
-        ];
+    if (user.role === 'ADMIN' || user.role === 'FISCAL' || user.role === 'COORDINATOR' || user.role === 'SUPERVISOR') {
+        columns = showActions ? [...baseCols, { name: 'Acciones', id: 'options' }] : baseCols;
     } else {
-        columns = [
-
-        ]
+        columns = [];
     }
 
 
@@ -129,6 +123,8 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
         }
     };
 
+    const isAdmin = user?.role === 'ADMIN';
+
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
             if (!(e.target as HTMLElement)?.closest('.menu-dropdown')) {
@@ -171,12 +167,14 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                 onChange={(e) => handleInputChange(col.id as keyof IVAReports, e.target.value)}
                                                 className="w-full px-2 py-1 border border-gray-300 rounded"
                                             />
-                                        ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
+                                        ) : col.id === 'options' && !pdfMode && showActions ? (
                                             <div className="relative inline-block">
                                                 <button
                                                     ref={(el) => { buttonRefs.current[item.id] = el; }}
                                                     onClick={() => toggleMenu(item.id, buttonRefs.current[item.id])}
                                                     className="text-gray-600 hover:text-gray-900"
+                                                    type="button"
+                                                    aria-label="Acciones del reporte IVA"
                                                 >
                                                     ⋮
                                                 </button>
@@ -208,6 +206,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                     style={{ top: dropdownPos.top, left: dropdownPos.left }}
                 >
                     <button
+                        type="button"
                         onClick={() => {
                             const row = rows.find(r => r.id === activeMenuId);
                             if (row) {
@@ -218,15 +217,18 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                     >
                         Editar
                     </button>
-                    <button
-                        onClick={() => {
-                            setReportIdToDelete(activeMenuId);
-                            setActiveMenuId(null);
-                        }}
-                        className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
-                    >
-                        Eliminar
-                    </button>
+                    {isAdmin && (
+                        <button
+                            type="button"
+                            onClick={() => {
+                                setReportIdToDelete(activeMenuId);
+                                setActiveMenuId(null);
+                            }}
+                            className="block w-full px-4 py-2 text-left text-red-600 hover:bg-gray-100"
+                        >
+                            Eliminar
+                        </button>
+                    )}
                 </div>
             )}
 

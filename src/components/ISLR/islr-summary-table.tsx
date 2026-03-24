@@ -7,14 +7,17 @@ import { deleteISLR, updateIslrReport } from '../utils/api/taxpayer-functions';
 interface Props {
     rows: ISLRReports[];
     pdfMode?: boolean;
-    setRows?: React.Dispatch<React.SetStateAction<ISLRReports[]>>
+    setRows?: React.Dispatch<React.SetStateAction<ISLRReports[]>>;
+    /** Mismo criterio que detalle: fiscal asignado / coord / supervisor autorizado. */
+    canEditReports?: boolean;
 }
 
-const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
+const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows, canEditReports }) => {
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
     const [rowEditingId, setRowEditingId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Partial<ISLRReports>>({});
-    const [showActionsMenu, setShowActionsMenu] = useState(false);
+    /** Menú ⋮ por fila (evita un solo menú global para todas las filas). */
+    const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const menuRef = useRef<HTMLDivElement | null>(null);
 
 
@@ -72,7 +75,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                setShowActionsMenu(false);
+                setActiveMenuId(null);
             }
         };
 
@@ -81,6 +84,13 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, []);
+
+    const isAdmin = user?.role === 'ADMIN';
+    const showActions =
+        isAdmin ||
+        (canEditReports === true &&
+            user &&
+            ['FISCAL', 'COORDINATOR', 'SUPERVISOR'].includes(user.role));
 
     const handleSaveEdit = async () => {
         if (!rowEditingId) return;
@@ -160,26 +170,50 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                     value = `${Number(item.paid).toLocaleString()} BS`;
                                 } else if (id === 'options') {
                                     value =
-                                        !pdfMode && user?.role === "ADMIN" ? (
-                                            <div className='relative'>
-                                                <button onClick={() => setShowActionsMenu(!showActionsMenu)}>
+                                        !pdfMode && showActions ? (
+                                            <div className="relative">
+                                                <button
+                                                    type="button"
+                                                    onClick={() =>
+                                                        setActiveMenuId((prev) =>
+                                                            prev === item.id ? null : item.id,
+                                                        )
+                                                    }
+                                                    aria-label="Acciones ISLR"
+                                                >
                                                     ⋮
                                                 </button>
-                                                {showActionsMenu && (
-                                                    <div ref={menuRef} className='absolute flex flex-col bg-white rounded-md top-8'>
-                                                        <button onClick={() => {
-                                                            setRowEditingId(item.id);
-                                                            setEditValues(item);
-                                                        }}>Modificar</button>
-                                                        <button onClick={() => setReportIdToDelete(item.id)}
-                                                            className="text-red-600 hover:underline"
+                                                {activeMenuId === item.id && (
+                                                    <div
+                                                        ref={menuRef}
+                                                        className="absolute z-20 flex flex-col bg-white rounded-md shadow border border-gray-200 top-8 min-w-[120px]"
+                                                    >
+                                                        <button
+                                                            type="button"
+                                                            className="px-3 py-2 text-left text-sm hover:bg-gray-100"
+                                                            onClick={() => {
+                                                                setRowEditingId(item.id);
+                                                                setEditValues(item);
+                                                                setActiveMenuId(null);
+                                                            }}
                                                         >
-                                                            Eliminar
+                                                            Modificar
                                                         </button>
+                                                        {isAdmin && (
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => {
+                                                                    setReportIdToDelete(item.id);
+                                                                    setActiveMenuId(null);
+                                                                }}
+                                                                className="px-3 py-2 text-left text-sm text-red-600 hover:bg-gray-100"
+                                                            >
+                                                                Eliminar
+                                                            </button>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-
                                         ) : null;
                                 } else {
                                     value = String(item[id as keyof ISLRReports] ?? '');

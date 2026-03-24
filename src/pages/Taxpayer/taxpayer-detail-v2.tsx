@@ -76,13 +76,22 @@ export default function TaxpayerDetailV2() {
     user.role === 'COORDINATOR' ||
     detailViewer?.canUseQuickActions === true;
 
+  const canManageObservations =
+    user.role === 'ADMIN' ||
+    user.role === 'COORDINATOR' ||
+    detailViewer?.canManageObservations === true;
+
   const quickActions = [
     { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: 'bg-blue-600 hover:bg-blue-700' },
     { name: 'Multa', path: `/fine/${taxpayer}`, icon: AlertTriangle, color: 'bg-red-600 hover:bg-red-700' },
     { name: 'Pago', path: `/payment/${taxpayer}`, icon: DollarSign, color: 'bg-green-600 hover:bg-green-700' },
     { name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`, icon: FileText, color: 'bg-purple-600 hover:bg-purple-700' },
     { name: 'Observaciones', path: `/observations/${taxpayer}`, icon: Eye, color: 'bg-slate-600 hover:bg-slate-700' },
-  ].filter(opt => canSeeAllOptions || opt.name === 'Observaciones');
+  ].filter(
+    (opt) =>
+      canSeeAllOptions ||
+      (opt.name === 'Observaciones' && canManageObservations),
+  );
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
@@ -156,7 +165,11 @@ export default function TaxpayerDetailV2() {
           <TabsContent value="iva" className="mt-4">
             {taxSummary.length > 0 ? (
               <div className="overflow-x-auto">
-                <TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
+                <TaxSummaryTable
+                  rows={taxSummary}
+                  setRows={setTaxSummary}
+                  canEditReports={detailViewer?.canUseQuickActions === true}
+                />
               </div>
             ) : (
               <EmptyState 
@@ -169,7 +182,11 @@ export default function TaxpayerDetailV2() {
           <TabsContent value="islr" className="mt-4">
             {islrReports.length > 0 ? (
               <div className="overflow-x-auto">
-                <ISLRSummaryTable rows={islrReports} setRows={setIslrReports} />
+                <ISLRSummaryTable
+                  rows={islrReports}
+                  setRows={setIslrReports}
+                  canEditReports={detailViewer?.canUseQuickActions === true}
+                />
               </div>
             ) : (
               <EmptyState 

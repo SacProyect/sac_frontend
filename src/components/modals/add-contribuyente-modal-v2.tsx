@@ -22,6 +22,20 @@ import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { getOfficers } from '../utils/api/user-functions';
 import { TaxpayerCategories } from '@/types/taxpayer-categories';
+import { useAuth } from '@/hooks/use-auth';
+
+/** Normaliza respuesta axios o array suelto (listas de parroquias / categorías). */
+function extractDataArray(res: unknown): unknown[] {
+  if (res == null) return [];
+  if (Array.isArray(res)) return res;
+  const ax = res as { data?: unknown };
+  if (ax.data !== undefined) {
+    if (Array.isArray(ax.data)) return ax.data;
+    const nested = ax.data as { data?: unknown[] };
+    if (nested && Array.isArray(nested.data)) return nested.data;
+  }
+  return [];
+}
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -67,6 +81,8 @@ export function AddContribuyenteModalV2({
   const [parishList, setParishList] = useState<Parish[]>([]);
   const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
   const [officers, setOfficers] = useState<Array<{ id: string; name: string; personId: string }>>([]);
+  const [pdfFiles, setPdfFiles] = useState<File[]>([]);
+  const { user } = useAuth();
 
   // Cargar datos necesarios
   useEffect(() => {
@@ -78,16 +94,27 @@ export function AddContribuyenteModalV2({
             getTaxpayerCategories(),
             getOfficers(),
           ]);
-          if (parishRes?.data) setParishList(parishRes.data);
-          if (categoriesRes?.data) setTaxpayerCategories(categoriesRes.data);
-          if (officersRes) setOfficers(officersRes);
+          setParishList(extractDataArray(parishRes) as Parish[]);
+          setTaxpayerCategories(extractDataArray(categoriesRes) as TaxpayerCategories[]);
+          if (officersRes && Array.isArray(officersRes)) setOfficers(officersRes);
+          else setOfficers([]);
         } catch (error) {
           console.error('Error cargando datos:', error);
+          toast.error('No se pudieron cargar parroquias, categorías o funcionarios.');
         }
       };
       loadData();
     }
   }, [isOpen]);
+
+  /** Fiscal: solo puede asignarse a sí mismo; el backend antes no devolvía usuarios para FISCAL. */
+  useEffect(() => {
+    if (!isOpen || !user || user.role !== 'FISCAL') return;
+    const me = officers.find((o) => o.id === user.id);
+    if (me) {
+      setFormData((prev) => (prev.officerId === me.id ? prev : { ...prev, officerId: me.id }));
+    }
+  }, [isOpen, user, officers]);
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -119,6 +146,9 @@ export function AddContribuyenteModalV2({
     if (!formData.officerId) {
       newErrors.officerId = 'Funcionario es requerido';
     }
+    if (pdfFiles.length < 1) {
+      newErrors.pdfs = 'Debe adjuntar al menos un PDF de soporte';
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -132,32 +162,42 @@ export function AddContribuyenteModalV2({
     setIsSubmitting(true);
 
     try {
-      // Buscar parroquia y categoría por ID
-      const selectedParish = parishList.find((p) => p.id === formData.parish);
-      const selectedCategory = taxpayerCategories.find((c) => c.id === formData.category);
-      const selectedOfficer = officers.find((o) => o.id === formData.officerId);
+      const selectedParish = parishList.find((p) => String(p.id) === String(formData.parish));
+      const selectedCategory = taxpayerCategories.find((c) => String(c.id) === String(formData.category));
+      const selectedOfficer = officers.find((o) => String(o.id) === String(formData.officerId));
 
       if (!selectedParish || !selectedCategory || !selectedOfficer) {
-        toast.error('Error: Parroquia, Categoría o Funcionario no encontrado');
+        const missing: string[] = [];
+        if (!selectedParish) missing.push('parroquia');
+        if (!selectedCategory) missing.push('actividad económica');
+        if (!selectedOfficer) missing.push('funcionario');
+        toast.error(`No se encontró: ${missing.join(', ')}. Recargue la página o revise la sesión.`);
         setIsSubmitting(false);
         return;
       }
 
-      // Construir FormData para la API (igual que TaxpayerForm.tsx)
+      if (user?.role === 'FISCAL' && String(formData.officerId) !== String(user.id)) {
+        toast.error('Como fiscal solo puedes asignarte a ti mismo.');
+        setIsSubmitting(false);
+        return;
+      }
+
+      // Backend: `parish` y `category` en body son IDs (UUID) para Prisma, no nombres.
       const formDataToSend = new FormData();
       formDataToSend.append('providenceNum', formData.providenceNum);
       formDataToSend.append('process', formData.process);
       formDataToSend.append('name', formData.name);
       formDataToSend.append('rif', `${formData.rifPrefix}-${formData.rif}`);
       formDataToSend.append('address', formData.address);
-      formDataToSend.append('parish', selectedParish.name); // API espera nombre, no ID
-      formDataToSend.append('category', selectedCategory.name); // API espera nombre, no ID
+      formDataToSend.append('parish', String(selectedParish.id));
+      formDataToSend.append('category', String(selectedCategory.id));
       formDataToSend.append('emition_date', formData.emition_date);
       formDataToSend.append('contract_type', formData.contract_type);
       formDataToSend.append('officerId', formData.officerId);
-      
-      // Nota: El API requiere al menos un PDF, pero por ahora dejamos esto como placeholder
-      // En producción, deberías agregar un campo de upload de PDFs
+
+      for (const file of pdfFiles) {
+        formDataToSend.append('pdfs', file);
+      }
 
       const result = await createTaxpayer(formDataToSend);
 
@@ -177,6 +217,7 @@ export function AddContribuyenteModalV2({
           contract_type: contract_type.ORDINARY,
           officerId: '',
         });
+        setPdfFiles([]);
         setErrors({});
         onSuccess?.();
         onClose();
@@ -439,7 +480,9 @@ export function AddContribuyenteModalV2({
                 <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   {officers.map((officer) => (
                     <SelectItem key={officer.id} value={officer.id}>
-                      {officer.name} - C.I.: {officer.personId}
+                      {user?.role === 'FISCAL' && officer.id === user.id
+                        ? `${officer.name} (solo puedes agregarte a ti)`
+                        : `${officer.name} — C.I.: ${String(officer.personId ?? '')}`}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -448,6 +491,30 @@ export function AddContribuyenteModalV2({
                 <p className="text-red-400 text-xs mt-1">{errors.officerId}</p>
               )}
             </div>
+          </div>
+
+          {/* PDFs de investigación (obligatorio en API) */}
+          <div>
+            <Label htmlFor="pdfs" className="text-slate-300 mb-2 block">
+              Soporte PDF (investigación){' '}
+              <span className="text-red-400">*</span>
+            </Label>
+            <Input
+              id="pdfs"
+              type="file"
+              accept="application/pdf,.pdf"
+              multiple
+              className={`bg-slate-700 border-slate-600 text-slate-200 file:mr-2 file:rounded file:border-0 file:bg-indigo-600 file:px-3 file:py-1 file:text-white ${
+                errors.pdfs ? 'border-red-500' : ''
+              }`}
+              onChange={(e) => {
+                const list = e.target.files ? Array.from(e.target.files) : [];
+                setPdfFiles(list);
+                if (errors.pdfs) setErrors((prev) => ({ ...prev, pdfs: '' }));
+              }}
+            />
+            {errors.pdfs && <p className="text-red-400 text-xs mt-1">{errors.pdfs}</p>}
+            <p className="text-slate-500 text-xs mt-1">Al menos un archivo PDF. Requerido para crear el contribuyente.</p>
           </div>
         </form>
 

@@ -2,6 +2,9 @@ import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
 import { sharedRoutes, routeBlocks, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem } from '@/config/nav-routes';
 
+/** Evita dos entradas «Estadísticas» (/stats y /stats/fiscal/:id) en supervisor y fiscal. */
+const sharedRoutesNoGlobalStats = sharedRoutes.filter((r) => r.href !== '/stats');
+
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
  * Cada rol implementa este tipo.
@@ -36,7 +39,7 @@ const coordinatorStrategy: NavStrategy = () => [
  * SUPERVISOR: Acceso a IVA/ISLR, contribuciones, y estadísticas personales.
  */
 const supervisorStrategy: NavStrategy = (user) => [
-    ...sharedRoutes,
+    ...sharedRoutesNoGlobalStats,
     ...routeBlocks.fiscalStats(user.id),
     ...routeBlocks.ivaIslr,
     ...routeBlocks.contributions,
@@ -46,7 +49,7 @@ const supervisorStrategy: NavStrategy = (user) => [
  * FISCAL: Acceso a IVA/ISLR y estadísticas personales. Sin contribuciones.
  */
 const fiscalStrategy: NavStrategy = (user) => [
-    ...sharedRoutes,
+    ...sharedRoutesNoGlobalStats,
     ...routeBlocks.fiscalStats(user.id),
     ...routeBlocks.ivaIslr,
 ];

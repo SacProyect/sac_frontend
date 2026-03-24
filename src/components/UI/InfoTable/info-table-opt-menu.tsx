@@ -10,7 +10,16 @@ import { MoreVertical, Eye, Edit3, Trash2, X } from 'lucide-react';
 
 
 
-const InfoTableOptMenu = ({ id, setEditingRows }: { id: string; setEditingRows: React.Dispatch<React.SetStateAction<{ [key: string]: Partial<Taxpayer> }>>; }) => {
+const InfoTableOptMenu = ({
+    id,
+    officerId,
+    setEditingRows,
+}: {
+    id: string;
+    /** Fiscal asignado al contribuyente; para FISCAL solo puede editar si coincide con `user.id`. */
+    officerId?: string | null;
+    setEditingRows: React.Dispatch<React.SetStateAction<{ [key: string]: Partial<Taxpayer> }>>;
+}) => {
     const { user, setUser } = useAuth()
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -32,14 +41,44 @@ const InfoTableOptMenu = ({ id, setEditingRows }: { id: string; setEditingRows: 
         }
     };
 
-    const options = user.role == "ADMIN" ? [
-        { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
-        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })), icon: <Edit3 size={14} /> },
-        { name: 'Borrar', onPress: () => setIsDeleteModalOpen(true), icon: <Trash2 size={14} className="text-rose-400" /> }
-    ] : [
-        { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
-        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })), icon: <Edit3 size={14} /> },
-    ]
+    const fiscalOwnsRow = user.role === 'FISCAL' && officerId != null && officerId === user.id;
+
+    const options =
+        user.role === 'ADMIN'
+            ? [
+                  { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
+                  {
+                      name: 'Editar',
+                      onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })),
+                      icon: <Edit3 size={14} />,
+                  },
+                  {
+                      name: 'Borrar',
+                      onPress: () => setIsDeleteModalOpen(true),
+                      icon: <Trash2 size={14} className="text-rose-400" />,
+                  },
+              ]
+            : user.role === 'FISCAL'
+              ? [
+                    { name: 'Ver detalle', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
+                    ...(fiscalOwnsRow
+                        ? [
+                              {
+                                  name: 'Editar',
+                                  onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })),
+                                  icon: <Edit3 size={14} />,
+                              },
+                          ]
+                        : []),
+                ]
+              : [
+                    { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
+                    {
+                        name: 'Editar',
+                        onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })),
+                        icon: <Edit3 size={14} />,
+                    },
+                ];
 
     return (
         <div className="flex items-center justify-center w-full">

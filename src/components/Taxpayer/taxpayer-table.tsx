@@ -203,7 +203,11 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                                             </button>
                                         </div>
                                     ) : (
-                                        <InfoTableOptMenu id={item.id} setEditingRows={setEditingRows} />
+                                        <InfoTableOptMenu
+                                            id={item.id}
+                                            officerId={item.officerId}
+                                            setEditingRows={setEditingRows}
+                                        />
                                     )
                                 ) : col.id === 'emition_date' ? (
                                     new Date(item.emition_date).toLocaleDateString()
