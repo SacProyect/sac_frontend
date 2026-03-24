@@ -47,8 +47,12 @@ const supervisorStrategy: NavStrategy = (user) => [
  * FISCAL: Acceso a IVA/ISLR y estadísticas personales. Sin contribuciones.
  */
 const fiscalStrategy: NavStrategy = (user) => [
-    ...sharedRoutes,
-    ...routeBlocks.fiscalStats(user.id),
+    ...sharedRoutes.filter((item) => item.href !== '/stats' && item.href !== '/fiscal-review'),
+    {
+        href: `/stats/fiscal/${user.id}`,
+        label: 'Revisión Fiscal',
+        icon: routeBlocks.fiscalStats(user.id)[0].icon,
+    },
     ...routeBlocks.ivaIslr,
 ];
 
