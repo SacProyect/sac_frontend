@@ -3,6 +3,7 @@ import { ISLRReports } from '@/types/islr-reports';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { deleteISLR, updateIslrReport } from '../utils/api/taxpayer-functions';
+import { decimalToNumber } from '../utils/number.utils';
 
 interface Props {
     rows: ISLRReports[];
@@ -106,7 +107,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     return (
         <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4 lg:pt-8">
             {pdfMode && <p className='py-8 text-lg'>Historial de ISLR</p>}
-            <table className="min-w-full border-collapse table-auto">
+            <table className="min-w-full text-slate-100 border-collapse table-auto">
                 <thead className="w-full bg-[#2C3E50]">
                     <tr>
                         {columns.map((col, idx) => {
@@ -123,9 +124,9 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                         })}
                     </tr>
                 </thead>
-                <tbody>
+                <tbody className="text-slate-100">
                     {sortedItems.map((item, index) => (
-                        <tr key={item.id || index} className="border-b hover:bg-gray-100">
+                        <tr key={item.id || index} className="border-b border-slate-700/60 hover:bg-slate-800/40">
                             {columns.map(col => {
                                 const id = col.id;
                                 let value: React.ReactNode;
@@ -150,14 +151,20 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                             }}
                                         />
                                     ) : (
-                                        `${Number(item[id as keyof ISLRReports]).toLocaleString()} BS`
+                                        `${decimalToNumber(item[id as keyof ISLRReports]).toLocaleString('es-VE', {
+                                            minimumFractionDigits: 2,
+                                            maximumFractionDigits: 2,
+                                        })} BS`
                                     );
                                 } else if (id === 'taxpayer.name') {
                                     value = item.taxpayer.name;
                                 } else if (id === 'taxpayer.process') {
                                     value = item.taxpayer.process;
                                 } else if (id === 'paid') {
-                                    value = `${Number(item.paid).toLocaleString()} BS`;
+                                    value = `${decimalToNumber(item.paid).toLocaleString('es-VE', {
+                                        minimumFractionDigits: 2,
+                                        maximumFractionDigits: 2,
+                                    })} BS`;
                                 } else if (id === 'options') {
                                     value =
                                         !pdfMode && user?.role === "ADMIN" ? (
@@ -170,7 +177,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                         <button onClick={() => {
                                                             setRowEditingId(item.id);
                                                             setEditValues(item);
-                                                        }}>Modificar</button>
+                                                        }} className="text-black">Modificar</button>
                                                         <button onClick={() => setReportIdToDelete(item.id)}
                                                             className="text-red-600 hover:underline"
                                                         >
@@ -186,7 +193,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                 }
 
                                 return (
-                                    <td key={id} className="px-4 py-2 whitespace-nowrap">
+                                    <td key={id} className="px-4 py-2 whitespace-nowrap text-slate-100">
                                         {value}
                                     </td>
                                 );

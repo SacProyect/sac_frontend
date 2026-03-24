@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 import { deleteIva, updateIva } from '../utils/api/taxpayer-functions';
 import { useAuth } from '@/hooks/use-auth';
 import { useNavigate } from 'react-router-dom';
+import { decimalToNumber } from '../utils/number.utils';
 
 interface Props {
     rows: IVAReports[];
@@ -142,7 +143,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     return (
         <div className="w-full px-4 pt-16 overflow-auto text-sm custom-scroll">
             {pdfMode && <p className="py-8 text-lg">Historial de IVA</p>}
-            <table className="min-w-full text-left border-collapse">
+            <table className="min-w-full text-left text-slate-100 border-collapse">
                 <thead className="w-full bg-[#2C3E50]">
                     <tr>
                         {columns.map((col, idx) => {
@@ -159,12 +160,12 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                         })}
                     </tr>
                 </thead>
-                <tbody >
+                <tbody className="text-slate-100">
                     {processedItems.map((item) => (
-                        <tr key={item._key} className="hover:bg-gray-50">
+                        <tr key={item._key} className="hover:bg-slate-800/40">
                             {columns.map((col) => {
                                 return (
-                                    <td key={col.id} className="relative px-4 py-2 border-b border-gray-100 whitespace-nowrap">
+                                    <td key={col.id} className="relative px-4 py-2 border-b border-slate-700/60 whitespace-nowrap text-slate-100">
                                         {editingRowId === item.id && col.id !== 'options' ? (
                                             <input
                                                 value={String(editValues[col.id as keyof IVAReports] ?? '')}
@@ -176,7 +177,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                 <button
                                                     ref={(el) => { buttonRefs.current[item.id] = el; }}
                                                     onClick={() => toggleMenu(item.id, buttonRefs.current[item.id])}
-                                                    className="text-gray-600 hover:text-gray-900"
+                                                    className="text-slate-300 hover:text-white"
                                                 >
                                                     ⋮
                                                 </button>
@@ -187,7 +188,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                                 return `${d}/${m}/${y}`;
                                             })()
                                         ) : ['iva', 'excess', 'purchases', 'sells', 'paid'].includes(col.id) ? (
-                                            Number(item[col.id as keyof IVAReports] ?? 0).toLocaleString('es-VE', {
+                                            decimalToNumber(item[col.id as keyof IVAReports]).toLocaleString('es-VE', {
                                                 minimumFractionDigits: 2,
                                                 maximumFractionDigits: 2,
                                             })
@@ -214,7 +215,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                 handleEdit(row);
                             }
                         }}
-                        className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                        className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100"
                     >
                         Editar
                     </button>

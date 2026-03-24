@@ -4,7 +4,8 @@ import { useAuth } from '@/hooks/use-auth';
 import toast from 'react-hot-toast';
 import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
 import { Taxpayer } from '@/types/taxpayer';
-
+import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import { decimalToNumber } from '../utils/number.utils';
 interface EventTableProps {
   rows: Event[];
   setRows: React.Dispatch<React.SetStateAction<Event[]>>;
@@ -61,14 +62,27 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     setEditValues(prev => ({ ...prev, [field]: value }));
   };
 
+  const getEditInputValue = (row: Event, field: keyof Event) => {
+    const currentValue = editValues[field] ?? row[field];
+    if (field === 'amount') {
+      return String(decimalToNumber(currentValue));
+    }
+    return String(currentValue ?? '');
+  };
+
   const handleSave = async () => {
     if (!editingRowId) return;
     try {
       const cleanId = editingRowId;
 
       const { taxpayer, taxpayerId, date, officerId, ...rest } = editValues;
+      const normalizedAmount =
+        editValues.amount !== undefined
+          ? Number(String(editValues.amount).replace(',', '.')) || decimalToNumber(editValues.amount)
+          : undefined;
       const sanitizedPayload = {
         ...rest,
+        ...(normalizedAmount !== undefined ? { amount: normalizedAmount } : {}),
         id: cleanId,
         type: editValues.type, // aseguras que el type sí se mande
       };
@@ -147,7 +161,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     const fetchPage = async () => {
       try {
         const response = await getTaxpayerForEvents();
-        setTaxpayerArray(response.data ?? []);
+        setAdditionalPages(prev => [...prev, ...(response.data ?? [])]);
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }
@@ -166,7 +180,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
   return (
     <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
       {pdfMode && <p className="py-4 text-lg">Historial de Multas</p>}
-      <table className="relative w-full overflow-visible text-sm border-collapse">
+      <table className="relative w-full overflow-visible text-sm text-slate-100 border-collapse">
         <thead className="text-white bg-[#2C3E50]">
           <tr>
             {columns.map((col, index) => (
@@ -176,20 +190,20 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
             ))}
           </tr>
         </thead>
-        <tbody className="overflow-visible">
+        <tbody className="overflow-visible text-slate-100">
           {sortedRows.map(row => (
-            <tr key={row.id} className="border-b hover:bg-gray-100">
+            <tr key={row.id} className="border-b border-slate-700/60 hover:bg-slate-800/40">
               {columns.map(col => (
-                <td key={col.id} className="relative px-4 py-2">
+                <td key={col.id} className="relative px-4 py-2 text-slate-100">
                   {editingRowId === row.id && col.id !== 'options' && !['type', 'taxpayer', 'date', "debt"].includes(col.id) ? (
                     <input
-                      className="w-full px-2 py-1 border rounded"
-                      value={String(editValues[col.id as keyof Event] ?? '')}
+                      className="w-full px-2 py-1 rounded bg-slate-100 text-slate-900 border border-slate-300 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
+                      value={getEditInputValue(row, col.id as keyof Event)}
                       onChange={e => handleInputChange(col.id as keyof Event, e.target.value)}
                     />
                   ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
                     <div className="relative inline-block" ref={el => { menuRefs.current[row.id] = el; }}>
-                      <button onClick={() => toggleMenu(row.id)} className="text-gray-600 hover:text-gray-900">⋮</button>
+                      <button onClick={() => toggleMenu(row.id)} className="text-slate-300 hover:text-white">⋮</button>
                       {activeMenuId === row.id && (
                         <div className="fixed z-50 mt-1 bg-white border rounded shadow-md bottom-28 right-4 lg:bottom-4 lg:right-4">
                           <button
@@ -198,7 +212,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                               setEditValues(row);
                               setActiveMenuId(null);
                             }}
-                            className="block w-full px-4 py-2 text-left hover:bg-gray-100"
+                            className="block w-full px-4 py-2 text-left text-black hover:bg-gray-100"
                           >
                             Editar
                           </button>
@@ -219,7 +233,10 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                   ) : col.id === 'date' ? (
                     new Date(row.date).toLocaleDateString()
                   ) : col.id === 'amount' ? (
-                    `${row.amount} Bs`
+                    `${decimalToNumber(row.amount).toLocaleString('es-VE', {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })} Bs`
                   ) : col.id === 'debt' ? (
                     row.type === "FINE" ? (
                       user?.role === "ADMIN" ||
@@ -263,10 +280,13 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
       {editingRowId && (
         <div className="flex justify-end gap-4 mt-4">
-          <button onClick={handleSave} className="px-4 py-2 text-sm text-white bg-green-600 rounded hover:bg-green-700">
+          <button onClick={handleSave} className="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 border border-emerald-400/30">
             Guardar cambios
           </button>
-          <button onClick={() => { setEditingRowId(null); setEditValues({}); }} className="px-4 py-2 text-sm border rounded">
+          <button
+            onClick={() => { setEditingRowId(null); setEditValues({}); }}
+            className="px-4 py-2 text-sm font-semibold text-slate-200 border border-slate-500 rounded-lg hover:bg-slate-700/40"
+          >
             Cancelar
           </button>
         </div>
@@ -274,13 +294,13 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
       {eventIdToDelete && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="p-6 bg-white rounded shadow-md">
-            <p className="mb-4">¿Está seguro que desea eliminar el evento con ID: <strong>{eventIdToDelete}</strong>?</p>
+          <div className="p-6 border shadow-md bg-slate-900 border-slate-700 rounded-xl">
+            <p className="mb-4 text-slate-100">¿Está seguro que desea eliminar el evento con ID: <strong>{eventIdToDelete}</strong>?</p>
             <div className="flex justify-center gap-4">
-              <button onClick={confirmDelete} className="px-4 py-2 text-white bg-red-600 rounded hover:bg-red-700">
+              <button onClick={confirmDelete} className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700">
                 Confirmar
               </button>
-              <button onClick={() => setEventIdToDelete(null)} className="px-4 py-2 border rounded">
+              <button onClick={() => setEventIdToDelete(null)} className="px-4 py-2 border rounded-lg text-slate-200 border-slate-500 hover:bg-slate-700/40">
                 Cancelar
               </button>
             </div>
@@ -290,13 +310,13 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
       {pendingStatusChange && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-40">
-          <div className="w-full max-w-sm p-6 bg-white rounded-md shadow-xl">
-            <p className="mb-4 text-center text-gray-800">
+          <div className="w-full max-w-sm p-6 border shadow-xl bg-slate-900 border-slate-700 rounded-xl">
+            <p className="mb-4 text-center text-slate-100">
               ¿Confirmas cambiar el estado a <strong>{pendingStatusChange.newStatus === "paid" ? "Pagada" : "No pagada"}</strong>?
             </p>
             <div className="flex justify-center gap-4">
               <button
-                className="px-4 py-2 text-white bg-green-600 rounded hover:bg-green-700"
+                className="px-4 py-2 text-white bg-emerald-600 rounded-lg hover:bg-emerald-700"
                 onClick={async () => {
                   const { id, newStatus } = pendingStatusChange;
                   const success = await handlePaymentChange(id, newStatus);
@@ -306,7 +326,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                 Confirmar
               </button>
               <button
-                className="px-4 py-2 border rounded"
+                className="px-4 py-2 border rounded-lg text-slate-200 border-slate-500 hover:bg-slate-700/40"
                 onClick={() => setPendingStatusChange(null)}
               >
                 Cancelar
