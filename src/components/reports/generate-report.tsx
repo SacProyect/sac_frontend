@@ -39,11 +39,15 @@ function GenerateReport() {
     const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
     const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
     const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
+    const hasMorePages = isSearching
+        ? searchPage <= totalPagesDisplayed
+        : currentPage <= totalPagesDisplayed;
     const taxpayerArray = useMemo(
         () => [...displayedFirst, ...displayedExtra],
         [displayedFirst, displayedExtra]
     );
     useEffect(() => {
+        if (!user) {
             navigate("/login");
             return;
         }
@@ -63,7 +67,7 @@ function GenerateReport() {
             }
         }
         fetchGroups();
-    }, [user, navigate])
+    }, [navigate, user])
 
     useEffect(() => {
         const timeout = setTimeout(() => {
