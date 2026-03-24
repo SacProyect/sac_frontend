@@ -1,10 +1,12 @@
 import { apiConnection } from "./api-connection"
 import { contract_type, Taxpayer, TaxpayersListResponse, taxpayer_process } from "../../../types/taxpayer";
 import { Event } from "../../../types/event";
-import { NewEvent } from "../../Events/event-form";
-import { ObservationsForm } from "@/components/observations/observations-header";
-import { IvaReportFormData } from "@/components/iva/iva-form";
-import { IslrReportFormData } from "@/components/ISLR/islr-form";
+import type {
+	NewEvent,
+	ObservationsForm,
+	IvaReportFormData,
+	IslrReportFormData,
+} from "@/types/taxpayer-api-forms";
 import { IVAReports } from "@/types/iva-reports";
 import { ISLRReports } from "@/types/islr-reports";
 import Decimal from "decimal.js";

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import { useParams, useNavigate, useLoaderData, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'react-router-dom';
@@ -16,7 +16,7 @@ import {
   Receipt,
   FileSearch
 } from 'lucide-react';
-import { IndividualStats } from '@/components/stats/individual-stats';
+import { IndividualStats, type TaxpayerDetailViewer, type TaxpayerData } from '@/components/stats/individual-stats';
 import EventTable from '@/components/Events/event-table';
 import TaxSummaryTable from '@/components/iva/tax-summary-table';
 import ISLRSummaryTable from '@/components/ISLR/islr-summary-table';
@@ -59,15 +59,22 @@ export default function TaxpayerDetailV2() {
   const [taxSummary, setTaxSummary] = useState<IVAReports[]>(initialTaxSummary);
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
+  /** Capacidades del backend (`viewer` en GET /taxpayer/data/:id); alineado admin/fiscal/coord/supervisor */
+  const [detailViewer, setDetailViewer] = useState<TaxpayerDetailViewer | null>(null);
+
+  const onTaxpayerDataLoaded = useCallback((data: TaxpayerData) => {
+    if (data.viewer) setDetailViewer(data.viewer);
+  }, []);
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  // Determinar permisos para acciones rápidas
-  const matchedTaxpayer = user?.taxpayer?.find(t => t.id === taxpayer);
-  const canSeeAllOptions = 
-    user.role === "ADMIN" || (matchedTaxpayer && matchedTaxpayer.officerId === user.id);
+  // Acciones rápidas: mismo criterio que el admin cuando el backend autoriza (`viewer`)
+  const canSeeAllOptions =
+    user.role === 'ADMIN' ||
+    user.role === 'COORDINATOR' ||
+    detailViewer?.canUseQuickActions === true;
 
   const quickActions = [
     { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: 'bg-blue-600 hover:bg-blue-700' },
@@ -84,7 +91,11 @@ export default function TaxpayerDetailV2() {
         description="Información completa y gestión de eventos"
       />
 
-      <IndividualStats events={events} IVAReports={taxSummary} />
+      <IndividualStats
+        events={events}
+        IVAReports={taxSummary}
+        onTaxpayerDataLoaded={onTaxpayerDataLoaded}
+      />
 
       <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Acciones Rápidas</h3>

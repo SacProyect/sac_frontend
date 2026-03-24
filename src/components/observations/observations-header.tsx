@@ -3,13 +3,9 @@ import { CiCirclePlus } from "react-icons/ci";
 import { useForm } from 'react-hook-form'
 import { createObservation } from '../utils/api/taxpayer-functions';
 import toast from 'react-hot-toast';
+import type { ObservationsForm } from '@/types/taxpayer-api-forms';
 
-
-export interface ObservationsForm {
-    taxpayerId: string
-    description: string,
-    date: string,
-}
+export type { ObservationsForm };
 
 interface ObservationsHeaderProps {
     taxpayerId: string | undefined,
@@ -47,16 +43,16 @@ function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHe
             const response = await createObservation(payload);
 
             if (response) {
-                toast.success("Â¡ObservaciÃ³n creada exitosamente!")
+                toast.success("?Observaci?n creada exitosamente!")
                 reset({
                     date: new Date().toISOString(),
                     description: "",
                 }),
-                    onObservationCreated(); // âÿÿ trigger the refresh in parent
+                    onObservationCreated(); // ÿÿÿ trigger the refresh in parent
             }
         } catch (e) {
-            console.error("Error al crear la observaciÃ³n...", e)
-            toast.error("OcurriÃ³ un error al crear la observaciÃ³n")
+            console.error("Error al crear la observaci?n...", e)
+            toast.error("Ocurri? un error al crear la observaci?n")
         } finally {
             setIsSubmitting(false); // re-enable button
         }
@@ -68,18 +64,18 @@ function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHe
     return (
         <header className='w-full h-full lg:w-[82vw] lg:h-[25vh] '>
             <div className='flex items-center justify-center w-full pt-4 text-center lg:w-3/5'>
-                <h1 className="text-3xl font-bold mb-8 text-[#475569] w-full">GestiÃ³n de Observaciones</h1>
+                <h1 className="text-3xl font-bold mb-8 text-[#475569] w-full">Gesti?n de Observaciones</h1>
             </div>
 
             <div className='w-full h-full lg:h-[8rem] flex items-center justify-center'>
                 <div className='w-full lg:w-3/4 h-full bg-[#F1F5F9] shadow-sm'>
                     <div className='pt-4 pl-4'>
                         <div>
-                            <h2 className=' text-xl font-semibold mb-4 text-[#475569]'>Nueva ObservaciÃ³n</h2>
+                            <h2 className=' text-xl font-semibold mb-4 text-[#475569]'>Nueva Observaci?n</h2>
                         </div>
                         <form className='flex flex-col pt-2 pr-4 space-y-4 lg:space-y-0 lg:pr-0 lg:flex-row' onSubmit={handleSubmit(onSubmit)}>
                             <div className='w-full lg:w-[75%] h-[2rem] pb-8 lg:pb-0'>
-                                <input className='w-full h-full py-4 pl-2 border border-gray-200 rounded-md lg:py-0' {...register("description", { required: "Se debe proporcionar una observaciÃ³n", minLength: { value: 20, message: "La observaciÃ³n debe contener mÃ¡s de 20 caracteres" } })}></input>
+                                <input className='w-full h-full py-4 pl-2 border border-gray-200 rounded-md lg:py-0' {...register("description", { required: "Se debe proporcionar una observaci?n", minLength: { value: 20, message: "La observaci?n debe contener m?s de 20 caracteres" } })}></input>
                                 {errors.description && (
                                     <p className="mt-1 text-sm text-red-500 ">{errors.description.message}</p>
                                 )}
@@ -90,7 +86,7 @@ function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHe
                                     <CiCirclePlus size={15} className='text-white ' />
                                 </div>
                                 <div className=' lg:pr-0'>
-                                    <button className='flex items-center px-0 text-white' type='submit' disabled={isSubmitting}> Agregar ObservaciÃ³n</button>
+                                    <button className='flex items-center px-0 text-white' type='submit' disabled={isSubmitting}> Agregar Observaci?n</button>
                                 </div>
                             </div>
                         </form>

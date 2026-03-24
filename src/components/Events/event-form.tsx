@@ -14,8 +14,7 @@ import { Event } from '../../types/event';
 import { Taxpayer } from '../../types/taxpayer';
 import { parseDate, CalendarDate } from '@internationalized/date';
 import toast from 'react-hot-toast';
-import { IvaReportFormData } from '../iva/iva-form';
-import { IslrReportFormData } from '../ISLR/islr-form';
+import type { NewEvent, IvaReportFormData, IslrReportFormData } from '@/types/taxpayer-api-forms';
 import TaxpayerList from '../UI/taxpayer-list';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 
@@ -37,16 +36,7 @@ export interface EventFormData {
     description?: string;
 }
 
-export interface NewEvent {
-    date: string;
-    amount?: number;
-    taxpayerId: string;
-    eventId?: string;
-    debt?: number;
-    expires_at?: string;
-    fineEventId?: string;
-
-}
+export type { NewEvent };
 
 export interface PendingPayments {
     id: string;

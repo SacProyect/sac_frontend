@@ -32,6 +32,7 @@ import toast from 'react-hot-toast';
 import { createIVA, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
+import type { IvaReportFormData } from '@/types/taxpayer-api-forms';
 
 // Campos locales del formulario (interacción con el usuario)
 export interface IvaFormFields {
@@ -45,15 +46,7 @@ export interface IvaFormFields {
 }
 
 // Interfaz para el API (lo que espera taxpayer-functions)
-export interface IvaReportFormData {
-    taxpayerId: string;
-    iva?: Decimal;
-    purchases: Decimal;
-    sells: Decimal;
-    excess?: Decimal;
-    date: string;
-    paid: Decimal;
-}
+export type { IvaReportFormData };
 
 /**
  * IvaForm - Interfaz Premium para Registro de IVA

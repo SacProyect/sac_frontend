@@ -33,6 +33,7 @@ import toast from 'react-hot-toast';
 import { createISLR, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
+import type { IslrReportFormData } from '@/types/taxpayer-api-forms';
 
 // Campos locales del formulario (interacción con el usuario)
 export interface IslrFormFields {
@@ -45,14 +46,7 @@ export interface IslrFormFields {
 }
 
 // Interfaz para el API
-export interface IslrReportFormData {
-    taxpayerId: string;
-    incomes: string;
-    costs: string;
-    expent: string;
-    emition_date: string;
-    paid: string;
-}
+export type { IslrReportFormData };
 
 // -------------------------------------------------------------------
 // Utilidades de formateo venezolano: punto=miles, coma=decimal

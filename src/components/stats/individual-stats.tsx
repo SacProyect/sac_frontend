@@ -16,12 +16,20 @@ import { Settings } from "lucide-react";
 
 
 
+export type TaxpayerDetailViewer = {
+    canUseQuickActions: boolean;
+    canManageObservations: boolean;
+    isAssignedFiscal: boolean;
+};
+
 interface IndividualStatsProps {
     events: Event[],
     IVAReports: IVAReports[],
+    /** Devuelve el payload del detalle (incluye `viewer` del backend) para alinear permisos con la página padre */
+    onTaxpayerDataLoaded?: (data: TaxpayerData) => void,
 }
 
-interface TaxpayerData {
+export interface TaxpayerData {
     providenceNum: number;
     address: string;
     process: string;
@@ -44,11 +52,13 @@ interface TaxpayerData {
     updated_at?: string | Date;    // ✅ Fecha de última actualización (usada para fecha de notificación)
     /** Índice efectivo (Soberano): propio o general, ya resuelto por el backend. */
     currentEffectiveIndex?: number | null;
+    /** Metadatos de UI (GET /taxpayer/data/:id) — mismos caminos admin/fiscal/coord/supervisor */
+    viewer?: TaxpayerDetailViewer;
 }
 
 
 
-export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
     const { user } = useAuth();
@@ -75,6 +85,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
                     setTaxpayerData(data);
+                    onTaxpayerDataLoaded?.(data);
                 }
 
             } catch (e) {
@@ -85,7 +96,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
         fetchData()
 
 
-    }, [])
+    }, [onTaxpayerDataLoaded])
 
     let fines = 0;
 
