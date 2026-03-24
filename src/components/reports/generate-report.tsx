@@ -29,11 +29,12 @@ function GenerateReport() {
     const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const listRef = useRef<HTMLDivElement>(null);
+    const hideFpTaxpayers = user?.role !== "FISCAL";
 
     const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
     const firstPageFiltered = useMemo(
-        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
-        [firstPageTaxpayers]
+        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => !hideFpTaxpayers || t.process !== "FP"),
+        [firstPageTaxpayers, hideFpTaxpayers]
     );
     const isSearching = searchDebounce.trim() !== '';
     const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
@@ -91,7 +92,7 @@ function GenerateReport() {
                 const response = await getTaxpayerForEvents(1, 50, term);
                 if (cancelled) return;
                 const data = (response?.data?.data ?? []) as Taxpayer[];
-                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                const filtered = data.filter((t: Taxpayer) => !hideFpTaxpayers || t.process !== "FP");
                 setSearchResults(filtered);
                 setSearchTotalPages(response?.data?.totalPages ?? 1);
                 setSearchAdditionalPages([]);
@@ -104,7 +105,7 @@ function GenerateReport() {
         };
         fetchSearchFirst();
         return () => { cancelled = true; };
-    }, [searchDebounce]);
+    }, [searchDebounce, hideFpTaxpayers]);
 
     useEffect(() => {
         if (!isSearching && currentPage <= 2) return;
@@ -125,7 +126,7 @@ function GenerateReport() {
         try {
             const response = await getTaxpayerForEvents(pageToFetch, 50, term);
             const data = (response?.data?.data ?? []) as Taxpayer[];
-            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            const filtered = data.filter((t: Taxpayer) => !hideFpTaxpayers || t.process !== "FP");
             if (isSearching) {
                 setSearchAdditionalPages(prev => [...prev, ...filtered]);
                 setSearchPage(prev => prev + 1);
@@ -138,7 +139,7 @@ function GenerateReport() {
         } finally {
             setIsLoadingMore(false);
         }
-    }, [hasMorePages, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage]);
+    }, [hasMorePages, isLoadingMore, searchDebounce, isSearching, searchPage, currentPage, hideFpTaxpayers]);
 
     const handleScroll = useCallback(() => {
         const el = listRef.current;
