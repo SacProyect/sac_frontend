@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 import { Group } from "./group"
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 import { Taxpayer } from "./taxpayer"
 
 
@@ -14,7 +11,6 @@ export interface User {
     password: string,
     status: boolean,
     taxpayer: Taxpayer[],
-<<<<<<< HEAD
     coordinatedGroup: CoordinatedGroup,
     group: Group,
     groupId: string,
@@ -32,9 +28,3 @@ export interface CoordinatedGroup {
 }
 
 
-=======
-}
-
-
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)

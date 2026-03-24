@@ -6,21 +6,14 @@ import { Popover, Label, ListBox, ListBoxItem, Button } from 'react-aria-compone
 import { useFilter } from 'react-aria'
 import { Taxpayer } from '../../types/taxpayer'
 import { EventFormData } from '../Events/EventForm'
-<<<<<<< HEAD
 import { IvaReportFormData } from '../iva/IvaForm'
 import { IslrReportFormData } from '../ISLR/IslrForm'
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 
 
 
 interface TaxPayerValues {
-<<<<<<< HEAD
     control: Control<EventFormData | IvaReportFormData | IslrReportFormData>
-=======
-    control: Control<EventFormData>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     name: keyof EventFormData;
     label: string;
     taxpayers?: Taxpayer[]
@@ -38,7 +31,6 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValu
     // }
 
     const [filterValue, setFilterValue] = React.useState('');
-<<<<<<< HEAD
 
 
 
@@ -51,16 +43,6 @@ function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValu
     }, [taxpayers, filterValue, contains]);
 
 
-=======
-    const filteredItems = React.useMemo(() => {
-        // console.log("Taxpayers received in combobox:", taxpayers);
-        const result = taxpayers.filter(item =>
-            contains(`${item.providenceNum} ${item.process} ${item.rif}`, filterValue)
-        );
-        // console.log("Filtered Items:", result);
-        return result;
-    }, [taxpayers, filterValue, contains]);
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     return (
         <Controller
             control={control}

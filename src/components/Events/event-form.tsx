@@ -1,18 +1,11 @@
-<<<<<<< HEAD
 import { useRef } from 'react'
 import { useAuth } from '../../hooks/useAuth';
 import { Control, useForm } from 'react-hook-form';
-=======
-import React from 'react'
-import { useAuth } from '../../hooks/useAuth';
-import { useForm } from 'react-hook-form';
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 import TextInput from '../UI/TextInput';
 import FormContainer from '../UI/FormContainer';
 import { Form, Label, Button } from 'react-aria-components'
 import DateInputUI from '../UI/DateInputUI';
 import TaxpayerCombobox from '../UI/TaxpayerCombobox';
-<<<<<<< HEAD
 import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayerFunctions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import SelectInput from '../UI/SelectInput';
@@ -24,17 +17,6 @@ import toast from 'react-hot-toast';
 import { IvaReportFormData } from '../iva/IvaForm';
 import { IslrReportFormData } from '../ISLR/IslrForm';
 import TaxpayerList from '../UI/TaxpayerList';
-=======
-import { createEvent, getPendingPayments } from '../utils/api/taxpayerFunctions';
-import { useLoaderData, useNavigate } from 'react-router-dom';
-import SelectInput, { Item } from '../UI/SelectInput';
-import { useCallback, useEffect, useState } from 'react';
-import Alert from '../UI/Alert';
-import { Event } from '../../types/event';
-import { Taxpayer } from '../../types/taxpayer';
-import { parseDate, parseDateTime, CalendarDate, parseZonedDateTime } from '@internationalized/date';
-import toast from 'react-hot-toast';
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 
 
@@ -44,21 +26,14 @@ import toast from 'react-hot-toast';
 
 export interface EventFormData {
     id: string;
-<<<<<<< HEAD
     date: CalendarDate;
-=======
-    date: string;
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     type: string;
     amount: number;
     taxpayerId: string;
     eventId?: string
     debt?: number,
-<<<<<<< HEAD
     expires_at: string,
     description?: string;
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }
 
 export interface NewEvent {
@@ -67,12 +42,9 @@ export interface NewEvent {
     taxpayerId: string;
     eventId?: string;
     debt?: number;
-<<<<<<< HEAD
     expires_at?: string;
     fineEventId?: string;
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }
 
 export interface PendingPayments {
@@ -81,36 +53,25 @@ export interface PendingPayments {
     name: string;
     amount: string;
     debt?: number;
-<<<<<<< HEAD
     expires_at: string;
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }
 
 
 
 
-<<<<<<< HEAD
 function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
-=======
-function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     const { user } = useAuth();
     const navigate = useNavigate();
     const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>(useLoaderData() as PendingPayments[])
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
-<<<<<<< HEAD
     const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
     const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     if (!user) {
         navigate("/login");
         return null;
     }
 
-<<<<<<< HEAD
     useEffect(() => {
         const fetchTaxpayers = async () => {
             try {
@@ -124,9 +85,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
         fetchTaxpayers();
     }, []);
-=======
-    const taxpayerArray: Taxpayer[] = user.taxpayer
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
     // ✅ Filtrar los contribuyentes con process !== "FP"
     taxpayerArray = taxpayerArray.filter(t => t.process !== "FP");
@@ -134,7 +92,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     const {
         register,
         handleSubmit,
-<<<<<<< HEAD
         formState: { isValid, errors },
         watch,
         control,
@@ -190,35 +147,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
 
 
-=======
-        formState: { isValid },
-        watch,
-        control,
-        reset } = useForm<EventFormData>({
-            defaultValues: {
-                amount: 0.00,
-                date: new Date().toISOString().split('T')[0],  // Ensure date is a string
-            }
-        });
-
-
-    const taxPayerWatcher = watch("taxpayerId")
-
-    const getTaxpayerPendingPayments = useCallback(
-        async () => {
-            const auxPayments = await getPendingPayments((taxPayerWatcher))
-            const mappedPayments = auxPayments.map((event: Event) => { return { id: event.id, value: event.id, name: `${event.type} ${event.date.split("T")[0]} ${event.taxpayer} `, amount: event.amount, debt: event.debt } })
-            setPendingPayments(mappedPayments)
-        }, [taxPayerWatcher]
-    )
-    useEffect(() => { if (taxPayerWatcher != "" && type == "payment") { getTaxpayerPendingPayments() } }, [taxPayerWatcher])
-
-
-    if (type == "payment") console.log("PENDING PAYMENTS: " + JSON.stringify(pendingPayments))
-
-
-    const onSubmit = async (data: EventFormData) => {
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
         // Control to avoid several submits with the same data
         if (isSubmiting) return;
 
@@ -229,7 +157,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
         try {
 
             // Convert date to ISO 8601 format (e.g., "2025-03-17T00:00:00.000Z")
-<<<<<<< HEAD
 
             // console.log(typeof data.date);
 
@@ -258,18 +185,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     ...(data.description && { description: data.description }),
                 };
             } else {
-=======
-            const parsedDate = parseDate(data.date);
-            const formattedDate = new Date(parsedDate.year, parsedDate.month - 1, parsedDate.day).toISOString();
-
-            let newEvent: NewEvent;
-            if (type != "payment") {
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                 // Define data for the api request
                 newEvent = {
                     date: formattedDate,
                     amount: data.amount,
-<<<<<<< HEAD
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
                     expires_at: formattedExpiresAt,
                     fineEventId: data.eventId,
@@ -279,31 +198,12 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
 
 
-=======
-                    taxpayerId: data.taxpayerId,
-                };
-            } else {
-                newEvent = {
-                    date: formattedDate,
-                    amount: data.amount,
-                    taxpayerId: data.taxpayerId,
-                    eventId: data.eventId,
-                    debt: data.debt,
-                };
-            }
-            
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
             if (!newEvent.amount || isNaN(Number(newEvent.amount))) {
                 console.error("Error: Amount is required and must be a valid number.");
                 toast.error("El monto debe ser un monto válido")
                 return;
             }
 
-<<<<<<< HEAD
-=======
-            console.log(newEvent);
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
             // Create the event using the api passing the type of the event and the information
             const createdEvent = await createEvent(type, newEvent);
@@ -326,7 +226,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     date: new Date().toISOString().split('T')[0],
                     taxpayerId: "",
                     eventId: "",
-<<<<<<< HEAD
                     description: ""
                 });
 
@@ -334,9 +233,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 // Refresh pending payments after submitting a payment
                 await getTaxpayerPendingPayments();
-=======
-                });
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
             }
         } catch (error) {
             console.error("Error creating event:", error);
@@ -351,7 +247,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     // Watch for changes to the selected eventId
     const selectedEventId = watch("eventId");
 
-<<<<<<< HEAD
     useEffect(() => {
         if (selectedEventId) {
             const payment = pendingPayments.find(payment => payment.id === selectedEventId);
@@ -401,18 +296,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
     }, [pendingPayments, taxPayerWatcher, type, hasFetchedPayments]);
 
 
-=======
-    if (selectedEventId) {
-
-        useEffect(() => {
-            // Find the selected payment based on eventId
-            const payment = pendingPayments.find(payment => payment.id === selectedEventId);
-            setSelectedPayment(payment || null); // Update the selected payment state
-
-        }, [selectedEventId, pendingPayments]); // Trigger effect when selectedEventId or pendingPayments changes
-    }
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 
 
@@ -424,22 +307,13 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
 
                 {/* Select the taxpayer by it's ID */}
                 {
-<<<<<<< HEAD
                     taxpayerId == "" &&
                     <TaxpayerList name={"taxpayerId"} control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>} label={"Contribuyente"} taxpayers={taxpayerArray} />
-=======
-                    taxpayer == "" &&
-                    <TaxpayerCombobox name={"taxpayerId"} control={control} label={"Contribuyente"} taxpayers={taxpayerArray} />
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                 }
 
                 {/* If the type is payment, show the pending payments */}
                 {
-<<<<<<< HEAD
                     (type === "payment" || type === "payment_compromise" || type === "warning") &&
-=======
-                    type == "payment" &&
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                     <>
                         <SelectInput
                             control={control}
@@ -450,15 +324,10 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     </>
                 }
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                 {/* Select Date */}
                 <DateInputUI
                     name="date"
                     control={control}
-<<<<<<< HEAD
                     label={type === "payment" ? "Fecha de pago" : "Fecha de emisión"}
                 />
 
@@ -520,30 +389,6 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayer = "" }) {
                     <>
                         {selectedPayment && (
                             <p>Deuda a pagar: {selectedPayment.debt?.toString()} </p>
-=======
-                    label={"Fecha de pago"}
-                />
-
-
-                {/* Amount input */}
-                <>
-                    <Label className="text-black">Monto</Label>
-
-                    <TextInput
-                        placeholder={'3500...'}
-                        type='number'
-                        register={{ ...register("amount", { required: "Campo Obligatorio" }) }}
-                    />
-                </>
-
-
-                {/* Show acumulated debt */}
-                {
-                    type == "payment" &&
-                    <>
-                        {selectedPayment && (
-                            <p>Deuda acumulada: {selectedPayment.debt?.toString()} </p>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                         )}
                     </>
                 }

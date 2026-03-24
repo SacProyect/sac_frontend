@@ -1,12 +1,11 @@
-import LoginPage from '@/pages/Auth/LoginPage'
-import { ProtectedRoute } from '@/components/Navigation/ProtectedRoute';
-import Sidebar from '@/components/Navigation/Sidebar';
+import LoginPage from '@/components/Auth/Login'
+import { ProtectedRoute } from '@/components/Navigation/protected-route';
 import HomePage from '@/pages/Home/HomePage';
-import { getPendingPayments, getTaxpayerEvents } from '@/components/utils/api/taxpayerFunctions';
+import { getPendingPayments, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, RouterProvider } from 'react-router-dom';
-import { AuthLayout } from '@/hooks/useAuth';
-import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/reportFunctions';
-import { getOfficers } from '@/components/utils/api/userFunctions';
+import { AuthLayout } from '@/hooks/use-auth';
+import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/report-functions';
+import { getOfficers } from '@/components/utils/api/user-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayout from '@/MainLayout';

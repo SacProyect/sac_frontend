@@ -1,8 +1,4 @@
-<<<<<<< HEAD
 import { useState, useEffect } from 'react'
-=======
-import  { useState, useEffect } from 'react'
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 import SidebarButton from './SidebarButton'
 import { useAuth } from '../../hooks/useAuth'
 import NegativeButton from '../UI/NegativeButton'
@@ -14,10 +10,6 @@ function Sidebar() {
     const { user, logout } = useAuth()
     const navigate = useNavigate();
 
-<<<<<<< HEAD
-=======
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     if (!user) {
         navigate("/login");
         return null;
@@ -25,7 +17,6 @@ function Sidebar() {
 
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
-<<<<<<< HEAD
     const navOptions = user.role === "ADMIN" ? [
         { name: 'Inicio', path: '/' },
         { name: 'Tabla Censo', path: '/show-census' },
@@ -101,30 +92,10 @@ function Sidebar() {
         );
     }
 
-=======
-    const navOptions = user.role !== "ADMIN" ? [
-        { name: 'Inicio', path: '/' },
-        { name: 'Contribuyentes', path: '/taxpayer' },
-        { name: 'Avisos', path: '/warning' },
-        { name: 'Multas', path: '/fine' },
-        { name: 'Pagos', path: '/payment' },
-        { name: 'Compromisos de pagos', path: '/payment_compromise' }
-    ] : [
-        { name: 'Inicio', path: '/' },
-        { name: 'Contribuyentes', path: '/taxpayer' },
-        { name: 'Avisos', path: '/warning' },
-        { name: 'Multas', path: '/fine' },
-        { name: 'Pagos', path: '/payment' },
-        { name: 'Compromisos de pagos', path: '/payment_compromise' },
-        { name: "Estadísticas", path: "/" }
-    ]
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
     const handleLogout = () => {
         logout()
     }
 
-<<<<<<< HEAD
     useEffect(() => { }, [user])
 
 
@@ -136,19 +107,6 @@ function Sidebar() {
                     <div className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group">
                         <p className="text-xs">{user.name}</p>
                         <p className="text-xs">{user.role === "COORDINATOR" ? "COORDINADOR" : user.role}</p>
-=======
-    useEffect(() => { console.log(user) }, [user])
-
-    return (
-        <div className="flex w-screen">
-            <div className={`fixed top-0 left-0 h-screen bg-gray-800 text-gray-100 rounded-r-lg w-64 z-40 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'} lg:translate-x-0`}>
-                <div className="flex flex-col w-full h-full p-4">
-                    <div
-                        className="self-center px-3 py-2 mb-2 text-center bg-white rounded-lg cursor-pointer bg-opacity-10 w-fit group"
-                    >
-                        <p className="text-lg">{user.name}</p>
-                        <p className="text-md">{user.role}</p>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                         <div className="absolute z-20 hidden p-2 bg-gray-900 rounded-lg group-hover:block w-max min-w-40 -translate-x-1/4">
                             <p>Cédula: {user.personId}</p>
                             <NegativeButton onClick={handleLogout}>
@@ -166,13 +124,8 @@ function Sidebar() {
                     </ul>
 
                     <div className="mt-auto justify-self-end">
-<<<<<<< HEAD
                         <NegativeButton onClick={() => { }}>
                             <Link to={'/report/errors'}>
-=======
-                        <NegativeButton onClick={() => {}}>
-                            <Link to={'/'}>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                                 <p className="text-lg text-white">Aviso de Error</p>
                             </Link>
                         </NegativeButton>
@@ -180,7 +133,6 @@ function Sidebar() {
                 </div>
             </div>
 
-<<<<<<< HEAD
             {/* Sidebar for mobile (fixed) */}
             <div className={`fixed z-40 block lg:hidden w-64 h-screen bg-gray-800 text-gray-100 p-4 transition-transform duration-300 transform ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 <div className="flex flex-col w-full h-full">
@@ -220,9 +172,6 @@ function Sidebar() {
             </div>
 
             {/* Mobile Toggle Button */}
-=======
-
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
             <div className="fixed z-50 block lg:hidden bottom-4 right-4">
                 <button
                     className="flex items-center justify-center p-3 text-white bg-gray-800 rounded-full shadow-lg"
@@ -231,13 +180,6 @@ function Sidebar() {
                     <span className="material-icons">menu</span>
                 </button>
             </div>
-<<<<<<< HEAD
-=======
-
-            <div className="flex-1">
-                <Outlet />
-            </div>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
         </div>
     )
 }

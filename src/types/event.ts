@@ -12,12 +12,7 @@ export interface Event {
     taxpayer: Taxpayer[],
     payment: Payment[] | undefined,
     debt?: number;
-<<<<<<< HEAD
     expires_at: string,
     description?: string;
     officerId?: string
-=======
-
-    
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }

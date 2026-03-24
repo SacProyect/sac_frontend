@@ -1,19 +1,11 @@
 /// <reference types="vite/client" />
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
 
-<<<<<<< HEAD
 const base_url = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
 console.log(base_url);
 
 export const apiConnection = axios.create({
 	baseURL: base_url,
-=======
-
-
-
-export const apiConnection = axios.create({
-	baseURL: import.meta.env.VITE_BASE_URL,
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 	headers: {
 		"Content-Type": "application/json",
 	},

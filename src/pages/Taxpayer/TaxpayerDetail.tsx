@@ -1,6 +1,5 @@
 import EventTable from '../../components/Events/EventTable'
 import { Group } from 'react-aria-components'
-<<<<<<< HEAD
 import { useNavigate, useParams, useLocation, Navigate } from 'react-router-dom'
 import { Link } from 'react-router-dom'
 import { useLoaderData } from 'react-router-dom'
@@ -22,20 +21,11 @@ import { useAuth } from '@/hooks/useAuth'
 
 
 
-=======
-import { useParams } from 'react-router-dom'
-import { Link } from 'react-router-dom'
-import { useLoaderData } from 'react-router-dom'
-import { Event } from '../../types/event'
-import { Fines } from '../../App'
-import { Payment } from '../../types/payment'
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 
 
 const TaxpayerDetail = () => {
 	const { taxpayer } = useParams()
-<<<<<<< HEAD
 	const { events: initialEvents, fines, payments, taxSummary: initialTaxSummary, islrReports: initialIslrReports } = useLoaderData() as { events: Event[], fines: Fines, payments: Payment, taxSummary: IVAReports[], islrReports: ISLRReports[] }
 
 	const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -54,9 +44,6 @@ const TaxpayerDetail = () => {
 	// console.log("TAX SUMMARY FROM TAXPAYERDETAIL: " + JSON.stringify(taxSummary))
 	// console.log("FINES FROM TAXPAYERDETAIL: " + JSON.stringify(fines))
 	// console.log("PAYMENTS FROM TAXPAYERDETAIL: " + JSON.stringify(payments))
-=======
-	const { event, fines, payments } = useLoaderData() as {event: Event, fines: Fines, payments: Payment}
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 	const options = [{
 		name: 'Aviso', path: `/warning/${taxpayer}`
@@ -65,18 +52,13 @@ const TaxpayerDetail = () => {
 	}, {
 		name: 'Pago', path: `/payment/${taxpayer}`
 	}, {
-<<<<<<< HEAD
 		name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`
 	}, {
 		name: 'Observaciones', path: `/observations/${taxpayer}`
-=======
-		name: 'Compromiso de pago', path: `/compromiso_pago/${taxpayer}`
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 	}
 	]
 
 	return (
-<<<<<<< HEAD
 		<div className='flex flex-col max-w-[46rem] md:max-w-full lg:max-w-full h-full justify-center items-center w-full overflow-hidden'>
 			<IndividualStats events={events} IVAReports={taxSummary} />
 			<Group className="flex flex-col items-center justify-center w-full pt-4 mb-4 space-y-2 lg:pt-4 lg:flex-row lg:space-x-20 lg:space-y-0">
@@ -150,52 +132,6 @@ const TaxpayerDetail = () => {
 
 			</div>
 			}
-=======
-		<div
-			className='flex justify-center w-4/5 mt-20'>
-			<div className='flex-col'>
-				{
-					(fines && payments) &&
-					<div className='flex w-full mb-4 text-center'>
-
-						<div className="w-1/2">
-							<h2 className="w-full text-2xl font-bold text-center text-black mb-11">Multas</h2>
-							<div className='flex flex-col text-left'>
-								<span>Número total de multas: {fines.quantity}</span>
-								<span>Monto total adeudado: Bs{fines.total_amount}</span>
-
-							</div>
-						</div>
-
-						<div className="w-1/2">
-							<h2 className="w-full text-2xl font-bold text-center text-black mb-11">Pagos</h2>
-							<div className='flex flex-col text-left'>
-								<span>Pagos Totales: {payments.payments_number}</span>
-								<span>Monto total de Pagos: Bs{payments.total_amount}</span>
-								<span>Tasa de cumplimiento: {payments.compliance_rate}%</span>
-								<span>Demora promedio: {payments.average_delay} día(s)</span>
-							</div>
-						</div>
-
-					</div>
-				}
-
-				<Group className={"mb-8 justify-between w-full flex"}>
-					{options.map((opt) => (
-						<Link
-							to={opt.path}
-							className={`bg-[#3498db] border-none  px-5 py-1 font-light text-center  no-underline   my-1  cursor-pointer  rounded  w- transition  hover:bg-green-500  hover:-translate-y-1`}
-							key={opt.name}
-						>
-							<span className='text-white'>
-								+{opt.name}
-							</span>
-						</Link>
-					))}
-				</Group>
-				<EventTable propRows={event} />
-			</div>
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 		</div>
 	)
 }

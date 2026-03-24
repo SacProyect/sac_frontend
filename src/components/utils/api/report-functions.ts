@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { InputErrors } from "@/components/errors/report/ErrorsReport";
 import { apiConnection } from "./api-connection";
 import { GroupData } from "@/components/contributions/contribution-types";
@@ -19,9 +18,6 @@ export interface GroupRecordsInput {
 	month?: number
 }
 
-=======
-import { apiConnection } from "./apiConnection";
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 export const getFineHistory = async (taxpayerId: string) => {
 	try {
@@ -36,10 +32,7 @@ export const getFineHistory = async (taxpayerId: string) => {
 		return false
 	}
 }
-<<<<<<< HEAD
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 export const getPaymentHistory = async (taxpayerId: string) => {
 	try {
 		let requestURL = `reports/payments`
@@ -52,7 +45,6 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 		console.error(error)
 		return false
 	}
-<<<<<<< HEAD
 }
 
 export const getIslrReports = async (taxpayerId: string) => {
@@ -480,6 +472,4 @@ export const getGlobalKPI = async (year?: number) => {
 		throw new Error("No se pudo obtener los KPI globales...")
 	}
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 }

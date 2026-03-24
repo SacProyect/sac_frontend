@@ -1,25 +1,17 @@
 /* eslint-disable no-unused-vars */
 import React from 'react'
 import { useForm } from 'react-hook-form';
-<<<<<<< HEAD
 import { useLocation, useNavigate } from 'react-router-dom';
-=======
-import { useNavigate } from 'react-router-dom';
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 import { useAuth } from '../../hooks/useAuth';
 import { useEffect } from 'react';
 import TextInput from '../UI/TextInput';
 import { signIn } from '../utils/api/userFunctions';
-<<<<<<< HEAD
 import toast from 'react-hot-toast';
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 function Login() {
     const { register, handleSubmit } = useForm<{ personId: string; password: string }>();
     const navigate = useNavigate();
     const { login, user } = useAuth()!;
-<<<<<<< HEAD
     const location = useLocation();
     const from = location.state?.from?.pathname || "/";
 
@@ -36,31 +28,12 @@ function Login() {
         } catch (error: any) {
             console.error(error);
             toast.error("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
-=======
-
-    const validateLogin = async (data: { personId: string; password: string }) => {
-        try {
-
-            const response = await signIn(data.personId, data.password);
-
-            
-            const { user, token } = response;
-
-            login(user, token);
-        } catch (error) {
-            console.error("Error al validar el login:", error);
-            alert("Ocurrió un error al intentar iniciar sesión. Verifique sus credenciales.");
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
         }
     };
 
     useEffect(() => {
         if (user) {
-<<<<<<< HEAD
             navigate(from, { replace: true }); // If the user is already logged in
-=======
-            navigate("/");
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
         }
     }, [user]);
 
@@ -74,7 +47,6 @@ function Login() {
                         <TextInput
                             register={{ ...register('personId') }}
                             placeholder="Cédula"
-<<<<<<< HEAD
                         />
 
 
@@ -82,17 +54,6 @@ function Login() {
                             type='password'
                             register={{ ...register('password') }}
                             placeholder="Contraseña"
-=======
-                        // className="w-full"
-                        />
-
-
-                        <TextInput
-                            type='password'
-                            register={{ ...register('password') }}
-                            placeholder="Contraseña"
-                        // className="w-full"
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
                         />
 
                         <button
