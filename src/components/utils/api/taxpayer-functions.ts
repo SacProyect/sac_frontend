@@ -2,15 +2,12 @@ import { apiConnection } from "./apiConnection"
 import { contract_type, Taxpayer, taxpayer_process } from "../../../types/taxpayer";
 import { Event } from "../../../types/event";
 import { NewEvent } from "../../Events/EventForm";
-<<<<<<< HEAD
 import { ObservationsForm } from "@/components/observations/ObservationsHeader";
 import { IvaReportFormData } from "@/components/iva/IvaForm";
 import { IslrReportFormData } from "@/components/ISLR/IslrForm";
 import { IVAReports } from "@/types/IvaReports";
 import { ISLRReports } from "@/types/ISLRReports";
 import Decimal from "decimal.js";
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 
 interface TaxpayerData {
 	providenceNum: number,
@@ -21,7 +18,6 @@ interface TaxpayerData {
 	officerId: string,
 }
 
-<<<<<<< HEAD
 interface UpdateObservationPayload {
 	description: string;
 }
@@ -126,35 +122,6 @@ export const createTaxpayer = async (taxpayerData: FormData) => {
 		} else {
 			// Other unexpected errors
 			return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
-=======
-
-
-export const createTaxpayer = async (taxpayerData: TaxpayerData) => {
-	try {
-
-		const response = await apiConnection.post(`/taxpayer`, taxpayerData);
-
-		if (response.status == 200 || response.status == 201) {
-			return response.data;
-		} else {
-			console.error("API ERROR: ", response.status, response.data);
-			return { success: false, message: "Failed to create taxpayer." }
-		}
-	} catch (error: any) {
-		if (error.response) {
-			// Error response from the server
-			console.error('Server responded with error:', error.response.status, error.response.data);
-
-			return { success: false, message: error.response.data }
-		} else if (error.request) {
-			// No response received
-			console.error('No response received:', error.request);
-			return { success: false, message: 'No response from server' };
-		} else {
-			// Other errors (e.g., network or code issues)
-			console.error('Error occurred:', error.message);
-			return { success: false, message: error.message || 'An unknown error occurred' };
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 		}
 	}
 }
@@ -173,7 +140,6 @@ export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string)
 	}
 }
 
-<<<<<<< HEAD
 export const getTaxpayers = async () => {
 	try {
 		let requestURL = "/taxpayer/get-taxpayers"
@@ -247,8 +213,6 @@ export const getTaxpayerForEvents = async () => {
 	}
 }
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 export const deleteTaxpayer = async (taxpayerId: string) => {
 	try {
 		const response = await (await apiConnection.delete(`/taxpayer/${taxpayerId}`)).data
@@ -258,7 +222,6 @@ export const deleteTaxpayer = async (taxpayerId: string) => {
 	}
 }
 
-<<<<<<< HEAD
 export const deleteObservations = async (observationId: string) => {
 	// console.log(observationId)
 
@@ -271,24 +234,17 @@ export const deleteObservations = async (observationId: string) => {
 	}
 }
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 export const createEvent = async (event_type: string, event_data: NewEvent) => {
 	try {
 		const response = await (await apiConnection.post(`/taxpayer/${event_type}`, event_data)).data
 
 		return response
 	} catch (error) {
-<<<<<<< HEAD
 		// console.log(error)
-=======
-		console.log(error)
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 		return false
 	}
 }
 
-<<<<<<< HEAD
 export const updateObservation = async (id: string, newDescription: string) => {
 	try {
 
@@ -558,8 +514,6 @@ export const getObservations = async (taxpayerId: string) => {
 
 
 
-=======
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
 export const getAllEvents = async () => {
 	try {
 		const response = await (await apiConnection.get(`/taxpayer/event/all`)).data
@@ -578,7 +532,6 @@ export const getPendingPayments = async (taxpayerId: string) => {
 		const response = await (await apiConnection.get(requestURL)).data
 		return response
 	} catch (error) {
-<<<<<<< HEAD
 		console.error(error)
 		return []
 	}
@@ -725,9 +678,3 @@ export const deleteISLR = async (id: string) => {
 }
 
 
-=======
-		console.log(error)
-		return []
-	}
-}
->>>>>>> f015be3 (validations and changes in files for tsx instead of jsx)
