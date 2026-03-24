@@ -11,7 +11,7 @@ interface Props {
     setRows?: React.Dispatch<React.SetStateAction<IVAReports[]>>;
 }
 
-const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
+const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => { 
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
     const [activeMenuId, setActiveMenuId] = useState<string | null>(null);
     const [editingRowId, setEditingRowId] = useState<string | null>(null);
