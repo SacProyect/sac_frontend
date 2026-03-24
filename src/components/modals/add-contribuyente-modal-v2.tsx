@@ -242,7 +242,7 @@ export function AddContribuyenteModalV2({
                 >
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   <SelectItem value={taxpayer_process.FP}>FP</SelectItem>
                   <SelectItem value={taxpayer_process.AF}>AF</SelectItem>
                   <SelectItem value={taxpayer_process.VDF}>VDF</SelectItem>
@@ -284,7 +284,7 @@ export function AddContribuyenteModalV2({
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white w-20">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 text-white">
                   <SelectItem value="J">J-</SelectItem>
                   <SelectItem value="V">V-</SelectItem>
                   <SelectItem value="G">G-</SelectItem>
@@ -340,7 +340,7 @@ export function AddContribuyenteModalV2({
                 >
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   {parishList.map((parish) => (
                     <SelectItem key={parish.id} value={parish.id}>
                       {parish.name}
@@ -370,7 +370,7 @@ export function AddContribuyenteModalV2({
               >
                 <SelectValue placeholder="Seleccionar..." />
               </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
+              <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                 {taxpayerCategories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}
@@ -414,7 +414,7 @@ export function AddContribuyenteModalV2({
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   <SelectItem value={contract_type.ORDINARY}>Ordinario</SelectItem>
                   <SelectItem value={contract_type.SPECIAL}>Especial</SelectItem>
                 </SelectContent>
@@ -436,7 +436,7 @@ export function AddContribuyenteModalV2({
                 >
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   {officers.map((officer) => (
                     <SelectItem key={officer.id} value={officer.id}>
                       {officer.name} - C.I.: {officer.personId}
