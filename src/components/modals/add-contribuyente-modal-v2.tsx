@@ -366,7 +366,7 @@ export function AddContribuyenteModalV2({
           </div>
 
           {/* Row 6: Fecha de Emisión, Tipo, Funcionario */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="emition_date" className="text-slate-300 mb-2 block">
                 Fecha de Emisión
@@ -376,7 +376,7 @@ export function AddContribuyenteModalV2({
                 type="date"
                 value={formData.emition_date}
                 onChange={(e) => handleChange('emition_date', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white ${
+                className={`w-full bg-slate-700 border-slate-600 text-white ${
                   errors.emition_date ? 'border-red-500' : ''
                 }`}
               />
@@ -393,7 +393,7 @@ export function AddContribuyenteModalV2({
                 value={formData.contract_type}
                 onValueChange={(value) => handleChange('contract_type', value as contract_type)}
               >
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
@@ -412,7 +412,7 @@ export function AddContribuyenteModalV2({
                 onValueChange={(value) => handleChange('officerId', value)}
               >
                 <SelectTrigger
-                  className={`bg-slate-700 border-slate-600 text-white ${
+                  className={`w-full bg-slate-700 border-slate-600 text-white ${
                     errors.officerId ? 'border-red-500' : ''
                   }`}
                 >

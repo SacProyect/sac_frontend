@@ -463,6 +463,58 @@ export const createIVA = async (data: IvaReportFormData) => {
 	}
 };
 
+export const getTaxpayerIvaReports = async (taxpayerId: string): Promise<IVAReports[]> => {
+	try {
+		const requestUrl = `/reports/individual-iva-last-declared/${taxpayerId}`;
+		const response = await apiConnection.get(requestUrl);
+		const payload = response.data;
+
+		if (Array.isArray(payload)) return payload as IVAReports[];
+		if (Array.isArray(payload?.data)) return payload.data as IVAReports[];
+		return [];
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los reportes de IVA del contribuyente.");
+	}
+};
+
+export interface TaxpayerIvaLastDeclaredResponse {
+	taxpayerId: string;
+	lastDeclared: {
+		year: number;
+		month: number;
+		monthName: string;
+		label: string;
+		date: string;
+	};
+	nextToDeclare: {
+		year: number;
+		month: number;
+		monthName: string;
+		label: string;
+	};
+}
+
+export const getTaxpayerIvaLastDeclared = async (
+	taxpayerId: string
+): Promise<TaxpayerIvaLastDeclaredResponse | null> => {
+	try {
+		const requestUrl = `/reports/individual-iva-last-declared/${taxpayerId}`;
+		const response = await apiConnection.get(requestUrl);
+		const payload = response.data as TaxpayerIvaLastDeclaredResponse;
+
+		if (!payload?.nextToDeclare) return null;
+		return payload;
+	} catch (e: any) {
+		if (e?.response?.status === 404) {
+			// No hay declaraciones IVA para este contribuyente.
+			return null;
+		}
+		console.error(e);
+		throw new Error("No se pudo obtener el último período declarado de IVA.");
+	}
+};
+
 export const createISLR = async (data: IslrReportFormData) => {
 
 	try {
