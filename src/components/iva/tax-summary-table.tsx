@@ -141,9 +141,9 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     }, []);
 
     return (
-        <div className="w-full px-4 pt-16 overflow-auto text-sm custom-scroll">
+        <div className="w-full overflow-x-auto text-sm custom-scroll">
             {pdfMode && <p className="py-8 text-lg">Historial de IVA</p>}
-            <table className="min-w-full text-left text-slate-100 border-collapse">
+            <table className="min-w-[580px] w-full text-left text-slate-100 border-collapse">
                 <thead className="w-full bg-[#2C3E50]">
                     <tr>
                         {columns.map((col, idx) => {
@@ -152,7 +152,7 @@ const TaxSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                             return (
                                 <th
                                     key={col.id}
-                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
+                                    className={`px-3 py-2 font-semibold text-xs md:text-sm text-white whitespace-nowrap border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
                                 >
                                     {col.name}
                                 </th>

@@ -105,9 +105,9 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
     };
 
     return (
-        <div className="w-full lg:h-[30vh] overflow-auto text-sm custom-scroll px-4 lg:pt-8">
+        <div className="w-full overflow-x-auto text-sm custom-scroll">
             {pdfMode && <p className='py-8 text-lg'>Historial de ISLR</p>}
-            <table className="min-w-full text-slate-100 border-collapse table-auto">
+            <table className="min-w-[640px] w-full text-slate-100 border-collapse table-auto">
                 <thead className="w-full bg-[#2C3E50]">
                     <tr>
                         {columns.map((col, idx) => {
@@ -116,7 +116,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                             return (
                                 <th
                                     key={col.id}
-                                    className={`px-4 py-2 font-semibold text-white border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
+                                    className={`px-3 py-2 font-semibold text-xs md:text-sm text-white whitespace-nowrap border-b border-gray-300 ${isFirst ? 'rounded-tl-md' : ''} ${isLast ? 'rounded-tr-md' : ''}`}
                                 >
                                     {col.name}
                                 </th>

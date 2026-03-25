@@ -368,7 +368,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     return (
-        <div className="w-full text-white mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
+        <div className="w-full text-white mt-4 px-0 sm:px-2 md:px-0 lg:mt-0 overflow-x-hidden">
 
           {/* ── Design tokens ── */}
           <style>{`
@@ -489,7 +489,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             }
           `}</style>
 
-          <div className="is-card flex flex-col lg:flex-row w-full max-w-full lg:max-w-[960px] lg:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+          <div className="is-card flex flex-col lg:flex-row w-full max-w-full xl:max-w-[960px] xl:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
 
                 {/* ── Columna Izquierda — Datos del Contribuyente ── */}
                 <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4">

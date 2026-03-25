@@ -350,16 +350,16 @@ export default function AdminPageV2() {
             tableData.map((item) => (
               <TableRow
                 key={item.id}
-                className="border-slate-700 hover:bg-slate-800 transition-all duration-200"
+                className="border-slate-700 hover:bg-slate-800 transition-all duration-200 h-14"
               >
-                <TableCell className="font-mono text-xs text-slate-300">
+                <TableCell className="font-mono text-xs text-slate-300 whitespace-nowrap">
                   {item.nroProvidencia}
                 </TableCell>
-                <TableCell className="text-xs text-slate-400">{item.procedimiento}</TableCell>
-                <TableCell className="text-sm text-slate-200 font-medium">
-                  {item.razonSocial}
+                <TableCell className="text-xs text-slate-400 whitespace-nowrap">{item.procedimiento}</TableCell>
+                <TableCell className="text-sm text-slate-200 font-medium max-w-[160px]">
+                  <span className="block truncate" title={item.razonSocial}>{item.razonSocial}</span>
                 </TableCell>
-                <TableCell className="font-mono text-xs text-slate-400">{item.rif}</TableCell>
+                <TableCell className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.rif}</TableCell>
                 <TableCell>
                   <span
                     className={`inline-block px-2 py-1 rounded text-xs font-medium ${
@@ -371,14 +371,14 @@ export default function AdminPageV2() {
                     {item.tipo}
                   </span>
                 </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden lg:table-cell">
-                  {item.direccion}
+                <TableCell className="text-xs text-slate-400 hidden lg:table-cell max-w-[140px]">
+                  <span className="block truncate" title={item.direccion}>{item.direccion}</span>
                 </TableCell>
                 <TableCell className="text-xs text-slate-400 hidden md:table-cell">
                   {item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A'}
                 </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden lg:table-cell">
-                  {item.parroquia}
+                <TableCell className="text-xs text-slate-400 hidden lg:table-cell whitespace-nowrap">
+                  <span className="block truncate max-w-[100px]" title={item.parroquia}>{item.parroquia}</span>
                 </TableCell>
                 <TableCell className="text-xs text-slate-400 hidden xl:table-cell">
                   {item.fiscal}

@@ -178,13 +178,13 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
 
   return (
-    <div className="w-full mx-auto overflow-auto lg:max-w-5xl custom-scroll">
+    <div className="w-full mx-auto overflow-x-auto lg:max-w-5xl custom-scroll">
       {pdfMode && <p className="py-4 text-lg">Historial de Multas</p>}
-      <table className="relative w-full overflow-visible text-sm text-slate-100 border-collapse">
+      <table className="relative w-full min-w-[520px] overflow-visible text-sm text-slate-100 border-collapse">
         <thead className="text-white bg-[#2C3E50]">
           <tr>
             {columns.map((col, index) => (
-              <th key={col.id} className={`px-4 py-2 font-semibold ${index === 0 ? 'rounded-tl-md' : index === columns.length - 1 ? 'rounded-tr-md' : ''}`}>
+              <th key={col.id} className={`px-3 py-2 font-semibold text-xs md:text-sm whitespace-nowrap ${index === 0 ? 'rounded-tl-md' : index === columns.length - 1 ? 'rounded-tr-md' : ''}`}>
                 {col.label}
               </th>
             ))}
