@@ -90,18 +90,18 @@ const MainLayoutV2 = () => {
         </div>
     );
 
-    // Sidebar para desktop
+    // Sidebar para desktop (solo visible en lg+, tablets usan el Sheet)
     const DesktopSidebar = () => (
-        <div className="hidden md:flex flex-col w-64 bg-[#0f172a] h-screen border-r border-slate-800/50 sticky top-0 self-start">
+        <div className="hidden lg:flex flex-col w-56 xl:w-64 bg-[#0f172a] h-screen border-r border-slate-800/50 sticky top-0 self-start flex-shrink-0">
             <SidebarContent />
         </div>
     );
 
-    // Sidebar móvil (Sheet)
+    // Sidebar móvil (Sheet) — visible en tablet (md) y mobile (sm)
     const MobileSidebar = () => (
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden text-white hover:bg-slate-800/50">
+                <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-slate-800/50">
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
@@ -205,7 +205,7 @@ const MainLayoutV2 = () => {
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] pointer-events-none rounded-full" />
                     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
                     
-                    <div className="px-4 py-6 md:px-10 md:py-8 lg:px-12 min-h-full max-w-full relative z-10 transition-all duration-500">
+                    <div className="px-4 py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 min-h-full max-w-full relative z-10 transition-all duration-500">
                         <Outlet />
                     </div>
                 </main>

@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Card } from '@/components/UI/card';
@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import { Button as DialogButton } from '@/components/UI/button';
-import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X, Building2 } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -66,6 +66,8 @@ export default function AdminPageV2() {
   const [isAddContribuyenteOpen, setIsAddContribuyenteOpen] = useState(false);
   const [isAddAvisoOpen, setIsAddAvisoOpen] = useState(false);
   const [isAddMultaOpen, setIsAddMultaOpen] = useState(false);
+  const [searchFocused, setSearchFocused] = useState(false);
+  const searchContainerRef = useRef<HTMLDivElement>(null);
 
   // Paginación del servidor
   const [currentPage, setCurrentPage] = useState(1);
@@ -75,17 +77,27 @@ export default function AdminPageV2() {
   const [totalOrdinary, setTotalOrdinary] = useState(0);
   const limit = 50;
 
-  // Detectar mobile
+  // Detectar mobile/tablet (< 1024px usa vista de cards)
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
+      setIsMobile(window.innerWidth < 1024);
     };
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Debounce para búsqueda
+  // Cerrar el panel de resultados al hacer click fuera
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (searchContainerRef.current && !searchContainerRef.current.contains(e.target as Node)) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   const debouncedSearch = useDebounce(searchValue.toLowerCase(), 500);
 
   // Resetear página cuando cambian los filtros
@@ -423,53 +435,161 @@ export default function AdminPageV2() {
         </div>
 
         {/* Acciones Rápidas y Filtros */}
-        <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
+        <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
           <Card className="bg-slate-800 border-slate-700 p-4 flex-1">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            <div>
+          <div className="space-y-3">
+            {/* Buscador: fila completa con panel de resultados */}
+            <div className="relative" ref={searchContainerRef}>
               <label className="block text-sm font-medium text-slate-300 mb-2">Buscar</label>
-              <Input
-                placeholder="Razón Social, RIF, Nro Providencia..."
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
-              />
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
+                <Input
+                  placeholder="Razón Social, RIF, Nro Providencia..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  onFocus={() => setSearchFocused(true)}
+                  className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 pl-9 pr-9"
+                />
+                {searchValue && (
+                  <button
+                    onClick={() => { setSearchValue(''); setSearchFocused(false); }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white transition-colors"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+
+              {/* Panel de resultados en tiempo real — solo en tablet/mobile */}
+              {searchFocused && searchValue.trim() && isMobile && (
+                <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl shadow-black/50 overflow-hidden">
+                  {/* Header del panel */}
+                  <div className="px-3 py-2 border-b border-slate-700 flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                      {loading ? 'Buscando...' : `${tableData.length} resultado${tableData.length !== 1 ? 's' : ''}`}
+                    </span>
+                    {!loading && tableData.length > 0 && (
+                      <span className="text-xs text-indigo-400">
+                        Toca para ver detalle
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Lista con scroll */}
+                  <div className="max-h-64 overflow-y-auto overscroll-contain">
+                    {loading ? (
+                      <div className="space-y-1 p-2">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                          <div key={i} className="flex items-center gap-3 p-3 rounded-md">
+                            <div className="w-8 h-8 rounded-full bg-slate-700 animate-pulse flex-shrink-0" />
+                            <div className="flex-1 space-y-1.5">
+                              <div className="h-3 bg-slate-700 rounded animate-pulse w-3/4" />
+                              <div className="h-2.5 bg-slate-700/60 rounded animate-pulse w-1/2" />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    ) : tableData.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
+                        <Search className="h-8 w-8 text-slate-600 mb-2" />
+                        <p className="text-slate-400 text-sm">Sin resultados para</p>
+                        <p className="text-slate-300 text-sm font-medium mt-0.5">&ldquo;{searchValue}&rdquo;</p>
+                      </div>
+                    ) : (
+                      tableData.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => {
+                            navigate(`/taxpayer/${item.id}`);
+                            setSearchFocused(false);
+                          }}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-700/80 active:bg-slate-700 transition-colors text-left border-b border-slate-700/50 last:border-0"
+                        >
+                          {/* Icono tipo */}
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
+                            item.tipo === 'Especial'
+                              ? 'bg-purple-900/60 text-purple-300'
+                              : 'bg-blue-900/60 text-blue-300'
+                          }`}>
+                            {item.tipo === 'Especial' ? 'E' : 'O'}
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-100 truncate">{item.razonSocial}</p>
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-slate-400 font-mono">{item.rif}</span>
+                              {item.nroProvidencia !== 'N/A' && (
+                                <span className="text-xs text-slate-500">· {item.nroProvidencia}</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Badge estado */}
+                          <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
+                            item.tipo === 'Especial'
+                              ? 'bg-purple-900/40 text-purple-300'
+                              : 'bg-blue-900/40 text-blue-300'
+                          }`}>
+                            {item.tipo}
+                          </span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+
+                  {/* Footer — ver todos en la tabla */}
+                  {!loading && tableData.length > 0 && (
+                    <div className="px-3 py-2 border-t border-slate-700 bg-slate-900/50">
+                      <button
+                        onClick={() => setSearchFocused(false)}
+                        className="w-full text-center text-xs text-indigo-400 hover:text-indigo-300 transition-colors py-0.5"
+                      >
+                        Ver todos los resultados en la tabla ↓
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Año</label>
-              <Select value={yearValue} onValueChange={setYearValue}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                  <SelectValue placeholder="Seleccionar año" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  {years.map((year) => (
-                    <SelectItem key={year} value={year}>
-                      {year}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {/* Filtros secundarios: 2 columnas */}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Año</label>
+                <Select value={yearValue} onValueChange={setYearValue}>
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                    <SelectValue placeholder="Seleccionar año" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-700 border-slate-600">
+                    {years.map((year) => (
+                      <SelectItem key={year} value={year}>
+                        {year}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
-              <Select value={statusValue} onValueChange={(value) => setStatusValue(value as 'Todos' | 'Activos' | 'Inactivos')}>
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                  <SelectValue placeholder="Seleccionar estado" />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value="Todos">Todos</SelectItem>
-                  <SelectItem value="Activos">Activos</SelectItem>
-                  <SelectItem value="Inactivos">Inactivos</SelectItem>
-                </SelectContent>
-              </Select>
+              <div>
+                <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+                <Select value={statusValue} onValueChange={(value) => setStatusValue(value as 'Todos' | 'Activos' | 'Inactivos')}>
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-700 border-slate-600">
+                    <SelectItem value="Todos">Todos</SelectItem>
+                    <SelectItem value="Activos">Activos</SelectItem>
+                    <SelectItem value="Inactivos">Inactivos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
           </Card>
 
-          {/* Desktop: Show all buttons in a row */}
-          <div className="hidden lg:flex gap-2 flex-shrink-0">
+          {/* Desktop xl+: Show all buttons in a row */}
+          <div className="hidden xl:flex gap-2 flex-shrink-0">
             <Button
               onClick={() => setIsAddContribuyenteOpen(true)}
               className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-all duration-200"
@@ -496,9 +616,9 @@ export default function AdminPageV2() {
             </Button>
           </div>
 
-          {/* Mobile/Tablet: Show dropdown */}
+          {/* Mobile/Tablet (< xl): Show dropdown */}
           <DropdownMenu>
-            <DropdownMenuTrigger asChild className="lg:hidden w-full">
+            <DropdownMenuTrigger asChild className="xl:hidden w-full">
               <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 h-11">
                 Acciones Rápidas
                 <ChevronDown className="h-4 w-4" />
@@ -538,7 +658,7 @@ export default function AdminPageV2() {
         </div>
 
         {/* Cards de estadísticas */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
           <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
             <p className="text-slate-400 text-sm">Total Contribuyentes</p>
             <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
@@ -609,7 +729,7 @@ export default function AdminPageV2() {
           </div>
         </div>
 
-        {/* Tabla */}
+        {/* Tabla - en tablet usa card expandible, en desktop usa tabla */}
         {isMobile ? <MobileTable /> : <DesktopTable />}
 
 
