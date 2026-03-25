@@ -306,7 +306,8 @@ export default function AdminPageV2() {
 
   // Componente de tabla para desktop
   const DesktopTable = () => (
-    <div className="rounded-lg border border-slate-700 overflow-hidden">
+    <div className="rounded-lg border border-slate-700 overflow-x-auto">
+      <div className="min-w-[700px]">
       <Table>
         <TableHeader>
           <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
@@ -419,6 +420,7 @@ export default function AdminPageV2() {
           )}
         </TableBody>
       </Table>
+      </div>
     </div>
   );
 
