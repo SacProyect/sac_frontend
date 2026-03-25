@@ -10,8 +10,9 @@ import { InvestigationPdf } from "@/types/investigation-pdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
 import { Parish, TaxpayerCategory } from "@/types/taxpayer";
-import { Settings } from "lucide-react";
+import { Settings, Edit2 } from "lucide-react";
 import { ObservationsPanel } from "@/components/observations/observations-panel";
+import { EditTaxpayerModal } from "@/components/Taxpayer/edit-taxpayer-modal";
 
 
 
@@ -61,7 +62,10 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
     const [showIndexModal, setShowIndexModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [newIndexIva, setNewIndexIva] = useState("");
+
+    const canEditTaxpayer = user?.role === 'ADMIN' || user?.id === taxpayerData?.officerId;
 
     const parseDecimalLike = (value: unknown): number => {
         if (typeof value === "number") return value;
@@ -526,6 +530,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                           <Settings size={15} />
                         </button>
                       )}
+                      
+                      {/* Botón Editar Contribuyente */}
+                      {canEditTaxpayer && taxpayerData && (
+                        <button
+                          type="button"
+                          className="is-cog-btn"
+                          title="Editar Información"
+                          onClick={() => setShowEditModal(true)}
+                        >
+                          <Edit2 size={15} />
+                        </button>
+                      )}
                     </div>
                   </div>
 
@@ -693,7 +709,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                 </div>
 
                 {/* ── Columna Derecha — Observaciones ── */}
-                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0" style={{minHeight:'420px'}}>
+                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 h-[480px] lg:h-auto lg:self-stretch">
 
                   <ObservationsPanel taxpayerId={taxpayer} />
                 </div>
@@ -795,9 +811,15 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </button>
                         </div>
                     </div>
-                </div>
+        </div>
             )}
 
+            <EditTaxpayerModal 
+              isOpen={showEditModal} 
+              onClose={() => setShowEditModal(false)} 
+              taxpayerData={taxpayerData} 
+              onSuccess={(updatedData) => setTaxpayerData(updatedData)} 
+            />
         </div>
 
     );

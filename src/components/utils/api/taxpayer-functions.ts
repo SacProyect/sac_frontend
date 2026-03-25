@@ -399,8 +399,13 @@ export const updateIslrReport = async (id: string, input: Partial<ISLRReports>) 
 export const createObservation = async (data: ObservationsForm) => {
 	try {
 		let requestUrl = "taxpayer/observations"
+		const idempotencyKey = generateIdempotencyKey();
 
-		const response = await apiConnection.post(requestUrl, data)
+		const response = await apiConnection.post(requestUrl, data, {
+			headers: {
+				'X-Idempotency-Key': idempotencyKey,
+			}
+		});
 
 		return response
 
