@@ -34,7 +34,7 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import { Button as DialogButton } from '@/components/UI/button';
-import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X, Building2 } from 'lucide-react';
+import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X, Building2, Plus, FileText, Scale, Calculator } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -401,35 +401,39 @@ export default function AdminPageV2() {
           <p className="text-slate-400 mt-1">Gestión integral de contribuyentes y providencias</p>
         </div>
         
-        {/* Acciones Rápidas (Ahora en el Top-Right) */}
-        <div className="flex flex-wrap items-center gap-2">
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
           <Button
             onClick={() => setIsAddContribuyenteOpen(true)}
             size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-lg shadow-emerald-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
           >
-            Agregar Contribuyente
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Contribuyente</span>
           </Button>
           <Button
             onClick={() => setIsAddAvisoOpen(true)}
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md shadow-blue-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
           >
-            Agregar Aviso
+            <FileText className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Aviso</span>
           </Button>
           <Button
             onClick={() => setIsAddMultaOpen(true)}
             size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+            className="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-md shadow-red-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
           >
-            Agregar Multa
+            <Scale className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Multa</span>
           </Button>
           <Button
             onClick={() => navigate('/index-iva')}
             size="sm"
-            className="bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg shadow-lg shadow-violet-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+            className="bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg shadow-md shadow-violet-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
           >
-            Actualizar IVA
+            <Calculator className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">IVA</span>
           </Button>
         </div>
       </div>
