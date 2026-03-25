@@ -105,6 +105,11 @@ export default function AdminPageV2() {
     setCurrentPage(1);
   }, [debouncedSearch, yearValue]);
 
+  // Colapsar todos los cards al cambiar de página
+  useEffect(() => {
+    setExpandedRows([]);
+  }, [currentPage]);
+
   // Cargar contribuyentes con paginación del servidor
   useEffect(() => {
     const loadTaxpayers = async () => {
@@ -213,16 +218,16 @@ export default function AdminPageV2() {
             className="bg-slate-800 rounded-lg border border-slate-700 overflow-hidden"
           >
             <div
-              className="p-4 cursor-pointer hover:bg-slate-700 transition-all duration-200"
+              className="p-4 cursor-pointer hover:bg-slate-700/60 transition-all duration-200"
               onClick={() => toggleExpandRow(item.id)}
             >
               <div className="flex justify-between items-start">
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white truncate">{item.razonSocial}</p>
                   <p className="text-xs text-slate-400 mt-1">{item.rif}</p>
                   <p className="text-xs text-slate-300 mt-2 font-mono">{item.nroProvidencia}</p>
                 </div>
-                <div className="text-right ml-2">
+                <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                   <span
                     className={`inline-block px-2 py-1 rounded text-xs font-medium ${
                       item.tipo === 'Especial'
@@ -232,6 +237,11 @@ export default function AdminPageV2() {
                   >
                     {item.tipo}
                   </span>
+                  <ChevronDown
+                    className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
+                      isExpanded ? 'rotate-180' : ''
+                    }`}
+                  />
                 </div>
               </div>
             </div>
