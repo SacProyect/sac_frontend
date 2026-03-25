@@ -441,16 +441,50 @@ export default function AdminPageV2() {
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-white">Administración</h1>
-          <p className="text-slate-400 mt-2">Gestión integral de contribuyentes y providencias</p>
+          <h1 className="text-3xl font-bold text-white tracking-tight">Administración</h1>
+          <p className="text-slate-400 mt-1">Gestión integral de contribuyentes y providencias</p>
         </div>
+        
+        {/* Acciones Rápidas (Ahora en el Top-Right) */}
+        <div className="flex flex-wrap items-center gap-2">
+          <Button
+            onClick={() => setIsAddContribuyenteOpen(true)}
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg shadow-lg shadow-emerald-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+          >
+            Agregar Contribuyente
+          </Button>
+          <Button
+            onClick={() => setIsAddAvisoOpen(true)}
+            size="sm"
+            className="bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg shadow-blue-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+          >
+            Agregar Aviso
+          </Button>
+          <Button
+            onClick={() => setIsAddMultaOpen(true)}
+            size="sm"
+            className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-lg shadow-lg shadow-red-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+          >
+            Agregar Multa
+          </Button>
+          <Button
+            onClick={() => navigate('/index-iva')}
+            size="sm"
+            className="bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg shadow-lg shadow-violet-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
+          >
+            Actualizar IVA
+          </Button>
+        </div>
+      </div>
 
-        {/* Acciones Rápidas y Filtros */}
-        <div className="flex flex-col xl:flex-row xl:items-end xl:justify-between gap-4">
-          <Card className="bg-slate-800 border-slate-700 p-4 flex-1">
-          <div className="space-y-3">
-            {/* Buscador: fila completa con panel de resultados */}
+      {/* Filtros y Búsqueda (Arriba) */}
+      <div className="w-full">
+        <Card className="bg-slate-800 border-slate-700 p-4">
+          <div className="space-y-4">
+            {/* Buscador: fila completa */}
             <div className="relative" ref={searchContainerRef}>
               <label className="block text-sm font-medium text-slate-300 mb-2">Buscar</label>
               <div className="relative">
@@ -460,7 +494,7 @@ export default function AdminPageV2() {
                   value={searchValue}
                   onChange={(e) => setSearchValue(e.target.value)}
                   onFocus={() => setSearchFocused(true)}
-                  className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 pl-9 pr-9"
+                  className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 pl-9 pr-9 h-11"
                 />
                 {searchValue && (
                   <button
@@ -475,19 +509,11 @@ export default function AdminPageV2() {
               {/* Panel de resultados en tiempo real — solo en tablet/mobile */}
               {searchFocused && searchValue.trim() && isMobile && (
                 <div className="absolute left-0 right-0 top-full mt-1 z-50 bg-slate-800 border border-slate-600 rounded-lg shadow-2xl shadow-black/50 overflow-hidden">
-                  {/* Header del panel */}
                   <div className="px-3 py-2 border-b border-slate-700 flex items-center justify-between">
                     <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
                       {loading ? 'Buscando...' : `${tableData.length} resultado${tableData.length !== 1 ? 's' : ''}`}
                     </span>
-                    {!loading && tableData.length > 0 && (
-                      <span className="text-xs text-indigo-400">
-                        Toca para ver detalle
-                      </span>
-                    )}
                   </div>
-
-                  {/* Lista con scroll */}
                   <div className="max-h-64 overflow-y-auto overscroll-contain">
                     {loading ? (
                       <div className="space-y-1 p-2">
@@ -501,12 +527,6 @@ export default function AdminPageV2() {
                           </div>
                         ))}
                       </div>
-                    ) : tableData.length === 0 ? (
-                      <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-                        <Search className="h-8 w-8 text-slate-600 mb-2" />
-                        <p className="text-slate-400 text-sm">Sin resultados para</p>
-                        <p className="text-slate-300 text-sm font-medium mt-0.5">&ldquo;{searchValue}&rdquo;</p>
-                      </div>
                     ) : (
                       tableData.map((item) => (
                         <button
@@ -517,16 +537,11 @@ export default function AdminPageV2() {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-700/80 active:bg-slate-700 transition-colors text-left border-b border-slate-700/50 last:border-0"
                         >
-                          {/* Icono tipo */}
                           <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                            item.tipo === 'Especial'
-                              ? 'bg-purple-900/60 text-purple-300'
-                              : 'bg-blue-900/60 text-blue-300'
+                            item.tipo === 'Especial' ? 'bg-purple-900/60 text-purple-300' : 'bg-blue-900/60 text-blue-300'
                           }`}>
                             {item.tipo === 'Especial' ? 'E' : 'O'}
                           </div>
-
-                          {/* Info */}
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-slate-100 truncate">{item.razonSocial}</p>
                             <div className="flex items-center gap-2 mt-0.5">
@@ -536,57 +551,33 @@ export default function AdminPageV2() {
                               )}
                             </div>
                           </div>
-
-                          {/* Badge estado */}
-                          <span className={`flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full ${
-                            item.tipo === 'Especial'
-                              ? 'bg-purple-900/40 text-purple-300'
-                              : 'bg-blue-900/40 text-blue-300'
-                          }`}>
-                            {item.tipo}
-                          </span>
                         </button>
                       ))
                     )}
                   </div>
-
-                  {/* Footer — ver todos en la tabla */}
-                  {!loading && tableData.length > 0 && (
-                    <div className="px-3 py-2 border-t border-slate-700 bg-slate-900/50">
-                      <button
-                        onClick={() => setSearchFocused(false)}
-                        className="w-full text-center text-xs text-indigo-400 hover:text-indigo-300 transition-colors py-0.5"
-                      >
-                        Ver todos los resultados en la tabla ↓
-                      </button>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
 
-            {/* Filtros secundarios: 2 columnas */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Año</label>
+            {/* Filtros secundarios: Año y Estado */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-300">Año</label>
                 <Select value={yearValue} onValueChange={setYearValue}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white h-10 w-full">
                     <SelectValue placeholder="Seleccionar año" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
                     {years.map((year) => (
-                      <SelectItem key={year} value={year}>
-                        {year}
-                      </SelectItem>
+                      <SelectItem key={year} value={year}>{year}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
-
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">Estado</label>
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-slate-300">Estado</label>
                 <Select value={statusValue} onValueChange={(value) => setStatusValue(value as 'Todos' | 'Activos' | 'Inactivos')}>
-                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                  <SelectTrigger className="bg-slate-700 border-slate-600 text-white h-10 w-full">
                     <SelectValue placeholder="Seleccionar estado" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-700 border-slate-600">
@@ -598,220 +589,148 @@ export default function AdminPageV2() {
               </div>
             </div>
           </div>
-          </Card>
-
-          {/* Desktop xl+: Show all buttons in a row */}
-          <div className="hidden xl:flex gap-2 flex-shrink-0">
-            <Button
-              onClick={() => setIsAddContribuyenteOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-all duration-200"
-            >
-              Agregar Contribuyente
-            </Button>
-            <Button
-              onClick={() => setIsAddAvisoOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-all duration-200"
-            >
-              Agregar Aviso
-            </Button>
-            <Button
-              onClick={() => setIsAddMultaOpen(true)}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition-all duration-200"
-            >
-              Agregar Multa
-            </Button>
-            <Button
-              onClick={() => navigate('/index-iva')}
-              className="bg-violet-600 hover:bg-violet-700 text-white font-semibold rounded-md transition-all duration-200"
-            >
-              Actualizar IVA
-            </Button>
-          </div>
-
-          {/* Mobile/Tablet (< xl): Show dropdown */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild className="xl:hidden w-full">
-              <Button className="w-full bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-md flex items-center justify-center gap-2 h-11">
-                Acciones Rápidas
-                <ChevronDown className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-56 bg-slate-800 border-slate-700">
-              <DropdownMenuItem
-                onClick={() => setIsAddContribuyenteOpen(true)}
-                className="gap-2 cursor-pointer text-emerald-400 focus:bg-slate-700 focus:text-emerald-300"
-              >
-                <span className="text-lg">➕</span>
-                Agregar Contribuyente
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setIsAddAvisoOpen(true)}
-                className="gap-2 cursor-pointer text-blue-400 focus:bg-slate-700 focus:text-blue-300"
-              >
-                <span className="text-lg">🔔</span>
-                Agregar Aviso
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setIsAddMultaOpen(true)}
-                className="gap-2 cursor-pointer text-red-400 focus:bg-slate-700 focus:text-red-300"
-              >
-                <span className="text-lg">⚠️</span>
-                Agregar Multa
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => navigate('/index-iva')}
-                className="gap-2 cursor-pointer text-violet-400 focus:bg-slate-700 focus:text-violet-300"
-              >
-                <span className="text-lg">📊</span>
-                Actualizar Índices IVA
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-
-        {/* Cards de estadísticas */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
-          <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Total Contribuyentes</p>
-            <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
-          </Card>
-          <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Especiales</p>
-            <p className="text-2xl font-bold text-purple-400 mt-2">
-              {loading ? '—' : totalSpecial.toLocaleString()}
-            </p>
-          </Card>
-          <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Ordinarios</p>
-            <p className="text-2xl font-bold text-blue-400 mt-2">
-              {loading ? '—' : totalOrdinary.toLocaleString()}
-            </p>
-          </Card>
-          <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <p className="text-slate-400 text-sm">Activos (pág.)</p>
-            <p className="text-2xl font-bold text-green-400 mt-2">
-              {filteredData.filter((x) => x.status === true).length}
-            </p>
-          </Card>
-        </div>
-
-        {/* Controles de Paginación */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
-          <p className="text-sm text-slate-400">
-            {loading ? 'Cargando...' : total > 0 ? (
-              <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total.toLocaleString()}</span> contribuyentes</>
-            ) : '0 resultados'}
-          </p>
-          <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
-            <button
-              onClick={() => setCurrentPage(1)}
-              disabled={currentPage === 1 || loading}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
-              title="Primera página"
-            >
-              <ChevronsLeft className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-              disabled={currentPage === 1 || loading}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
-              title="Anterior"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </button>
-            <div className="px-3 min-w-[110px] text-center">
-              <span className="text-xs font-bold text-slate-300">Pág. {currentPage} / {totalPages}</span>
-            </div>
-            <button
-              onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-              disabled={currentPage === totalPages || loading}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
-              title="Siguiente"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </button>
-            <button
-              onClick={() => setCurrentPage(totalPages)}
-              disabled={currentPage === totalPages || loading}
-              className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
-              title="Última página"
-            >
-              <ChevronsRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        {/* Tabla - en tablet usa card expandible, en desktop usa tabla */}
-        {isMobile ? <MobileTable /> : <DesktopTable />}
-
-
-        {/* Modal de confirmación de eliminación */}
-        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-          <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-            <DialogHeader>
-              <DialogTitle>Confirmar Eliminación</DialogTitle>
-              <DialogDescription className="text-slate-400">
-                ¿Está seguro que desea eliminar al contribuyente{' '}
-                <strong>{taxpayerToDelete?.name}</strong>? Esta acción no se puede deshacer.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <DialogButton
-                variant="outline"
-                onClick={() => {
-                  setDeleteConfirmOpen(false);
-                  setTaxpayerToDelete(null);
-                }}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
-              >
-                Cancelar
-              </DialogButton>
-              <DialogButton
-                variant="destructive"
-                onClick={handleDeleteConfirm}
-                className="bg-red-600 hover:bg-red-700 text-white"
-              >
-                Eliminar
-              </DialogButton>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* Modales de Acciones Rápidas */}
-        <AddContribuyenteModalV2
-          isOpen={isAddContribuyenteOpen}
-          onClose={() => setIsAddContribuyenteOpen(false)}
-          onSuccess={async () => {
-            try {
-              const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
-              const searchFilter = debouncedSearch.trim() || undefined;
-              const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
-              setTaxpayers(response.data ?? []);
-              setTotal(response.total ?? 0);
-              setTotalPages(response.totalPages ?? 1);
-              setTotalSpecial(response.totalSpecial ?? 0);
-              setTotalOrdinary(response.totalOrdinary ?? 0);
-            } catch (e) {
-              console.error(e);
-            }
-          }}
-        />
-
-        <AddAvisoModalV2
-          isOpen={isAddAvisoOpen}
-          onClose={() => setIsAddAvisoOpen(false)}
-          onSuccess={() => {
-            // Opcional: refrescar datos si es necesario
-          }}
-        />
-
-        <AddMultaModalV2
-          isOpen={isAddMultaOpen}
-          onClose={() => setIsAddMultaOpen(false)}
-          onSuccess={() => {
-            // Opcional: refrescar datos si es necesario
-          }}
-        />
+        </Card>
       </div>
+
+
+      {/* Cards de estadísticas */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
+        <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+          <p className="text-slate-400 text-sm">Total Contribuyentes</p>
+          <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+          <p className="text-slate-400 text-sm">Especiales</p>
+          <p className="text-2xl font-bold text-purple-400 mt-2">
+            {loading ? '—' : totalSpecial.toLocaleString()}
+          </p>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+          <p className="text-slate-400 text-sm">Ordinarios</p>
+          <p className="text-2xl font-bold text-blue-400 mt-2">
+            {loading ? '—' : totalOrdinary.toLocaleString()}
+          </p>
+        </Card>
+        <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+          <p className="text-slate-400 text-sm">Activos (pág.)</p>
+          <p className="text-2xl font-bold text-green-400 mt-2">
+            {filteredData.filter((x) => x.status === true).length}
+          </p>
+        </Card>
+      </div>
+
+      {/* Controles de Paginación */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
+        <p className="text-sm text-slate-400">
+          {loading ? 'Cargando...' : total > 0 ? (
+            <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total.toLocaleString()}</span> contribuyentes</>
+          ) : '0 resultados'}
+        </p>
+        <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
+          <button
+            onClick={() => setCurrentPage(1)}
+            disabled={currentPage === 1 || loading}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+            title="Primera página"
+          >
+            <ChevronsLeft className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            disabled={currentPage === 1 || loading}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+            title="Anterior"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <div className="px-3 min-w-[110px] text-center">
+            <span className="text-xs font-bold text-slate-300">Pág. {currentPage} / {totalPages}</span>
+          </div>
+          <button
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            disabled={currentPage === totalPages || loading}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+            title="Siguiente"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+          <button
+            onClick={() => setCurrentPage(totalPages)}
+            disabled={currentPage === totalPages || loading}
+            className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all"
+            title="Última página"
+          >
+            <ChevronsRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Tabla - en tablet usa card expandible, en desktop usa tabla */}
+      {isMobile ? <MobileTable /> : <DesktopTable />}
+
+      {/* Modal de confirmación de eliminación */}
+      <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              ¿Está seguro que desea eliminar al contribuyente{' '}
+              <strong>{taxpayerToDelete?.name}</strong>? Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <DialogButton
+              variant="outline"
+              onClick={() => {
+                setDeleteConfirmOpen(false);
+                setTaxpayerToDelete(null);
+              }}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+            >
+              Cancelar
+            </DialogButton>
+            <DialogButton
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              Eliminar
+            </DialogButton>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modales de Acciones Rápidas */}
+      <AddContribuyenteModalV2
+        isOpen={isAddContribuyenteOpen}
+        onClose={() => setIsAddContribuyenteOpen(false)}
+        onSuccess={async () => {
+          try {
+            const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
+            const searchFilter = debouncedSearch.trim() || undefined;
+            const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
+            setTaxpayers(response.data ?? []);
+            setTotal(response.total ?? 0);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalSpecial(response.totalSpecial ?? 0);
+            setTotalOrdinary(response.totalOrdinary ?? 0);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
+      <AddAvisoModalV2
+        isOpen={isAddAvisoOpen}
+        onClose={() => setIsAddAvisoOpen(false)}
+        onSuccess={() => {}}
+      />
+
+      <AddMultaModalV2
+        isOpen={isAddMultaOpen}
+        onClose={() => setIsAddMultaOpen(false)}
+        onSuccess={() => {}}
+      />
+    </div>
   );
 }

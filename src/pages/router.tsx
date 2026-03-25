@@ -153,10 +153,30 @@ export const router = createBrowserRouter([
                     {
                         path: "fine/:taxpayerId",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Multa..." />}><FinePageV2 /></Suspense>,
+                        loader: async ({ params }) => {
+                            try {
+                                const taxpayerId = params.taxpayerId;
+                                if (!taxpayerId) return null;
+                                return { taxpayerData: await getTaxpayerData(taxpayerId) };
+                            } catch (e) {
+                                console.error(e);
+                                return null;
+                            }
+                        }
                     },
                     {
                         path: "warning/:taxpayerId",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Aviso..." />}><NoticePageV2 /></Suspense>,
+                        loader: async ({ params }) => {
+                            try {
+                                const taxpayerId = params.taxpayerId;
+                                if (!taxpayerId) return null;
+                                return { taxpayerData: await getTaxpayerData(taxpayerId) };
+                            } catch (e) {
+                                console.error(e);
+                                return null;
+                            }
+                        }
                     },
                     {
                         path: "payment/:taxpayerId",

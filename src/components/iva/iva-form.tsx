@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
 import { 
+  Check,
+  ChevronDown,
   Calculator, 
   Calendar, 
   Building2, 
@@ -23,9 +25,9 @@ import { Label } from '@/components/UI/label';
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
 import { 
-  DropdownMenu as Popover,
-  DropdownMenuContent as PopoverContent,
-  DropdownMenuTrigger as PopoverTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
 } from "@/components/UI/dropdown-menu";
 import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
@@ -109,24 +111,32 @@ function IvaForm() {
 
     // Unified list of taxpayers
     const isSearching = searchDebounce.trim() !== '';
-    const firstPageFiltered = useMemo(
-        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
-        [firstPageTaxpayers]
-    );
+    
+    const taxpayerArray = useMemo(() => {
+        console.log('[DEBUG] IvaForm - Role:', user?.role);
+        const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const allFetched = [...displayedFirst, ...displayedExtra];
 
-    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
-    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
-    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
-
-    const taxpayerArray = useMemo(
-        () => [...displayedFirst, ...displayedExtra],
-        [displayedFirst, displayedExtra]
-    );
+        if (user?.role === 'ADMIN') {
+            console.log('[DEBUG] IvaForm - ADMIN taxpayers Count:', allFetched.length);
+            return allFetched;
+        } else {
+            // Fiscal role: Filter by user.id
+            console.log('[DEBUG] IvaForm - FISCAL filtering by ID:', user?.id);
+            const filtered = allFetched.filter(t => t.user?.id === user?.id);
+            console.log('[DEBUG] IvaForm - Filtered result count:', filtered.length);
+            return filtered;
+        }
+    }, [user, firstPageTaxpayers, searchResults, searchAdditionalPages, additionalPages, isSearching, searchDebounce]);
 
     const hasMore = useMemo(() => {
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
         const loadedPagesCount = 1 + Math.floor(displayedExtra.length / 50);
         return loadedPagesCount < totalPagesDisplayed;
-    }, [displayedExtra.length, totalPagesDisplayed]);
+    }, [isSearching, searchAdditionalPages, additionalPages, searchTotalPages, totalPages]);
 
     const filteredTaxpayers = useMemo(() => {
         if (!searchValue) return taxpayerArray;
@@ -436,63 +446,111 @@ function IvaForm() {
                                     name="taxpayerId"
                                     rules={{ required: "Seleccione un contribuyente" }}
                                     render={({ field }) => (
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "w-full justify-between bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-11",
-                                                        !field.value && "text-slate-500"
-                                                    )}
-                                                >
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={cn(
+                                                  "w-full justify-between bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-12 px-4 transition-all duration-200",
+                                                  !field.value && "text-slate-500"
+                                                )}
+                                              >
+                                                <div className="flex items-center gap-3 truncate">
+                                                  <Building2 className={cn("h-4 w-4 shrink-0 transition-colors", field.value ? "text-indigo-400" : "text-slate-500")} />
+                                                  <span className="truncate">
                                                     {field.value && selectedTaxpayer
-                                                        ? `${selectedTaxpayer.name} | ${selectedTaxpayer.rif}`
-                                                        : "Seleccionar contribuyente..."}
-                                                    <ArrowRight className="ml-2 h-4 w-4 shrink-0 opacity-50 rotate-90" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80 p-0 bg-slate-900 border-slate-800 shadow-2xl overflow-hidden rounded-xl">
-                                                <div className="p-2 border-b border-slate-800 bg-slate-950/50 flex items-center gap-2">
-                                                    <Search className="w-4 h-4 text-slate-500" />
-                                                    <input 
-                                                        className="bg-transparent border-none text-xs text-slate-200 focus:ring-0 w-full placeholder:text-slate-600" 
-                                                        placeholder="Filtrar..."
-                                                        value={searchValue}
-                                                        onChange={(e) => setSearchValue(e.target.value)}
-                                                    />
+                                                      ? `${selectedTaxpayer.name}`
+                                                      : "Seleccionar contribuyente..."}
+                                                  </span>
                                                 </div>
-                                                <div 
-                                                    ref={listRef}
-                                                    onScroll={handleScroll}
-                                                    className="max-h-60 overflow-y-auto custom-scrollbar"
-                                                >
-                                                    {filteredTaxpayers.length === 0 ? (
-                                                        <div className="p-4 text-xs text-slate-500 text-center">No hay resultados</div>
-                                                    ) : (
-                                                        filteredTaxpayers.map((t: Taxpayer) => (
-                                                            <div
-                                                                key={t.id}
-                                                                onClick={() => {
-                                                                    setSelectedTaxpayer(t);
-                                                                    field.onChange(t.id);
-                                                                }}
-                                                                className="px-4 py-3 text-xs text-slate-300 hover:bg-indigo-600 hover:text-white cursor-pointer border-b border-slate-800/50 last:border-0"
-                                                            >
-                                                                <div className="flex flex-col gap-0.5">
-                                                                    <span className="font-semibold">{t.name}</span>
-                                                                    <span className="text-[10px] opacity-70 uppercase">{t.rif} — {t.process}</span>
-                                                                </div>
+                                                <ChevronDown className="h-4 w-4 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent 
+                                              className="w-[var(--radix-dropdown-menu-trigger-width)] p-0 bg-slate-900 border-slate-700 shadow-2xl rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                                              align="start"
+                                            >
+                                              {/* Buscador Premium */}
+                                              <div className="p-3 border-b border-slate-800 bg-slate-950/40 sticky top-0 z-10">
+                                                <div className="relative group">
+                                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                                  <Input 
+                                                    className="bg-slate-900 border-slate-800 text-xs text-slate-200 pl-9 h-9 w-full rounded-lg focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600" 
+                                                    placeholder="Buscar por nombre o RIF..."
+                                                    value={searchValue}
+                                                    onChange={(e) => setSearchValue(e.target.value)}
+                                                    autoFocus
+                                                  />
+                                                </div>
+                                              </div>
+
+                                              {/* Lista de Resultados */}
+                                              <div 
+                                                ref={listRef}
+                                                onScroll={handleScroll}
+                                                className="max-h-72 overflow-y-auto custom-scrollbar p-1"
+                                              >
+                                                {filteredTaxpayers.length === 0 ? (
+                                                  <div className="py-10 px-4 text-center">
+                                                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                                      <Search className="h-6 w-6 text-slate-600" />
+                                                    </div>
+                                                    <p className="text-xs font-medium text-slate-400">No se encontraron resultados</p>
+                                                    <p className="text-[10px] text-slate-600 mt-1">Intenta con otro término de búsqueda</p>
+                                                  </div>
+                                                ) : (
+                                                  <div className="grid grid-cols-1 gap-0.5">
+                                                    {filteredTaxpayers.map((t: Taxpayer) => (
+                                                      <button
+                                                        key={t.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                          setSelectedTaxpayer(t);
+                                                          field.onChange(t.id);
+                                                        }}
+                                                        className={cn(
+                                                          "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all duration-200 group",
+                                                          field.value === t.id 
+                                                            ? "bg-indigo-600/10 text-indigo-300" 
+                                                            : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                                                        )}
+                                                      >
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                          <div className={cn(
+                                                            "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
+                                                            field.value === t.id ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"
+                                                          )}>
+                                                            <Building2 className="h-4 w-4" />
+                                                          </div>
+                                                          <div className="flex flex-col min-w-0">
+                                                            <span className="text-sm font-semibold truncate leading-tight">{t.name}</span>
+                                                            <div className="flex items-center gap-2 text-[10px] font-mono opacity-60">
+                                                              <span>{t.rif}</span>
+                                                              <span className="w-1 h-1 rounded-full bg-slate-600" />
+                                                              <span className="uppercase">{t.process}</span>
                                                             </div>
-                                                        ))
-                                                    )}
-                                                    {isLoadingMore && (
-                                                        <div className="p-3 text-[10px] text-center text-slate-500 uppercase tracking-widest animate-pulse">
-                                                            Cargando más...
+                                                          </div>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
+                                                        {field.value === t.id && (
+                                                          <Check className="h-4 w-4 text-indigo-400 shrink-0 animate-in zoom-in duration-200" />
+                                                        )}
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                                
+                                                {isLoadingMore && (
+                                                  <div className="p-4 flex items-center justify-center gap-2">
+                                                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-rotate" />
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                                      Cargando más...
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     )}
                                 />
                                 {errors.taxpayerId && <p className="text-[10px] font-bold text-rose-500 uppercase">{errors.taxpayerId.message}</p>}
