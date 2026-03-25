@@ -20,6 +20,7 @@ import { EditTaxpayerModal } from "@/components/Taxpayer/edit-taxpayer-modal";
 interface IndividualStatsProps {
     events: Event[],
     IVAReports: IVAReports[],
+    taxpayerData?: TaxpayerData;
 }
 
 interface TaxpayerData {
@@ -49,9 +50,9 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, taxpayerData: initialData }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
-    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
+    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(initialData);
     const { user } = useAuth();
     const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -65,7 +66,10 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showEditModal, setShowEditModal] = useState(false);
     const [newIndexIva, setNewIndexIva] = useState("");
 
-    const canEditTaxpayer = user?.role === 'ADMIN' || user?.id === taxpayerData?.officerId;
+    const canEditTaxpayer = 
+        user?.role === 'ADMIN' || 
+        user?.id === taxpayerData?.officerId || 
+        user?.taxpayer?.some(t => t.id === taxpayer);
 
     const parseDecimalLike = (value: unknown): number => {
         if (typeof value === "number") return value;
@@ -89,25 +93,24 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     useEffect(() => {
+        if (initialData) {
+            setTaxpayerData(initialData);
+            return;
+        }
+
         const fetchData = async () => {
             try {
-
                 if (taxpayer) {
                     const data = await getTaxpayerData(taxpayer);
-
-
                     setTaxpayerData(data);
                 }
-
             } catch (e) {
                 console.error(e);
                 toast.error("Ha ocurrido un error obteniendo los datos del contribuyente")
             }
         }
         fetchData()
-
-
-    }, [])
+    }, [initialData, taxpayer])
 
     let fines = 0;
 
@@ -493,7 +496,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             }
           `}</style>
 
-          <div className="is-card flex flex-col lg:flex-row w-full max-w-full xl:max-w-[960px] xl:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
+          <div className="is-card flex flex-col lg:flex-row w-full shadow-xl rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
 
                 {/* ── Columna Izquierda — Datos del Contribuyente ── */}
                 <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4">

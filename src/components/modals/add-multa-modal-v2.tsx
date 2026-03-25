@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,16 +6,9 @@ import {
   DialogTitle,
   DialogFooter,
 } from '@/components/UI/dialog';
-import { Button } from '@/components/UI/button';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/UI/select';
+import { Search, ChevronDown, Check } from 'lucide-react';
 import { createEvent, getTaxpayers } from '@/components/utils/api/taxpayer-functions';
 import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
@@ -47,6 +40,23 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
 
+  // Búsqueda de contribuyentes
+  const [searchTaxpayer, setSearchTaxpayer] = useState('');
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    if (isDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [isDropdownOpen]);
+
   // Cargar contribuyentes
   useEffect(() => {
     if (isOpen) {
@@ -59,8 +69,24 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
         }
       };
       loadTaxpayers();
+      // Reset search state when modal opens
+      setSearchTaxpayer('');
+      setIsDropdownOpen(false);
     }
   }, [isOpen]);
+
+  const selectedTaxpayer = taxpayers.find((t) => t.id === formData.taxpayerId);
+
+  const filteredTaxpayers = useMemo(() => {
+    const searchLower = searchTaxpayer.toLowerCase().trim();
+    if (!searchLower) return taxpayers;
+    return taxpayers.filter(
+      (t) =>
+        t.name.toLowerCase().includes(searchLower) ||
+        t.rif.toLowerCase().includes(searchLower)
+    );
+  }, [taxpayers, searchTaxpayer]);
+
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
@@ -109,6 +135,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
           amount: '',
           description: '',
         });
+        setSearchTaxpayer('');
         setErrors({});
         onSuccess?.();
         onClose();
@@ -147,27 +174,92 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
             <Label htmlFor="taxpayerId" className="text-slate-300 mb-2 block">
               Contribuyente
             </Label>
-            <Select
-              value={formData.taxpayerId}
-              onValueChange={(value) => handleChange('taxpayerId', value)}
-            >
-              <SelectTrigger
-                className={`bg-slate-700 border-slate-600 text-white ${
-                  errors.taxpayerId ? 'border-red-500' : ''
+            <div className="relative" ref={dropdownRef}>
+              <div
+                className={`flex items-center justify-between w-full bg-slate-700/50 border px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                  errors.taxpayerId
+                    ? 'border-red-500 bg-red-500/5'
+                    : isDropdownOpen
+                    ? 'border-blue-500 ring-1 ring-blue-500 bg-slate-700'
+                    : 'border-slate-600 hover:border-slate-500 hover:bg-slate-700'
                 }`}
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
               >
-                <SelectValue placeholder="Seleccionar contribuyente..." />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
-                {taxpayers.map((taxpayer) => (
-                  <SelectItem key={taxpayer.id} value={taxpayer.id}>
-                    {taxpayer.name} - {taxpayer.rif}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+                <div className="flex-1 truncate pr-2">
+                  {selectedTaxpayer ? (
+                    <span className="text-white text-sm">
+                      {selectedTaxpayer.name}{' '}
+                      <span className="text-slate-400 text-xs ml-1">{selectedTaxpayer.rif}</span>
+                    </span>
+                  ) : (
+                    <span className="text-slate-400 text-sm">Buscar contribuyente...</span>
+                  )}
+                </div>
+                <ChevronDown
+                  className={`w-4 h-4 text-slate-400 shrink-0 transition-transform duration-200 ${
+                    isDropdownOpen ? 'rotate-180' : ''
+                  }`}
+                />
+              </div>
+
+              {isDropdownOpen && (
+                <div className="absolute top-full left-0 w-full mt-2 bg-slate-800 border border-slate-700 rounded-md shadow-[0_8px_30px_rgb(0,0,0,0.5)] z-[60] overflow-hidden flex flex-col max-h-[260px] animate-in fade-in slide-in-from-top-2 duration-200">
+                  <div className="flex items-center px-3 py-2.5 border-b border-slate-700 bg-slate-800/95 sticky top-0 z-10">
+                    <Search className="w-4 h-4 text-slate-400 mr-2 shrink-0" />
+                    <input
+                      type="text"
+                      className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder:text-slate-500"
+                      placeholder="Buscar por nombre o RIF..."
+                      value={searchTaxpayer}
+                      onChange={(e) => setSearchTaxpayer(e.target.value)}
+                      onClick={(e) => e.stopPropagation()}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="overflow-y-auto flex-1 p-1.5 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
+                    {filteredTaxpayers.length > 0 ? (
+                      filteredTaxpayers.map((taxpayer) => (
+                        <div
+                          key={taxpayer.id}
+                          className={`flex items-center justify-between px-3 py-2 cursor-pointer rounded-sm mb-0.5 last:mb-0 transition-colors ${
+                            formData.taxpayerId === taxpayer.id
+                              ? 'bg-blue-600/20 text-blue-400'
+                              : 'text-slate-200 hover:bg-slate-700/80'
+                          }`}
+                          onClick={() => {
+                            handleChange('taxpayerId', taxpayer.id);
+                            setIsDropdownOpen(false);
+                            setSearchTaxpayer('');
+                          }}
+                        >
+                          <div className="flex flex-col truncate pr-3">
+                            <span className="text-sm font-medium truncate">{taxpayer.name}</span>
+                            <span
+                              className={`text-xs ${
+                                formData.taxpayerId === taxpayer.id
+                                  ? 'text-blue-400/80'
+                                  : 'text-slate-400'
+                              }`}
+                            >
+                              {taxpayer.rif}
+                            </span>
+                          </div>
+                          {formData.taxpayerId === taxpayer.id && (
+                            <Check className="w-4 h-4 shrink-0 text-blue-500" />
+                          )}
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center py-8 text-sm text-slate-400">
+                        No se encontraron resultados
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             {errors.taxpayerId && (
-              <p className="text-red-400 text-xs mt-1">{errors.taxpayerId}</p>
+              <p className="text-red-400 text-xs mt-1.5">{errors.taxpayerId}</p>
             )}
           </div>
 

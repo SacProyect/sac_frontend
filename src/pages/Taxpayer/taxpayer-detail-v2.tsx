@@ -20,7 +20,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
-import { PageHeader, EmptyState } from '@/components/UI/v2';
+import { PageHeader, EmptyState, BackButton } from '@/components/UI/v2';
 
 export default function TaxpayerDetailV2() {
   const { taxpayer } = useParams<{ taxpayer: string }>();
@@ -33,13 +33,15 @@ export default function TaxpayerDetailV2() {
     fines, 
     payments, 
     taxSummary: initialTaxSummary, 
-    islrReports: initialIslrReports 
+    islrReports: initialIslrReports,
+    taxpayerData
   } = useLoaderData() as { 
     events: Event[]; 
     fines: Fines; 
     payments: Payment; 
     taxSummary: IVAReports[]; 
-    islrReports: ISLRReports[] 
+    islrReports: ISLRReports[];
+    taxpayerData: any;
   };
 
   const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -51,9 +53,8 @@ export default function TaxpayerDetailV2() {
     return <Navigate to="/login" state={{ from: location }} replace />;
   }
 
-  const matchedTaxpayer = user?.taxpayer?.find(t => t.id === taxpayer);
-  const canSeeAllOptions = 
-    user.role === "ADMIN" || (matchedTaxpayer && matchedTaxpayer.officerId === user.id);
+  const isMyTaxpayer = user?.taxpayer?.some(t => t.id === taxpayer) || taxpayerData?.user?.id === user?.id;
+  const canSeeAllOptions = user.role === "ADMIN" || isMyTaxpayer;
 
   const quickActions = [
     { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: '#f59e0b', ring: 'rgba(245,158,11,0.25)', text: '#fde68a' },
@@ -95,19 +96,20 @@ export default function TaxpayerDetailV2() {
         .dp-actions-label {
           font-size: 10px;
           font-weight: 700;
-          letter-spacing: 0.08em;
+          letter-spacing: 0.12em;
           text-transform: uppercase;
           color: var(--dp-text-3);
-          margin-bottom: 10px;
+          margin-bottom: 16px;
+          text-align: center;
         }
         .dp-actions-row {
           display: flex;
-          gap: 8px;
-          overflow-x: auto;
-          scrollbar-width: none;
-          padding-bottom: 2px;
+          gap: 12px;
+          justify-content: center;
+          align-items: center;
+          flex-wrap: wrap;
+          padding-bottom: 4px;
         }
-        .dp-actions-row::-webkit-scrollbar { display: none; }
         .dp-action-btn {
           display: inline-flex;
           align-items: center;
@@ -168,13 +170,19 @@ export default function TaxpayerDetailV2() {
         }
       `}</style>
 
-      <div className="dp-root">
-        <PageHeader
-          title="Detalle del Contribuyente"
-          description="Información completa y gestión de eventos"
+      <div className="dp-root p-4 sm:p-6 md:p-8 w-full">
+      <div className="max-w-[960px] mx-auto w-full">
+        <PageHeader 
+          title="Detalle del Contribuyente" 
+          description="Gestión integral de expedientes y registros fiscales"
+          action={<BackButton to="/admin" />}
         />
 
-        <IndividualStats events={events} IVAReports={taxSummary} />
+        <IndividualStats 
+          events={events} 
+          IVAReports={initialTaxSummary} 
+          taxpayerData={taxpayerData}
+        />
 
         {/* ── Acciones Rápidas ── */}
         {quickActions.length > 0 && (
@@ -226,7 +234,7 @@ export default function TaxpayerDetailV2() {
           <div className="dp-tab-content">
             {activeTab === 'fine' && (
               events.length > 0 ? (
-                <EventTable rows={events} setRows={setEvents} />
+                <EventTable rows={events} setRows={setEvents} canEdit={canSeeAllOptions} />
               ) : (
                 <div className="px-4 py-6">
                   <EmptyState
@@ -239,7 +247,7 @@ export default function TaxpayerDetailV2() {
 
             {activeTab === 'iva' && (
               taxSummary.length > 0 ? (
-                <TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
+                <TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} canEdit={canSeeAllOptions} />
               ) : (
                 <div className="px-4 py-6">
                   <EmptyState
@@ -252,7 +260,7 @@ export default function TaxpayerDetailV2() {
 
             {activeTab === 'islr' && (
               islrReports.length > 0 ? (
-                <ISLRSummaryTable rows={islrReports} setRows={setIslrReports} />
+                <ISLRSummaryTable rows={islrReports} setRows={setIslrReports} canEdit={canSeeAllOptions} />
               ) : (
                 <div className="px-4 py-6">
                   <EmptyState
@@ -265,6 +273,7 @@ export default function TaxpayerDetailV2() {
           </div>
         </div>
       </div>
+    </div>
     </div>
   );
 }

@@ -11,9 +11,10 @@ interface Props {
     rows: ISLRReports[];
     pdfMode?: boolean;
     setRows?: React.Dispatch<React.SetStateAction<ISLRReports[]>>;
+    canEdit?: boolean;
 }
 
-const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
+const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows, canEdit }) => {
     const [reportIdToDelete, setReportIdToDelete] = useState<string | null>(null);
     const [rowEditingId, setRowEditingId] = useState<string | null>(null);
     const [editValues, setEditValues] = useState<Partial<ISLRReports>>({});
@@ -33,7 +34,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
         { name: 'Costos', id: 'costs' },
         { name: 'Pagado', id: 'paid' },
         { name: 'Fecha Emisión', id: 'emition_date' },
-        ...(user?.role === 'ADMIN' ? [{ name: '', id: 'options' }] : []),
+        ...(canEdit ? [{ name: '', id: 'options' }] : []),
     ];
 
     const numCols = ['incomes', 'expent', 'costs', 'paid'];
@@ -90,15 +91,16 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
             <style>{`
                 .et-wrap{--et-base:#0b1220;--et-surface:#111f32;--et-border:rgba(148,163,184,0.09);--et-border-row:rgba(148,163,184,0.07);--et-text-1:#e2e8f0;--et-text-2:#94a3b8;--et-text-3:#475569;--et-hover:rgba(148,163,184,0.05);--et-amber:#f59e0b;font-family:'Inter',system-ui,sans-serif;width:100%;overflow-x:auto;scrollbar-width:thin;scrollbar-color:var(--et-border) transparent;}
                 .et-wrap::-webkit-scrollbar{height:4px;}.et-wrap::-webkit-scrollbar-thumb{background:var(--et-border);border-radius:2px;}
-                .et-table{width:100%;min-width:560px;border-collapse:collapse;font-size:12.5px;}
+                .et-table{width:100%;min-width:600px;border-collapse:collapse;font-size:12.5px;table-layout:fixed;}
                 .et-thead tr{background:rgba(8,15,28,0.9);border-bottom:1px solid var(--et-border);}
                 .et-th{padding:10px 14px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;color:var(--et-text-3);text-align:left;white-space:nowrap;}
                 .et-th.num{text-align:right;}.et-th.center{text-align:center;}
                 .et-tr{border-bottom:1px solid var(--et-border-row);transition:background 0.12s;}
                 .et-tr:hover{background:var(--et-hover);}.et-tr:last-child{border-bottom:none;}
-                .et-td{padding:10px 14px;color:var(--et-text-1);vertical-align:middle;}
+                .et-td{padding:12px 14px;color:var(--et-text-1);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
                 .et-td.num{text-align:right;font-family:'Courier New',monospace;font-size:12px;font-variant-numeric:tabular-nums;color:var(--et-text-2);}
-                .et-td.muted{color:var(--et-text-2);font-size:11.5px;}.et-td.center{text-align:center;}
+                .et-td.muted{color:var(--et-text-2);font-size:11.5px;}.et-td.center{text-align:center;display:table-cell;}
+                .et-td.center > *{margin:0 auto;}
                 .et-edit-input{width:100%;padding:5px 8px;background:rgba(148,163,184,0.08);border:1px solid rgba(245,158,11,0.4);border-radius:5px;color:var(--et-text-1);font-size:12px;outline:none;box-sizing:border-box;}
                 .et-paid-badge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:700;background:rgba(16,185,129,0.12);color:#6ee7b7;}
                 .et-zero-val{color:var(--et-text-3);}
@@ -124,8 +126,11 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                 <table className="et-table">
                     <thead className="et-thead">
                         <tr>
+                            <th style={{ width: 3, padding: 0 }} />
                             {columns.map(col => (
-                                <th key={col.id} className={`et-th${numCols.includes(col.id) ? ' num' : col.id === 'options' ? ' center' : ''}`}>
+                                <th key={col.id} className={`et-th${numCols.includes(col.id) ? ' num' : col.id === 'options' ? ' center' : ''}`}
+                                    style={col.id === 'options' ? { width: '60px' } : (col.id === 'emition_date' ? { width: '120px' } : {})}
+                                >
                                     {col.name}
                                 </th>
                             ))}
@@ -134,6 +139,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                     <tbody>
                         {sortedItems.map((item, index) => (
                             <tr key={item.id || index} className="et-tr">
+                                <td style={{ width: 3, padding: 0 }} />
                                 {columns.map(col => {
                                     const id = col.id;
                                     const isEditing = rowEditingId === item.id;
@@ -170,7 +176,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                                             `${decimalToNumber(item[id as keyof ISLRReports]).toLocaleString('es-VE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} BS`
                                         );
                                     } else if (id === 'options') {
-                                        value = !pdfMode && user?.role === 'ADMIN' ? (
+                                        value = !pdfMode && canEdit ? (
                                             <DropdownMenu>
                                                 <DropdownMenuTrigger asChild>
                                                     <button className="et-menu-btn" title="Opciones">
@@ -219,7 +225,7 @@ const ISLRSummaryTable: React.FC<Props> = ({ rows, pdfMode, setRows }) => {
                 )}
             </div>
 
-            {reportIdToDelete && user?.role === 'ADMIN' && (
+            {reportIdToDelete && canEdit && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
                     <div className="w-full max-w-sm p-6 rounded-xl" style={{ background: '#1e293b', border: '1px solid rgba(148,163,184,0.15)' }}>
                         <p className="mb-4 text-sm text-slate-200">¿Eliminar este reporte de ISLR?</p>

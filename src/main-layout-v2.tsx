@@ -1,5 +1,6 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { useState } from 'react';
+import { GlobalLoader } from '@/components/UI/global-loader';
 import { useAuth } from '@/hooks/use-auth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/UI/sheet';
 import { Button } from '@/components/UI/button';
@@ -195,8 +196,13 @@ const MainLayoutV2 = () => {
         );
     };
 
+    const navigation = useNavigation();
+    const isPageLoading = navigation.state === 'loading';
+
     return (
-        <div className="flex min-h-screen bg-[#020617]">
+        <div className="flex min-h-screen bg-[#020617] relative">
+            {isPageLoading && <GlobalLoader />}
+            
             <DesktopSidebar />
             <div className="flex-1 flex flex-col min-w-0">
                 <Header />

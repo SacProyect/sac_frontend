@@ -2,9 +2,8 @@ import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { Event } from '@/types/event';
 import { useAuth } from '@/hooks/use-auth';
 import toast from 'react-hot-toast';
-import { deleteEvent, getTaxpayerForEvents, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
+import { deleteEvent, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
 import { Taxpayer } from '@/types/taxpayer';
-import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import { decimalToNumber } from '../utils/number.utils';
 import { MoreVertical, Pencil, Trash2, Check, X, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/UI/dropdown-menu';
@@ -13,6 +12,7 @@ interface EventTableProps {
   rows: Event[];
   setRows: React.Dispatch<React.SetStateAction<Event[]>>;
   pdfMode?: boolean;
+  canEdit?: boolean;
 }
 
 const typeMapping: { [key: string]: string } = {
@@ -38,13 +38,12 @@ const typeBadge: { [key: string]: { bg: string; color: string } } = {
   PAYMENT_COMPROMISE: { bg: 'rgba(139,92,246,0.14)',   color: '#c4b5fd' },
 };
 
-const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
+const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit }) => {
   const [sortColumn, setSortColumn] = useState<keyof Event>('type');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
   const [eventIdToDelete, setEventIdToDelete] = useState<string | null>(null);
   const [editingRowId, setEditingRowId] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<Partial<Event>>({});
-  const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
   const [pendingStatusChange, setPendingStatusChange] = useState<{
     id: string;
     newStatus: 'paid' | 'not_paid';
@@ -59,7 +58,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     { label: 'Estado', id: 'debt' },
   ];
 
-  columns = user?.role === 'ADMIN'
+  columns = canEdit
     ? [...columns, { label: '', id: 'options' }]
     : columns;
 
@@ -136,29 +135,6 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     }
   };
 
-  const [currentPage, setCurrentPage] = useState(1);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
-
-  const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
-  const taxpayerArray = useMemo(
-    () => [...(firstPageTaxpayers || []), ...additionalPages],
-    [firstPageTaxpayers, additionalPages]
-  );
-  const hasMorePages = 1 + Math.floor(additionalPages.length / 50) < totalPages;
-
-  useEffect(() => {
-    if (currentPage <= 1) return;
-    const fetchPage = async () => {
-      try {
-        const response = await getTaxpayerForEvents();
-        setAdditionalPages(prev => [...prev, ...(response.data ?? [])]);
-      } catch {
-        toast.error('No se pudieron obtener los contribuyentes.');
-      }
-    };
-    fetchPage();
-  }, [currentPage]);
-
   return (
     <>
       <style>{`
@@ -184,9 +160,10 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
 
         .et-table {
           width: 100%;
-          min-width: 520px;
+          min-width: 600px;
           border-collapse: collapse;
           font-size: 12.5px;
+          table-layout: fixed; /* Added for sizing consistency */
         }
 
         /* ── Header ── */
@@ -229,9 +206,12 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
         }
 
         .et-td {
-          padding: 10px 14px;
+          padding: 12px 14px;
           color: var(--et-text-1);
           vertical-align: middle;
+          overflow: hidden;
+          text-overflow: ellipsis;
+          white-space: nowrap;
         }
         .et-td.num {
           text-align: right;
@@ -241,7 +221,13 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
           color: var(--et-text-2);
         }
         .et-td.muted { color: var(--et-text-2); font-size: 11.5px; }
-        .et-td.center { text-align: center; }
+        .et-td.center { 
+          text-align: center;
+          display: table-cell;
+        }
+        .et-td.center > * {
+          margin: 0 auto;
+        }
 
         /* ── Type badge ── */
         .et-type-badge {
@@ -401,6 +387,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
               {columns.map(col => (
                 <th
                   key={col.id}
+                  style={col.id === 'options' ? { width: '60px' } : (col.id === 'date' ? { width: '120px' } : {})}
                   className={`et-th${col.id === 'amount' ? ' num' : col.id === 'options' ? ' center' : ''}`}
                 >
                   {col.label}
@@ -416,14 +403,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
               const isEditing = editingRowId === row.id;
               const isPaid = (row.debt ?? 0) === 0;
 
-              const canChangeDebt =
-                row.type === 'FINE' && (
-                  user?.role === 'ADMIN' ||
-                  (user?.role === 'FISCAL' && taxpayerArray?.some(t => t.id === row.taxpayerId && t.officerId === user.id)) ||
-                  (user?.role === 'SUPERVISOR' &&
-                    (taxpayerArray.some(t => t.id === row.taxpayerId && t.officerId === user.id) ||
-                      user.supervised_members?.some(m => m.id === row.officerId)))
-                );
+              const canChangeDebt = row.type === 'FINE' && !!canEdit;
 
               return (
                 <tr key={row.id} className="et-tr">
@@ -444,7 +424,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
                           value={getEditInputValue(row, col.id as keyof Event)}
                           onChange={e => handleInputChange(col.id as keyof Event, e.target.value)}
                         />
-                      ) : col.id === 'options' && !pdfMode && user?.role === 'ADMIN' ? (
+                      ) : col.id === 'options' && !pdfMode && canEdit ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <button className="et-menu-btn" title="Opciones">
