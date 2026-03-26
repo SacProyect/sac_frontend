@@ -326,7 +326,8 @@ export const updateFinePayment = async (id: string, status: "paid" | "not_paid")
 
 	try {
 
-		const requestURL = "/taxpayer/updatePayment"
+		// Use the endpoint that accepts eventId: PUT /taxpayer/payment/:eventId
+		const requestURL = "/taxpayer/payment"
 
 		const response = await apiConnection.put(`${requestURL}/${id}`, {
 			status,
