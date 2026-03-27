@@ -26,9 +26,11 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
     rif: '',
     providenceNum: '',
     process: '',
+    contract_type: '',
     address: '',
     parish_id: '',
     taxpayer_category_id: '',
+    process_id : ''
   });
 
   useEffect(() => {
@@ -38,9 +40,11 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
         rif: taxpayerData.rif || '',
         providenceNum: taxpayerData.providenceNum?.toString() || '',
         process: taxpayerData.process || '',
+        contract_type: taxpayerData.contract_type || '',
         address: taxpayerData.address || '',
         parish_id: taxpayerData.parish?.id || '',
         taxpayer_category_id: taxpayerData.taxpayer_category?.id || '',
+        process_id: taxpayerData.process_id || '',
       });
       fetchSelectOptions();
     }
@@ -76,6 +80,7 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
         rif: formData.rif,
         providenceNum: formData.providenceNum ? Number(formData.providenceNum) : null,
         process: formData.process,
+        contract_type: formData.contract_type,
         address: formData.address,
         parish_id: formData.parish_id,
         taxpayer_category_id: formData.taxpayer_category_id,
@@ -91,6 +96,7 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
         rif: formData.rif,
         providenceNum: formData.providenceNum,
         process: formData.process,
+        contract_type: formData.contract_type,
         address: formData.address,
         parish: parishes.find(p => p.id === formData.parish_id) || taxpayerData.parish,
         taxpayer_category: categories.find(c => c.id === formData.taxpayer_category_id) || taxpayerData.taxpayer_category,
@@ -161,10 +167,9 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
                   <SelectValue placeholder="Seleccione" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                  <SelectItem value="AF">Auditoría Fiscal (AF)</SelectItem>
-                  <SelectItem value="FP">Fiscalización Puntual (FP)</SelectItem>
-                  <SelectItem value="VDF">Verificación de Deberes Formales (VDF)</SelectItem>
-                  <SelectItem value="NA">No Aplica (NA)</SelectItem>
+                  <SelectItem value="AF">AF</SelectItem>
+                  <SelectItem value="FP">FP</SelectItem>
+                  <SelectItem value="VDF">VDF</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -187,21 +192,39 @@ export function EditTaxpayerModal({ isOpen, onClose, taxpayerData, onSuccess }: 
             </div>
           </div>
 
-          <div className="grid gap-2">
-            <Label className="text-slate-300">Actividad Comercial</Label>
-            <Select 
-              value={formData.taxpayer_category_id} 
-              onValueChange={(val) => setFormData(prev => ({...prev, taxpayer_category_id: val}))}
-            >
-              <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
-                <SelectValue placeholder="Seleccione actividad" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700 text-white">
-                {categories.map((c) => (
-                  <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
+            <div className="grid gap-2">
+              <Label className="text-slate-300">Actividad Comercial</Label>
+              <Select 
+                value={formData.taxpayer_category_id} 
+                onValueChange={(val) => setFormData(prev => ({...prev, taxpayer_category_id: val}))}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue placeholder="Seleccione actividad" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                  {categories.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid gap-2">
+              <Label className="text-slate-300">Tipo de Contribuyente</Label>
+              <Select 
+                value={formData.contract_type} 
+                onValueChange={(val) => setFormData(prev => ({...prev, contract_type: val}))}
+              >
+                <SelectTrigger className="bg-slate-800 border-slate-700 text-white">
+                  <SelectValue placeholder="Seleccione tipo" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 text-white">
+                  <SelectItem value="ORDINARY">Ordinario</SelectItem>
+                  <SelectItem value="SPECIAL">Especial</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="grid gap-2">
