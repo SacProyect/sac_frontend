@@ -134,7 +134,7 @@ function AmountField({
       required: "Campo obligatorio",
       validate: (v) => {
         const n = parseFloat(v);
-        if (!v || isNaN(n) || n <= 0) return "El monto debe ser mayor a 0";
+        // if (!v || isNaN(n) || n <= 0) return "El monto debe ser mayor a 0";
         return true;
       },
     },
