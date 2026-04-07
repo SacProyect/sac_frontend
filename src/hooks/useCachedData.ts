@@ -300,9 +300,9 @@ export const useCachedTaxpayersForEvents = (limit: number = 50) => {
       fetchingFlags.taxpayersForEvents = true;
 
       const response = await getTaxpayerForEvents(1, limit);
-      const payload = response?.data;
-      const data = payload?.data ?? [];
-      const total = payload?.totalPages ?? 1;
+      const payload = response?.data as { data?: Taxpayer[]; totalPages?: number } | Taxpayer[] | undefined;
+      const data = Array.isArray(payload) ? payload : (payload?.data ?? []);
+      const total = Array.isArray(payload) ? 1 : (payload?.totalPages ?? 1);
 
       globalCache.taxpayersForEvents = {
         data: { data, page: 1, totalPages: total },

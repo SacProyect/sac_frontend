@@ -136,7 +136,8 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode }) => {
     const fetchTaxpayers = async () => {
       try {
         const response = await getTaxpayerForEvents();
-        setTaxpayerArray(response.data ?? []);
+        const body = response.data as { data?: Taxpayer[] } | Taxpayer[];
+        setTaxpayerArray(Array.isArray(body) ? body : (body?.data ?? []));
       } catch (e) {
         toast.error("No se pudieron obtener los contribuyentes.");
       }

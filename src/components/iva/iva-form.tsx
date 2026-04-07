@@ -30,8 +30,28 @@ import {
 import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
 import { createIVA, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
-import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import { useCachedTaxpayersForEvents, invalidateCache } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
+import type { IVAReports } from '@/types/iva-reports';
+
+const MONTH_OPTIONS_ES = [
+    { value: 1, label: 'Enero' },
+    { value: 2, label: 'Febrero' },
+    { value: 3, label: 'Marzo' },
+    { value: 4, label: 'Abril' },
+    { value: 5, label: 'Mayo' },
+    { value: 6, label: 'Junio' },
+    { value: 7, label: 'Julio' },
+    { value: 8, label: 'Agosto' },
+    { value: 9, label: 'Septiembre' },
+    { value: 10, label: 'Octubre' },
+    { value: 11, label: 'Noviembre' },
+    { value: 12, label: 'Diciembre' },
+];
+
+function isoDateUtcNoon(y: number, month1: number): string {
+    return new Date(Date.UTC(y, month1 - 1, 1, 12, 0, 0, 0)).toISOString();
+}
 
 // Campos locales del formulario (interacción con el usuario)
 export interface IvaFormFields {
@@ -65,8 +85,9 @@ function IvaForm() {
     
     const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(false);
-    const [decemberReached, setDecemberReached] = useState(false);
     const [nextMonthLabel, setNextMonthLabel] = useState("");
+    const [periodYear, setPeriodYear] = useState(() => new Date().getUTCFullYear());
+    const [periodMonth, setPeriodMonth] = useState(1);
     const [searchValue, setSearchValue] = useState("");
     const [searchDebounce, setSearchDebounce] = useState("");
 
@@ -225,46 +246,41 @@ function IvaForm() {
 
     useEffect(() => {
         if (!selectedTaxpayer) {
-            setDecemberReached(false);
             setNextMonthLabel("");
             setValue('date', '');
             return;
         }
 
         setLoadingMonthInfo(true);
-        const sorted = [...(selectedTaxpayer.IVAReports || [])]
-            .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        const sorted = [...(selectedTaxpayer.IVAReports || [])].sort((a, b) => {
+            const tb = new Date(b.date).getTime();
+            const ta = new Date(a.date).getTime();
+            return tb - ta;
+        });
 
-        // Manejar emition_date inválido o faltante
         const rawEmitionDate = selectedTaxpayer.emition_date ? new Date(selectedTaxpayer.emition_date) : new Date();
         const emitionDate = isNaN(rawEmitionDate.getTime()) ? new Date() : rawEmitionDate;
-        
+
         let year = emitionDate.getUTCFullYear();
         let month = 1;
 
         if (sorted.length > 0) {
-            const lastReportDate = sorted[0].date;
-            if (lastReportDate && lastReportDate.includes('-')) {
-                const [lastYearStr, lastMonthStr] = lastReportDate.split('-');
-                year = parseInt(lastYearStr, 10);
-                month = parseInt(lastMonthStr, 10) + 1;
-                
+            const last = new Date(sorted[0].date);
+            if (!isNaN(last.getTime())) {
+                year = last.getUTCFullYear();
+                month = last.getUTCMonth() + 1 + 1;
                 if (month > 12) {
-                    setDecemberReached(true);
-                    setNextMonthLabel("Año completo");
-                    setValue('date', '');
-                    setLoadingMonthInfo(false);
-                    return;
+                    month = 1;
+                    year += 1;
                 }
             }
         }
 
-        setDecemberReached(false);
-        const nextDate = new Date(Date.UTC(year, month - 1, 1));
-        
-        // Verificación final de seguridad antes de toISOString()
+        const nextDate = new Date(Date.UTC(year, month - 1, 1, 12, 0, 0, 0));
         if (!isNaN(nextDate.getTime())) {
-            setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric' }));
+            setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }));
+            setPeriodYear(year);
+            setPeriodMonth(month);
             setValue('date', nextDate.toISOString());
         } else {
             console.warn("No se pudo calcular la fecha siguiente para el contribuyente:", selectedTaxpayer.name);
@@ -273,6 +289,17 @@ function IvaForm() {
         }
         setLoadingMonthInfo(false);
     }, [selectedTaxpayer, setValue]);
+
+    const applyManualPeriod = useCallback(
+        (y: number, m: number) => {
+            const clampedY = Math.min(2100, Math.max(1990, y));
+            const clampedM = Math.min(12, Math.max(1, m));
+            setPeriodYear(clampedY);
+            setPeriodMonth(clampedM);
+            setValue('date', isoDateUtcNoon(clampedY, clampedM));
+        },
+        [setValue]
+    );
 
     const onSubmit = async (data: IvaFormFields) => {
         const toastId = toast.loading("Guardando declaración fiscal...");
@@ -287,15 +314,29 @@ function IvaForm() {
                 excess: data.excess ? new Decimal(data.excess.replace(",", ".")) : undefined,
             };
 
-            const success = await createIVA(formattedData);
-            if (success) {
+            const created = await createIVA(formattedData);
+            if (created) {
+                invalidateCache('taxpayersForEvents');
+                const mergedReport: IVAReports = {
+                    id: created.id,
+                    date: typeof created.date === 'string' ? created.date : new Date(created.date).toISOString(),
+                    iva: created.iva != null ? Number(created.iva) : undefined,
+                    purchases: Number(created.purchases),
+                    sells: Number(created.sells),
+                    paid: Number(created.paid),
+                    excess: created.excess != null ? Number(created.excess) : undefined,
+                    taxpayerId: created.taxpayerId,
+                };
                 toast.success("¡Declaración de IVA registrada con éxito!", { id: toastId });
                 const currentTaxId = data.taxpayerId;
-                const currentTax = selectedTaxpayer;
                 reset();
                 await refreshUser();
                 setTimeout(() => {
-                    setSelectedTaxpayer(currentTax);
+                    setSelectedTaxpayer((prev) =>
+                        prev && prev.id === currentTaxId
+                            ? { ...prev, IVAReports: [...(prev.IVAReports || []), mergedReport] }
+                            : prev
+                    );
                     setValue("taxpayerId", currentTaxId);
                 }, 100);
             }
@@ -324,6 +365,7 @@ function IvaForm() {
                         </div>
 
                         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+                            <input type="hidden" {...register('date', { required: true })} />
                             <div className="space-y-3">
                                 <Label className="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-2">
                                     <Building2 className="w-3.5 h-3.5" /> Contribuyente
@@ -403,10 +445,51 @@ function IvaForm() {
                                     <div className="flex-1">
                                         <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Periodo a Declarar</p>
                                         <p className="text-sm font-semibold text-slate-200 capitalize">
-                                            {loadingMonthInfo ? "Calculando..." : decemberReached ? "Declaraciones Completas" : nextMonthLabel}
+                                            {loadingMonthInfo ? "Calculando..." : nextMonthLabel || "—"}
                                         </p>
                                     </div>
-                                    {!decemberReached && <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Sugerido</Badge>}
+                                    {nextMonthLabel && !loadingMonthInfo && (
+                                        <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Sugerido</Badge>
+                                    )}
+                                </div>
+                            )}
+
+                            {selectedTaxpayer && !loadingMonthInfo && (
+                                <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-3">
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ajuste manual del periodo</p>
+                                    <p className="text-[11px] text-slate-500">
+                                        Puede declarar cualquier mes (incluidos anteriores al sugerido). El mes se interpreta en calendario UTC, alineado con el servidor.
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-3">
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] text-slate-500">Año</Label>
+                                            <Input
+                                                type="number"
+                                                min={1990}
+                                                max={2100}
+                                                className="bg-slate-950/50 border-slate-800 rounded-xl h-10 text-slate-200"
+                                                value={periodYear}
+                                                onChange={(e) => {
+                                                    const v = parseInt(e.target.value, 10);
+                                                    if (!Number.isNaN(v)) applyManualPeriod(v, periodMonth);
+                                                }}
+                                            />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <Label className="text-[10px] text-slate-500">Mes</Label>
+                                            <select
+                                                className="w-full h-10 rounded-xl border border-slate-800 bg-slate-950/50 px-3 text-sm text-slate-200"
+                                                value={periodMonth}
+                                                onChange={(e) => applyManualPeriod(periodYear, parseInt(e.target.value, 10))}
+                                            >
+                                                {MONTH_OPTIONS_ES.map((opt) => (
+                                                    <option key={opt.value} value={opt.value}>
+                                                        {opt.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
                                 </div>
                             )}
 
@@ -520,7 +603,7 @@ function IvaForm() {
 
                             <Button 
                                 type="submit" 
-                                disabled={isSubmitting || decemberReached || !selectedTaxpayer || loadingMonthInfo}
+                                disabled={isSubmitting || !selectedTaxpayer || loadingMonthInfo || !watchValues.date}
                                 className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-6 rounded-2xl transition-all shadow-lg shadow-indigo-500/20 disabled:opacity-50 disabled:grayscale"
                             >
                                 {isSubmitting ? "Procesando..." : "Guardar Declaración"}
@@ -558,7 +641,7 @@ function IvaForm() {
                                         <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
                                         <div>
                                             <p className="text-xs font-semibold text-slate-300">Validación Activa</p>
-                                            <p className="text-[11px] text-slate-500">Mapeo de meses consecutivo habilitado.</p>
+                                            <p className="text-[11px] text-slate-500">Periodo sugerido según último IVA cargado; puede ajustar el mes manualmente arriba.</p>
                                         </div>
                                     </div>
                                     <div className="flex items-start gap-3">
