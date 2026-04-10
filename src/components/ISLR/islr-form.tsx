@@ -469,6 +469,7 @@ function IslrForm() {
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <span className="font-semibold">{t.name}</span>
                                                                     <span className="text-[10px] opacity-70 uppercase">{t.rif}</span>
+                                                                    <span className="text-[10px] opacity-70 uppercase">{new Date(t.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                                                 </div>
                                                             </div>
                                                         ))
