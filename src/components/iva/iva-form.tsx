@@ -277,15 +277,6 @@ function IvaForm() {
             setValue("date", "");
             return;
         }
-        const emitionDate = new Date(selectedTaxpayer.emition_date);
-        if (isNaN(emitionDate.getTime())) {
-            setValue("date", "");
-            return;
-        }
-        if (emitionDate.getUTCFullYear() > year || (emitionDate.getUTCFullYear() === year && emitionDate.getUTCMonth() > month)) {
-            setValue("date", emitionDate.toISOString());
-            return;
-        }
 
         const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
         const safeDay = Math.min(day, maxDay);
