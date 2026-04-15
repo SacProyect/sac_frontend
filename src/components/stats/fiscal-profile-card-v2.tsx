@@ -1,18 +1,61 @@
+import { useState } from 'react';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import { Card } from '@/components/UI/card';
 import { Badge } from '@/components/UI/badge';
 import { FiscalInfoExtended } from '@/types/fiscal-stats';
+import { FiscalKpiBreakdownDialog } from '@/components/fiscal-review/fiscal-kpi-breakdown-dialog';
+import type { FiscalKpiBreakdownCategory } from '@/components/utils/api/report-functions';
 
 interface FiscalProfileCardV2Props {
   fiscal: FiscalInfoExtended;
+  /** Si se indica fiscalId + año, los totales son clicables y abren el detalle (misma API que Revisión Fiscal). */
+  drilldown?: { fiscalId: string; year: number };
 }
 
-export function FiscalProfileCardV2({ fiscal }: FiscalProfileCardV2Props) {
-  const totalAssigned = fiscal.totalAssigned ?? fiscal.totalAsignados ?? 0;
-  const completed = fiscal.completed ?? fiscal.completados ?? 0;
+export function FiscalProfileCardV2({ fiscal, drilldown }: FiscalProfileCardV2Props) {
+  const [kpiBreakdown, setKpiBreakdown] = useState<FiscalKpiBreakdownCategory | null>(null);
+
+  const totalAssigned =
+    fiscal.totalTaxpayers ?? fiscal.totalAssigned ?? fiscal.totalAsignados ?? 0;
+  const completed = fiscal.totalCompleted ?? fiscal.completed ?? fiscal.completados ?? 0;
+  const pending =
+    fiscal.totalProcess ?? fiscal.pending ?? fiscal.pendientes ?? 0;
   
-  const completionRate = fiscal.completionRate ?? 
+  const completionRate =
+    fiscal.completionRate ??
     (totalAssigned > 0 ? Math.round((completed / totalAssigned) * 100) : 0);
+
+  const KpiBtn = ({
+    category,
+    value,
+    label,
+    valueClass,
+  }: {
+    category: FiscalKpiBreakdownCategory;
+    value: number;
+    label: string;
+    valueClass: string;
+  }) => {
+    if (!drilldown) {
+      return (
+        <div className="text-center">
+          <p className={`text-3xl font-bold ${valueClass}`}>{value}</p>
+          <p className="text-xs text-slate-400 mt-2">{label}</p>
+        </div>
+      );
+    }
+    return (
+      <button
+        type="button"
+        onClick={() => setKpiBreakdown(category)}
+        className="text-center rounded-xl px-2 py-1 -m-1 w-full transition-colors hover:bg-slate-700/50 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        title={`Ver detalle: ${label}`}
+      >
+        <p className={`text-3xl font-bold ${valueClass}`}>{value}</p>
+        <p className="text-xs text-slate-400 mt-2 underline-offset-2 hover:underline hover:text-slate-300">{label}</p>
+      </button>
+    );
+  };
 
   const initials = fiscal.fiscalName
     ?.split(' ')
@@ -45,24 +88,9 @@ export function FiscalProfileCardV2({ fiscal }: FiscalProfileCardV2Props) {
         </div>
 
         <div className="grid grid-cols-3 gap-6">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-white">
-              {fiscal.totalAssigned || fiscal.totalAsignados || 0}
-            </p>
-            <p className="text-xs text-slate-400 mt-2">Total Asignados</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-green-400">
-              {fiscal.completed || fiscal.completados || 0}
-            </p>
-            <p className="text-xs text-slate-400 mt-2">Completados</p>
-          </div>
-          <div className="text-center">
-            <p className="text-3xl font-bold text-yellow-400">
-              {fiscal.pending || fiscal.pendientes || 0}
-            </p>
-            <p className="text-xs text-slate-400 mt-2">Pendientes</p>
-          </div>
+          <KpiBtn category="assigned" value={totalAssigned} label="Total Asignados" valueClass="text-white" />
+          <KpiBtn category="completed" value={completed} label="Completados" valueClass="text-green-400" />
+          <KpiBtn category="active" value={pending} label="Pendientes" valueClass="text-yellow-400" />
         </div>
       </div>
 
@@ -78,6 +106,16 @@ export function FiscalProfileCardV2({ fiscal }: FiscalProfileCardV2Props) {
           />
         </div>
       </div>
+
+      {drilldown && (
+        <FiscalKpiBreakdownDialog
+          open={kpiBreakdown !== null}
+          onOpenChange={(o) => !o && setKpiBreakdown(null)}
+          fiscalId={drilldown.fiscalId}
+          year={drilldown.year}
+          category={kpiBreakdown}
+        />
+      )}
     </Card>
   );
 }

@@ -61,7 +61,10 @@ export default function FiscalStatsDashboardV2() {
       />
 
       {/* Profile Card */}
-      <FiscalProfileCardV2 fiscal={fiscalInfo} />
+      <FiscalProfileCardV2
+        fiscal={fiscalInfo}
+        drilldown={{ fiscalId: effectiveFiscalId, year: selectedYear }}
+      />
 
       {/* Performance Chart */}
       <FiscalPerformanceChartV2 data={fiscalPerformance} />
