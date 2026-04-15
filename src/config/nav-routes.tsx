@@ -8,6 +8,7 @@ import {
     FileText,
     ClipboardList,
     Wallet,
+    Bell,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -21,6 +22,7 @@ export const sharedRoutes: NavItem[] = [
     { href: '/fiscal-review',label: 'Revisión Fiscal',icon: <CheckCircle className="w-4 h-4" /> },
     { href: '/gen-reports',  label: 'Reportes',       icon: <FileBarChart className="w-4 h-4" /> },
     { href: '/stats',        label: 'Estadísticas',   icon: <BarChart3 className="w-4 h-4" /> },
+    { href: '/notifications',label: 'Notificaciones', icon: <Bell className="w-4 h-4" /> },
 ];
 
 /** Ruta de ajustes — siempre visible para todos los roles, siempre al final. */

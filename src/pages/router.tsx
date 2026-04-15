@@ -12,6 +12,7 @@ import { IVAReports } from '@/types/iva-reports';
 // import ReportModal from '@/components/reports/ReportModal';
 // import ReportModalGroups from '@/components/reports/ReportModalGroups';
 import { ISLRReports } from '@/types/islr-reports';
+import { NotificationsProvider } from "@/hooks/use-notifications";
 // import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
 // import { PresentationProvider } from '@/components/context/PresentationContext';
 
@@ -72,6 +73,7 @@ const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
 const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
+const NotificationsPageV1 = lazy(() => import("@/pages/Notifications/notifications-page-v1"));
 
 type LoaderData = {
     events: Event[],
@@ -103,7 +105,13 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/",
-                element: <ProtectedRoute><MainLayoutV2 /></ProtectedRoute>,
+                element: (
+                    <ProtectedRoute>
+                        <NotificationsProvider>
+                            <MainLayoutV2 />
+                        </NotificationsProvider>
+                    </ProtectedRoute>
+                ),
                 children: [
                     {
                         index: true,
@@ -248,6 +256,18 @@ export const router = createBrowserRouter([
                                 return [];
                             }
                         },
+                    },
+                    {
+                        path: "notifications",
+                        element: <Suspense
+                            fallback={
+                                <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                    Cargando Notificaciones...
+                                </div>
+                            }
+                        >
+                            <NotificationsPageV1 />
+                        </Suspense>,
                     },
                     {
                         path: "gen-reports",

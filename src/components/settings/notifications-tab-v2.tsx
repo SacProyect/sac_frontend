@@ -1,134 +1,204 @@
-import { useState } from 'react';
-import { Card } from '@/components/UI/card';
-import { Label } from '@/components/UI/label';
-import { Switch } from '@/components/UI/switch';
-import { Bell, AlertCircle, BarChart3 } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import { AlertCircle, Bell, ShieldCheck } from "lucide-react";
+import toast from "react-hot-toast";
+import { Card } from "@/components/UI/card";
+import { Button } from "@/components/UI/button";
+import { Input } from "@/components/UI/input";
+import { Label } from "@/components/UI/label";
+import {
+  createNotificationThreshold,
+  getDefaultNotificationThreshold,
+  getNotificationThreshold,
+  updateDefaultNotificationThreshold,
+} from "@/components/utils/api/notifications-functions";
+import { ProcedureType } from "@/types/notifications";
+import { useAuth } from "@/hooks/use-auth";
+import { EscalationConfigTab } from "@/components/settings/escalation-config-tab";
+
+type ThresholdState = Record<ProcedureType, number>;
+
+const PROCEDURES: ProcedureType[] = [
+  ProcedureType.FP,
+  ProcedureType.AF,
+  ProcedureType.VDF,
+  ProcedureType.NA,
+];
+
+const DEFAULT_THRESHOLDS: ThresholdState = {
+  [ProcedureType.FP]: 7,
+  [ProcedureType.AF]: 7,
+  [ProcedureType.VDF]: 7,
+  [ProcedureType.NA]: 7,
+};
 
 export function NotificationsTabV2() {
-  const [notifications, setNotifications] = useState({
-    vdfExpired: true,
-    dailyReports: false,
-    newContribuyentes: true,
-    multas: true,
-    sistemaMaintenance: true,
-  });
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
+  const [defaultThreshold, setDefaultThreshold] = useState(7);
+  const [thresholds, setThresholds] = useState<ThresholdState>(DEFAULT_THRESHOLDS);
 
-  const handleToggle = (key: keyof typeof notifications) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [key]: !prev[key],
-    }));
-    
-    // TODO: Conectar a API para guardar preferencias
-    // Por ahora solo mostramos un toast
-    toast.success(`Notificación ${notifications[key] ? 'desactivada' : 'activada'}`);
+  const sanitizeDayValue = (value: number): number => {
+    if (Number.isNaN(value) || value < 1) {
+      return 1;
+    }
+    return value;
+  };
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true);
+        const defaultConfig = await getDefaultNotificationThreshold();
+        if (defaultConfig?.daysBeforeDue) {
+          setDefaultThreshold(defaultConfig.daysBeforeDue);
+        }
+
+        const entries = await Promise.all(
+          PROCEDURES.map(async (procedureType) => ({
+            procedureType,
+            config: await getNotificationThreshold(procedureType),
+          }))
+        );
+
+        setThresholds((current) => {
+          const next = { ...current };
+          for (const entry of entries) {
+            if (entry.config?.daysBeforeDue) {
+              next[entry.procedureType] = entry.config.daysBeforeDue;
+            }
+          }
+          return next;
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error ? error.message : "No se pudieron cargar los umbrales.";
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    void load();
+  }, []);
+
+  const handleSave = async () => {
+    try {
+      setIsSaving(true);
+      await updateDefaultNotificationThreshold({
+        daysBeforeDue: sanitizeDayValue(defaultThreshold),
+      });
+      await Promise.all(
+        PROCEDURES.map((procedureType) =>
+          createNotificationThreshold({
+            procedureType,
+            daysBeforeDue: sanitizeDayValue(thresholds[procedureType]),
+          })
+        )
+      );
+      toast.success("Umbrales de notificación actualizados.");
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "No se pudieron guardar los umbrales.";
+      toast.error(message);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
-    <Card className="bg-slate-800 border-slate-700 p-6 space-y-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-      <div>
-        <h3 className="text-lg font-semibold text-white mb-2">Preferencias de Notificaciones</h3>
-        <p className="text-slate-400 text-sm">Controla qué notificaciones deseas recibir</p>
-      </div>
-
-      <div className="space-y-4 border-t border-slate-700 pt-6">
-        {/* Alertas de VDF Vencidos */}
-        <div className="flex items-start justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
+    <div className="space-y-6">
+      <Card className="border-slate-700 bg-slate-800/80 p-6">
+        <div className="mb-6 flex items-start justify-between gap-4 border-b border-slate-700 pb-5">
           <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-amber-500 mt-0.5" />
+            <div className="rounded-lg border border-indigo-500/30 bg-indigo-500/10 p-2">
+              <Bell className="h-5 w-5 text-indigo-300" />
+            </div>
             <div>
-              <p className="text-white font-medium">Alertas de VDF Vencidos</p>
-              <p className="text-slate-400 text-sm mt-1">
-                Recibe notificaciones cuando haya VDF próximos a vencer
+              <h3 className="mb-1 text-lg font-semibold text-white">Gestión de Notificaciones</h3>
+              <p className="text-sm text-slate-400">
+                Define umbrales por procedimiento para disparar alertas y mantener seguimiento.
               </p>
             </div>
           </div>
-          <Switch
-            checked={notifications.vdfExpired}
-            onCheckedChange={() => handleToggle('vdfExpired')}
-          />
-        </div>
-
-        {/* Reportes Diarios */}
-        <div className="flex items-start justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
-          <div className="flex items-start gap-3">
-            <BarChart3 className="h-5 w-5 text-blue-500 mt-0.5" />
-            <div>
-              <p className="text-white font-medium">Reportes Diarios</p>
-              <p className="text-slate-400 text-sm mt-1">
-                Recibe un resumen diario de actividades y recaudaciones
-              </p>
-            </div>
+          <div className="rounded-md border border-slate-600 bg-slate-900 px-3 py-1 text-xs text-slate-300">
+            Rol actual: <span className="font-semibold text-slate-100">{user?.role ?? "N/A"}</span>
           </div>
-          <Switch
-            checked={notifications.dailyReports}
-            onCheckedChange={() => handleToggle('dailyReports')}
-          />
         </div>
 
-        {/* Nuevos Contribuyentes */}
-        <div className="flex items-start justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
-          <div className="flex items-start gap-3">
-            <Bell className="h-5 w-5 text-green-500 mt-0.5" />
-            <div>
-              <p className="text-white font-medium">Nuevos Contribuyentes</p>
-              <p className="text-slate-400 text-sm mt-1">
-                Recibe notificaciones cuando se registren nuevos contribuyentes
-              </p>
-            </div>
+        <div className="mb-4 rounded-lg border border-slate-700 bg-slate-900/80 p-4">
+          <p className="mb-3 text-sm font-medium text-slate-200">Umbral base global</p>
+          <div className="grid grid-cols-1 gap-3 md:grid-cols-[220px_1fr] md:items-center">
+            <Label className="text-xs text-slate-400">Días por defecto antes de vencimiento</Label>
+            <Input
+              type="number"
+              min={1}
+              value={defaultThreshold}
+              onChange={(event) => setDefaultThreshold(sanitizeDayValue(Number(event.target.value)))}
+              className="border-slate-600 bg-slate-800 text-white"
+            />
           </div>
-          <Switch
-            checked={notifications.newContribuyentes}
-            onCheckedChange={() => handleToggle('newContribuyentes')}
-          />
         </div>
 
-        {/* Notificaciones de Multas */}
-        <div className="flex items-start justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-red-500 mt-0.5" />
-            <div>
-              <p className="text-white font-medium">Notificaciones de Multas</p>
-              <p className="text-slate-400 text-sm mt-1">
-                Recibe alertas cuando se registren nuevas multas
-              </p>
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          {PROCEDURES.map((procedureType) => (
+            <div
+              key={procedureType}
+              className="rounded-lg border border-slate-700 bg-slate-900/70 p-4 transition-all hover:border-slate-600"
+            >
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold tracking-wide text-slate-400">PROCEDIMIENTO</p>
+                <span className="rounded border border-slate-600 bg-slate-800 px-2 py-0.5 text-xs font-semibold text-slate-100">
+                  {procedureType}
+                </span>
+              </div>
+              <div className="mb-3 flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 text-amber-400" />
+                <p className="text-sm font-semibold text-slate-100">
+                  Detección temprana para {procedureType}
+                </p>
+              </div>
+              <Label className="mb-1 block text-xs text-slate-400">Días antes de vencimiento</Label>
+              <Input
+                type="number"
+                min={1}
+                value={thresholds[procedureType]}
+                onChange={(event) =>
+                  setThresholds((current) => ({
+                    ...current,
+                    [procedureType]: sanitizeDayValue(Number(event.target.value)),
+                  }))
+                }
+                className="border-slate-600 bg-slate-800 text-white"
+              />
             </div>
-          </div>
-          <Switch
-            checked={notifications.multas}
-            onCheckedChange={() => handleToggle('multas')}
-          />
+          ))}
         </div>
 
-        {/* Mantenimiento del Sistema */}
-        <div className="flex items-start justify-between p-4 bg-slate-900 rounded-lg border border-slate-700 hover:border-slate-600 transition-colors">
-          <div className="flex items-start gap-3">
-            <Bell className="h-5 w-5 text-purple-500 mt-0.5" />
-            <div>
-              <p className="text-white font-medium">Mantenimiento del Sistema</p>
-              <p className="text-slate-400 text-sm mt-1">
-                Recibe notificaciones sobre mantenimientos programados
-              </p>
-            </div>
-          </div>
-          <Switch
-            checked={notifications.sistemaMaintenance}
-            onCheckedChange={() => handleToggle('sistemaMaintenance')}
-          />
+        <div className="mt-6 flex flex-col gap-3 border-t border-slate-700 pt-5 md:flex-row md:items-center md:justify-between">
+          <p className="text-xs text-slate-400">
+            Los cambios aplican a la generación de alertas desde backend y refresco del centro de notificaciones.
+          </p>
+          <Button
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={isSaving || isLoading}
+            className="bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            {isSaving ? "Guardando..." : "Guardar umbrales"}
+          </Button>
         </div>
-      </div>
+      </Card>
 
-      {/* Notification Summary */}
-      <div className="border-t border-slate-700 pt-6 bg-slate-900 rounded-lg p-4">
-        <p className="text-sm text-slate-300">
-          <span className="font-semibold">Notificaciones activas:</span>{' '}
-          <span className="text-blue-400">
-            {Object.values(notifications).filter((v) => v).length} de{' '}
-            {Object.keys(notifications).length}
-          </span>
-        </p>
-      </div>
-    </Card>
+      {user?.role === "ADMIN" && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 text-sm text-slate-300">
+            <ShieldCheck className="h-4 w-4 text-emerald-400" />
+            Configuración avanzada de escalamiento (solo ajustes de notificaciones).
+          </div>
+          <EscalationConfigTab />
+        </div>
+      )}
+    </div>
   );
 }

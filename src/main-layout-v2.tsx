@@ -8,6 +8,8 @@ import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/UI/dropdown-menu';
 import { Menu, LogOut, Settings, Landmark } from 'lucide-react';
 import { useNavItems } from '@/hooks/use-nav-items';
+import { NotificationBell } from "@/components/Navigation/notification-bell";
+import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -153,6 +155,7 @@ const MainLayoutV2 = () => {
                     </div>
 
                     <div className="flex items-center gap-4">
+                        <NotificationBell />
                         <div className="h-6 w-[1px] bg-slate-800 hidden sm:block mx-1" />
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -206,6 +209,7 @@ const MainLayoutV2 = () => {
                     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
                     
                     <div className="px-4 py-6 md:px-10 md:py-8 lg:px-12 min-h-full max-w-full relative z-10 transition-all duration-500">
+                        <MaintenanceNotice />
                         <Outlet />
                     </div>
                 </main>
