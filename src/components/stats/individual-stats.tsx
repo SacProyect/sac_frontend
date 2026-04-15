@@ -10,8 +10,9 @@ import { InvestigationPdf } from "@/types/investigation-pdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
 import { Parish, TaxpayerCategory } from "@/types/taxpayer";
-import { Settings } from "lucide-react";
+import { Settings, Edit2 } from "lucide-react";
 import { ObservationsPanel } from "@/components/observations/observations-panel";
+import { EditTaxpayerModal } from "@/components/Taxpayer/edit-taxpayer-modal";
 
 
 
@@ -19,6 +20,7 @@ import { ObservationsPanel } from "@/components/observations/observations-panel"
 interface IndividualStatsProps {
     events: Event[],
     IVAReports: IVAReports[],
+    taxpayerData?: TaxpayerData;
 }
 
 interface TaxpayerData {
@@ -48,9 +50,9 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, taxpayerData: initialData }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
-    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
+    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(initialData);
     const { user } = useAuth();
     const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -61,31 +63,54 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
     const [showIndexModal, setShowIndexModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [newIndexIva, setNewIndexIva] = useState("");
 
+    const canEditTaxpayer = 
+        user?.role === 'ADMIN' || 
+        user?.id === taxpayerData?.officerId || 
+        user?.taxpayer?.some(t => t.id === taxpayer);
+
+    const parseDecimalLike = (value: unknown): number => {
+        if (typeof value === "number") return value;
+        if (typeof value === "string") {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+        if (!value || typeof value !== "object") return 0;
+
+        const maybeDecimal = value as { d?: unknown };
+        if (!Array.isArray(maybeDecimal.d) || maybeDecimal.d.length === 0) return 0;
+        const firstChunk = Number(maybeDecimal.d[0]);
+        return Number.isFinite(firstChunk) ? firstChunk : 0;
+    };
+
+    const formatCurrency = (value: unknown) => {
+        const amount = parseDecimalLike(value);
+        return amount.toLocaleString("es-VE", { style: "currency", currency: "VES" });
+    };
 
 
 
     useEffect(() => {
+        if (initialData) {
+            setTaxpayerData(initialData);
+            return;
+        }
+
         const fetchData = async () => {
             try {
-
                 if (taxpayer) {
                     const data = await getTaxpayerData(taxpayer);
-
-
                     setTaxpayerData(data);
                 }
-
             } catch (e) {
                 console.error(e);
                 toast.error("Ha ocurrido un error obteniendo los datos del contribuyente")
             }
         }
         fetchData()
-
-
-    }, [])
+    }, [initialData, taxpayer])
 
     let fines = 0;
 
@@ -94,8 +119,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     let sells = 0;
     if (IVAReports && Array.isArray(IVAReports)) {
         IVAReports.forEach((rep) => {
-            buys += Number(rep.purchases) || 0;
-            sells += Number(rep.sells) || 0;
+            buys += parseDecimalLike(rep.purchases);
+            sells += parseDecimalLike(rep.sells);
         });
     }
 
@@ -313,8 +338,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             const monthLabel = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
             return {
                 month: monthLabel,
-                compras: Number(r.purchases) || 0,
-                ventas: Number(r.sells) || 0,
+                compras: parseDecimalLike(r.purchases),
+                ventas: parseDecimalLike(r.sells),
             };
         });
     }, [IVAReports]);
@@ -350,16 +375,16 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     return (
-        <div className="w-full text-black mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
+        <div className="w-full text-white mt-4 px-0 sm:px-2 md:px-0 lg:mt-0 overflow-x-hidden">
 
           {/* ── Design tokens ── */}
           <style>{`
             .is-card {
-              --card-bg: #ffffff;
-              --card-border: rgba(15,23,42,0.08);
-              --tag-bg: rgba(15,23,42,0.05);
-              --label-color: #64748b;
-              --value-color: #0f172a;
+              --card-bg: #0b1220;
+              --card-border: rgba(148,163,184,0.22);
+              --tag-bg: rgba(148,163,184,0.12);
+              --label-color: #94a3b8;
+              --value-color: #f8fafc;
               --accent: #1d4ed8;
               --accent-dim: rgba(29,78,216,0.08);
               --badge-special-bg: rgba(245,158,11,0.12);
@@ -443,16 +468,16 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             .is-action-btn.success { background: #059669; color: #fff; }
             .is-action-btn.ghost {
               background: transparent;
-              border: 1.5px solid rgba(15,23,42,0.15);
-              color: #475569;
+              border: 1.5px solid rgba(148,163,184,0.35);
+              color: #cbd5e1;
             }
             /* settings cog */
             .is-cog-btn {
               padding: 5px;
               border-radius: 6px;
               border: 1px solid var(--card-border);
-              background: white;
-              color: #64748b;
+              background: #111827;
+              color: #cbd5e1;
               cursor: pointer;
               transition: background 0.15s;
               display: flex; align-items: center; justify-content: center;
@@ -471,7 +496,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             }
           `}</style>
 
-          <div className="is-card flex flex-col lg:flex-row w-full max-w-full lg:max-w-[960px] lg:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(15,23,42,0.09)' }}>
+          <div className="is-card flex flex-col lg:flex-row w-full shadow-xl rounded-xl overflow-hidden" style={{ background: 'var(--card-bg)', border: '1px solid var(--card-border)' }}>
 
                 {/* ── Columna Izquierda — Datos del Contribuyente ── */}
                 <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4">
@@ -479,8 +504,8 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                   {/* Header */}
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="is-field-label" style={{color:'#94a3b8',fontSize:'10px'}}>CONTRIBUYENTE</p>
-                      <p className="is-field-value prominent" style={{fontSize:'15px',fontWeight:700,color:'#0f172a'}}>
+                      <p className="is-field-label" style={{color:'var(--label-color)',fontSize:'10px'}}>CONTRIBUYENTE</p>
+                      <p className="is-field-value prominent" style={{fontSize:'15px',fontWeight:700,color:'var(--value-color)'}}>
                         {taxpayerData?.name ?? '—'}
                       </p>
                     </div>
@@ -506,6 +531,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                           }}
                         >
                           <Settings size={15} />
+                        </button>
+                      )}
+                      
+                      {/* Botón Editar Contribuyente */}
+                      {canEditTaxpayer && taxpayerData && (
+                        <button
+                          type="button"
+                          className="is-cog-btn"
+                          title="Editar Información"
+                          onClick={() => setShowEditModal(true)}
+                        >
+                          <Edit2 size={15} />
                         </button>
                       )}
                     </div>
@@ -557,7 +594,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </div>
                     <div className="is-field">
                       <span className="is-field-label">Excedente IVA</span>
-                      <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? taxpayerData.IVAReports[0].excess.toString() : '—'}</span>
+                      <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? formatCurrency(taxpayerData.IVAReports[0].excess) : '—'}</span>
                     </div>
                     <div className="is-field">
                       <span className="is-field-label">Fecha Procedimiento</span>
@@ -675,7 +712,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                 </div>
 
                 {/* ── Columna Derecha — Observaciones ── */}
-                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0" style={{minHeight:'420px'}}>
+                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 h-[480px] lg:h-auto lg:self-stretch">
 
                   <ObservationsPanel taxpayerId={taxpayer} />
                 </div>
@@ -777,9 +814,15 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                             </button>
                         </div>
                     </div>
-                </div>
+        </div>
             )}
 
+            <EditTaxpayerModal 
+              isOpen={showEditModal} 
+              onClose={() => setShowEditModal(false)} 
+              taxpayerData={taxpayerData} 
+              onSuccess={(updatedData) => setTaxpayerData(updatedData)} 
+            />
         </div>
 
     );

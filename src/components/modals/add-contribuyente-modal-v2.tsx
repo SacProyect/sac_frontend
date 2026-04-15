@@ -23,6 +23,7 @@ import toast from 'react-hot-toast';
 import { getOfficers } from '../utils/api/user-functions';
 import { TaxpayerCategories } from '@/types/taxpayer-categories';
 import { useAuth } from '@/hooks/use-auth';
+import { invalidateCache } from '@/hooks/useCachedData';
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -235,6 +236,10 @@ export function AddContribuyenteModalV2({
 
       if (result.success) {
         toast.success('Contribuyente creado exitosamente');
+        
+        // ✅ Invalidar caché de contribuyentes para refrescar listas
+        invalidateCache('taxpayers');
+        
         // Reset form
         setFormData({
           providenceNum: '',
@@ -324,7 +329,7 @@ export function AddContribuyenteModalV2({
                 >
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   <SelectItem value={taxpayer_process.FP}>FP</SelectItem>
                   <SelectItem value={taxpayer_process.AF}>AF</SelectItem>
                   <SelectItem value={taxpayer_process.VDF}>VDF</SelectItem>
@@ -366,7 +371,7 @@ export function AddContribuyenteModalV2({
                 <SelectTrigger className="bg-slate-700 border-slate-600 text-white w-20">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 text-white">
                   <SelectItem value="J">J-</SelectItem>
                   <SelectItem value="V">V-</SelectItem>
                   <SelectItem value="G">G-</SelectItem>
@@ -422,7 +427,7 @@ export function AddContribuyenteModalV2({
                 >
                   <SelectValue placeholder="Seleccionar..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   {parishList.map((parish) => (
                     <SelectItem key={parish.id} value={parish.id}>
                       {parish.name}
@@ -452,7 +457,7 @@ export function AddContribuyenteModalV2({
               >
                 <SelectValue placeholder="Seleccionar..." />
               </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
+              <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                 {taxpayerCategories.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
                     {cat.name}
@@ -466,7 +471,7 @@ export function AddContribuyenteModalV2({
           </div>
 
           {/* Row 6: Fecha de Emisión, Tipo, Funcionario */}
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <Label htmlFor="emition_date" className="text-slate-300 mb-2 block">
                 Fecha de Emisión
@@ -476,7 +481,7 @@ export function AddContribuyenteModalV2({
                 type="date"
                 value={formData.emition_date}
                 onChange={(e) => handleChange('emition_date', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white ${
+                className={`w-full bg-slate-700 border-slate-600 text-white ${
                   errors.emition_date ? 'border-red-500' : ''
                 }`}
               />
@@ -493,10 +498,10 @@ export function AddContribuyenteModalV2({
                 value={formData.contract_type}
                 onValueChange={(value) => handleChange('contract_type', value as contract_type)}
               >
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
+                <SelectTrigger className="w-full bg-slate-700 border-slate-600 text-white">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                   <SelectItem value={contract_type.ORDINARY}>Ordinario</SelectItem>
                   <SelectItem value={contract_type.SPECIAL}>Especial</SelectItem>
                 </SelectContent>
@@ -529,7 +534,7 @@ export function AddContribuyenteModalV2({
                   >
                     <SelectValue placeholder="Seleccionar..." />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
+                  <SelectContent className="bg-slate-700 border-slate-600 max-h-60 overflow-y-auto text-white">
                     {filteredOfficers.map((officer) => (
                       <SelectItem key={officer.id} value={officer.id}>
                         {officer.name} - C.I.: {officer.personId}

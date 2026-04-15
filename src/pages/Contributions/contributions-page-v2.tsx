@@ -20,6 +20,7 @@ export default function ContributionsPageV2() {
   const [endDate, setEndDate] = useState('2025-12-31');
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [statisticsPanelOpen, setStatisticsPanelOpen] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -31,6 +32,9 @@ export default function ContributionsPageV2() {
     const hasValidDates = startDate && endDate;
 
     if (!shouldFetch || !hasValidDates) return;
+
+    // Feedback UX: mostrar loading en cuanto cambia filtro (año, mes o supervisor)
+    setLoading(true);
 
     const fetchGroups = async () => {
       try {
@@ -85,7 +89,10 @@ export default function ContributionsPageV2() {
           groupData={groupData}
           setStartDate={setStartDate}
           setEndDate={setEndDate}
-          setSelectedGroup={setSelectedGroup}
+          setSelectedGroup={(id) => {
+            setSelectedGroup(id);
+            if (id) setStatisticsPanelOpen(true);
+          }}
           setSelectedSupervisorId={setSelectedSupervisorId}
         />
         

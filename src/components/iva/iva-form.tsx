@@ -4,6 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
 import { 
+  Check,
+  ChevronDown,
   Calculator, 
   Calendar, 
   Building2, 
@@ -23,14 +25,15 @@ import { Label } from '@/components/UI/label';
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
 import { 
-  DropdownMenu as Popover,
-  DropdownMenuContent as PopoverContent,
-  DropdownMenuTrigger as PopoverTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
 } from "@/components/UI/dropdown-menu";
 import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
 import { createIVA, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents, invalidateCache } from '@/hooks/useCachedData';
+import { getTaxpayerIvaLastDeclared, getTaxpayerIvaReports } from '@/components/utils/api/taxpayer-functions';
 import Decimal from 'decimal.js';
 import type { IVAReports } from '@/types/iva-reports';
 
@@ -90,7 +93,6 @@ function IvaForm() {
     const [periodMonth, setPeriodMonth] = useState(1);
     const [searchValue, setSearchValue] = useState("");
     const [searchDebounce, setSearchDebounce] = useState("");
-
     // Pagination states
     const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
     const [searchAdditionalPages, setSearchAdditionalPages] = useState<Taxpayer[]>([]);
@@ -100,9 +102,13 @@ function IvaForm() {
     const [additionalPages, setAdditionalPages] = useState<Taxpayer[]>([]);
     const [currentPage, setCurrentPage] = useState(2);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
-
+    const currentYear = new Date().getUTCFullYear();
     const listRef = useRef<HTMLDivElement>(null);
-
+    const [dateParts, setDateParts] = useState<{ year: string; day: string; month: string }>({
+        year: String(currentYear),
+        day: "1",
+        month: String(new Date().getUTCMonth() + 1),
+    });
     const { 
         register,
         handleSubmit,
@@ -128,24 +134,32 @@ function IvaForm() {
 
     // Unified list of taxpayers
     const isSearching = searchDebounce.trim() !== '';
-    const firstPageFiltered = useMemo(
-        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
-        [firstPageTaxpayers]
-    );
+    
+    const taxpayerArray = useMemo(() => {
+        console.log('[DEBUG] IvaForm - Role:', user?.role);
+        const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const allFetched = [...displayedFirst, ...displayedExtra];
 
-    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
-    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
-    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
-
-    const taxpayerArray = useMemo(
-        () => [...displayedFirst, ...displayedExtra],
-        [displayedFirst, displayedExtra]
-    );
+        if (user?.role === 'ADMIN') {
+            console.log('[DEBUG] IvaForm - ADMIN taxpayers Count:', allFetched.length);
+            return allFetched;
+        } else {
+            // Fiscal role: Filter by user.id
+            console.log('[DEBUG] IvaForm - FISCAL filtering by ID:', user?.id);
+            const filtered = allFetched.filter(t => t.user?.id === user?.id);
+            console.log('[DEBUG] IvaForm - Filtered result count:', filtered.length);
+            return filtered;
+        }
+    }, [user, firstPageTaxpayers, searchResults, searchAdditionalPages, additionalPages, isSearching, searchDebounce]);
 
     const hasMore = useMemo(() => {
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
         const loadedPagesCount = 1 + Math.floor(displayedExtra.length / 50);
         return loadedPagesCount < totalPagesDisplayed;
-    }, [displayedExtra.length, totalPagesDisplayed]);
+    }, [isSearching, searchAdditionalPages, additionalPages, searchTotalPages, totalPages]);
 
     const filteredTaxpayers = useMemo(() => {
         if (!searchValue) return taxpayerArray;
@@ -155,6 +169,38 @@ function IvaForm() {
             t.rif.toLowerCase().includes(s)
         );
     }, [searchValue, taxpayerArray]);
+
+    const yearOptions = useMemo(
+        () => Array.from({ length: 7 }, (_, i) => String(currentYear + 2 - i)),
+        [currentYear]
+    );
+
+    const monthOptions = useMemo(
+        () => [
+            { value: "1", label: "Enero" },
+            { value: "2", label: "Febrero" },
+            { value: "3", label: "Marzo" },
+            { value: "4", label: "Abril" },
+            { value: "5", label: "Mayo" },
+            { value: "6", label: "Junio" },
+            { value: "7", label: "Julio" },
+            { value: "8", label: "Agosto" },
+            { value: "9", label: "Septiembre" },
+            { value: "10", label: "Octubre" },
+            { value: "11", label: "Noviembre" },
+            { value: "12", label: "Diciembre" },
+        ],
+        []
+    );
+
+    const dayOptions = useMemo(() => {
+        const y = Number(dateParts.year);
+        const m = Number(dateParts.month);
+        if (!y || !m) return [];
+        const days = new Date(Date.UTC(y, m, 0)).getUTCDate();
+        return Array.from({ length: days }, (_, i) => String(i + 1));
+    }, [dateParts.year, dateParts.month]);
+
 
     const loadMoreTaxpayers = useCallback(async () => {
         if (!hasMore || isLoadingMore) return;
@@ -245,49 +291,131 @@ function IvaForm() {
     }, [user, navigate]);
 
     useEffect(() => {
+        if (!selectedTaxpayer) return;
+        const year = Number(dateParts.year);
+        const month = Number(dateParts.month);
+        const day = Number(dateParts.day);
+
+        if (!year || !month || !day) {
+            setValue("date", "");
+            return;
+        }
+
+        const maxDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+        const safeDay = Math.min(day, maxDay);
+        if (safeDay !== day) {
+            setDateParts(prev => ({ ...prev, day: String(safeDay) }));
+            return;
+        }
+
+        const selectedDate = new Date(Date.UTC(year, month - 1, safeDay));
+        setValue("date", selectedDate.toISOString());
+    }, [dateParts, selectedTaxpayer, setValue]);
+
+    useEffect(() => {
         if (!selectedTaxpayer) {
             setNextMonthLabel("");
             setValue('date', '');
             return;
         }
 
-        setLoadingMonthInfo(true);
-        const sorted = [...(selectedTaxpayer.IVAReports || [])].sort((a, b) => {
-            const tb = new Date(b.date).getTime();
-            const ta = new Date(a.date).getTime();
-            return tb - ta;
-        });
+        const getMonthStartUTC = (date: Date) =>
+            new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), 1));
 
-        const rawEmitionDate = selectedTaxpayer.emition_date ? new Date(selectedTaxpayer.emition_date) : new Date();
-        const emitionDate = isNaN(rawEmitionDate.getTime()) ? new Date() : rawEmitionDate;
+        const parseReportMonth = (dateInput: string) => {
+            const asDate = new Date(dateInput);
+            if (!isNaN(asDate.getTime())) return getMonthStartUTC(asDate);
 
-        let year = emitionDate.getUTCFullYear();
-        let month = 1;
+            const periodMatch = /^(\d{4})-(\d{2})/.exec(dateInput);
+            if (!periodMatch) return null;
 
-        if (sorted.length > 0) {
-            const last = new Date(sorted[0].date);
-            if (!isNaN(last.getTime())) {
-                year = last.getUTCFullYear();
-                month = last.getUTCMonth() + 1 + 1;
-                if (month > 12) {
-                    month = 1;
-                    year += 1;
+            const parsedYear = Number(periodMatch[1]);
+            const parsedMonthIndex = Number(periodMatch[2]) - 1;
+            if (Number.isNaN(parsedYear) || Number.isNaN(parsedMonthIndex)) return null;
+            return new Date(Date.UTC(parsedYear, parsedMonthIndex, 1));
+        };
+
+        const calculateNextPendingPeriod = async () => {
+            setLoadingMonthInfo(true);
+            try {
+                const lastDeclaredInfo = await getTaxpayerIvaLastDeclared(selectedTaxpayer.id);
+                if (lastDeclaredInfo?.nextToDeclare) {
+                    const nextPeriod = new Date(Date.UTC(
+                        lastDeclaredInfo.nextToDeclare.year,
+                        lastDeclaredInfo.nextToDeclare.month - 1,
+                        1
+                    ));
+
+                    setNextMonthLabel(
+                        lastDeclaredInfo.nextToDeclare.label ||
+                        nextPeriod.toLocaleString('es-ES', { month: 'long', year: 'numeric' })
+                    );
+                    setPeriodYear(nextPeriod.getUTCFullYear());
+                    setPeriodMonth(nextPeriod.getUTCMonth() + 1);
+                    setDateParts({
+                        year: String(nextPeriod.getUTCFullYear()),
+                        month: String(nextPeriod.getUTCMonth() + 1),
+                        day: "1",
+                    });
+                    setValue('date', isoDateUtcNoon(nextPeriod.getUTCFullYear(), nextPeriod.getUTCMonth() + 1));
+                    return;
                 }
-            }
-        }
 
-        const nextDate = new Date(Date.UTC(year, month - 1, 1, 12, 0, 0, 0));
-        if (!isNaN(nextDate.getTime())) {
-            setNextMonthLabel(nextDate.toLocaleString('es-ES', { month: 'long', year: 'numeric', timeZone: 'UTC' }));
-            setPeriodYear(year);
-            setPeriodMonth(month);
-            setValue('date', nextDate.toISOString());
-        } else {
-            console.warn("No se pudo calcular la fecha siguiente para el contribuyente:", selectedTaxpayer.name);
-            setNextMonthLabel("Error en fecha");
-            setValue('date', '');
-        }
-        setLoadingMonthInfo(false);
+                const reports = await getTaxpayerIvaReports(selectedTaxpayer.id);
+                const safeReports = Array.isArray(reports) && reports.length > 0
+                    ? reports
+                    : (selectedTaxpayer.IVAReports || []);
+
+                const parsedPeriods = safeReports
+                    .map((r) => parseReportMonth(String(r.date)))
+                    .filter((d): d is Date => d !== null);
+
+                const lastDeclaredPeriod = parsedPeriods.length > 0
+                    ? new Date(Math.max(...parsedPeriods.map((d) => d.getTime())))
+                    : null;
+
+                const emissionRaw = selectedTaxpayer.emition_date ? new Date(selectedTaxpayer.emition_date) : new Date();
+                const emissionDate = isNaN(emissionRaw.getTime()) ? new Date() : emissionRaw;
+                const emissionPeriod = getMonthStartUTC(emissionDate);
+                const currentPeriod = getMonthStartUTC(new Date());
+
+                const nextPeriod = lastDeclaredPeriod
+                    ? new Date(Date.UTC(lastDeclaredPeriod.getUTCFullYear(), lastDeclaredPeriod.getUTCMonth() + 1, 1))
+                    : emissionPeriod;
+
+                if (nextPeriod.getTime() > currentPeriod.getTime()) {
+                    setNextMonthLabel("Al día");
+                    setPeriodYear(currentPeriod.getUTCFullYear());
+                    setPeriodMonth(currentPeriod.getUTCMonth() + 1);
+                    setDateParts({
+                        year: String(currentPeriod.getUTCFullYear()),
+                        month: String(currentPeriod.getUTCMonth() + 1),
+                        day: "1",
+                    });
+                    setValue('date', isoDateUtcNoon(currentPeriod.getUTCFullYear(), currentPeriod.getUTCMonth() + 1));
+                    return;
+                }
+
+                setNextMonthLabel(
+                    nextPeriod.toLocaleString('es-ES', { month: 'long', year: 'numeric' })
+                );
+                setPeriodYear(nextPeriod.getUTCFullYear());
+                setPeriodMonth(nextPeriod.getUTCMonth() + 1);
+                setDateParts({
+                    year: String(nextPeriod.getUTCFullYear()),
+                    month: String(nextPeriod.getUTCMonth() + 1),
+                    day: "1",
+                });
+                setValue('date', isoDateUtcNoon(nextPeriod.getUTCFullYear(), nextPeriod.getUTCMonth() + 1));
+            } catch (e) {
+                console.error("Error calculando próximo período IVA:", e);
+                setNextMonthLabel("Sin sugerencia");
+            } finally {
+                setLoadingMonthInfo(false);
+            }
+        };
+
+        void calculateNextPendingPeriod();
     }, [selectedTaxpayer, setValue]);
 
     const applyManualPeriod = useCallback(
@@ -375,78 +503,180 @@ function IvaForm() {
                                     name="taxpayerId"
                                     rules={{ required: "Seleccione un contribuyente" }}
                                     render={({ field }) => (
-                                        <Popover>
-                                            <PopoverTrigger asChild>
-                                                <Button
-                                                    variant="outline"
-                                                    className={cn(
-                                                        "w-full justify-between bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-11",
-                                                        !field.value && "text-slate-500"
-                                                    )}
-                                                >
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild>
+                                              <Button
+                                                variant="outline"
+                                                role="combobox"
+                                                className={cn(
+                                                  "w-full justify-between bg-slate-950/50 border-slate-800 text-slate-300 hover:bg-slate-800 hover:text-white rounded-xl h-12 px-4 transition-all duration-200",
+                                                  !field.value && "text-slate-500"
+                                                )}
+                                              >
+                                                <div className="flex items-center gap-3 truncate">
+                                                  <Building2 className={cn("h-4 w-4 shrink-0 transition-colors", field.value ? "text-indigo-400" : "text-slate-500")} />
+                                                  <span className="truncate">
                                                     {field.value && selectedTaxpayer
-                                                        ? `${selectedTaxpayer.name} | ${selectedTaxpayer.rif}`
-                                                        : "Seleccionar contribuyente..."}
-                                                    <ArrowRight className="ml-2 h-4 w-4 shrink-0 opacity-50 rotate-90" />
-                                                </Button>
-                                            </PopoverTrigger>
-                                            <PopoverContent className="w-80 p-0 bg-slate-900 border-slate-800 shadow-2xl overflow-hidden rounded-xl">
-                                                <div className="p-2 border-b border-slate-800 bg-slate-950/50 flex items-center gap-2">
-                                                    <Search className="w-4 h-4 text-slate-500" />
-                                                    <input 
-                                                        className="bg-transparent border-none text-xs text-slate-200 focus:ring-0 w-full placeholder:text-slate-600" 
-                                                        placeholder="Filtrar..."
-                                                        value={searchValue}
-                                                        onChange={(e) => setSearchValue(e.target.value)}
-                                                    />
+                                                      ? `${selectedTaxpayer.name}`
+                                                      : "Seleccionar contribuyente..."}
+                                                  </span>
                                                 </div>
-                                                <div 
-                                                    ref={listRef}
-                                                    onScroll={handleScroll}
-                                                    className="max-h-60 overflow-y-auto custom-scrollbar"
-                                                >
-                                                    {filteredTaxpayers.length === 0 ? (
-                                                        <div className="p-4 text-xs text-slate-500 text-center">No hay resultados</div>
-                                                    ) : (
-                                                        filteredTaxpayers.map((t: Taxpayer) => (
-                                                            <div
-                                                                key={t.id}
-                                                                onClick={() => {
-                                                                    setSelectedTaxpayer(t);
-                                                                    field.onChange(t.id);
-                                                                }}
-                                                                className="px-4 py-3 text-xs text-slate-300 hover:bg-indigo-600 hover:text-white cursor-pointer border-b border-slate-800/50 last:border-0"
-                                                            >
-                                                                <div className="flex flex-col gap-0.5">
-                                                                    <span className="font-semibold">{t.name}</span>
-                                                                    <span className="text-[10px] opacity-70 uppercase">{t.rif} — {t.process}</span>
-                                                                </div>
+                                                <ChevronDown className="h-4 w-4 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />
+                                              </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent 
+                                              className="w-[var(--radix-dropdown-menu-trigger-width)] p-0 bg-slate-900 border-slate-700 shadow-2xl rounded-xl overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+                                              align="start"
+                                            >
+                                              {/* Buscador Premium */}
+                                              <div className="p-3 border-b border-slate-800 bg-slate-950/40 sticky top-0 z-10">
+                                                <div className="relative group">
+                                                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                                                  <Input 
+                                                    className="bg-slate-900 border-slate-800 text-xs text-slate-200 pl-9 h-9 w-full rounded-lg focus:ring-1 focus:ring-indigo-500/50 transition-all placeholder:text-slate-600" 
+                                                    placeholder="Buscar por nombre o RIF..."
+                                                    value={searchValue}
+                                                    onChange={(e) => setSearchValue(e.target.value)}
+                                                    autoFocus
+                                                  />
+                                                </div>
+                                              </div>
+
+                                              {/* Lista de Resultados */}
+                                              <div 
+                                                ref={listRef}
+                                                onScroll={handleScroll}
+                                                className="max-h-72 overflow-y-auto custom-scrollbar p-1"
+                                              >
+                                                {filteredTaxpayers.length === 0 ? (
+                                                  <div className="py-10 px-4 text-center">
+                                                    <div className="w-12 h-12 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-3">
+                                                      <Search className="h-6 w-6 text-slate-600" />
+                                                    </div>
+                                                    <p className="text-xs font-medium text-slate-400">No se encontraron resultados</p>
+                                                    <p className="text-[10px] text-slate-600 mt-1">Intenta con otro término de búsqueda</p>
+                                                  </div>
+                                                ) : (
+                                                  <div className="grid grid-cols-1 gap-0.5">
+                                                    {filteredTaxpayers.map((t: Taxpayer) => (
+                                                      <button
+                                                        key={t.id}
+                                                        type="button"
+                                                        onClick={() => {
+                                                          setSelectedTaxpayer(t);
+                                                          field.onChange(t.id);
+                                                        }}
+                                                        className={cn(
+                                                          "w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition-all duration-200 group",
+                                                          field.value === t.id 
+                                                            ? "bg-indigo-600/10 text-indigo-300" 
+                                                            : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
+                                                        )}
+                                                      >
+                                                        <div className="flex items-center gap-3 min-w-0">
+                                                          <div className={cn(
+                                                            "w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors",
+                                                            field.value === t.id ? "bg-indigo-600 text-white" : "bg-slate-800 text-slate-500 group-hover:bg-slate-700 group-hover:text-slate-300"
+                                                          )}>
+                                                            <Building2 className="h-4 w-4" />
+                                                          </div>
+                                                          <div className="flex flex-col min-w-0">
+                                                            <span className="text-sm font-semibold truncate leading-tight">{t.name}</span>
+                                                            <div className="flex items-center gap-2 text-[10px] font-mono opacity-60">
+                                                              <span>{t.rif}</span>
+                                                              <span className="w-1 h-1 rounded-full bg-slate-600" />
+                                                              <span className="uppercase">{t.process}</span>
                                                             </div>
-                                                        ))
-                                                    )}
-                                                    {isLoadingMore && (
-                                                        <div className="p-3 text-[10px] text-center text-slate-500 uppercase tracking-widest animate-pulse">
-                                                            Cargando más...
+                                                          </div>
                                                         </div>
-                                                    )}
-                                                </div>
-                                            </PopoverContent>
-                                        </Popover>
+                                                        {field.value === t.id && (
+                                                          <Check className="h-4 w-4 text-indigo-400 shrink-0 animate-in zoom-in duration-200" />
+                                                        )}
+                                                      </button>
+                                                    ))}
+                                                  </div>
+                                                )}
+                                                
+                                                {isLoadingMore && (
+                                                  <div className="p-4 flex items-center justify-center gap-2">
+                                                    <div className="w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full animate-rotate" />
+                                                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                                                      Cargando más...
+                                                    </span>
+                                                  </div>
+                                                )}
+                                              </div>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
                                     )}
                                 />
                                 {errors.taxpayerId && <p className="text-[10px] font-bold text-rose-500 uppercase">{errors.taxpayerId.message}</p>}
                             </div>
 
                             {selectedTaxpayer && (
-                                <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex items-center gap-4 animate-in zoom-in-95 duration-300">
-                                    <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
-                                        <Calendar className="w-5 h-5 text-indigo-400" />
+                                <div className="p-4 rounded-2xl bg-indigo-500/5 border border-indigo-500/10 flex flex-col gap-4 animate-in zoom-in-95 duration-300">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-10 h-10 rounded-xl bg-indigo-500/10 flex items-center justify-center">
+                                            <Calendar className="w-5 h-5 text-indigo-400" />
+                                        </div>
+                                        <div className="flex-1">
+                                            <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Periodo sugerido</p>
+                                            <p className="text-sm font-semibold text-slate-200 capitalize">
+                                                {loadingMonthInfo ? "Calculando..." : nextMonthLabel || "Sin sugerencia"}
+                                            </p>
+                                        </div>
+                                        {!loadingMonthInfo && !!nextMonthLabel && nextMonthLabel !== "Sin sugerencia" && (
+                                            <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">
+                                                Sugerido
+                                            </Badge>
+                                        )}
                                     </div>
                                     <div className="flex-1">
                                         <p className="text-[10px] font-bold text-indigo-400 uppercase tracking-widest">Periodo a Declarar</p>
                                         <p className="text-sm font-semibold text-slate-200 capitalize">
                                             {loadingMonthInfo ? "Calculando..." : nextMonthLabel || "—"}
                                         </p>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                                            Ajuste manual (Año / Día / Mes)
+                                        </p>
+                                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                                            <select
+                                                value={dateParts.year}
+                                                onChange={(e) => setDateParts(prev => ({ ...prev, year: e.target.value }))}
+                                                className="h-11 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-200 px-3 text-sm"
+                                            >
+                                                {yearOptions.map((y) => (
+                                                    <option key={y} value={y} className="bg-slate-900 text-slate-200">
+                                                        {y}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <select
+                                                value={dateParts.day}
+                                                onChange={(e) => setDateParts(prev => ({ ...prev, day: e.target.value }))}
+                                                className="h-11 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-200 px-3 text-sm"
+                                            >
+                                                {dayOptions.map((d) => (
+                                                    <option key={d} value={d} className="bg-slate-900 text-slate-200">
+                                                        {d.padStart(2, "0")}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <select
+                                                value={dateParts.month}
+                                                onChange={(e) => setDateParts(prev => ({ ...prev, month: e.target.value }))}
+                                                className="h-11 rounded-xl bg-slate-950/40 border border-slate-800 text-slate-200 px-3 text-sm"
+                                            >
+                                                {monthOptions.map((m) => (
+                                                    <option key={m.value} value={m.value} className="bg-slate-900 text-slate-200">
+                                                        {m.label}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
                                     </div>
                                     {nextMonthLabel && !loadingMonthInfo && (
                                         <Badge variant="outline" className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20">Sugerido</Badge>

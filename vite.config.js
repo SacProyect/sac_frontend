@@ -1,3 +1,5 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-undef */
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react-swc'
 import path from 'path'
@@ -6,6 +8,7 @@ import { qrcode } from 'vite-plugin-qrcode'
 export default defineConfig({
   plugins: [react(), qrcode()],
   resolve: {
+    dedupe: ['react', 'react-dom'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },

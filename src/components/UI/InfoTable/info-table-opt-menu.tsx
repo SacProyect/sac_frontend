@@ -10,7 +10,7 @@ import { MoreVertical, Eye, Edit3, Trash2, X } from 'lucide-react';
 
 
 
-const InfoTableOptMenu = ({ id, setEditingRows }: { id: string; setEditingRows: React.Dispatch<React.SetStateAction<{ [key: string]: Partial<Taxpayer> }>>; }) => {
+const InfoTableOptMenu = ({ id, onEditClick, canEdit = true }: { id: string; onEditClick?: (id: string) => void; canEdit?: boolean; }) => {
     const { user, setUser } = useAuth()
     const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
@@ -32,14 +32,18 @@ const InfoTableOptMenu = ({ id, setEditingRows }: { id: string; setEditingRows: 
         }
     };
 
+    const baseOptions: any[] = [
+        { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> }
+    ];
+
+    if (canEdit && onEditClick) {
+        baseOptions.push({ name: "Editar", onPress: () => onEditClick(id), icon: <Edit3 size={14} /> });
+    }
+
     const options = user.role == "ADMIN" ? [
-        { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
-        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })), icon: <Edit3 size={14} /> },
+        ...baseOptions,
         { name: 'Borrar', onPress: () => setIsDeleteModalOpen(true), icon: <Trash2 size={14} className="text-rose-400" /> }
-    ] : [
-        { name: 'Detalles', path: `/taxpayer/${id}`, icon: <Eye size={14} /> },
-        { name: "Editar", onPress: () => setEditingRows((prev) => ({ ...prev, [id]: {} })), icon: <Edit3 size={14} /> },
-    ]
+    ] : baseOptions;
 
     return (
         <div className="flex items-center justify-center w-full">

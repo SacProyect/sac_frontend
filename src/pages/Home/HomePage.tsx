@@ -33,10 +33,6 @@ function HomePage() {
     const [total, setTotal] = useState(0);
     const [limit] = useState(50);
     const [loading, setLoading] = useState(false);
-
-    if (!user) {
-        navigate("/login");
-        return null;
     }
 
     const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
@@ -105,6 +101,7 @@ function HomePage() {
         // Al cambiar de año o filtro de búsqueda, volvemos a la primera página
         setCurrentPage(1);
     }, [debouncedSearch, selectedYear]);
+
 
 
 

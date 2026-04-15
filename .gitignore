@@ -33,3 +33,4 @@ dist-ssr
 *.md
 plans/
 docs/
+.env

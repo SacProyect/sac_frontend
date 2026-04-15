@@ -265,7 +265,7 @@ export default function FiscalReviewPageV2() {
       </Card>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 border-l-4 border-l-blue-500 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Total Fiscales</p>
           <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total}</p>
@@ -321,16 +321,16 @@ export default function FiscalReviewPageV2() {
 
           <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
             <div className="overflow-x-auto">
-              <table className="w-full">
+              <table className="w-full min-w-[600px]">
                 <thead>
                   <tr className="border-b border-slate-700 bg-slate-800/50">
-                    <th className="text-left p-4 text-slate-300 font-semibold">Cédula</th>
-                    <th className="text-left p-4 text-slate-300 font-semibold">Nombre</th>
-                    <th className="text-left p-4 text-slate-300 font-semibold">Grupo</th>
-                    <th className="text-left p-4 text-slate-300 font-semibold">Coordinador</th>
-                    <th className="text-left p-4 text-slate-300 font-semibold">Supervisor</th>
-                    <th className="text-left p-4 text-slate-300 font-semibold">Rol</th>
-                    <th className="text-right p-4 text-slate-300 font-semibold">Acción</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Cédula</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Nombre</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Grupo</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden md:table-cell">Coordinador</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden lg:table-cell">Supervisor</th>
+                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Rol</th>
+                    <th className="text-right p-3 md:p-4 text-slate-300 font-semibold text-sm">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -338,20 +338,20 @@ export default function FiscalReviewPageV2() {
                     .filter((t) => t.id && t.personId)
                     .map((fiscal) => (
                       <tr key={fiscal.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200">
-                        <td className="p-4 text-slate-200">
+                        <td className="p-3 md:p-4 text-slate-200 text-sm">
                           {fiscal.personId ? Number(fiscal.personId).toLocaleString() : 'N/A'}
                         </td>
-                        <td className="p-4 text-slate-200 font-medium">{fiscal.name ?? 'N/A'}</td>
-                        <td className="p-4 text-slate-400 text-sm">{fiscal.group?.name ?? 'N/A'}</td>
-                        <td className="p-4 text-slate-400 text-sm">{fiscal.group?.coordinator?.name ?? 'N/A'}</td>
-                        <td className="p-4 text-slate-400 text-sm">
+                        <td className="p-3 md:p-4 text-slate-200 font-medium text-sm">{fiscal.name ?? 'N/A'}</td>
+                        <td className="p-3 md:p-4 text-slate-400 text-sm">{fiscal.group?.name ?? 'N/A'}</td>
+                        <td className="p-3 md:p-4 text-slate-400 text-sm hidden md:table-cell">{fiscal.group?.coordinator?.name ?? 'N/A'}</td>
+                        <td className="p-3 md:p-4 text-slate-400 text-sm hidden lg:table-cell">
                           {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
                             ? fiscal.supervisor.name
                             : fiscal.role === 'SUPERVISOR'
                             ? fiscal.name
                             : 'N/A'}
                         </td>
-                        <td className="p-4">
+                        <td className="p-3 md:p-4">
                           <Badge className={fiscal.role === 'FISCAL'
                             ? 'bg-blue-900/50 text-blue-200 border-blue-800'
                             : fiscal.role === 'SUPERVISOR'
@@ -361,21 +361,21 @@ export default function FiscalReviewPageV2() {
                             {fiscal.role}
                           </Badge>
                         </td>
-                        <td className="p-4 text-right">
+                        <td className="p-3 md:p-4 text-right">
                           <Button
                             onClick={() => setSelectedFiscalId(fiscal.id)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-sm transition-all shadow-md hover:shadow-lg"
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm transition-all shadow-md hover:shadow-lg px-2 md:px-4"
                           >
-                            <TrendingUp className="h-4 w-4 mr-2" />
-                            Ver Estadísticas
+                            <TrendingUp className="h-4 w-4 md:mr-2" />
+                            <span className="hidden md:inline">Ver Estadísticas</span>
                           </Button>
                         </td>
                       </tr>
                     ))}
-                </tbody>
-              </table>
-            </div>
-          </Card>
+              </tbody>
+            </table>
+          </div>
+        </Card>
         </>
       )}
     </div>
