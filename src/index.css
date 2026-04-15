@@ -78,3 +78,34 @@
 * {
   margin: 0;
 }
+
+/* Scrollbar theme aligned with the app's dark/indigo style */
+.custom-scrollbar,
+.invisible-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99, 102, 241, 0.55) rgba(15, 23, 42, 0.75);
+}
+
+.custom-scrollbar::-webkit-scrollbar,
+.invisible-scrollbar::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track,
+.invisible-scrollbar::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.65);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.invisible-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(99, 102, 241, 0.82), rgba(59, 130, 246, 0.78));
+  border: 2px solid rgba(15, 23, 42, 0.85);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.invisible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, rgba(129, 140, 248, 0.92), rgba(96, 165, 250, 0.88));
+}

@@ -288,7 +288,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
       void loadPage(DEFAULT_PAGE, DEFAULT_LIMIT);
     });
 
-    socket.on("notification:new", (payload) => {
+    socket.on("notification:new", (payload: NotificationItem) => {
       const next = normalizeNotificationPayload(payload);
       if (!next) {
         return;
