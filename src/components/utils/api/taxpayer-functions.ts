@@ -27,6 +27,13 @@ type CreateIndexIva = {
 	specialAmount: Decimal,
 }
 
+const generateIdempotencyKey = () => {
+	if (typeof globalThis !== "undefined" && globalThis.crypto?.randomUUID) {
+		return globalThis.crypto.randomUUID();
+	}
+	return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+};
+
 export const updateTaxpayer = async (id: string, data: any) => {
 	try {
 		const requestUrl = `/taxpayer/update-taxpayer/${id}`;
@@ -80,26 +87,25 @@ export const modifyIndividualIndexIva = async (newIndexIva: Decimal, taxpayerId:
 
 export const createTaxpayer = async (taxpayerData: FormData) => {
 	try {
-	  const response = await apiConnection.post(`/taxpayer`, taxpayerData, {
-		headers: {
-			"Content-Type": "multipart/form-data"
+		const idempotencyKey = generateIdempotencyKey();
+		const response = (await apiConnection.post(`/taxpayer`, taxpayerData, {
+			headers: {
+				'Content-Type': "multipart/form-data",
+				'X-Idempotency-Key': idempotencyKey,
+			}
+		}));
+
+		if (response.status === 200 || response.status === 201) {
+			return { success: true, data: response.data };
+		} else {
+			console.error("API ERROR: ", response.status, response.data);
+			return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
 		}
-	  });
-	  if (response.status === 200 || response.status === 201) return { success: true, data: response.data };
-	  return { success: false, message: response.data?.message || "Error al crear el contribuyente." };
-	} catch (error: any) {
-	  if (error.response) {
-		const errorData = error.response.data;
-		const msg = typeof errorData?.error === "string"
-		  ? errorData.error
-		  : errorData?.message || "Ocurrió un error.";
-		return { success: false, message: msg };
-	  } else if (error.request) {
-		return { success: false, message: "No hay respuesta del servidor. Revise la conexión." };
-	  }
-	  return { success: false, message: "Ocurrió un error inesperado. Por favor, intente de nuevo más tarde." };
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo crear el contribuyente.")
 	}
-  };
+}
 
 export const getTaxpayerEvents = async (taxpayerId: string, event_type?: string) => {
 	try {
@@ -171,17 +177,20 @@ export const getFiscalTaxpayersForStats = async (fiscalId: string, year?: number
 /**
  * ✅ CORRECCIÓN 2026: Agregado parámetro opcional de año para filtrar fiscales
  * @param year - Año opcional para filtrar (2025 o 2026). Si no se especifica, retorna todos los fiscales.
+ * @param page - Página (default 1)
+ * @param limit - Registros por página (default 50)
  */
 export const getFiscalsForReview = async (year?: number, page: number = 1, limit: number = 50) => {
 
 	try {
-		const params: Record<string, number | string> = { page, limit };
+		let requestUrl = "/user/get-fiscals-for-review"
 
+		const params: Record<string, number> = { page, limit };
 		if (year !== undefined) {
 			params.year = year;
 		}
 
-		const response = await apiConnection.get("/user/get-fiscals-for-review", { params });
+		const response = await apiConnection.get(requestUrl, { params });
 
 		return response.data;
 
@@ -317,7 +326,8 @@ export const updateFinePayment = async (id: string, status: "paid" | "not_paid")
 
 	try {
 
-		const requestURL = "/taxpayer/updatePayment"
+		// Use the endpoint that accepts eventId: PUT /taxpayer/payment/:eventId
+		const requestURL = "/taxpayer/payment"
 
 		const response = await apiConnection.put(`${requestURL}/${id}`, {
 			status,
@@ -390,8 +400,13 @@ export const updateIslrReport = async (id: string, input: Partial<ISLRReports>) 
 export const createObservation = async (data: ObservationsForm) => {
 	try {
 		let requestUrl = "taxpayer/observations"
+		const idempotencyKey = generateIdempotencyKey();
 
-		const response = await apiConnection.post(requestUrl, data)
+		const response = await apiConnection.post(requestUrl, data, {
+			headers: {
+				'X-Idempotency-Key': idempotencyKey,
+			}
+		});
 
 		return response
 
@@ -424,6 +439,58 @@ export const createIVA = async (data: IvaReportFormData) => {
 			throw new Error(backendMessage);
 		}
 		throw new Error("No se pudo agregar el reporte. Por favor, intente de nuevo.");
+	}
+};
+
+export const getTaxpayerIvaReports = async (taxpayerId: string): Promise<IVAReports[]> => {
+	try {
+		const requestUrl = `/reports/individual-iva-last-declared/${taxpayerId}`;
+		const response = await apiConnection.get(requestUrl);
+		const payload = response.data;
+
+		if (Array.isArray(payload)) return payload as IVAReports[];
+		if (Array.isArray(payload?.data)) return payload.data as IVAReports[];
+		return [];
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los reportes de IVA del contribuyente.");
+	}
+};
+
+export interface TaxpayerIvaLastDeclaredResponse {
+	taxpayerId: string;
+	lastDeclared: {
+		year: number;
+		month: number;
+		monthName: string;
+		label: string;
+		date: string;
+	};
+	nextToDeclare: {
+		year: number;
+		month: number;
+		monthName: string;
+		label: string;
+	};
+}
+
+export const getTaxpayerIvaLastDeclared = async (
+	taxpayerId: string
+): Promise<TaxpayerIvaLastDeclaredResponse | null> => {
+	try {
+		const requestUrl = `/reports/individual-iva-last-declared/${taxpayerId}`;
+		const response = await apiConnection.get(requestUrl);
+		const payload = response.data as TaxpayerIvaLastDeclaredResponse;
+
+		if (!payload?.nextToDeclare) return null;
+		return payload;
+	} catch (e: any) {
+		if (e?.response?.status === 404) {
+			// No hay declaraciones IVA para este contribuyente.
+			return null;
+		}
+		console.error(e);
+		throw new Error("No se pudo obtener el último período declarado de IVA.");
 	}
 };
 
@@ -613,7 +680,7 @@ export const deleteIva = async (id: string) => {
 
 		const response = await apiConnection.delete(`${requestURL}/${id}`);
 
-		return response;
+		return response.status === 204 || response.status === 200;
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudo eliminar el reporte de iva")
@@ -626,7 +693,7 @@ export const deleteISLR = async (id: string) => {
 
 		const response = await apiConnection.delete(`${requestURL}/${id}`);
 
-		return response;
+		return response.status === 204 || response.status === 200;
 	} catch (e) {
 		console.error(e);
 		throw new Error("No se pudo borrar el reporte de ISLR.")

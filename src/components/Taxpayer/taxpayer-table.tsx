@@ -5,6 +5,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { getParishList, getTaxpayerCategories, updateTaxpayer } from '../utils/api/taxpayer-functions';
 import toast from 'react-hot-toast';
 import { TaxpayerCategories } from '@/types/taxpayer-categories';
+import { EditTaxpayerModal } from './edit-taxpayer-modal';
 
 interface TaxpayerTableProps {
     propRows: Taxpayer[];
@@ -27,33 +28,8 @@ const columns = [
 const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     const { user } = useAuth();
     const containerRef = useRef<HTMLDivElement>(null);
-    const [editingRows, setEditingRows] = useState<{ [key: string]: Partial<Taxpayer> }>({});
-    const [parishList, setParishList] = useState<Parish[]>([]);
-    const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
+    const [editingTaxpayer, setEditingTaxpayer] = useState<Taxpayer | null>(null);
     const [rows, setRows] = useState<Taxpayer[]>(propRows);
-
-    let nonEditableCols: string[] = [];
-    if (user?.role === "ADMIN") {
-        nonEditableCols = [
-            "options",
-            "user.name",
-            "contract_type",
-            "providenceNum",
-            "emition_date",
-        ];
-    } else {
-        nonEditableCols = [
-            "options",
-            "user.name",
-            "contract_type",
-            "providenceNum",
-            "emition_date",
-            "process",
-            "name",
-            "rif",
-            "address"
-        ];
-    }
 
     useEffect(() => {
         setRows(propRows);
@@ -63,85 +39,6 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
     const visibleRows = useMemo(() => {
         return [...rows].sort((a, b) => Number(a.providenceNum) - Number(b.providenceNum));
     }, [rows]);
-
-    useEffect(() => {
-        const fetchCategoriesAndParish = async () => {
-            try {
-                const parish = await getParishList();
-                setParishList(parish.data);
-            } catch (err) {
-                console.error("Error al obtener parroquias:", err);
-                toast.error("No se pudo obtener la lista de parroquias");
-            }
-
-            try {
-                const categories = await getTaxpayerCategories();
-                setTaxpayerCategories(categories.data);
-            } catch (err) {
-                console.error("Error al obtener actividad comercial:", err);
-                toast.error("No se pudo obtener la lista de actividad comercial");
-            }
-        };
-
-        if (user) {
-            fetchCategoriesAndParish();
-        }
-    }, [user]);
-
-    const handleSave = async (id: string) => {
-        try {
-            const edited = editingRows[id];
-            if (!edited) return;
-
-            // Construir payload para el backend
-            const payload: Record<string, any> = {
-                ...edited,
-                parish_id: edited.parish?.id,
-                taxpayer_category_id: edited.taxpayer_category?.id,
-            };
-
-            delete payload.parish;
-            delete payload.category;
-
-
-            // 🔹 Llamar API
-            await updateTaxpayer(id, payload);
-
-            // 🔹 Actualizar la fila en el estado local
-            setRows((prev) =>
-                prev.map((row) =>
-                    row.id === id
-                        ? {
-                            ...row,
-                            ...edited,
-                            parish: parishList.find((p) => p.id === edited.parish?.id) ?? row.parish,
-                            category:
-                                taxpayerCategories.find((c) => c.id === edited.taxpayer_category?.id) ??
-                                row.taxpayer_category,
-                        }
-                        : row
-                )
-            );
-
-            // 🔹 Quitar modo edición
-            setEditingRows((prev) => {
-                const { [id]: _, ...rest } = prev;
-                return rest;
-            });
-
-            toast.success("Contribuyente actualizado correctamente ✅");
-        } catch (err) {
-            console.error("Error actualizando contribuyente", err);
-            toast.error("❌ Error al actualizar contribuyente");
-        }
-    };
-
-    const handleCancel = (id: string) => {
-        setEditingRows((prev) => {
-            const { [id]: _, ...rest } = prev;
-            return rest;
-        });
-    };
 
 
 
@@ -185,26 +82,12 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                     >
                         {columns.map((col) => {
                             const isOptionsCol = col.id === 'options';
+                            const isMyTaxpayer = item.user?.id === user?.id || user?.taxpayer?.some(t => t.id === item.id);
+                            const canEdit = user?.role === "ADMIN" || isMyTaxpayer;
+
                             const value =
                                 col.id === 'options' ? (
-                                    editingRows[item.id] ? (
-                                        <div className="flex flex-col justify-center gap-2">
-                                            <button
-                                                onClick={() => handleSave(item.id)}
-                                                className="px-2 py-1 text-xs text-white bg-green-500 rounded"
-                                            >
-                                                Guardar
-                                            </button>
-                                            <button
-                                                onClick={() => handleCancel(item.id)}
-                                                className="px-2 py-1 text-xs text-white bg-gray-400 rounded"
-                                            >
-                                                Cancelar
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <InfoTableOptMenu id={item.id} setEditingRows={setEditingRows} />
-                                    )
+                                    <InfoTableOptMenu id={item.id} onEditClick={() => setEditingTaxpayer(item)} canEdit={!!canEdit} />
                                 ) : col.id === 'emition_date' ? (
                                     new Date(item.emition_date).toLocaleDateString()
                                 ) : col.id === "taxpayer_category" ? (
@@ -231,81 +114,7 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                                     {!isOptionsCol && (
                                         <span className="font-bold text-slate-500 md:hidden uppercase tracking-tighter mr-2">{col.label}:</span>
                                     )}
-                                    {editingRows[item.id] && !nonEditableCols.includes(col.id) ? (
-                                        col.id === "parish" ? (
-                                            <select
-                                                className="w-full px-2 py-1 text-xs border"
-                                                value={
-                                                    editingRows[item.id]?.parish?.id ??
-                                                    item.parish?.id ??
-                                                    ""
-                                                }
-                                                onChange={(e) => {
-                                                    const selected = parishList.find((p) => p.id === e.target.value);
-                                                    if (!selected) return;
-                                                    setEditingRows((prev) => ({
-                                                        ...prev,
-                                                        [item.id]: {
-                                                            ...prev[item.id],
-                                                            parish: { id: selected.id, name: selected.name }, // ✅ guardar id y name
-                                                        },
-                                                    }));
-                                                }}
-                                            >
-                                                <option value="">Seleccione una parroquia</option>
-                                                {parishList.map((p) => (
-                                                    <option key={p.id} value={p.id}>
-                                                        {p.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : col.id === "taxpayer_category" ? (
-                                            <select
-                                                className="w-full px-2 py-1 text-xs border"
-                                                value={
-                                                    editingRows[item.id]?.taxpayer_category?.id ??
-                                                    item.taxpayer_category?.id ??
-                                                    ""
-                                                }
-                                                onChange={(e) => {
-                                                    const selected = taxpayerCategories.find((c) => c.id === e.target.value);
-                                                    if (!selected) return;
-                                                    setEditingRows((prev) => ({
-                                                        ...prev,
-                                                        [item.id]: {
-                                                            ...prev[item.id],
-                                                            taxpayer_category: { id: selected.id, name: selected.name }, // ✅ guardar id y name
-                                                        },
-                                                    }));
-                                                }}
-                                            >
-                                                <option value="">Seleccione una actividad</option>
-                                                {taxpayerCategories.map((c) => (
-                                                    <option key={c.id} value={c.id}>
-                                                        {c.name}
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        ) : (
-                                            <input
-                                                className="w-full px-2 py-1 text-xs border"
-                                                value={String(
-                                                    editingRows[item.id][col.id as keyof Taxpayer] ??
-                                                    item[col.id as keyof Taxpayer] ??
-                                                    ""
-                                                )}
-                                                onChange={(e) =>
-                                                    setEditingRows((prev) => ({
-                                                        ...prev,
-                                                        [item.id]: {
-                                                            ...prev[item.id],
-                                                            [col.id]: e.target.value,
-                                                        },
-                                                    }))
-                                                }
-                                            />
-                                        )
-                                    ) : isOptionsCol ? (
+                                    {isOptionsCol ? (
                                         <div className="flex items-center justify-center w-full">
                                             {value}
                                         </div>
@@ -319,6 +128,18 @@ const TaxpayerTable: React.FC<TaxpayerTableProps> = ({ propRows }) => {
                 ))}
 
             </div>
+
+            {editingTaxpayer && (
+                <EditTaxpayerModal
+                    isOpen={!!editingTaxpayer}
+                    onClose={() => setEditingTaxpayer(null)}
+                    taxpayerData={editingTaxpayer}
+                    onSuccess={(updatedData) => {
+                        setRows(prev => prev.map(r => r.id === updatedData.id ? { ...r, ...updatedData } : r));
+                        setEditingTaxpayer(null);
+                    }}
+                />
+            )}
         </div>
     );
 };

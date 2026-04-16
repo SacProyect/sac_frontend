@@ -23,6 +23,7 @@ export default function FiscalStatsDashboardV2() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const backTo = user?.role === 'FISCAL' ? '/admin' : '/stats';
   
   const effectiveFiscalId = fiscalId || user?.id || '';
   const { loading, error, fiscalPerformance, fiscalInfo } = useFiscalStats(selectedYear, effectiveFiscalId);
@@ -30,9 +31,9 @@ export default function FiscalStatsDashboardV2() {
   useEffect(() => {
     if (user?.role === 'FISCAL' && user.id !== fiscalId && fiscalId) {
       toast.error('No puede acceder a esta página.');
-      navigate('/stats');
+      navigate(backTo);
     }
-  }, [user, fiscalId, navigate]);
+  }, [user, fiscalId, navigate, backTo]);
 
   if (loading) {
     return <LoadingState message="Cargando estadísticas del fiscal..." />;
@@ -54,7 +55,7 @@ export default function FiscalStatsDashboardV2() {
         description="Análisis detallado del desempeño individual"
         action={
           <div className="flex items-center gap-4">
-            <BackButton to="/stats" />
+            <BackButton to={backTo} />
             <YearSelector value={selectedYear} onChange={setSelectedYear} />
           </div>
         }

@@ -24,6 +24,12 @@ interface TaxPayerValues {
 function TaxpayerCombobox({ control, name, label, taxpayers = [] }: TaxPayerValues) {
     const { contains } = useFilter({ sensitivity: 'base' })
     const [showAll, setShowAll] = React.useState(false);
+
+    // if (!taxpayers) {
+    //     console.error("No taxpayers defined");
+    //     return <div>No taxpayers</div>
+    // }
+
     const [filterValue, setFilterValue] = React.useState('');
 
 
