@@ -403,56 +403,36 @@ export default function AdminPageV2() {
         
         {/* Acciones Rápidas (Ahora en el Top-Right) */}
         <div className="flex flex-wrap items-center gap-2.5">
-          <Button
-            onClick={() => setIsAddContribuyenteOpen(true)}
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/25 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-9"
-          >
-            <Plus className="h-4 w-4" />
-            Contribuyente
-        {/* Acciones Rápidas */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
-          <Button
-            onClick={() => setIsAddContribuyenteOpen(true)}
-            size="sm"
-            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
-          >
-            <Plus className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Contribuyente</span>
-          </Button>
-          <Button
-            onClick={() => setIsAddAvisoOpen(true)}
-            size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md shadow-blue-900/25 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-9"
-          >
-            <FileText className="h-4 w-4" />
-            Aviso
-            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md shadow-blue-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
-          >
-            <FileText className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Aviso</span>
-          </Button>
-          {/* <Button
-            onClick={() => setIsAddMultaOpen(true)}
-            size="sm"
-            className="bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg shadow-md shadow-red-900/25 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-9"
-          >
-            <Scale className="h-4 w-4" />
-            Multa
-          </Button> */}
-          {/* <Button
-            onClick={() => navigate('/index-iva')}
-            size="sm"
-            className="bg-violet-600 hover:bg-violet-700 text-white font-bold rounded-lg shadow-lg shadow-violet-900/20 transition-all duration-200 active:scale-95 flex items-center justify-center gap-2 px-4 h-10"
-          >
-            Actualizar IVA
-          </Button> */}
-            className="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-md shadow-red-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
-          >
-            <Scale className="w-3.5 h-3.5 shrink-0" />
-            <span className="truncate">Multa</span>
-          </Button>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
+            <Button
+              onClick={() => setIsAddContribuyenteOpen(true)}
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Contribuyente</span>
+            </Button>
+
+            <Button
+              onClick={() => setIsAddAvisoOpen(true)}
+              size="sm"
+              className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md shadow-blue-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+            >
+              <FileText className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Aviso</span>
+            </Button>
+
+            <Button
+              onClick={() => setIsAddMultaOpen(true)}
+              size="sm"
+              className="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-md shadow-red-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+            >
+              <Scale className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Multa</span>
+            </Button>
+          </div>
         </div>
+
       </div>
 
       {/* Filtros y Búsqueda (Arriba) */}
