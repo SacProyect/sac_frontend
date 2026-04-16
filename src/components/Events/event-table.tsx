@@ -7,6 +7,7 @@ import { Taxpayer } from '@/types/taxpayer';
 import { decimalToNumber } from '../utils/number.utils';
 import { MoreVertical, Pencil, Trash2, Check, X, ChevronDown } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/UI/dropdown-menu';
+import { getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
 
 interface EventTableProps {
   rows: Event[];
@@ -49,6 +50,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
     newStatus: 'paid' | 'not_paid';
   } | null>(null);
   const { user } = useAuth();
+  const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
 
   let columns = [
     { label: 'Tipo', id: 'type' },

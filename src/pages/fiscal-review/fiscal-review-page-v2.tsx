@@ -19,6 +19,8 @@ import { useFiscalStats } from '@/hooks/use-fiscal-stats';
 import { FiscalReviewPage1Resumen } from '@/components/fiscal-review/fiscal-review-page1-resumen';
 import { FiscalReviewPage2Cumplimiento } from '@/components/fiscal-review/fiscal-review-page2-cumplimiento';
 import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-review-page3-reportes';
+import { FiscalKpiBreakdownDialog } from '@/components/fiscal-review/fiscal-kpi-breakdown-dialog';
+import type { FiscalKpiBreakdownCategory } from '@/components/utils/api/report-functions';
 
 /**
  * Vista de detalles de un fiscal específico (3 páginas)
@@ -34,6 +36,7 @@ function FiscalDetailsView({
 }) {
   const [page, setPage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(initialYear);
+  const [kpiBreakdown, setKpiBreakdown] = useState<FiscalKpiBreakdownCategory | null>(null);
   const {
     loading,
     fiscalInfo,
@@ -84,24 +87,52 @@ function FiscalDetailsView({
            </div>
          </div>
          <div className="flex gap-4 sm:gap-6 lg:gap-8 text-center pt-4 md:pt-0">
-           <div>
-             <p className="text-xl sm:text-2xl font-bold text-green-400">{totalAssigned}</p>
-             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight">Contribuyentes</p>
-           </div>
-           <div>
-             <p className="text-xl sm:text-2xl font-bold text-yellow-500">{activeProcess}</p>
-             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight">Procesos<br className="hidden sm:block" /> Activos</p>
-           </div>
-           <div>
-             <p className="text-xl sm:text-2xl font-bold text-blue-400">{completed}</p>
-             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight">Procesos<br className="hidden sm:block" /> Completados</p>
-           </div>
-           <div>
-             <p className="text-xl sm:text-2xl font-bold text-orange-400">{totalNotified}</p>
-             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight">Procesos<br className="hidden sm:block" /> Notificados</p>
-           </div>
+           <button
+             type="button"
+             onClick={() => setKpiBreakdown('assigned')}
+             className="group rounded-xl px-2 py-1 -m-1 transition-colors hover:bg-slate-700/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-w-[4.5rem]"
+             title="Ver listado de contribuyentes"
+           >
+             <p className="text-xl sm:text-2xl font-bold text-green-400 group-hover:text-green-300">{totalAssigned}</p>
+             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight group-hover:text-slate-300 underline-offset-2 group-hover:underline">Contribuyentes</p>
+           </button>
+           <button
+             type="button"
+             onClick={() => setKpiBreakdown('active')}
+             className="group rounded-xl px-2 py-1 -m-1 transition-colors hover:bg-slate-700/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-w-[4.5rem]"
+             title="Ver procesos activos (sin culminar)"
+           >
+             <p className="text-xl sm:text-2xl font-bold text-yellow-500 group-hover:text-yellow-400">{activeProcess}</p>
+             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight group-hover:text-slate-300 underline-offset-2 group-hover:underline">Procesos<br className="hidden sm:block" /> Activos</p>
+           </button>
+           <button
+             type="button"
+             onClick={() => setKpiBreakdown('completed')}
+             className="group rounded-xl px-2 py-1 -m-1 transition-colors hover:bg-slate-700/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-w-[4.5rem]"
+             title="Ver procesos culminados"
+           >
+             <p className="text-xl sm:text-2xl font-bold text-blue-400 group-hover:text-blue-300">{completed}</p>
+             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight group-hover:text-slate-300 underline-offset-2 group-hover:underline">Procesos<br className="hidden sm:block" /> Completados</p>
+           </button>
+           <button
+             type="button"
+             onClick={() => setKpiBreakdown('notified')}
+             className="group rounded-xl px-2 py-1 -m-1 transition-colors hover:bg-slate-700/60 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 min-w-[4.5rem]"
+             title="Ver procesos notificados"
+           >
+             <p className="text-xl sm:text-2xl font-bold text-orange-400 group-hover:text-orange-300">{totalNotified}</p>
+             <p className="text-slate-400 text-[10px] sm:text-xs mt-1 leading-tight group-hover:text-slate-300 underline-offset-2 group-hover:underline">Procesos<br className="hidden sm:block" /> Notificados</p>
+           </button>
          </div>
        </Card>
+
+       <FiscalKpiBreakdownDialog
+         open={kpiBreakdown !== null}
+         onOpenChange={(o) => !o && setKpiBreakdown(null)}
+         fiscalId={fiscalId}
+         year={selectedYear}
+         category={kpiBreakdown}
+       />
 
        {/* Render current page */}
        <div className="min-h-[400px]">

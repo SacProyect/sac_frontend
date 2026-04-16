@@ -288,6 +288,28 @@ export const getFiscalTaxpayers = async (fiscalId: string, year?: number) => {
 	}
 };
 
+export type FiscalKpiBreakdownCategory = 'assigned' | 'active' | 'completed' | 'notified';
+
+export const getFiscalKpiBreakdown = async (
+	fiscalId: string,
+	category: FiscalKpiBreakdownCategory,
+	year?: number
+) => {
+	try {
+		const requestUrl = `reports/get-fiscal-kpi-breakdown/${fiscalId}`;
+		const response = await apiConnection.get(requestUrl, {
+			params: {
+				category,
+				...(year != null ? { date: year } : {}),
+			},
+		});
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el detalle del indicador fiscal:', e);
+		throw e;
+	}
+};
+
 function isValidDate(dateStr: string): boolean {
 	return /^\d{4}-\d{2}-\d{2}$/.test(dateStr) && !isNaN(new Date(dateStr).getTime());
 }

@@ -21,6 +21,16 @@ import { ISLRReports } from '@/types/islr-reports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
 import { PageHeader, EmptyState, BackButton } from '@/components/UI/v2';
+import { deleteTaxpayer } from '@/components/utils/api/taxpayer-functions';
+import toast from 'react-hot-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/UI/dialog';
 
 export default function TaxpayerDetailV2() {
   const { taxpayer } = useParams<{ taxpayer: string }>();
@@ -48,6 +58,8 @@ export default function TaxpayerDetailV2() {
   const [taxSummary, setTaxSummary] = useState<IVAReports[]>(initialTaxSummary);
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -55,6 +67,32 @@ export default function TaxpayerDetailV2() {
 
   const isMyTaxpayer = user?.taxpayer?.some(t => t.id === taxpayer) || taxpayerData?.user?.id === user?.id;
   const canSeeAllOptions = user.role === "ADMIN" || isMyTaxpayer;
+  const isHighRole = user.role === 'ADMIN' || user.role === 'COORDINATOR' || user.role === 'SUPERVISOR';
+  const isAssignedFiscal =
+    user.role === 'FISCAL' &&
+    (taxpayerData?.officerId === user.id || taxpayerData?.user?.id === user.id || isMyTaxpayer);
+  const canDeleteTaxpayer = isHighRole || isAssignedFiscal;
+
+  const handleDeleteTaxpayer = async () => {
+    if (!taxpayer || isDeleting || !canDeleteTaxpayer) return;
+
+    try {
+      setIsDeleting(true);
+      const res = await deleteTaxpayer(taxpayer);
+      if (!res) {
+        toast.error('No se pudo eliminar el contribuyente.');
+        return;
+      }
+      toast.success('Contribuyente eliminado correctamente.');
+      setDeleteConfirmOpen(false);
+      navigate('/admin');
+    } catch (error) {
+      console.error(error);
+      toast.error('No se pudo eliminar el contribuyente.');
+    } finally {
+      setIsDeleting(false);
+    }
+  };
 
   const quickActions = [
     { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: '#f59e0b', ring: 'rgba(245,158,11,0.25)', text: '#fde68a' },
@@ -207,9 +245,56 @@ export default function TaxpayerDetailV2() {
                   </Link>
                 );
               })}
+              {canDeleteTaxpayer && (
+                <button
+                  type="button"
+                  onClick={() => setDeleteConfirmOpen(true)}
+                  disabled={isDeleting}
+                  className="dp-action-btn"
+                  style={{
+                    background: 'rgba(239,68,68,0.18)',
+                    border: '1px solid rgba(239,68,68,0.35)',
+                    color: '#fecaca',
+                    opacity: isDeleting ? 0.7 : 1,
+                  }}
+                  title={isDeleting ? 'Eliminando...' : 'Eliminar contribuyente'}
+                >
+                  <AlertTriangle size={13} style={{ color: '#f87171', flexShrink: 0 }} />
+                  {isDeleting ? 'Eliminando...' : 'Eliminar'}
+                </button>
+              )}
             </div>
           </div>
         )}
+
+        <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+          <DialogContent className="bg-slate-800 border-slate-700 text-white max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirmar eliminación</DialogTitle>
+              <DialogDescription className="text-slate-300">
+                Esta acción eliminará el contribuyente de forma permanente y no se puede deshacer.
+              </DialogDescription>
+            </DialogHeader>
+            <DialogFooter>
+              <button
+                type="button"
+                onClick={() => setDeleteConfirmOpen(false)}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-md border border-slate-600 text-slate-200 hover:bg-slate-700 disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteTaxpayer}
+                disabled={isDeleting}
+                className="px-4 py-2 rounded-md bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+              >
+                {isDeleting ? 'Eliminando...' : 'Eliminar'}
+              </button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* ── Historial ── */}
         <div className="dp-tabs-wrap mt-4">

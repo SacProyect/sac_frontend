@@ -272,39 +272,14 @@ export default function AdminPageV2() {
                 <div className="flex gap-2 pt-2 border-t border-slate-700">
                   <Button
                     size="sm"
-                    variant="outline"
-                    className="flex-1 text-xs h-8 bg-transparent text-white"
+                    className="flex-1 text-xs h-9 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition-all active:scale-95"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleView(item.originalData);
                     }}
                   >
-                    Ver
+                    Ver Detalles
                   </Button>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="flex-1 text-xs h-8 bg-transparent text-white"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEdit(item.originalData);
-                    }}
-                  >
-                    Editar
-                  </Button>
-                  {user?.role === 'ADMIN' && (
-                    <Button
-                      size="sm"
-                      variant="destructive"
-                      className="flex-1 text-xs h-8"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(item.originalData);
-                      }}
-                    >
-                      Borrar
-                    </Button>
-                  )}
                 </div>
               </div>
             )}
@@ -395,35 +370,14 @@ export default function AdminPageV2() {
                   {item.fiscal}
                 </TableCell>
                 <TableCell className="text-right">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-9 w-9 text-white bg-slate-800/80 border border-slate-700/50 rounded-full hover:bg-indigo-600 hover:border-indigo-500 hover:text-white transition-all shadow-md">
-                        <MoreVertical className="h-5 w-5" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end" className="w-32 bg-slate-800 border-slate-700">
-                      <DropdownMenuItem
-                        onClick={() => handleView(item.originalData)}
-                        className="text-slate-300 focus:bg-slate-700 focus:text-white transition-colors"
-                      >
-                        Ver Detalles
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => handleEdit(item.originalData)}
-                        className="text-slate-300 focus:bg-slate-700 focus:text-white transition-colors"
-                      >
-                        Editar
-                      </DropdownMenuItem>
-                      {user?.role === 'ADMIN' && (
-                        <DropdownMenuItem
-                          onClick={() => handleDeleteClick(item.originalData)}
-                          className="text-destructive focus:bg-slate-700 focus:text-red-300 transition-colors"
-                        >
-                          Borrar
-                        </DropdownMenuItem>
-                      )}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleView(item.originalData)}
+                    className="h-8 px-3 text-xs font-semibold text-indigo-400 hover:text-white hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 rounded-lg transition-all"
+                  >
+                    Ver Detalle
+                  </Button>
                 </TableCell>
               </TableRow>
             ))
@@ -456,6 +410,15 @@ export default function AdminPageV2() {
           >
             <Plus className="h-4 w-4" />
             Contribuyente
+        {/* Acciones Rápidas */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
+          <Button
+            onClick={() => setIsAddContribuyenteOpen(true)}
+            size="sm"
+            className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+          >
+            <Plus className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Contribuyente</span>
           </Button>
           <Button
             onClick={() => setIsAddAvisoOpen(true)}
@@ -464,6 +427,10 @@ export default function AdminPageV2() {
           >
             <FileText className="h-4 w-4" />
             Aviso
+            className="bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-md shadow-blue-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+          >
+            <FileText className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Aviso</span>
           </Button>
           {/* <Button
             onClick={() => setIsAddMultaOpen(true)}
@@ -480,6 +447,11 @@ export default function AdminPageV2() {
           >
             Actualizar IVA
           </Button> */}
+            className="bg-red-600 hover:bg-red-500 text-white font-semibold rounded-lg shadow-md shadow-red-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+          >
+            <Scale className="w-3.5 h-3.5 shrink-0" />
+            <span className="truncate">Multa</span>
+          </Button>
         </div>
       </div>
 

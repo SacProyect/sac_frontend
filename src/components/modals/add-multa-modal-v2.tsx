@@ -8,13 +8,14 @@ import {
 } from '@/components/UI/dialog';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
-import { Search, ChevronDown, Check, Building2, User as UserIcon } from 'lucide-react';
+import { Search, ChevronDown, Check, Building2, User as UserIcon, Calendar, DollarSign, FileText } from 'lucide-react';
 import { createEvent, getTaxpayers } from '@/components/utils/api/taxpayer-functions';
 import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { useCachedTaxpayers } from '@/hooks/useCachedData';
 import { useAuth } from '@/hooks/use-auth';
+import { cn } from "@/lib/utils";
 
 interface AddMultaModalV2Props {
   isOpen: boolean;
@@ -293,58 +294,76 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
             )}
           </div>
 
-          <div>
-            <Label htmlFor="date" className="text-slate-300 mb-2 block">
-              Fecha de Emisión
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleChange('date', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white ${
-                errors.date ? 'border-red-500' : ''
-              }`}
-            />
-            {errors.date && <p className="text-red-400 text-xs mt-1">{errors.date}</p>}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                Fecha de Emisión
+              </Label>
+              <div className="relative group">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                  className={cn(
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    errors.date && "border-rose-500/50 bg-rose-500/5 text-rose-200"
+                  )}
+                />
+              </div>
+              {errors.date && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.date}</p>}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                Monto en BS
+              </Label>
+              <div className="relative group">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <Input
+                  id="amount"
+                  type="text"
+                  placeholder="0.00"
+                  value={formData.amount}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d.]/g, '');
+                    handleChange('amount', val);
+                  }}
+                  className={cn(
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    errors.amount && "border-rose-500/50 bg-rose-500/5 text-rose-200"
+                  )}
+                />
+              </div>
+              {errors.amount && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.amount}</p>}
+              {!errors.amount && formData.amount && (
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider px-1">
+                  Vista previa: {formatCurrency(formData.amount)}
+                </p>
+              )}
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="amount" className="text-slate-300 mb-2 block">
-              Monto en BS
+          <div className="space-y-2">
+            <Label htmlFor="description" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+              Motivo / Descripción
             </Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              value={formData.amount}
-              onChange={(e) => handleChange('amount', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                errors.amount ? 'border-red-500' : ''
-              }`}
-            />
-            {formData.amount && (
-              <p className="text-slate-400 text-sm mt-1">{formatCurrency(formData.amount)}</p>
-            )}
-            {errors.amount && <p className="text-red-400 text-xs mt-1">{errors.amount}</p>}
-          </div>
-
-          <div>
-            <Label htmlFor="description" className="text-slate-300 mb-2 block">
-              Motivo
-            </Label>
-            <Input
-              id="description"
-              placeholder="Ej: Retraso en declaración IVA"
-              value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                errors.description ? 'border-red-500' : ''
-              }`}
-            />
+            <div className="relative group">
+              <FileText className="absolute left-3 top-4 w-4 h-4 text-slate-500 group-focus-within:text-amber-400 transition-colors" />
+              <textarea
+                id="description"
+                placeholder="Ej: Retraso en declaración IVA..."
+                value={formData.description}
+                onChange={(e) => handleChange('description', e.target.value)}
+                className={cn(
+                  "w-full pl-10 pr-4 py-3 bg-slate-950/30 border border-slate-700 focus:ring-1 focus:ring-indigo-500/30 rounded-xl min-h-[100px] text-slate-200 transition-all placeholder:text-slate-600 outline-none",
+                  errors.description && "border-rose-500/50 bg-rose-500/5 text-rose-200"
+                )}
+              />
+            </div>
             {errors.description && (
-              <p className="text-red-400 text-xs mt-1">{errors.description}</p>
+              <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.description}</p>
             )}
           </div>
         </form>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
-import { Search, ChevronDown, Check, Building2 } from 'lucide-react';
+import { Search, ChevronDown, Check, Building2, Calendar, DollarSign } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -14,6 +14,7 @@ import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/use-auth';
+import { cn } from "@/lib/utils";
 
 interface AddAvisoModalV2Props {
   isOpen: boolean;
@@ -295,41 +296,55 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
             )}
           </div>
 
-          <div>
-            <Label htmlFor="date" className="text-slate-300 mb-2 block">
-              Fecha de Emisión
-            </Label>
-            <Input
-              id="date"
-              type="date"
-              value={formData.date}
-              onChange={(e) => handleChange('date', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white ${
-                errors.date ? 'border-red-500' : ''
-              }`}
-            />
-            {errors.date && <p className="text-red-400 text-xs mt-1">{errors.date}</p>}
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="date" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                Fecha de Emisión
+              </Label>
+              <div className="relative group">
+                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-indigo-400 transition-colors" />
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => handleChange('date', e.target.value)}
+                  className={cn(
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    errors.date && "border-rose-500/50 bg-rose-500/5 text-rose-200"
+                  )}
+                />
+              </div>
+              {errors.date && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.date}</p>}
+            </div>
 
-          <div>
-            <Label htmlFor="amount" className="text-slate-300 mb-2 block">
-              Monto en BS
-            </Label>
-            <Input
-              id="amount"
-              type="number"
-              placeholder="0.00"
-              step="0.01"
-              value={formData.amount}
-              onChange={(e) => handleChange('amount', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                errors.amount ? 'border-red-500' : ''
-              }`}
-            />
-            {formData.amount && (
-              <p className="text-slate-400 text-sm mt-1">{formatCurrency(formData.amount)}</p>
-            )}
-            {errors.amount && <p className="text-red-400 text-xs mt-1">{errors.amount}</p>}
+            <div className="space-y-2">
+              <Label htmlFor="amount" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                Monto en BS
+              </Label>
+              <div className="relative group">
+                <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-emerald-400 transition-colors" />
+                <Input
+                  id="amount"
+                  type="text"
+                  placeholder="0.00"
+                  value={formData.amount}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d.]/g, '');
+                    handleChange('amount', val);
+                  }}
+                  className={cn(
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    errors.amount && "border-rose-500/50 bg-rose-500/5 text-rose-200"
+                  )}
+                />
+              </div>
+              {errors.amount && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.amount}</p>}
+              {!errors.amount && formData.amount && (
+                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider px-1">
+                  Vista previa: {formatCurrency(formData.amount)}
+                </p>
+              )}
+            </div>
           </div>
         </form>
 

@@ -586,6 +586,7 @@ function IvaForm() {
                                                               <span>{t.rif}</span>
                                                               <span className="w-1 h-1 rounded-full bg-slate-600" />
                                                               <span className="uppercase">{t.process}</span>
+                                                              <span className="uppercase">{new Date(t.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                                             </div>
                                                           </div>
                                                         </div>
