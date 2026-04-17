@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Event } from "@/types/event";
 import toast from "react-hot-toast";
 import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayer-functions";
@@ -115,37 +115,11 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: initialData 
     let fines = 0;
 
 
-    let buys = 0;
-    let sells = 0;
-    if (IVAReports && Array.isArray(IVAReports)) {
-        IVAReports.forEach((rep) => {
-            buys += parseDecimalLike(rep.purchases);
-            sells += parseDecimalLike(rep.sells);
-        });
-    }
-
     if (events && Array.isArray(events)) {
         events.forEach((event) => {
             if (event.type === "FINE") fines += 1;
         });
     }
-
-
-    const dataMock = [
-        {
-            name: "COMPRAS (BS)",
-            value: buys > 0 ? parseFloat(buys.toFixed(2)) : 1,
-            formatted: buys.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
-            color: "#0080c1"
-        },
-        {
-            name: "VENTAS (BS)",
-            value: sells > 0 ? parseFloat(sells.toFixed(2)) : 1,
-            formatted: sells.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
-            color: "#737373"
-        },
-    ];
-
 
 
     const fases = ["FASE_1", "FASE_2", "FASE_3", "FASE_4"];
@@ -327,27 +301,6 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: initialData 
 
     // console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
-
-    // Datos para el gráfico de barras: compras y ventas por mes (desde IVAReports)
-    const barChartData = useMemo(() => {
-        if (!IVAReports || !Array.isArray(IVAReports) || IVAReports.length === 0) return [];
-        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const sorted = [...IVAReports].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        return sorted.map((r) => {
-            const d = new Date(r.date);
-            const monthLabel = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            return {
-                month: monthLabel,
-                compras: parseDecimalLike(r.purchases),
-                ventas: parseDecimalLike(r.sells),
-            };
-        });
-    }, [IVAReports]);
-
-    // Índice meta para la ReferenceLine: propio (currentEffectiveIndex) o null si no hay
-    const indexMeta = taxpayerData?.currentEffectiveIndex != null && taxpayerData.currentEffectiveIndex > 0
-        ? taxpayerData.currentEffectiveIndex
-        : null;
 
     const submitNewIndexIva = async () => {
         if (!taxpayer || !newIndexIva) return;
@@ -591,6 +544,18 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: initialData 
                     <div className="is-field">
                       <span className="is-field-label">Fiscal Asignado</span>
                       <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.user?.name ?? 'No asignado'}</span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Supervisor</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.user?.supervisor?.name ?? 'No asignado'}
+                      </span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Grupo</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.user?.group?.name ?? 'No asignado'}
+                      </span>
                     </div>
                     <div className="is-field">
                       <span className="is-field-label">Excedente IVA</span>
