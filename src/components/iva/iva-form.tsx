@@ -143,13 +143,10 @@ function IvaForm() {
         const allFetched = [...displayedFirst, ...displayedExtra];
 
         if (user?.role === 'ADMIN') {
-            console.log('[DEBUG] IvaForm - ADMIN taxpayers Count:', allFetched.length);
             return allFetched;
         } else {
             // Fiscal role: Filter by user.id
-            console.log('[DEBUG] IvaForm - FISCAL filtering by ID:', user?.id);
             const filtered = allFetched.filter(t => t.user?.id === user?.id);
-            console.log('[DEBUG] IvaForm - Filtered result count:', filtered.length);
             return filtered;
         }
     }, [user, firstPageTaxpayers, searchResults, searchAdditionalPages, additionalPages, isSearching, searchDebounce]);
