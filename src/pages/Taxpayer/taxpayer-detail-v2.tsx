@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useParams, useNavigate, useLoaderData, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'react-router-dom';
@@ -14,7 +14,8 @@ import {
   Eye,
   Package,
   Receipt,
-  FileSearch
+  FileSearch,
+  BarChart3
 } from 'lucide-react';
 import { IndividualStats } from '@/components/stats/individual-stats';
 import EventTable from '@/components/Events/event-table';
@@ -26,6 +27,23 @@ import { ISLRReports } from '@/types/islr-reports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
 import { PageHeader, EmptyState } from '@/components/UI/v2';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/UI/dialog';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 /**
  * TaxpayerDetailV2 - Detalle del Contribuyente con diseño Shadcn UI v2.0
@@ -59,6 +77,7 @@ export default function TaxpayerDetailV2() {
   const [taxSummary, setTaxSummary] = useState<IVAReports[]>(initialTaxSummary);
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
+  const [showPerformanceChart, setShowPerformanceChart] = useState(false);
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -74,8 +93,57 @@ export default function TaxpayerDetailV2() {
     { name: 'Multa', path: `/fine/${taxpayer}`, icon: AlertTriangle, color: 'bg-red-600 hover:bg-red-700' },
     { name: 'Pago', path: `/payment/${taxpayer}`, icon: DollarSign, color: 'bg-green-600 hover:bg-green-700' },
     { name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`, icon: FileText, color: 'bg-purple-600 hover:bg-purple-700' },
+    {
+      name: 'Gráficos',
+      icon: BarChart3,
+      color: 'bg-amber-600 hover:bg-amber-700',
+      onClick: () => setShowPerformanceChart(true),
+    },
     // { name: 'Observaciones', path: `/observations/${taxpayer}`, icon: Eye, color: 'bg-slate-600 hover:bg-slate-700' },
-  ].filter(opt => canSeeAllOptions || opt.name === 'Observaciones');
+  ].filter((opt) => canSeeAllOptions || opt.name === 'Observaciones' || opt.name === 'Gráficos');
+
+  const performanceChartData = useMemo(() => {
+    if (!taxSummary?.length) return [];
+
+    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const sorted = [...taxSummary].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    return sorted.map((report) => {
+      const reportDate = new Date(report.date);
+      return {
+        period: `${monthNames[reportDate.getMonth()]} ${reportDate.getFullYear()}`,
+        compras: Number(report.purchases) || 0,
+        ventas: Number(report.sells) || 0,
+      };
+    });
+  }, [taxSummary]);
+
+  const eventTypeChartData = useMemo(() => {
+    if (!events?.length) return [];
+
+    const totalsByType: Record<string, { label: string; cantidad: number; monto: number }> = {
+      WARNING: { label: 'Avisos', cantidad: 0, monto: 0 },
+      FINE: { label: 'Multas', cantidad: 0, monto: 0 },
+      PAYMENT_COMPROMISE: { label: 'Compromisos', cantidad: 0, monto: 0 },
+    };
+
+    events.forEach((event) => {
+      const key = String(event.type) as keyof typeof totalsByType;
+      if (!totalsByType[key]) return;
+
+      totalsByType[key].cantidad += 1;
+      totalsByType[key].monto += Number(event.amount) || 0;
+    });
+
+    return Object.values(totalsByType).filter((item) => item.cantidad > 0);
+  }, [events]);
+
+  const currencyFormatter = (value: number) =>
+    new Intl.NumberFormat('es-VE', {
+      style: 'currency',
+      currency: 'VES',
+      maximumFractionDigits: 2,
+    }).format(value);
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
@@ -91,13 +159,27 @@ export default function TaxpayerDetailV2() {
         <div className="flex flex-wrap gap-2 sm:gap-3">
           {quickActions.map((action) => {
             const Icon = action.icon;
+            if (action.path) {
+              return (
+                <Link key={action.name} to={action.path} className="w-full sm:w-auto min-w-0">
+                  <Button className={`w-full sm:w-auto ${action.color} text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-200 shadow-sm min-h-[44px]`}>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    {action.name}
+                  </Button>
+                </Link>
+              );
+            }
+
             return (
-              <Link key={action.name} to={action.path} className="w-full sm:w-auto min-w-0">
-                <Button className={`w-full sm:w-auto ${action.color} text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-200 shadow-sm min-h-[44px]`}>
-                  <Icon className="h-4 w-4 shrink-0" />
-                  {action.name}
-                </Button>
-              </Link>
+              <Button
+                key={action.name}
+                type="button"
+                onClick={action.onClick}
+                className={`w-full sm:w-auto ${action.color} text-white font-semibold rounded-md flex items-center justify-center gap-2 transition-all duration-200 shadow-sm min-h-[44px]`}
+              >
+                <Icon className="h-4 w-4 shrink-0" />
+                {action.name}
+              </Button>
             );
           })}
         </div>
@@ -169,6 +251,83 @@ export default function TaxpayerDetailV2() {
           </TabsContent>
         </Tabs>
       </Card>
+
+      <Dialog open={showPerformanceChart} onOpenChange={setShowPerformanceChart}>
+        <DialogContent className="max-w-4xl bg-slate-900 border-slate-700 text-slate-100">
+          <DialogHeader>
+            <DialogTitle>Gráficos de Rendimiento del Contribuyente</DialogTitle>
+            <DialogDescription className="text-slate-400">
+              Comparativas clave de actividad tributaria con datos de IVA y eventos del expediente.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6">
+            <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-4">
+              <h4 className="text-sm font-semibold text-slate-200 mb-3">Compras vs Ventas (IVA por período)</h4>
+              {performanceChartData.length > 0 ? (
+                <div className="w-full h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={performanceChartData} margin={{ top: 8, right: 18, left: 8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="period" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" tickFormatter={(value) => currencyFormatter(Number(value))} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#0f172a',
+                          border: '1px solid #334155',
+                          borderRadius: '8px',
+                          color: '#e2e8f0',
+                        }}
+                        formatter={(value: number | string) => currencyFormatter(Number(value))}
+                        labelStyle={{ color: '#e2e8f0' }}
+                      />
+                      <Legend wrapperStyle={{ color: '#cbd5e1' }} />
+                      <Bar dataKey="compras" fill="#0ea5e9" name="Compras (Bs.)" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="ventas" fill="#22c55e" name="Ventas (Bs.)" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  title="Sin datos de IVA"
+                  message="Agrega reportes de IVA para visualizar compras y ventas por período."
+                />
+              )}
+            </div>
+
+            <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-4">
+              <h4 className="text-sm font-semibold text-slate-200 mb-3">Distribución de Eventos Tributarios</h4>
+              {eventTypeChartData.length > 0 ? (
+                <div className="w-full h-[260px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={eventTypeChartData} margin={{ top: 8, right: 18, left: 8, bottom: 8 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
+                      <XAxis dataKey="label" stroke="#94a3b8" />
+                      <YAxis stroke="#94a3b8" allowDecimals={false} />
+                      <Tooltip
+                        contentStyle={{
+                          backgroundColor: '#0f172a',
+                          border: '1px solid #334155',
+                          borderRadius: '8px',
+                          color: '#e2e8f0',
+                        }}
+                        labelStyle={{ color: '#e2e8f0' }}
+                      />
+                      <Legend wrapperStyle={{ color: '#cbd5e1' }} />
+                      <Bar dataKey="cantidad" fill="#f59e0b" name="Cantidad de eventos" radius={[6, 6, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <EmptyState
+                  title="Sin eventos registrados"
+                  message="Crea avisos, multas o compromisos para ver la distribución por tipo."
+                />
+              )}
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
