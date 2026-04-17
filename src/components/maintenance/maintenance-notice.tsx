@@ -4,11 +4,16 @@ import { useNotifications } from "@/hooks/use-notifications";
 
 export function MaintenanceNotice() {
   const {
+    isEnabled,
     maintenanceAlert,
     maintenanceStart,
     clearMaintenanceAlert,
     clearMaintenanceStart,
   } = useNotifications();
+
+  if (!isEnabled) {
+    return null;
+  }
 
   if (maintenanceStart) {
     return (

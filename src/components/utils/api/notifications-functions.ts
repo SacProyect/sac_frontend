@@ -1,5 +1,6 @@
 import axios, { AxiosError } from "axios";
 import { apiConnection } from "./api-connection";
+import { isNotificationsFeatureEnabled } from "@/config/feature-flags";
 import {
   DefaultThreshold,
   EscalationConfig,
@@ -74,6 +75,10 @@ export const getNotifications = async (
   page = 1,
   limit = 20
 ): Promise<NotificationsPage> => {
+  if (!isNotificationsFeatureEnabled) {
+    return normalizeNotificationsPage({}, page, limit);
+  }
+
   try {
     const response = await apiConnection.get<NotificationsApiResponse>("/notifications", {
       params: { page, limit },
@@ -86,6 +91,10 @@ export const getNotifications = async (
 };
 
 export const markNotificationAsRead = async (notificationId: string): Promise<void> => {
+  if (!isNotificationsFeatureEnabled) {
+    return;
+  }
+
   try {
     await apiConnection.patch(`/notifications/${notificationId}/read`);
   } catch (error) {
@@ -94,6 +103,10 @@ export const markNotificationAsRead = async (notificationId: string): Promise<vo
 };
 
 export const getUnreadNotificationsCount = async (): Promise<number> => {
+  if (!isNotificationsFeatureEnabled) {
+    return 0;
+  }
+
   try {
     const response = await apiConnection.get<UnreadCountResponse>("/notifications/unread-count");
     return response.data.count ?? 0;
@@ -105,6 +118,10 @@ export const getUnreadNotificationsCount = async (): Promise<number> => {
 export const createNotificationThreshold = async (
   payload: NotificationThreshold
 ): Promise<NotificationThreshold> => {
+  if (!isNotificationsFeatureEnabled) {
+    return payload;
+  }
+
   try {
     const response = await apiConnection.post<NotificationThreshold>("/notifications/threshold", payload);
     return response.data;
@@ -116,6 +133,10 @@ export const createNotificationThreshold = async (
 export const getNotificationThreshold = async (
   procedureType: ProcedureType
 ): Promise<NotificationThreshold | null> => {
+  if (!isNotificationsFeatureEnabled) {
+    return null;
+  }
+
   try {
     const response = await apiConnection.get<NotificationThreshold>(
       `/notifications/threshold/${procedureType}`
@@ -132,6 +153,10 @@ export const getNotificationThreshold = async (
 export const updateDefaultNotificationThreshold = async (
   payload: DefaultThreshold
 ): Promise<DefaultThreshold> => {
+  if (!isNotificationsFeatureEnabled) {
+    return payload;
+  }
+
   try {
     const response = await apiConnection.put<DefaultThreshold>(
       "/notifications/threshold/default",
@@ -144,6 +169,10 @@ export const updateDefaultNotificationThreshold = async (
 };
 
 export const getDefaultNotificationThreshold = async (): Promise<DefaultThreshold | null> => {
+  if (!isNotificationsFeatureEnabled) {
+    return null;
+  }
+
   try {
     const response = await apiConnection.get<DefaultThreshold>("/notifications/threshold/default");
     return response.data ?? null;
@@ -156,6 +185,10 @@ export const getDefaultNotificationThreshold = async (): Promise<DefaultThreshol
 };
 
 export const getEscalationConfigs = async (): Promise<EscalationConfig[]> => {
+  if (!isNotificationsFeatureEnabled) {
+    return [];
+  }
+
   try {
     const response = await apiConnection.get<EscalationConfig[]>(
       "/notifications/escalation-config"
@@ -170,6 +203,14 @@ export const updateEscalationConfig = async (
   procedureType: ProcedureType,
   payload: EscalationConfigInput
 ): Promise<EscalationConfig> => {
+  if (!isNotificationsFeatureEnabled) {
+    return {
+      procedureType,
+      escalationDays: payload.escalationDays,
+      notifyRole: payload.notifyRole,
+    };
+  }
+
   try {
     const response = await apiConnection.put<EscalationConfig>(
       `/notifications/escalation-config/${procedureType}`,

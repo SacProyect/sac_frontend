@@ -19,6 +19,7 @@ const statusToLabel = (status: string): string => {
 
 export default function NotificationsPageV1() {
   const {
+    isEnabled,
     notifications,
     unreadCount,
     connectionStatus,
@@ -33,8 +34,12 @@ export default function NotificationsPageV1() {
   } = useNotifications();
 
   useEffect(() => {
+    if (!isEnabled) {
+      return;
+    }
+
     void loadPage(page);
-  }, [loadPage, page]);
+  }, [isEnabled, loadPage, page]);
 
   const handleMarkAsRead = async (id: string) => {
     try {
@@ -62,6 +67,15 @@ export default function NotificationsPageV1() {
     }
   };
   const connectionStatusLabel = switch_lang(connectionStatus);
+
+  if (!isEnabled) {
+    return (
+      <Card className="border-slate-700 bg-slate-800/60 p-6 text-slate-200">
+        Las notificaciones están desactivadas por configuración.
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">

@@ -4,6 +4,7 @@ import { Card } from "@/components/UI/card";
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Label } from "@/components/UI/label";
+import { isNotificationsFeatureEnabled } from "@/config/feature-flags";
 import { ProcedureType } from "@/types/notifications";
 import {
   getEscalationConfigs,
@@ -32,6 +33,10 @@ export function EscalationConfigTab() {
   const [isSaving, setIsSaving] = useState(false);
 
   useEffect(() => {
+    if (!isNotificationsFeatureEnabled) {
+      return;
+    }
+
     const load = async () => {
       try {
         setIsLoading(true);
@@ -66,6 +71,11 @@ export function EscalationConfigTab() {
   }, []);
 
   const handleSave = async () => {
+    if (!isNotificationsFeatureEnabled) {
+      toast("Las notificaciones están desactivadas.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       await Promise.all(
@@ -82,6 +92,10 @@ export function EscalationConfigTab() {
       setIsSaving(false);
     }
   };
+
+  if (!isNotificationsFeatureEnabled) {
+    return null;
+  }
 
   return (
     <Card className="border-slate-700 bg-slate-800/80 p-6">

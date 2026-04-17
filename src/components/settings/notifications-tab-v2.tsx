@@ -11,6 +11,7 @@ import {
   getNotificationThreshold,
   updateDefaultNotificationThreshold,
 } from "@/components/utils/api/notifications-functions";
+import { isNotificationsFeatureEnabled } from "@/config/feature-flags";
 import { ProcedureType } from "@/types/notifications";
 import { useAuth } from "@/hooks/use-auth";
 import { EscalationConfigTab } from "@/components/settings/escalation-config-tab";
@@ -46,6 +47,10 @@ export function NotificationsTabV2() {
   };
 
   useEffect(() => {
+    if (!isNotificationsFeatureEnabled) {
+      return;
+    }
+
     const load = async () => {
       try {
         setIsLoading(true);
@@ -83,6 +88,11 @@ export function NotificationsTabV2() {
   }, []);
 
   const handleSave = async () => {
+    if (!isNotificationsFeatureEnabled) {
+      toast("Las notificaciones están desactivadas.");
+      return;
+    }
+
     try {
       setIsSaving(true);
       await updateDefaultNotificationThreshold({
@@ -105,6 +115,14 @@ export function NotificationsTabV2() {
       setIsSaving(false);
     }
   };
+
+  if (!isNotificationsFeatureEnabled) {
+    return (
+      <Card className="border-slate-700 bg-slate-800/80 p-6 text-slate-200">
+        Las notificaciones están desactivadas por configuración.
+      </Card>
+    );
+  }
 
   return (
     <div className="space-y-6">

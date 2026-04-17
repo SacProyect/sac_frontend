@@ -1,6 +1,7 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
 import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem } from '@/config/nav-routes';
+import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -80,6 +81,11 @@ const applyUserRestrictions = (items: NavItem[], userId: string): NavItem[] => {
     return items.filter((item) => !RESTRICTED_ROUTES.has(item.href));
 };
 
+const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
+    if (isNotificationsFeatureEnabled) return items;
+    return items.filter((item) => item.href !== '/notifications');
+};
+
 // ─── Función pública ──────────────────────────────────────────────────────────
 
 /**
@@ -100,7 +106,7 @@ export const resolveNavItems = (user: User | null): NavItem[] => {
     }
 
     const items = strategy(user);
-    const filtered = applyUserRestrictions(items, user.id);
+    const filtered = applyFeatureFlags(applyUserRestrictions(items, user.id));
 
     // Ajustes siempre al último, visible para todos los roles
     return [...filtered, settingsRoute];

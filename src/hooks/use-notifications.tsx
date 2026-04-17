@@ -11,6 +11,7 @@ import {
 import { io, Socket } from "socket.io-client";
 import toast from "react-hot-toast";
 import { useAuth } from "@/hooks/use-auth";
+import { isNotificationsFeatureEnabled } from "@/config/feature-flags";
 import {
   getNotifications,
   getUnreadNotificationsCount,
@@ -27,6 +28,7 @@ import {
 } from "@/types/notifications";
 
 interface NotificationsContextType {
+  isEnabled: boolean;
   notifications: NotificationItem[];
   unreadCount: number;
   connectionStatus: SocketConnectionStatus;
@@ -195,6 +197,11 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     }
   };
   const refreshUnread = useCallback(async () => {
+    if (!isNotificationsFeatureEnabled) {
+      setUnreadCount(0);
+      return;
+    }
+
     try {
       const unread = await getUnreadNotificationsCount();
       setUnreadCount(unread);
@@ -214,6 +221,16 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   const loadPage = useCallback(
     async (nextPage = DEFAULT_PAGE, nextLimit = DEFAULT_LIMIT) => {
+      if (!isNotificationsFeatureEnabled) {
+        setNotifications([]);
+        setPage(nextPage);
+        setLimit(nextLimit);
+        setTotal(0);
+        setTotalPages(1);
+        setPageError(null);
+        return;
+      }
+
       setIsLoadingPage(true);
       setPageError(null);
       try {
@@ -258,6 +275,10 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   const markAsRead = useCallback(
     async (notificationId: string) => {
+      if (!isNotificationsFeatureEnabled) {
+        return;
+      }
+
       await markNotificationAsRead(notificationId);
       setNotifications((current) => updateReadStatus(current, notificationId));
       setUnreadCount((current) => Math.max(0, current - 1));
@@ -266,7 +287,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   );
 
   const startSocket = useCallback(() => {
-    if (!token || socketRef.current) {
+    if (!isNotificationsFeatureEnabled || !token || socketRef.current) {
       return;
     }
 
@@ -328,7 +349,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   }, [loadPage, refreshUnread, startPollingFallback, stopPolling, token]);
 
   useEffect(() => {
-    if (!token) {
+    if (!token || !isNotificationsFeatureEnabled) {
       stopSocket();
       stopPolling();
       setNotifications([]);
@@ -351,6 +372,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
 
   const value = useMemo<NotificationsContextType>(
     () => ({
+      isEnabled: isNotificationsFeatureEnabled,
       notifications,
       unreadCount,
       connectionStatus,
@@ -370,6 +392,7 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     }),
     [
       notifications,
+      isNotificationsFeatureEnabled,
       unreadCount,
       connectionStatus,
       maintenanceAlert,

@@ -14,6 +14,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
+import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
 // import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
 // import { PresentationProvider } from '@/components/context/PresentationContext';
 
@@ -233,7 +234,7 @@ export const router = createBrowserRouter([
                                 </div>
                             }
                         >
-                            <NotificationsPageV1 />
+                            {isNotificationsFeatureEnabled ? <NotificationsPageV1 /> : <Navigate to="/admin" replace />}
                         </Suspense>,
                     },
                     {

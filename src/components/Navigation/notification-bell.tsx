@@ -3,7 +3,11 @@ import { Link } from "react-router-dom";
 import { useNotifications } from "@/hooks/use-notifications";
 
 export function NotificationBell() {
-  const { unreadCount } = useNotifications();
+  const { isEnabled, unreadCount } = useNotifications();
+
+  if (!isEnabled) {
+    return null;
+  }
 
   return (
     <Link
