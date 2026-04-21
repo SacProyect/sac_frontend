@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,12 +8,11 @@ import {
 } from '@/components/UI/dialog';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
-import { Search, ChevronDown, Check, Building2, User as UserIcon, Calendar, DollarSign, FileText } from 'lucide-react';
-import { createEvent, getTaxpayers } from '@/components/utils/api/taxpayer-functions';
+import { Search, ChevronDown, Check, Building2, User as UserIcon, Calendar, DollarSign, FileText, Filter } from 'lucide-react';
+import { createEvent, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import type { Taxpayer } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
-import { useCachedTaxpayers } from '@/hooks/useCachedData';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from "@/lib/utils";
 
@@ -41,65 +40,199 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Estados para contribuyentes con paginación
   const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(false);
 
   // Búsqueda de contribuyentes
   const [searchTaxpayer, setSearchTaxpayer] = useState('');
+  const [searchDebounce, setSearchDebounce] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
+  const [searchPage, setSearchPage] = useState(1);
+  const [searchTotalPages, setSearchTotalPages] = useState(1);
+  const [searchLoading, setSearchLoading] = useState(false);
+
+  // Filtro por año actual
+  const currentYear = new Date().getFullYear();
+  const [filterByCurrentYear, setFilterByCurrentYear] = useState(false);
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
 
+  // Debounce para la búsqueda
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    if (isDropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isDropdownOpen]);
+    const timeout = setTimeout(() => {
+      setSearchDebounce(searchTaxpayer);
+    }, 500);
+    return () => clearTimeout(timeout);
+  }, [searchTaxpayer]);
 
-  // Cargar contribuyentes
+  // Cargar contribuyentes iniciales cuando se abre el modal
   useEffect(() => {
     if (isOpen) {
-      const loadTaxpayers = async () => {
-        console.log('[DEBUG] AddMultaModalV2 - User:', user);
+      const loadInitialTaxpayers = async () => {
+        setLoadingInitial(true);
         try {
-          const response = await getTaxpayers();
-          const allTaxpayers = response.data ?? [];
-          
-          if (user?.role === 'ADMIN') {
-            console.log('[DEBUG] AddMultaModalV2 - Loading ALL taxpayers (ADMIN)');
-            setTaxpayers(allTaxpayers);
-          } else {
-            console.log('[DEBUG] AddMultaModalV2 - Filtering taxpayers for FISCAL:', user?.id);
-            const filtered = allTaxpayers.filter((t: any) => t.user?.id === user?.id);
-            console.log('[DEBUG] AddMultaModalV2 - Filtered result count:', filtered.length);
-            setTaxpayers(filtered);
+          const response = await getTaxpayerForEvents(1, 50);
+          const data = (response?.data?.data ?? []) as Taxpayer[];
+          const total = response?.data?.totalPages ?? 1;
+
+          // Filtrar por proceso "FP" y por rol si es FISCAL
+          let filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+          if (user?.role !== 'ADMIN') {
+            filtered = filtered.filter((t: Taxpayer) => t.user?.id === user?.id);
           }
+
+          setTaxpayers(filtered);
+          setTotalPages(total);
+          setCurrentPage(2);
+          setSearchResults(null);
+          setSearchPage(1);
         } catch (error) {
           console.error('Error cargando contribuyentes:', error);
+          toast.error('Error al cargar contribuyentes');
+        } finally {
+          setLoadingInitial(false);
         }
       };
-      loadTaxpayers();
-      // Reset search state when modal opens
+      loadInitialTaxpayers();
       setSearchTaxpayer('');
+      setSearchDebounce('');
       setIsDropdownOpen(false);
     }
-  }, [isOpen]);
+  }, [isOpen, user?.id, user?.role]);
 
-  const selectedTaxpayer = taxpayers.find((t) => t.id === formData.taxpayerId);
+  // Buscar en el backend cuando cambia el debounce
+  useEffect(() => {
+    const term = searchDebounce.trim();
+    if (term === '') {
+      setSearchResults(null);
+      setIsSearching(false);
+      return;
+    }
 
-  const filteredTaxpayers = useMemo(() => {
-    const searchLower = searchTaxpayer.toLowerCase().trim();
-    if (!searchLower) return taxpayers;
-    return taxpayers.filter(
-      (t) =>
-        t.name.toLowerCase().includes(searchLower) ||
-        t.rif.toLowerCase().includes(searchLower)
-    );
-  }, [taxpayers, searchTaxpayer]);
+    let cancelled = false;
+    const fetchSearch = async () => {
+      setSearchLoading(true);
+      setIsSearching(true);
+      try {
+        const response = await getTaxpayerForEvents(1, 50, term);
+        if (cancelled) return;
+        const data = (response?.data?.data ?? []) as Taxpayer[];
+        const total = response?.data?.totalPages ?? 1;
+
+        // Filtrar por rol si es FISCAL
+        let filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+        if (user?.role !== 'ADMIN') {
+          filtered = filtered.filter((t: Taxpayer) => t.user?.id === user?.id);
+        }
+
+        setSearchResults(filtered);
+        setSearchTotalPages(total);
+        setSearchPage(2);
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Error buscando contribuyentes:', error);
+        }
+      } finally {
+        if (!cancelled) setSearchLoading(false);
+      }
+    };
+    fetchSearch();
+    return () => { cancelled = true; };
+  }, [searchDebounce, user?.id, user?.role]);
+
+  // Scroll infinito - cargar más contribuyentes
+  const loadMore = useCallback(async () => {
+    if (loadingMore) return;
+
+    const isSearchMode = searchDebounce.trim().length > 0;
+    const pageToFetch = isSearchMode ? searchPage : currentPage;
+    const totalToCheck = isSearchMode ? searchTotalPages : totalPages;
+
+    if (pageToFetch > totalToCheck) return;
+
+    setLoadingMore(true);
+    try {
+      const response = await getTaxpayerForEvents(pageToFetch, 50, isSearchMode ? searchDebounce : undefined);
+      const data = (response?.data?.data ?? []) as Taxpayer[];
+
+      // Filtrar por rol si es FISCAL
+      let filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+      if (user?.role !== 'ADMIN') {
+        filtered = filtered.filter((t: Taxpayer) => t.user?.id === user?.id);
+      }
+
+      if (isSearchMode) {
+        setSearchResults(prev => [...(prev ?? []), ...filtered]);
+        setSearchPage(prev => prev + 1);
+      } else {
+        setTaxpayers(prev => [...prev, ...filtered]);
+        setCurrentPage(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Error cargando más contribuyentes:', error);
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, searchDebounce, currentPage, searchPage, totalPages, searchTotalPages, user?.id, user?.role]);
+
+  // Manejar scroll para carga infinita
+  const handleScroll = useCallback(() => {
+    const el = listRef.current;
+    if (!el || loadingMore) return;
+
+    const { scrollTop, scrollHeight, clientHeight } = el;
+    const threshold = 40;
+
+    if (scrollTop + clientHeight >= scrollHeight - threshold) {
+      loadMore();
+    }
+  }, [loadMore, loadingMore]);
+
+
+  const selectedTaxpayer = useMemo(() => {
+    const allTaxpayers = isSearching && searchResults ? searchResults : taxpayers;
+    return allTaxpayers.find((t) => t.id === formData.taxpayerId);
+  }, [taxpayers, searchResults, formData.taxpayerId, isSearching]);
+
+  // Helper para extraer el año de emition_date
+  const getYearFromEmitionDate = (dateStr: string): number => {
+    if (!dateStr) return 0;
+    // Intenta parsear la fecha (formato ISO o yyyy-mm-dd)
+    const date = new Date(dateStr);
+    if (!isNaN(date.getTime())) {
+      return date.getFullYear();
+    }
+    // Si no es una fecha válida, intenta extraer el año del string
+    const match = dateStr.match(/(\d{4})/);
+    return match ? parseInt(match[1], 10) : 0;
+  };
+
+  // Lista de contribuyentes a mostrar (búsqueda o normal, con filtro de año opcional)
+  const displayedTaxpayers = useMemo(() => {
+    const baseList = isSearching && searchResults ? searchResults : taxpayers;
+
+    // Aplicar filtro por año actual si está activado
+    if (filterByCurrentYear) {
+      return baseList.filter(t => getYearFromEmitionDate(t.emition_date) === currentYear);
+    }
+
+    return baseList;
+  }, [taxpayers, searchResults, isSearching, filterByCurrentYear, currentYear]);
+
+  // Verificar si hay más páginas para cargar
+  const hasMorePages = useMemo(() => {
+    if (isSearching) {
+      return searchPage <= searchTotalPages;
+    }
+    return currentPage <= totalPages;
+  }, [isSearching, searchPage, searchTotalPages, currentPage, totalPages]);
 
 
   const validateForm = () => {
@@ -178,124 +311,151 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white transition-all duration-200 max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="text-white">Agregar Multa</DialogTitle>
+      <DialogContent className="bg-slate-800 border-slate-700 text-white transition-all duration-200 w-full max-w-[calc(100%-1rem)] sm:max-w-lg max-h-[95vh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="space-y-1 sm:space-y-1.5">
+          <DialogTitle className="text-white text-lg sm:text-xl">Agregar Multa</DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="taxpayerId" className="text-slate-300 mb-2 block">
-              Contribuyente
-            </Label>
-            <div className="relative" ref={dropdownRef}>
-              <div
-                className={`flex items-center justify-between w-full bg-slate-900/50 border px-3 py-2.5 rounded-xl cursor-pointer transition-all duration-200 group ${
-                  errors.taxpayerId
-                    ? 'border-rose-500/50 bg-rose-500/5'
-                    : isDropdownOpen
-                    ? 'border-indigo-500 ring-2 ring-indigo-500/20 bg-slate-800'
-                    : 'border-slate-700 hover:border-slate-600 hover:bg-slate-800/80 shadow-sm'
-                }`}
-                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-              >
-                <div className="flex items-center gap-3 flex-1 truncate">
-                  <div className={`p-1.5 rounded-lg transition-colors ${
-                    selectedTaxpayer ? 'bg-indigo-500/10 text-indigo-400' : 'bg-slate-800 text-slate-500'
-                  }`}>
-                    <Building2 className="w-4 h-4" />
-                  </div>
-                  <div className="flex-1 truncate pr-2">
-                    {selectedTaxpayer ? (
-                      <div className="flex flex-col text-left">
-                        <span className="text-white text-sm font-semibold truncate leading-tight">
-                          {selectedTaxpayer.name}
-                        </span>
-                        <span className="text-slate-500 text-[10px] font-bold uppercase tracking-wider">
-                          {selectedTaxpayer.rif}
-                        </span>
-                      </div>
-                    ) : (
-                      <span className="text-slate-500 text-sm">Seleccionar contribuyente...</span>
-                    )}
-                  </div>
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+          {/* Selector de Contribuyente - inline expandible */}
+          <div className={`rounded-xl border transition-all duration-200 ${
+            errors.taxpayerId
+              ? 'border-rose-500/50 bg-rose-500/5'
+              : isDropdownOpen
+              ? 'border-indigo-500/60 bg-slate-900/80'
+              : 'border-slate-700 bg-slate-900/50'
+          }`}>
+            {/* Botón trigger - siempre visible */}
+            <button
+              type="button"
+              onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+              className="w-full flex items-center justify-between px-3 py-2.5 text-left"
+            >
+              <div className="flex items-center gap-2.5 flex-1 min-w-0">
+                <div className={`p-1.5 rounded-lg shrink-0 transition-colors ${
+                  selectedTaxpayer ? 'bg-indigo-500/15 text-indigo-400' : 'bg-slate-800 text-slate-500'
+                }`}>
+                  <Building2 className="w-4 h-4" />
                 </div>
-                <ChevronDown
-                  className={`w-4 h-4 text-slate-500 transition-transform duration-300 ${
-                    isDropdownOpen ? 'rotate-180' : ''
-                  }`}
-                />
+                {selectedTaxpayer ? (
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white text-sm font-semibold truncate leading-tight">{selectedTaxpayer.name}</p>
+                    <p className="text-slate-400 text-[10px] font-bold uppercase tracking-wider">{selectedTaxpayer.rif}</p>
+                  </div>
+                ) : (
+                  <span className="text-slate-500 text-sm">Seleccionar contribuyente...</span>
+                )}
               </div>
+              <ChevronDown className={`w-4 h-4 text-slate-500 shrink-0 transition-transform duration-200 ${isDropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-              {isDropdownOpen && (
-                <div className="absolute top-full left-0 w-full mt-2 bg-slate-900 border border-slate-700/50 rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] z-[60] overflow-hidden flex flex-col max-h-[300px] animate-in fade-in slide-in-from-top-3 duration-300 backdrop-blur-xl">
-                  <div className="flex items-center px-4 py-3 border-b border-slate-800 bg-slate-900/95 sticky top-0 z-10">
-                    <Search className="w-4 h-4 text-slate-500 mr-2 shrink-0" />
+            {/* Panel expandible inline */}
+            {isDropdownOpen && (
+              <div className="border-t border-slate-700/60">
+                {/* Barra de búsqueda + filtro */}
+                <div className="px-3 py-2 space-y-2 bg-slate-950/40">
+                  <div className="flex items-center gap-2 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5">
+                    <Search className="w-3.5 h-3.5 text-slate-500 shrink-0" />
                     <input
                       type="text"
-                      className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder:text-slate-600 focus:ring-0"
-                      placeholder="Filtrar por nombre o RIF..."
+                      className="flex-1 bg-transparent border-none outline-none text-white text-sm placeholder:text-slate-600"
+                      placeholder="Buscar por nombre o RIF..."
                       value={searchTaxpayer}
                       onChange={(e) => setSearchTaxpayer(e.target.value)}
-                      onClick={(e) => e.stopPropagation()}
                       autoFocus
                     />
-                  </div>
-                  <div className="overflow-y-auto flex-1 p-2 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
-                    {filteredTaxpayers.length > 0 ? (
-                      filteredTaxpayers.map((taxpayer) => (
-                        <div
-                          key={taxpayer.id}
-                          className={`flex items-center justify-between px-3 py-2.5 cursor-pointer rounded-xl mb-1 last:mb-0 transition-all duration-200 ${
-                            formData.taxpayerId === taxpayer.id
-                              ? 'bg-indigo-500/10 text-indigo-400'
-                              : 'text-slate-300 hover:bg-slate-800'
-                          }`}
-                          onClick={() => {
-                            handleChange('taxpayerId', taxpayer.id);
-                            setIsDropdownOpen(false);
-                            setSearchTaxpayer('');
-                          }}
-                        >
-                          <div className="flex items-center gap-3 truncate pr-3">
-                            <div className={`p-1.5 rounded-lg ${
-                              formData.taxpayerId === taxpayer.id ? 'bg-indigo-500/20' : 'bg-slate-800/50'
-                            }`}>
-                              <Building2 className="w-3.5 h-3.5" />
-                            </div>
-                            <div className="flex flex-col truncate">
-                              <span className="text-sm font-semibold truncate leading-tight">{taxpayer.name}</span>
-                              <span className={`text-[10px] font-bold uppercase tracking-wider ${
-                                formData.taxpayerId === taxpayer.id ? 'text-indigo-400/70' : 'text-slate-500'
-                              }`}>
-                                {taxpayer.rif}
-                              </span>
-                            </div>
-                          </div>
-                          {formData.taxpayerId === taxpayer.id && (
-                            <div className="bg-indigo-500 p-0.5 rounded-full">
-                              <Check className="w-3 h-3 text-white" />
-                            </div>
-                          )}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
-                        <Building2 className="w-8 h-8 text-slate-800 mb-2" />
-                        <p className="text-sm text-slate-500 font-medium">No se encontraron contribuyentes</p>
-                      </div>
+                    {searchTaxpayer && (
+                      <button type="button" onClick={() => setSearchTaxpayer('')} className="text-slate-500 hover:text-slate-300 shrink-0">
+                        ✕
+                      </button>
                     )}
                   </div>
+                  <div className="flex items-center justify-between">
+                    <button
+                      type="button"
+                      onClick={() => setFilterByCurrentYear(!filterByCurrentYear)}
+                      className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                        filterByCurrentYear
+                          ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/40'
+                          : 'bg-slate-800 text-slate-400 border border-slate-700 hover:bg-slate-700'
+                      }`}
+                    >
+                      <Filter className="w-3 h-3" />
+                      Año {currentYear}
+                    </button>
+                    <span className="text-[10px] text-slate-600">
+                      {displayedTaxpayers.length} resultado{displayedTaxpayers.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
                 </div>
-              )}
-            </div>
-            {errors.taxpayerId && (
-              <p className="text-red-400 text-xs mt-1.5">{errors.taxpayerId}</p>
+
+                {/* Lista */}
+                <div
+                  ref={listRef}
+                  onScroll={handleScroll}
+                  className="overflow-y-auto max-h-[200px] px-1.5 py-1.5 space-y-0.5"
+                >
+                  {(loadingInitial || searchLoading) ? (
+                    <div className="flex items-center justify-center gap-2 py-6 text-slate-500">
+                      <span className="w-4 h-4 border-2 border-slate-700 border-t-indigo-500 rounded-full animate-spin"></span>
+                      <span className="text-xs">{loadingInitial ? 'Cargando...' : 'Buscando...'}</span>
+                    </div>
+                  ) : displayedTaxpayers.length === 0 ? (
+                    <div className="py-6 text-center text-xs text-slate-500">
+                      {isSearching ? 'Sin resultados para tu búsqueda' : 'No hay contribuyentes disponibles'}
+                    </div>
+                  ) : (
+                    <>
+                      {displayedTaxpayers.map((taxpayer) => {
+                        const isCurrentYear = getYearFromEmitionDate(taxpayer.emition_date) === currentYear;
+                        const isSelected = formData.taxpayerId === taxpayer.id;
+                        return (
+                          <div
+                            key={taxpayer.id}
+                            onClick={() => {
+                              handleChange('taxpayerId', taxpayer.id);
+                              setIsDropdownOpen(false);
+                              setSearchTaxpayer('');
+                              setFilterByCurrentYear(false);
+                            }}
+                            className={`flex items-center justify-between px-2.5 py-2 rounded-lg cursor-pointer transition-colors ${
+                              isSelected ? 'bg-indigo-500/15 text-indigo-300' : 'text-slate-300 hover:bg-slate-800/80'
+                            }`}
+                          >
+                            <div className="flex-1 min-w-0 pr-2">
+                              <p className="text-xs font-semibold truncate">{taxpayer.name}</p>
+                              <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                                <span className="text-[10px] text-slate-500 font-mono">{taxpayer.rif}</span>
+                                <span className={`text-[10px] px-1.5 py-px rounded-full font-medium ${
+                                  isCurrentYear ? 'bg-emerald-500/15 text-emerald-400' : 'bg-slate-700/80 text-slate-400'
+                                }`}>
+                                  {taxpayer.emition_date
+                                    ? new Date(taxpayer.emition_date).toLocaleDateString('es-VE', { day: 'numeric', month: 'short', year: 'numeric' })
+                                    : 'Sin fecha'}
+                                </span>
+                              </div>
+                            </div>
+                            {isSelected && <Check className="w-3.5 h-3.5 text-indigo-400 shrink-0" />}
+                          </div>
+                        );
+                      })}
+                      {loadingMore && (
+                        <div className="flex justify-center py-2">
+                          <span className="w-4 h-4 border-2 border-slate-700 border-t-indigo-500 rounded-full animate-spin"></span>
+                        </div>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
             )}
           </div>
+          {errors.taxpayerId && (
+            <p className="text-red-400 text-xs mt-1">{errors.taxpayerId}</p>
+          )}
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="date" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
                 Fecha de Emisión
               </Label>
@@ -307,7 +467,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
                   value={formData.date}
                   onChange={(e) => handleChange('date', e.target.value)}
                   className={cn(
-                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-lg sm:rounded-xl h-11 sm:h-12 text-slate-200 transition-all text-sm",
                     errors.date && "border-rose-500/50 bg-rose-500/5 text-rose-200"
                   )}
                 />
@@ -315,7 +475,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
               {errors.date && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.date}</p>}
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-1.5 sm:space-y-2">
               <Label htmlFor="amount" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
                 Monto en BS
               </Label>
@@ -331,7 +491,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
                     handleChange('amount', val);
                   }}
                   className={cn(
-                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
+                    "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-lg sm:rounded-xl h-11 sm:h-12 text-slate-200 transition-all text-sm",
                     errors.amount && "border-rose-500/50 bg-rose-500/5 text-rose-200"
                   )}
                 />
@@ -345,19 +505,19 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5 sm:space-y-2">
             <Label htmlFor="description" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
               Motivo / Descripción
             </Label>
             <div className="relative group">
-              <FileText className="absolute left-3 top-4 w-4 h-4 text-slate-500 group-focus-within:text-amber-400 transition-colors" />
+              <FileText className="absolute left-3 top-3 sm:top-4 w-4 h-4 text-slate-500 group-focus-within:text-amber-400 transition-colors" />
               <textarea
                 id="description"
                 placeholder="Ej: Retraso en declaración IVA..."
                 value={formData.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 className={cn(
-                  "w-full pl-10 pr-4 py-3 bg-slate-950/30 border border-slate-700 focus:ring-1 focus:ring-indigo-500/30 rounded-xl min-h-[100px] text-slate-200 transition-all placeholder:text-slate-600 outline-none",
+                  "w-full pl-10 pr-4 py-2.5 sm:py-3 bg-slate-950/30 border border-slate-700 focus:ring-1 focus:ring-indigo-500/30 rounded-lg sm:rounded-xl min-h-[80px] sm:min-h-[100px] text-slate-200 transition-all placeholder:text-slate-600 outline-none text-sm",
                   errors.description && "border-rose-500/50 bg-rose-500/5 text-rose-200"
                 )}
               />

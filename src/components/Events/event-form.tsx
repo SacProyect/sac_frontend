@@ -1,11 +1,8 @@
 import { useMemo, useRef } from 'react'
 import { useAuth } from '../../hooks/use-auth';
 import { Control, useForm } from 'react-hook-form';
-import TextInput from '../UI/text-input';
-import FormContainer from '../UI/form-container';
-import { Form, Label, Button } from 'react-aria-components'
+import { Form } from 'react-aria-components'
 import DateInputUI from '../UI/date-input-ui';
-import TaxpayerCombobox from '../UI/taxpayer-combobox';
 import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
 import { useLoaderData, useNavigate } from 'react-router-dom';
 import SelectInput from '../UI/select-input';
@@ -18,6 +15,7 @@ import { IvaReportFormData } from '../iva/iva-form';
 import { IslrReportFormData } from '../ISLR/islr-form';
 import TaxpayerList from '../UI/taxpayer-list';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
+import { AlertTriangle, DollarSign, FileText, Loader2 } from 'lucide-react';
 
 
 
@@ -375,18 +373,27 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
 
 
 
-    return (
-        <FormContainer>
-            <h2 className="w-full text-2xl font-bold text-center text-black mb-11">Agregar {title}</h2>
-            <Form onSubmit={handleSubmit(onSubmit)} className='space-y-2'>
+    const typeConfig: Record<string, { accent: string; iconColor: string; badgeColor: string }> = {
+        fine:              { accent: 'border-red-500/40',    iconColor: 'text-red-400',    badgeColor: 'bg-red-500/10 text-red-400 border-red-500/20' },
+        warning:           { accent: 'border-blue-500/40',   iconColor: 'text-blue-400',   badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+        payment:           { accent: 'border-emerald-500/40',iconColor: 'text-emerald-400',badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+        payment_compromise:{ accent: 'border-amber-500/40',  iconColor: 'text-amber-400',  badgeColor: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+    };
+    const cfg = typeConfig[type] ?? typeConfig['fine'];
 
-                {/* Select the taxpayer by it's ID */}
-                {
-                    taxpayerId == "" &&
+    return (
+        <Form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+
+            {/* Contribuyente */}
+            {taxpayerId === "" && (
+                <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                        Contribuyente
+                    </label>
                     <TaxpayerList
                         name={"taxpayerId"}
                         control={control as Control<EventFormData | IvaReportFormData | IslrReportFormData>}
-                        label={"Contribuyente"}
+                        label={""}
                         taxpayers={taxpayerArray}
                         onSearchChange={setSearch}
                         searchLoading={searchLoading}
@@ -395,112 +402,137 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                         hasMore={hasMore}
                         loadingMore={loadingMore}
                     />
-                }
+                </div>
+            )}
 
-                {/* If the type is payment, show the pending payments */}
-                {
-                    (type === "payment" || type === "payment_compromise" || type === "warning") &&
-                    <>
-                        <SelectInput
-                            control={control}
-                            name={"eventId"}
-                            label={"Pagos Pendientes"}
-                            items={pendingPayments}
-                        />
-                    </>
-                }
+            {/* Pagos pendientes */}
+            {(type === "payment" || type === "payment_compromise" || type === "warning") && (
+                <div className="space-y-1.5">
+                    <label className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                        Pagos Pendientes
+                    </label>
+                    <SelectInput
+                        control={control}
+                        name={"eventId"}
+                        label={""}
+                        items={pendingPayments}
+                    />
+                    {selectedPayment && (
+                        <p className="text-xs text-amber-400 bg-amber-500/10 border border-amber-500/20 rounded-lg px-3 py-2">
+                            Deuda a pagar: <span className="font-bold">{selectedPayment.debt?.toLocaleString('es-VE')} Bs.</span>
+                        </p>
+                    )}
+                </div>
+            )}
 
-                {/* Select Date */}
-                <DateInputUI
-                    name="date"
-                    control={control}
-                    label={type === "payment" ? "Fecha de pago" : "Fecha de emisión"}
-                />
+            {/* Fecha + Monto en grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Fecha */}
+                <div className="space-y-1.5">
+                    <DateInputUI
+                        name="date"
+                        control={control}
+                        label={type === "payment" ? "Fecha de pago" : "Fecha de emisión"}
+                    />
+                </div>
 
-                {/* Description */}
-                {type === "fine" && (
-                    <div className="w-full">
-                        <label htmlFor="description" className="block mb-1 text-sm font-medium text-gray-700">
-                            Motivo de la multa
-                        </label>
+                {/* Monto */}
+                <div className="space-y-1.5">
+                    <label htmlFor="amount" className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <DollarSign className={`w-3 h-3 ${cfg.iconColor}`} />
+                        Monto en Bs.
+                    </label>
+                    <div className="relative group">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold pointer-events-none select-none group-focus-within:text-slate-300 transition-colors">
+                            Bs.
+                        </span>
                         <input
-                            id="description"
+                            id="amount"
                             type="text"
-                            {...register("description", { required: "Debe introducir un motivo para la multa" })}
-                            className="w-full h-12 px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
-                            placeholder="Ingrese una descripción"
+                            inputMode="decimal"
+                            placeholder="0.00"
+                            {...register("amount", {
+                                required: "Campo obligatorio",
+                                validate: (num: number) => {
+                                    if (isNaN(num)) return "Debe ser un número válido";
+                                    if (num < 0) return "El monto no puede ser negativo";
+                                    if (type !== "fine" && selectedPayment && num > (selectedPayment.debt ?? Infinity)) {
+                                        return `No puede superar ${selectedPayment.debt}`;
+                                    }
+                                    return true;
+                                },
+                                setValueAs: (value: string | number) => {
+                                    const normalized = String(value).replace(/,/g, ".");
+                                    return parseFloat(normalized);
+                                },
+                            })}
+                            className={`w-full h-11 pl-9 pr-3 bg-slate-900/50 border rounded-xl text-slate-200 text-sm placeholder:text-slate-600 outline-none transition-all focus:ring-2 ${
+                                errors.amount
+                                    ? 'border-rose-500/50 focus:ring-rose-500/20 bg-rose-500/5'
+                                    : 'border-slate-700 focus:border-slate-500 focus:ring-slate-500/20'
+                            }`}
                         />
                     </div>
-                )}
-                {errors.description && (
-                    <p className="mt-1 text-sm text-red-500">{errors.description.message}</p>
-                )}
-
-
-                {/* Amount input */}
-                <>
-                    <Label className="text-black">Monto en BS:</Label>
-
-                    <input
-                        type="text"
-                        inputMode="decimal"
-                        placeholder="3500..."
-                        {...register("amount", {
-                            required: "Campo Obligatorio",
-                            validate: (num: number) => {
-                                if (isNaN(num)) return "Debe ser un número válido";
-                                if (num < 0) return "El monto no puede ser negativo";
-                                if (type !== "fine" && selectedPayment && num > (selectedPayment.debt ?? Infinity)) {
-                                    return `El monto no puede ser mayor a ${selectedPayment.debt}`;
-                                }
-                                return true;
-                            },
-                            setValueAs: (value: string | number) => {
-                                const normalized = String(value).replace(/,/g, ".");
-                                return parseFloat(normalized);
-                            },
-                        })}
-                        className="w-full h-12 px-3 py-3 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-200 focus:border-blue-400"
-                    />
-                </>
-
-                {errors.amount && (
-                    <p className='text-sm text-red-500'> {errors.amount.message}</p>
-                )}
-
-
-                {/* Show acumulated debt */}
-                {
-                    (type == "payment" || type == "payment_compromise" || type == "warning") &&
-                    <>
-                        {selectedPayment && (
-                            <p>Deuda a pagar: {selectedPayment.debt?.toString()} </p>
-                        )}
-                    </>
-                }
-
-
-                {/* Submit Button */}
-                <div className='pt-4'>
-                    <Button
-                        type='submit'
-                        isDisabled={!isValid}
-                        className={
-                            `w-full 
-                                p-2 
-                                bg-[#007bff] 
-                                hover:bg-[#0056b3] 
-                                text-white font-bold 
-                                rounded-lg 
-                                cursor-pointer 
-                                disabled:bg-gray-400`
-                        }
-                    >
-                        Enviar
-                    </Button>
+                    {errors.amount && (
+                        <p className="text-[11px] text-rose-400 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 shrink-0" />
+                            {errors.amount.message}
+                        </p>
+                    )}
                 </div>
-            </Form>
-        </FormContainer>
+            </div>
+
+            {/* Motivo */}
+            {type === "fine" && (
+                <div className="space-y-1.5">
+                    <label htmlFor="description" className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                        <FileText className={`w-3 h-3 ${cfg.iconColor}`} />
+                        Motivo de la multa
+                    </label>
+                    <div className="relative group">
+                        <textarea
+                            id="description"
+                            rows={3}
+                            {...register("description", { required: "Debe indicar el motivo de la multa" })}
+                            placeholder="Ej: Retraso en declaración de IVA del mes de marzo..."
+                            className={`w-full px-3 py-2.5 bg-slate-900/50 border rounded-xl text-slate-200 text-sm placeholder:text-slate-600 outline-none transition-all focus:ring-2 resize-none ${
+                                errors.description
+                                    ? 'border-rose-500/50 focus:ring-rose-500/20 bg-rose-500/5'
+                                    : 'border-slate-700 focus:border-slate-500 focus:ring-slate-500/20'
+                            }`}
+                        />
+                    </div>
+                    {errors.description && (
+                        <p className="text-[11px] text-rose-400 flex items-center gap-1">
+                            <AlertTriangle className="w-3 h-3 shrink-0" />
+                            {errors.description.message}
+                        </p>
+                    )}
+                </div>
+            )}
+
+            {/* Botón enviar */}
+            <div className="pt-2">
+                <button
+                    type="submit"
+                    disabled={!isValid || isSubmiting}
+                    className={`w-full h-11 flex items-center justify-center gap-2 font-semibold text-sm rounded-xl transition-all duration-200 ${
+                        !isValid || isSubmiting
+                            ? 'bg-slate-700 text-slate-500 cursor-not-allowed'
+                            : 'bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 hover:shadow-indigo-500/30 active:scale-[0.98]'
+                    }`}
+                >
+                    {isSubmiting ? (
+                        <>
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                            Guardando...
+                        </>
+                    ) : (
+                        `Registrar ${title}`
+                    )}
+                </button>
+            </div>
+        </Form>
     )
 }
 

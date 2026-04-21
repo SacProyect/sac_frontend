@@ -158,14 +158,24 @@ function IvaForm() {
         return loadedPagesCount < totalPagesDisplayed;
     }, [isSearching, searchAdditionalPages, additionalPages, searchTotalPages, totalPages]);
 
+    /**
+     * Filtrado de contribuyentes:
+     * - Si hay búsqueda del backend activa, mostramos los resultados directamente SIN filtrar localmente.
+     * - Solo filtramos localmente cuando NO hay búsqueda del backend (modo paginación simple).
+     */
     const filteredTaxpayers = useMemo(() => {
+        // Si hay búsqueda del backend activa, mostrar resultados directamente
+        if (isSearching) {
+            return taxpayerArray;
+        }
+        // Solo filtrar localmente cuando NO hay búsqueda del backend
         if (!searchValue) return taxpayerArray;
         const s = searchValue.toLowerCase();
-        return taxpayerArray.filter(t => 
-            t.name.toLowerCase().includes(s) || 
+        return taxpayerArray.filter(t =>
+            t.name.toLowerCase().includes(s) ||
             t.rif.toLowerCase().includes(s)
         );
-    }, [searchValue, taxpayerArray]);
+    }, [searchValue, taxpayerArray, isSearching]);
 
     const yearOptions = useMemo(
         () => Array.from({ length: 7 }, (_, i) => String(currentYear + 2 - i)),

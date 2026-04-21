@@ -16,6 +16,7 @@ import {
   FileSearch,
   BarChart3,
   ArrowLeft,
+  Trash2,
 } from 'lucide-react';
 import { IndividualStats, type TaxpayerSummaryStrip } from '@/components/stats/individual-stats';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -29,6 +30,7 @@ import { ISLRReports } from '@/types/islr-reports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
 import { PageHeader, EmptyState } from '@/components/UI/v2';
+import { deleteTaxpayer } from '@/components/utils/api/taxpayer-functions';
 import {
   Dialog,
   DialogContent,
@@ -80,6 +82,22 @@ export default function TaxpayerDetailV2() {
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
   const [showPerformanceChart, setShowPerformanceChart] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const handleDeleteTaxpayer = useCallback(async () => {
+    if (!taxpayer) return;
+    setIsDeleting(true);
+    try {
+      await deleteTaxpayer(taxpayer);
+      toast.success('Contribuyente eliminado correctamente');
+      navigate('/admin', { replace: true });
+    } catch {
+      toast.error('Error al eliminar el contribuyente');
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  }, [taxpayer, navigate]);
 
   // Media query para gráficos responsivos
   const isSmUp = useMediaQuery('(min-width: 640px)');
@@ -248,6 +266,27 @@ export default function TaxpayerDetailV2() {
             );
           })}
         </div>
+
+        {/* Zona de peligro — solo ADMIN */}
+        {user.role === 'ADMIN' && (
+          <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold text-rose-400">Zona de administración</p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                Eliminar el expediente de forma permanente. Esta acción no se puede deshacer.
+              </p>
+            </div>
+            <Button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              className="shrink-0 bg-rose-600/10 hover:bg-rose-600/20 border border-rose-500/30 hover:border-rose-500/50 text-rose-400 hover:text-rose-300 font-semibold rounded-md flex items-center gap-2 transition-all duration-200 min-h-[40px] px-4 text-sm"
+            >
+              <Trash2 className="h-4 w-4 shrink-0" />
+              <span className="hidden sm:inline">Eliminar contribuyente</span>
+              <span className="sm:hidden">Eliminar</span>
+            </Button>
+          </div>
+        )}
       </Card>
 
       <div className="mt-6 sm:mt-8 border-t border-slate-700/60 pt-6 sm:pt-8">
@@ -288,7 +327,11 @@ export default function TaxpayerDetailV2() {
           <TabsContent value="fine" className="mt-4">
             {events.length > 0 ? (
               <div className="overflow-x-auto">
-                <EventTable rows={events} setRows={setEvents} />
+                <EventTable
+                  rows={events}
+                  setRows={setEvents}
+                  canEdit={user.role === 'ADMIN' || isAssignedFiscal}
+                />
               </div>
             ) : (
               <EmptyState 
@@ -301,7 +344,11 @@ export default function TaxpayerDetailV2() {
           <TabsContent value="iva" className="mt-4">
             {taxSummary.length > 0 ? (
               <div className="overflow-x-auto">
-                <TaxSummaryTable rows={taxSummary} setRows={setTaxSummary} />
+                <TaxSummaryTable
+                  rows={taxSummary}
+                  setRows={setTaxSummary}
+                  canEdit={user.role === 'ADMIN' || isAssignedFiscal}
+                />
               </div>
             ) : (
               <EmptyState 
@@ -314,7 +361,11 @@ export default function TaxpayerDetailV2() {
           <TabsContent value="islr" className="mt-4">
             {islrReports.length > 0 ? (
               <div className="overflow-x-auto">
-                <ISLRSummaryTable rows={islrReports} setRows={setIslrReports} />
+                <ISLRSummaryTable
+                  rows={islrReports}
+                  setRows={setIslrReports}
+                  canEdit={user.role === 'ADMIN' || isAssignedFiscal}
+                />
               </div>
             ) : (
               <EmptyState 
@@ -326,6 +377,64 @@ export default function TaxpayerDetailV2() {
         </Tabs>
       </Card>
       </div>
+
+      {/* Diálogo de confirmación — eliminar contribuyente */}
+      <Dialog open={showDeleteConfirm} onOpenChange={(open) => !isDeleting && setShowDeleteConfirm(open)}>
+        <DialogContent className="max-w-md bg-slate-900 border-slate-700 text-slate-100">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2.5 text-left pr-8 text-rose-400">
+              <div className="p-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 shrink-0">
+                <Trash2 className="h-4 w-4" />
+              </div>
+              Eliminar contribuyente
+            </DialogTitle>
+            <DialogDescription className="text-slate-400 mt-2">
+              Esta acción es <span className="text-rose-400 font-semibold">permanente e irreversible</span>.
+              Se eliminarán todos los datos del expediente, incluyendo eventos, reportes de IVA e ISLR.
+            </DialogDescription>
+          </DialogHeader>
+
+          {taxpayerData && (
+            <div className="rounded-xl bg-slate-800/80 border border-slate-700/60 p-4 space-y-1 my-1">
+              <p className="text-sm font-semibold text-white">{taxpayerData.name}</p>
+              <p className="text-xs text-slate-400 font-mono">{taxpayerData.rif}</p>
+            </div>
+          )}
+
+          <p className="text-sm text-slate-300">
+            ¿Estás seguro de que deseas continuar?
+          </p>
+
+          <div className="flex gap-3 pt-2">
+            <Button
+              type="button"
+              onClick={() => setShowDeleteConfirm(false)}
+              disabled={isDeleting}
+              className="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-semibold rounded-xl min-h-[42px] transition-colors"
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="button"
+              onClick={handleDeleteTaxpayer}
+              disabled={isDeleting}
+              className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:bg-rose-600/40 text-white font-semibold rounded-xl min-h-[42px] flex items-center justify-center gap-2 transition-colors"
+            >
+              {isDeleting ? (
+                <>
+                  <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  Eliminando...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-4 w-4" />
+                  Sí, eliminar
+                </>
+              )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showPerformanceChart} onOpenChange={setShowPerformanceChart}>
         <DialogContent className="max-w-4xl bg-slate-900 border-slate-700 text-slate-100">

@@ -6,7 +6,7 @@ import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayoutV2 from '@/main-layout-v2';
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, type ComponentType } from 'react';
 // import ContributionsPage from '@/pages/Contributions/Contributions-Page-V2';
 import { IVAReports } from '@/types/iva-reports';
 // import ReportModal from '@/components/reports/ReportModal';
@@ -15,6 +15,7 @@ import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
 import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 // import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
 // import { PresentationProvider } from '@/components/context/PresentationContext';
 
@@ -54,29 +55,62 @@ import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
 // const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 // const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
 
-const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
-const AdminPageV2 = lazy(() => import("@/pages/Admin/admin-page-v2"));
-const SettingsPageV2 = lazy(() => import("@/pages/Settings/settings-page-v2"));
-const StatsDashboardV2 = lazy(() => import("@/pages/stats/stats-dashboard-v2"));
-const FiscalStatsDashboardV2 = lazy(() => import("@/pages/stats/fiscal-stats-dashboard-v2"));
-const CensusTablePageV2 = lazy(() => import("@/pages/CensusTable/census-table-page-v2"));
-const FiscalReviewPageV2 = lazy(() => import("@/pages/fiscal-review/fiscal-review-page-v2"));
-const ObservationsPageV2 = lazy(() => import("@/pages/Observations/observations-page-v2"));
-const TaxpayerDetailV2 = lazy(() => import("@/pages/Taxpayer/taxpayer-detail-v2"));
-const FinePageV2 = lazy(() => import("@/pages/Events/fine-page-v2"));
-const NoticePageV2 = lazy(() => import("@/pages/Events/notice-page-v2"));
-const PaymentPageV2 = lazy(() => import("@/pages/Events/payment-page-v2"));
-const ComitmentPageV2 = lazy(() => import("@/pages/Events/comitment-page-v2"));
-const ReportsPageV2 = lazy(() => import("@/pages/reports/reports-page-v2"));
-const ContributionsPageV2 = lazy(() => import("@/pages/Contributions/contributions-page-v2"));
-const IvaReportV2 = lazy(() => import("@/pages/iva/iva-report-v2"));
-const IslrReportV2 = lazy(() => import("@/pages/ISLR/islr-report-v2"));
-const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
-const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
-const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
-const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
-const NotificationsPageV1 = lazy(() => import("@/pages/Notifications/notifications-page-v1"));
-const AuditTrailPageV2 = lazy(() => import("@/pages/audit/audit-trail-page-v2"));
+/**
+ * Helper para lazy loading con retry automático
+ * Maneja errores transitorios de red y carga de chunks
+ */
+function lazyWithRetry<T extends ComponentType<unknown>>(
+    factory: () => Promise<{ default: T }>,
+    retries = 2
+): React.LazyExoticComponent<T> {
+    return lazy(() => {
+        const loadComponent = (attempt: number): Promise<{ default: T }> => {
+            return factory().catch((error: Error) => {
+                // Si es error de chunk dinámico fallido y tenemos reintentos
+                const isChunkError = 
+                    error.message?.includes('Failed to fetch dynamically imported module') ||
+                    error.message?.includes('Failed to load module script') ||
+                    error.message?.includes('error loading dynamically imported module') ||
+                    error.message?.includes('Loading chunk');
+                
+                if (isChunkError && attempt < retries) {
+                    console.warn(`Error cargando módulo, intento ${attempt + 1} de ${retries}. Recargando...`);
+                    // Pequeña espera antes de reintentar
+                    return new Promise(resolve => setTimeout(resolve, 300 * attempt))
+                        .then(() => loadComponent(attempt + 1));
+                }
+                
+                throw error;
+            });
+        };
+        
+        return loadComponent(1);
+    });
+}
+
+const LoginPageV2 = lazyWithRetry(() => import("@/pages/Auth/login-page-v2"));
+const AdminPageV2 = lazyWithRetry(() => import("@/pages/Admin/admin-page-v2"));
+const SettingsPageV2 = lazyWithRetry(() => import("@/pages/Settings/settings-page-v2"));
+const StatsDashboardV2 = lazyWithRetry(() => import("@/pages/stats/stats-dashboard-v2"));
+const FiscalStatsDashboardV2 = lazyWithRetry(() => import("@/pages/stats/fiscal-stats-dashboard-v2"));
+const CensusTablePageV2 = lazyWithRetry(() => import("@/pages/CensusTable/census-table-page-v2"));
+const FiscalReviewPageV2 = lazyWithRetry(() => import("@/pages/fiscal-review/fiscal-review-page-v2"));
+const ObservationsPageV2 = lazyWithRetry(() => import("@/pages/Observations/observations-page-v2"));
+const TaxpayerDetailV2 = lazyWithRetry(() => import("@/pages/Taxpayer/taxpayer-detail-v2"));
+const FinePageV2 = lazyWithRetry(() => import("@/pages/Events/fine-page-v2"));
+const NoticePageV2 = lazyWithRetry(() => import("@/pages/Events/notice-page-v2"));
+const PaymentPageV2 = lazyWithRetry(() => import("@/pages/Events/payment-page-v2"));
+const ComitmentPageV2 = lazyWithRetry(() => import("@/pages/Events/comitment-page-v2"));
+const ReportsPageV2 = lazyWithRetry(() => import("@/pages/reports/reports-page-v2"));
+const ContributionsPageV2 = lazyWithRetry(() => import("@/pages/Contributions/contributions-page-v2"));
+const IvaReportV2 = lazyWithRetry(() => import("@/pages/iva/iva-report-v2"));
+const IslrReportV2 = lazyWithRetry(() => import("@/pages/ISLR/islr-report-v2"));
+const IndexIvaV2 = lazyWithRetry(() => import("@/pages/index-iva/index-iva-v2"));
+const ErrorsReportV2 = lazyWithRetry(() => import("@/pages/errors/errors-report-v2"));
+const GroupReportPageV2 = lazyWithRetry(() => import("@/pages/reports/group-report-page-v2"));
+const TaxpayerReportPage = lazyWithRetry(() => import("@/pages/reports/taxpayer-report-page"));
+const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
+const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
 
 type LoaderData = {
     events: Event[],
@@ -161,7 +195,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "fine/:taxpayerId",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Multa..." />}><FinePageV2 /></Suspense>,
+                        element: (
+                            <ChunkErrorBoundary>
+                                <Suspense fallback={<GlobalLoader message="Cargando Multa..." />}>
+                                    <FinePageV2 />
+                                </Suspense>
+                            </ChunkErrorBoundary>
+                        ),
                         loader: async ({ params }) => {
                             try {
                                 const taxpayerId = params.taxpayerId;
@@ -175,7 +215,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "warning/:taxpayerId",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Aviso..." />}><NoticePageV2 /></Suspense>,
+                        element: (
+                            <ChunkErrorBoundary>
+                                <Suspense fallback={<GlobalLoader message="Cargando Aviso..." />}>
+                                    <NoticePageV2 />
+                                </Suspense>
+                            </ChunkErrorBoundary>
+                        ),
                         loader: async ({ params }) => {
                             try {
                                 const taxpayerId = params.taxpayerId;
@@ -189,7 +235,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "payment/:taxpayerId",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Pago..." />}><PaymentPageV2 /></Suspense>,
+                        element: (
+                            <ChunkErrorBoundary>
+                                <Suspense fallback={<GlobalLoader message="Cargando Pago..." />}>
+                                    <PaymentPageV2 />
+                                </Suspense>
+                            </ChunkErrorBoundary>
+                        ),
                         loader: async ({ params }) => {
                             try {
                                 const taxpayerId = params.taxpayerId;
@@ -208,7 +260,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "payment_compromise/:taxpayerId",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Compromiso..." />}><ComitmentPageV2 /></Suspense>,
+                        element: (
+                            <ChunkErrorBoundary>
+                                <Suspense fallback={<GlobalLoader message="Cargando Compromiso..." />}>
+                                    <ComitmentPageV2 />
+                                </Suspense>
+                            </ChunkErrorBoundary>
+                        ),
                         loader: async ({ params }) => {
                             try {
                                 const taxpayerId = params.taxpayerId;
@@ -319,7 +377,13 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "taxpayer/:taxpayer",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Detalles..." />}><TaxpayerDetailV2 /></Suspense>,
+                        element: (
+                            <ChunkErrorBoundary>
+                                <Suspense fallback={<GlobalLoader message="Cargando Detalles..." />}>
+                                    <TaxpayerDetailV2 />
+                                </Suspense>
+                            </ChunkErrorBoundary>
+                        ),
                         loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
                             try {
                                 const taxpayerId = params.taxpayer;
