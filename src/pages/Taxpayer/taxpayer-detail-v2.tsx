@@ -1,7 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLoaderData, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'react-router-dom';
+import { Card } from '@/components/UI/card';
+import { Button } from '@/components/UI/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
+import { Badge } from '@/components/UI/badge';
 import { 
   Bell, 
   AlertTriangle, 
@@ -10,9 +14,12 @@ import {
   Package,
   Receipt,
   FileSearch,
-  BarChart3
+  BarChart3,
+  ArrowLeft,
 } from 'lucide-react';
-import { IndividualStats } from '@/components/stats/individual-stats';
+import { IndividualStats, type TaxpayerSummaryStrip } from '@/components/stats/individual-stats';
+import { useMediaQuery } from '@/hooks/use-media-query';
+import toast from 'react-hot-toast';
 import EventTable from '@/components/Events/event-table';
 import TaxSummaryTable from '@/components/iva/tax-summary-table';
 import ISLRSummaryTable from '@/components/ISLR/islr-summary-table';
@@ -30,21 +37,22 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import {
-  Bar,
-  BarChart,
-  CartesianGrid,
+  Cell,
   Legend,
+  Pie,
+  PieChart,
   ResponsiveContainer,
   Tooltip,
-  XAxis,
-  YAxis,
 } from 'recharts';
-import toast from 'react-hot-toast';
-import { deleteTaxpayer } from '@/components/utils/api/taxpayer-functions';
-import { Button } from '@/components/UI/button';
-import { Card } from '@/components/UI/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/UI/tabs';
 
+/**
+ * TaxpayerDetailV2 - Detalle del Contribuyente con diseño Shadcn UI v2.0
+ * 
+ * Muestra:
+ * - Estadísticas individuales del contribuyente
+ * - Botones de acción rápida (con permisos)
+ * - Tabs para historial (Multas, IVA, ISLR)
+ */
 export default function TaxpayerDetailV2() {
   const { taxpayer } = useParams<{ taxpayer: string }>();
   const { user } = useAuth();
@@ -72,8 +80,21 @@ export default function TaxpayerDetailV2() {
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
   const [showPerformanceChart, setShowPerformanceChart] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+
+  // Media query para gráficos responsivos
+  const isSmUp = useMediaQuery('(min-width: 640px)');
+
+  // Colores para gráficos de torta
+  const IVA_PIE_COLORS = {
+    compras: '#38bdf8',
+    ventas: '#34d399',
+  };
+
+  const EVENT_PIE_COLORS: Record<string, string> = {
+    'Avisos': '#60a5fa',
+    'Multas': '#f87171',
+    'Compromisos': '#fbbf24',
+  };
 
   if (!user) {
     return <Navigate to="/login" state={{ from: location }} replace />;
@@ -85,60 +106,78 @@ export default function TaxpayerDetailV2() {
   const isAssignedFiscal =
     user.role === 'FISCAL' &&
     (taxpayerData?.officerId === user.id || taxpayerData?.user?.id === user.id || isMyTaxpayer);
-  const canDeleteTaxpayer = isHighRole || isAssignedFiscal;
-
-  const handleDeleteTaxpayer = async () => {
-    if (!taxpayer || isDeleting || !canDeleteTaxpayer) return;
-
-    try {
-      setIsDeleting(true);
-      const res = await deleteTaxpayer(taxpayer);
-      if (!res) {
-        toast.error('No se pudo eliminar el contribuyente.');
-        return;
-      }
-      toast.success('Contribuyente eliminado correctamente.');
-      setDeleteConfirmOpen(false);
-      navigate('/admin');
-    } catch (error) {
-      console.error(error);
-      toast.error('No se pudo eliminar el contribuyente.');
-    } finally {
-      setIsDeleting(false);
-    }
+  type QuickAction = {
+    name: string;
+    title: string;
+    icon: typeof Bell;
+    color: string;
+    path?: string;
+    onClick?: () => void;
   };
 
-  const quickActions = [
-    { name: 'Aviso', path: `/warning/${taxpayer}`, icon: Bell, color: 'bg-blue-600 hover:bg-blue-700' },
-    { name: 'Multa', path: `/fine/${taxpayer}`, icon: AlertTriangle, color: 'bg-red-600 hover:bg-red-700' },
-    { name: 'Pago', path: `/payment/${taxpayer}`, icon: DollarSign, color: 'bg-green-600 hover:bg-green-700' },
-    { name: 'Compromiso de pago', path: `/payment_compromise/${taxpayer}`, icon: FileText, color: 'bg-purple-600 hover:bg-purple-700' },
+  const quickActions: QuickAction[] = [
+    {
+      name: 'Aviso',
+      title: 'Registrar un aviso asociado a este expediente',
+      path: `/warning/${taxpayer}`,
+      icon: Bell,
+      color: 'bg-blue-600 hover:bg-blue-700',
+    },
+    {
+      name: 'Multa',
+      title: 'Registrar una multa o sanción',
+      path: `/fine/${taxpayer}`,
+      icon: AlertTriangle,
+      color: 'bg-red-600 hover:bg-red-700',
+    },
+    {
+      name: 'Pago',
+      title: 'Registrar un pago recibido',
+      path: `/payment/${taxpayer}`,
+      icon: DollarSign,
+      color: 'bg-green-600 hover:bg-green-700',
+    },
+    {
+      name: 'Compromiso de pago',
+      title: 'Registrar un compromiso de pago',
+      path: `/payment_compromise/${taxpayer}`,
+      icon: FileText,
+      color: 'bg-purple-600 hover:bg-purple-700',
+    },
     {
       name: 'Gráficos',
+      title: 'Ver tortas de IVA y distribución de eventos',
       icon: BarChart3,
       color: 'bg-amber-600 hover:bg-amber-700',
       onClick: () => setShowPerformanceChart(true),
     },
-    // { name: 'Observaciones', path: `/observations/${taxpayer}`, icon: Eye, color: 'bg-slate-600 hover:bg-slate-700' },
   ].filter((opt) => canSeeAllOptions || opt.name === 'Observaciones' || opt.name === 'Gráficos');
 
-  const performanceChartData = useMemo(() => {
-    if (!taxSummary?.length) return [];
-
-    const monthNames = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const sorted = [...taxSummary].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-
-    return sorted.map((report) => {
-      const reportDate = new Date(report.date);
-      return {
-        period: `${monthNames[reportDate.getMonth()]} ${reportDate.getFullYear()}`,
-        compras: Number(report.purchases) || 0,
-        ventas: Number(report.sells) || 0,
-      };
+  /** Totales acumulados de IVA para gráfico de torta (compras vs ventas). */
+  const ivaTotals = useMemo(() => {
+    if (!taxSummary?.length) return { compras: 0, ventas: 0 };
+    let totalCompras = 0;
+    let totalVentas = 0;
+    taxSummary.forEach((report) => {
+      totalCompras += Number(report.purchases) || 0;
+      totalVentas += Number(report.sells) || 0;
     });
+    return { compras: totalCompras, ventas: totalVentas };
   }, [taxSummary]);
 
-  const eventTypeChartData = useMemo(() => {
+  const ivaPieData = useMemo(() => {
+    const { compras: totalCompras, ventas: totalVentas } = ivaTotals;
+    const slices: { name: string; value: number; fill: string }[] = [];
+    if (totalCompras > 0) {
+      slices.push({ name: 'Compras', value: totalCompras, fill: IVA_PIE_COLORS.compras });
+    }
+    if (totalVentas > 0) {
+      slices.push({ name: 'Ventas', value: totalVentas, fill: IVA_PIE_COLORS.ventas });
+    }
+    return slices;
+  }, [ivaTotals]);
+
+  const eventPieData = useMemo(() => {
     if (!events?.length) return [];
 
     const totalsByType: Record<string, { label: string; cantidad: number; monto: number }> = {
@@ -155,7 +194,13 @@ export default function TaxpayerDetailV2() {
       totalsByType[key].monto += Number(event.amount) || 0;
     });
 
-    return Object.values(totalsByType).filter((item) => item.cantidad > 0);
+    return Object.values(totalsByType)
+      .filter((item) => item.cantidad > 0)
+      .map((item) => ({
+        name: item.label,
+        value: item.cantidad,
+        fill: EVENT_PIE_COLORS[item.label] ?? '#f59e0b',
+      }));
   }, [events]);
 
   const currencyFormatter = (value: number) =>
@@ -166,7 +211,14 @@ export default function TaxpayerDetailV2() {
     }).format(value);
 
   return (
-    <div className="space-y-4 sm:space-y-5 w-full max-w-full overflow-x-hidden">
+    <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+      <PageHeader
+        title="Detalle del Contribuyente"
+        description="Información completa y gestión de eventos"
+      />
+
+      <IndividualStats events={events} IVAReports={taxSummary} />
+
       <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Acciones Rápidas</h3>
         <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -198,8 +250,17 @@ export default function TaxpayerDetailV2() {
         </div>
       </Card>
 
+      <div className="mt-6 sm:mt-8 border-t border-slate-700/60 pt-6 sm:pt-8">
       <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg overflow-hidden">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <div className="px-4 pt-4 sm:px-6 sm:pt-5 border-b border-slate-700/50 pb-3">
+          <h2 className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+            Historial del expediente
+          </h2>
+          <p className="text-xs text-slate-500 mt-1 hidden sm:block">
+            Multas y eventos, reportes de IVA e ISLR en pestañas.
+          </p>
+        </div>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full p-4 sm:p-6 pt-4">
           <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-3 h-auto flex-wrap gap-1 p-1">
             <TabsTrigger 
               value="fine" 
@@ -264,26 +325,49 @@ export default function TaxpayerDetailV2() {
           </TabsContent>
         </Tabs>
       </Card>
+      </div>
 
       <Dialog open={showPerformanceChart} onOpenChange={setShowPerformanceChart}>
         <DialogContent className="max-w-4xl bg-slate-900 border-slate-700 text-slate-100">
           <DialogHeader>
-            <DialogTitle>Gráficos de Rendimiento del Contribuyente</DialogTitle>
+            <DialogTitle className="flex items-center gap-2.5 text-left pr-8">
+              <BarChart3 className="h-5 w-5 text-amber-400 shrink-0" aria-hidden />
+              <span>Gráficos del contribuyente</span>
+            </DialogTitle>
             <DialogDescription className="text-slate-400">
-              Comparativas clave de actividad tributaria con datos de IVA y eventos del expediente.
+              Tortas de proporción IVA y de eventos del expediente.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-6">
             <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-4">
-              <h4 className="text-sm font-semibold text-slate-200 mb-3">Compras vs Ventas (IVA por período)</h4>
-              {performanceChartData.length > 0 ? (
-                <div className="w-full h-[280px]">
+              <h4 className="text-sm font-semibold text-slate-200 mb-1">Compras vs ventas (IVA acumulado)</h4>
+              <p className="text-xs text-slate-500 mb-3">Proporción entre montos totales de compras y ventas en todos los reportes.</p>
+              {ivaPieData.length > 0 ? (
+                <>
+                <div className="w-full h-[260px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={performanceChartData} margin={{ top: 8, right: 18, left: 8, bottom: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                      <XAxis dataKey="period" stroke="#94a3b8" />
-                      <YAxis stroke="#94a3b8" tickFormatter={(value) => currencyFormatter(Number(value))} />
+                    <PieChart>
+                      <Pie
+                        data={ivaPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={48}
+                        outerRadius={isSmUp ? 100 : 88}
+                        paddingAngle={2}
+                        label={
+                          isSmUp
+                            ? ({ name, percent }) =>
+                                `${name} ${((percent ?? 0) * 100).toFixed(0)}%`
+                            : false
+                        }
+                      >
+                        {ivaPieData.map((entry, index) => (
+                          <Cell key={`iva-cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
                       <Tooltip
                         contentStyle={{
                           backgroundColor: '#0f172a',
@@ -295,28 +379,51 @@ export default function TaxpayerDetailV2() {
                         labelStyle={{ color: '#e2e8f0' }}
                       />
                       <Legend wrapperStyle={{ color: '#cbd5e1' }} />
-                      <Bar dataKey="compras" fill="#0ea5e9" name="Compras (Bs.)" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="ventas" fill="#22c55e" name="Ventas (Bs.)" radius={[6, 6, 0, 0]} />
-                    </BarChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
+                <div className="mt-3 flex flex-col gap-2 border-t border-slate-700/80 pt-3 text-xs text-slate-400 sm:flex-row sm:flex-wrap sm:items-center sm:gap-x-6">
+                  <span>
+                    Total compras:{' '}
+                    <strong className="text-sky-300 tabular-nums">{currencyFormatter(ivaTotals.compras)}</strong>
+                  </span>
+                  <span>
+                    Total ventas:{' '}
+                    <strong className="text-emerald-300 tabular-nums">{currencyFormatter(ivaTotals.ventas)}</strong>
+                  </span>
+                </div>
+                </>
               ) : (
                 <EmptyState
                   title="Sin datos de IVA"
-                  message="Agrega reportes de IVA para visualizar compras y ventas por período."
+                  message="Agrega reportes de IVA para visualizar la proporción compras/ventas."
                 />
               )}
             </div>
 
             <div className="rounded-lg border border-slate-700 bg-slate-950/50 p-4">
-              <h4 className="text-sm font-semibold text-slate-200 mb-3">Distribución de Eventos Tributarios</h4>
-              {eventTypeChartData.length > 0 ? (
-                <div className="w-full h-[260px]">
+              <h4 className="text-sm font-semibold text-slate-200 mb-3">Distribución de eventos tributarios</h4>
+              {eventPieData.length > 0 ? (
+                <div className="w-full h-[260px] sm:h-[280px]">
                   <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={eventTypeChartData} margin={{ top: 8, right: 18, left: 8, bottom: 8 }}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-                      <XAxis dataKey="label" stroke="#94a3b8" />
-                      <YAxis stroke="#94a3b8" allowDecimals={false} />
+                    <PieChart>
+                      <Pie
+                        data={eventPieData}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={44}
+                        outerRadius={isSmUp ? 96 : 84}
+                        paddingAngle={2}
+                        label={
+                          isSmUp ? ({ name, value }) => `${name}: ${value}` : false
+                        }
+                      >
+                        {eventPieData.map((entry, index) => (
+                          <Cell key={`ev-cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
                       <Tooltip
                         contentStyle={{
                           backgroundColor: '#0f172a',
@@ -327,8 +434,7 @@ export default function TaxpayerDetailV2() {
                         labelStyle={{ color: '#e2e8f0' }}
                       />
                       <Legend wrapperStyle={{ color: '#cbd5e1' }} />
-                      <Bar dataKey="cantidad" fill="#f59e0b" name="Cantidad de eventos" radius={[6, 6, 0, 0]} />
-                    </BarChart>
+                    </PieChart>
                   </ResponsiveContainer>
                 </div>
               ) : (
