@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react'
 import { useAuth } from '../../hooks/use-auth';
-import { Control, useForm } from 'react-hook-form';
+import { Control, useForm, Controller, useWatch } from 'react-hook-form';
 import { Form } from 'react-aria-components'
 import DateInputUI from '../UI/date-input-ui';
 import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
@@ -16,12 +16,124 @@ import { IslrReportFormData } from '../ISLR/islr-form';
 import TaxpayerList from '../UI/taxpayer-list';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import { AlertTriangle, DollarSign, FileText, Loader2 } from 'lucide-react';
+import { parseBs, formatBs } from '../utils/number.utils';
 
 
 
 
 
 
+
+// Componente interno para input de monto con formateo automático
+interface AmountInputProps {
+    control: Control<any>;
+    name: string;
+    label: string;
+    iconColor: string;
+    error?: string;
+    validate?: (value: number) => true | string;
+}
+
+function AmountInput({ control, name, label, iconColor, error, validate }: AmountInputProps) {
+    const [displayValue, setDisplayValue] = useState('');
+    const [focused, setFocused] = useState(false);
+    const watchedAmount = useWatch({ control, name });
+
+    useEffect(() => {
+        if (focused) return;
+        const n = typeof watchedAmount === 'number' ? watchedAmount : Number(watchedAmount);
+        if (watchedAmount === undefined || watchedAmount === null || isNaN(n) || n === 0) {
+            setDisplayValue('');
+            return;
+        }
+        setDisplayValue(formatBs(n, 2));
+    }, [watchedAmount, focused]);
+
+    return (
+        <Controller
+            name={name}
+            control={control}
+            rules={{
+                required: 'Campo obligatorio',
+                validate: validate,
+            }}
+            render={({ field: { onChange, onBlur }, fieldState: { error: fieldError } }) => {
+                const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+                    let raw = e.target.value.replace(/[^0-9.,]/g, '');
+                    const parts = raw.split(/[.,]/);
+                    if (parts.length > 2) {
+                        raw = parts[0] + ',' + parts.slice(1).join('');
+                    }
+                    setDisplayValue(raw);
+                    const numeric = parseBs(raw);
+                    if (!isNaN(numeric)) {
+                        onChange(numeric);
+                    } else if (raw === '' || raw === ',') {
+                        onChange(0);
+                    }
+                };
+
+                const handleBlur = () => {
+                    setFocused(false);
+                    onBlur();
+                    const numeric = parseBs(displayValue);
+                    if (!isNaN(numeric)) {
+                        setDisplayValue(formatBs(numeric, 2));
+                        onChange(numeric);
+                    } else {
+                        setDisplayValue('');
+                        onChange(0);
+                    }
+                };
+
+                const handleFocus = () => {
+                    setFocused(true);
+                };
+
+                const finalError = error || fieldError?.message;
+                const previewNum = parseBs(displayValue);
+
+                return (
+                    <div className="space-y-1.5">
+                        <label htmlFor={name} className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                            <DollarSign className={`w-3 h-3 ${iconColor}`} />
+                            {label}
+                        </label>
+                        <div className="relative group">
+                            <input
+                                id={name}
+                                type="text"
+                                inputMode="decimal"
+                                autoComplete="off"
+                                placeholder="0,00"
+                                value={displayValue}
+                                onChange={handleChange}
+                                onFocus={handleFocus}
+                                onBlur={handleBlur}
+                                className={`w-full h-11 px-3 bg-slate-900/50 border rounded-xl text-slate-200 text-sm placeholder:text-slate-600 outline-none transition-all focus:ring-2 tabular-nums ${
+                                    finalError
+                                        ? 'border-rose-500/50 focus:ring-rose-500/20 bg-rose-500/5'
+                                        : 'border-slate-700 focus:border-slate-500 focus:ring-slate-500/20'
+                                }`}
+                            />
+                        </div>
+                        {!finalError && !isNaN(previewNum) && previewNum > 0 && (
+                            <p className="text-[11px] text-slate-500 px-0.5">
+                                {formatBs(previewNum, 2, true)} bolívares
+                            </p>
+                        )}
+                        {finalError && (
+                            <p className="text-[11px] text-rose-400 flex items-center gap-1">
+                                <AlertTriangle className="w-3 h-3 shrink-0" />
+                                {finalError}
+                            </p>
+                        )}
+                    </div>
+                );
+            }}
+        />
+    );
+}
 
 export interface EventFormData {
     id: string;
@@ -437,49 +549,21 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                 </div>
 
                 {/* Monto */}
-                <div className="space-y-1.5">
-                    <label htmlFor="amount" className="text-[11px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
-                        <DollarSign className={`w-3 h-3 ${cfg.iconColor}`} />
-                        Monto en Bs.
-                    </label>
-                    <div className="relative group">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-xs font-bold pointer-events-none select-none group-focus-within:text-slate-300 transition-colors">
-                            Bs.
-                        </span>
-                        <input
-                            id="amount"
-                            type="text"
-                            inputMode="decimal"
-                            placeholder="0.00"
-                            {...register("amount", {
-                                required: "Campo obligatorio",
-                                validate: (num: number) => {
-                                    if (isNaN(num)) return "Debe ser un número válido";
-                                    if (num < 0) return "El monto no puede ser negativo";
-                                    if (type !== "fine" && selectedPayment && num > (selectedPayment.debt ?? Infinity)) {
-                                        return `No puede superar ${selectedPayment.debt}`;
-                                    }
-                                    return true;
-                                },
-                                setValueAs: (value: string | number) => {
-                                    const normalized = String(value).replace(/,/g, ".");
-                                    return parseFloat(normalized);
-                                },
-                            })}
-                            className={`w-full h-11 pl-9 pr-3 bg-slate-900/50 border rounded-xl text-slate-200 text-sm placeholder:text-slate-600 outline-none transition-all focus:ring-2 ${
-                                errors.amount
-                                    ? 'border-rose-500/50 focus:ring-rose-500/20 bg-rose-500/5'
-                                    : 'border-slate-700 focus:border-slate-500 focus:ring-slate-500/20'
-                            }`}
-                        />
-                    </div>
-                    {errors.amount && (
-                        <p className="text-[11px] text-rose-400 flex items-center gap-1">
-                            <AlertTriangle className="w-3 h-3 shrink-0" />
-                            {errors.amount.message}
-                        </p>
-                    )}
-                </div>
+                <AmountInput
+                    control={control}
+                    name="amount"
+                    label="Monto en Bs."
+                    iconColor={cfg.iconColor}
+                    error={errors.amount?.message}
+                    validate={(num: number) => {
+                        if (isNaN(num)) return "Debe ser un número válido";
+                        if (num < 0) return "El monto no puede ser negativo";
+                        if (type !== "fine" && selectedPayment && num > (selectedPayment.debt ?? Infinity)) {
+                            return `No puede superar ${formatBs(selectedPayment.debt)} Bs.`;
+                        }
+                        return true;
+                    }}
+                />
             </div>
 
             {/* Motivo */}

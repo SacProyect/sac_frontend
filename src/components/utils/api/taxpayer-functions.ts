@@ -326,12 +326,18 @@ export const updateFinePayment = async (id: string, status: "paid" | "not_paid")
 
 	try {
 
-		// Use the endpoint that accepts eventId: PUT /taxpayer/payment/:eventId
+		// PUT /taxpayer/payment/:eventId — requiere idempotencia (middleware payment_put)
 		const requestURL = "/taxpayer/payment"
 
-		const response = await apiConnection.put(`${requestURL}/${id}`, {
-			status,
-		})
+		const response = await apiConnection.put(
+			`${requestURL}/${id}`,
+			{ status },
+			{
+				headers: {
+					"X-Idempotency-Key": generateIdempotencyKey(),
+				},
+			}
+		);
 
 		return response;
 	} catch (e) {

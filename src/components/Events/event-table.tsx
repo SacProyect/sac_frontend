@@ -5,7 +5,7 @@ import toast from 'react-hot-toast';
 import { deleteEvent, updateEvent, updateFinePayment } from '../utils/api/taxpayer-functions';
 import { Taxpayer } from '@/types/taxpayer';
 import { decimalToNumber } from '../utils/number.utils';
-import { MoreVertical, Pencil, Trash2, Check, X, ChevronDown } from 'lucide-react';
+import { MoreVertical, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/UI/dropdown-menu';
 import { getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
 
@@ -49,6 +49,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
     id: string;
     newStatus: 'paid' | 'not_paid';
   } | null>(null);
+  const [paymentConfirmLoading, setPaymentConfirmLoading] = useState(false);
   const { user } = useAuth();
   const [taxpayerArray, setTaxpayerArray] = useState<Taxpayer[]>([]);
 
@@ -278,7 +279,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
           color: #fda4af;
         }
 
-        /* ── Debt select ── */
+        /* ── Debt select: tamaño compacto (como antes) + colores del tema ── */
         .et-debt-select {
           appearance: none;
           -webkit-appearance: none;
@@ -286,20 +287,60 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
           border-radius: 999px;
           font-size: 10px;
           font-weight: 700;
-          border: none;
+          letter-spacing: 0.04em;
+          line-height: 1.35;
           outline: none;
           cursor: pointer;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+          transition: border-color 0.12s ease, background 0.12s ease;
           background-repeat: no-repeat;
           background-position: right 6px center;
+          background-size: 10px 10px;
         }
+        .et-debt-select:hover {
+          filter: brightness(1.05);
+        }
+        .et-debt-select:focus-visible {
+          outline: 2px solid rgba(99, 102, 241, 0.55);
+          outline-offset: 1px;
+        }
+        /* Pagada */
         .et-debt-select.paid {
-          background-color: rgba(16,185,129,0.12);
+          background-color: rgba(6, 78, 59, 0.45);
+          border: 1px solid rgba(52, 211, 153, 0.5);
           color: #6ee7b7;
+          text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2334d399' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
         }
+        .et-debt-select.paid:hover {
+          border-color: rgba(110, 231, 183, 0.7);
+          background-color: rgba(6, 95, 70, 0.5);
+        }
+        /* No pagada */
         .et-debt-select.unpaid {
-          background-color: rgba(244,63,94,0.12);
+          background-color: rgba(127, 29, 29, 0.35);
+          border: 1px solid rgba(251, 113, 133, 0.5);
           color: #fda4af;
+          text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23fb7185' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+        }
+        .et-debt-select.unpaid:hover {
+          border-color: rgba(253, 164, 175, 0.75);
+          background-color: rgba(153, 27, 27, 0.4);
+        }
+        .et-debt-select option {
+          background: #0f172a;
+          color: #e2e8f0;
+          font-weight: 600;
+          font-size: 12px;
+          padding: 6px 8px;
+        }
+        .et-debt-select option[value="paid"] {
+          color: #6ee7b7;
+          background: #022c22;
+        }
+        .et-debt-select option[value="not_paid"] {
+          color: #fda4af;
+          background: #450a0a;
         }
 
         /* ── Edit input ── */
@@ -480,20 +521,26 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
                       ) : col.id === 'debt' ? (
                         row.type === 'FINE' ? (
                           canChangeDebt ? (
-                            <select
-                              className={`et-debt-select${isPaid ? ' paid' : ' unpaid'}`}
-                              value={isPaid ? 'paid' : 'not_paid'}
-                              onClick={e => e.stopPropagation()}
-                              onChange={e => {
-                                const selected = e.target.value as 'paid' | 'not_paid';
-                                if (selected !== (isPaid ? 'paid' : 'not_paid')) {
-                                  setPendingStatusChange({ id: row.id, newStatus: selected });
-                                }
-                              }}
-                            >
-                              <option value="not_paid">No pagada</option>
-                              <option value="paid">Pagada</option>
-                            </select>
+                            isPaid ? (
+                              <span className="et-debt-badge paid" title="Multa pagada — no se puede revertir">
+                                Pagada
+                              </span>
+                            ) : (
+                              <select
+                                className="et-debt-select unpaid"
+                                value="not_paid"
+                                onClick={e => e.stopPropagation()}
+                                onChange={e => {
+                                  const selected = e.target.value as 'paid' | 'not_paid';
+                                  if (selected === 'paid') {
+                                    setPendingStatusChange({ id: row.id, newStatus: 'paid' });
+                                  }
+                                }}
+                              >
+                                <option value="not_paid">No pagada</option>
+                                <option value="paid">Pagada</option>
+                              </select>
+                            )
                           ) : (
                             <span className={`et-debt-badge${isPaid ? ' paid' : ' unpaid'}`}>
                               {isPaid ? 'Pagada' : 'No pagada'}
@@ -543,27 +590,62 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
         </div>
       )}
 
-      {/* Payment status confirm modal */}
+      {/* Payment status confirm modal (solo transición a Pagada) */}
       {pendingStatusChange && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="w-full max-w-sm p-6 rounded-xl" style={{ background: '#1e293b', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <p className="mb-4 text-sm text-center text-slate-200">
-              ¿Cambiar estado a{' '}
-              <strong style={{ color: pendingStatusChange.newStatus === 'paid' ? '#6ee7b7' : '#fda4af' }}>
-                {pendingStatusChange.newStatus === 'paid' ? 'Pagada' : 'No pagada'}
-              </strong>?
+            <p className="mb-1 text-sm text-center text-slate-200">
+              ¿Confirmar que la multa queda como{' '}
+              <strong style={{ color: '#6ee7b7' }}>Pagada</strong>?
+            </p>
+            <p className="mb-4 text-xs text-center text-slate-500">
+              Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-3">
-              <button className="et-btn cancel" onClick={() => setPendingStatusChange(null)}><X size={12} /> Cancelar</button>
               <button
+                type="button"
+                className="et-btn cancel"
+                disabled={paymentConfirmLoading}
+                onClick={() => {
+                  if (!paymentConfirmLoading) setPendingStatusChange(null);
+                }}
+                style={{ opacity: paymentConfirmLoading ? 0.5 : 1, cursor: paymentConfirmLoading ? 'not-allowed' : 'pointer' }}
+              >
+                <X size={12} /> Cancelar
+              </button>
+              <button
+                type="button"
                 className="et-btn save"
+                disabled={paymentConfirmLoading}
                 onClick={async () => {
-                  const { id, newStatus } = pendingStatusChange;
-                  const success = await handlePaymentChange(id, newStatus);
-                  if (success) setPendingStatusChange(null);
+                  if (!pendingStatusChange || paymentConfirmLoading) return;
+                  setPaymentConfirmLoading(true);
+                  try {
+                    const { id, newStatus } = pendingStatusChange;
+                    const success = await handlePaymentChange(id, newStatus);
+                    if (success) setPendingStatusChange(null);
+                  } finally {
+                    setPaymentConfirmLoading(false);
+                  }
+                }}
+                style={{
+                  opacity: paymentConfirmLoading ? 0.85 : 1,
+                  cursor: paymentConfirmLoading ? 'wait' : 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                 }}
               >
-                <Check size={12} /> Confirmar
+                {paymentConfirmLoading ? (
+                  <>
+                    <Loader2 size={14} className="animate-spin shrink-0" />
+                    Guardando...
+                  </>
+                ) : (
+                  <>
+                    <Check size={12} /> Confirmar
+                  </>
+                )}
               </button>
             </div>
           </div>
