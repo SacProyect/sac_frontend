@@ -28,7 +28,7 @@ const MainLayoutV2 = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
     const navItems = useNavItems();
@@ -38,7 +38,7 @@ const MainLayoutV2 = () => {
         navigate('/login');
     };
 
-    // Componente del contenido del sidebar (reutilizable para desktop y mobile)
+    // Contenido del panel lateral (Sheet en todas las resoluciones)
     const SidebarContent = () => (
         <div className="flex flex-col h-full bg-[#0f172a] text-slate-300">
             <div className="p-6">
@@ -63,7 +63,7 @@ const MainLayoutV2 = () => {
                             <Link
                                 key={item.href}
                                 to={item.href}
-                                onClick={() => setMobileMenuOpen(false)}
+                                onClick={() => setSidebarOpen(false)}
                                 className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative ${
                                     isActive
                                         ? 'bg-indigo-600/10 text-indigo-400 font-medium'
@@ -93,22 +93,20 @@ const MainLayoutV2 = () => {
         </div>
     );
 
-    // Sidebar para desktop (solo visible en lg+, tablets usan el Sheet)
-    const DesktopSidebar = () => (
-        <div className="hidden lg:flex flex-col w-56 xl:w-64 bg-[#0f172a] h-screen border-r border-slate-800/50 sticky top-0 self-start flex-shrink-0">
-            <SidebarContent />
-        </div>
-    );
-
-    // Sidebar móvil (Sheet) — visible en tablet (md) y mobile (sm)
-    const MobileSidebar = () => (
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+    /** Navegación lateral: mismo Sheet en móvil, tablet y escritorio (sidebar no fijo en PC). */
+    const SidebarMenu = () => (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="lg:hidden text-white hover:bg-slate-800/50">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-white hover:bg-slate-800/50 shrink-0"
+                    aria-label="Abrir menú de navegación"
+                >
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64">
+            <SheetContent side="left" className="p-0 w-64 sm:w-72 max-w-[min(100vw,20rem)]">
                 <SidebarContent />
             </SheetContent>
         </Sheet>
@@ -127,7 +125,7 @@ const MainLayoutV2 = () => {
             <header className="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-40 transition-all duration-300">
                 <div className="flex items-center justify-between px-4 md:px-8 py-3">
                     <div className="flex items-center gap-4">
-                        <MobileSidebar />
+                        <SidebarMenu />
                         {breadcrumbs && breadcrumbs.length > 0 ? (
                             <Breadcrumb>
                                 <BreadcrumbList>
@@ -206,8 +204,7 @@ const MainLayoutV2 = () => {
         <div className="flex h-screen overflow-hidden bg-[#020617] relative">
             {isPageLoading && <GlobalLoader />}
             
-            <DesktopSidebar />
-            <div className="flex-1 flex flex-col min-w-0 min-h-0">
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
                 <Header />
                 <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
                     {/* Subtle glow effect in the corner */}
