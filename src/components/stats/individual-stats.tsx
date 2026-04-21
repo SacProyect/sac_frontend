@@ -762,7 +762,7 @@ export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: In
                 )}
 
                 {/* ── Columna Derecha — Observaciones ── */}
-                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 border-slate-700/50" style={{minHeight:'420px'}}>
+                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 border-slate-700/50 min-h-[300px] lg:min-h-[420px]">
                   <ObservationsPanel taxpayerId={taxpayer} />
                 </div>
             </div>

@@ -221,6 +221,7 @@ export function ObservationsPanel({ taxpayerId }: ObservationsPanelProps) {
           gap: 8px;
           scrollbar-width: thin;
           scrollbar-color: var(--obs-border) transparent;
+          min-height: 200px;
         }
         .ops-body::-webkit-scrollbar { width: 4px; }
         .ops-body::-webkit-scrollbar-thumb { background: var(--obs-border); border-radius: 2px; }
