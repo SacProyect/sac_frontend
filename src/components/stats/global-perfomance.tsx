@@ -68,34 +68,34 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
     };
 
     return (
-        <div className="flex flex-col items-center w-full lg:w-full h-[50vh] lg:h-full bg-slate-900 pt-8 lg:pb-12 lg:pt-4 text-white font-inter">
+        <div className="flex h-full min-h-0 flex-col items-center bg-slate-900/80 px-2 pb-2 pt-3 text-white font-inter sm:px-3">
             {/* Title and Description */}
-            <div className="w-full mb-4 text-center">
-                <div className="w-full border border-slate-600 bg-slate-800 rounded-md">
-                    <h1 className="px-4 py-2 text-sm font-semibold text-white lg:text-sm font-inter whitespace-nowrap">
+            <div className="mb-2 w-full max-w-md shrink-0 text-center">
+                <div className="mx-auto w-full max-w-sm rounded-md border border-slate-600 bg-slate-800">
+                    <h1 className="px-2 py-1.5 text-xs font-semibold text-white sm:text-sm">
                         RENDIMIENTO GLOBAL DE IVA
                     </h1>
                 </div>
-                <p className="mt-2 text-[9.4px] leading-[12.9px] text-slate-500 font-inter">
-                    Recaudación mensual de IVA en barras horizontales. Pasa el mouse para ver esperado y contribuyentes emitidos.
+                <p className="mt-1.5 line-clamp-2 text-[9px] leading-tight text-slate-500 sm:text-[10px]">
+                    IVA mensual (barras horizontales). Pasa el mouse para ver el detalle.
                 </p>
             </div>
 
-            {/* Chart */}
-            <div className="w-full h-[60vh] lg:h-full text-xs">
+            {/* Chart — ocupa el resto del bloque, proporción equilibrada */}
+            <div className="min-h-0 w-full flex-1 text-xs">
                 <ResponsiveContainer width="100%" height="100%">
                     <BarChart
                         data={data}
                         layout="vertical" // horizontal bars
-                        margin={{ top: 10, right: 24, left: 16, bottom: 10 }}
+                        margin={{ top: 4, right: 8, left: 4, bottom: 4 }}
                     >
                         <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
                         {/* Y axis: months (categories) */}
                         <YAxis
                             type="category"
                             dataKey="monthLabel"
-                            width={32}
-                            tick={{ fill: "#94a3b8", fontSize: 10 }}
+                            width={28}
+                            tick={{ fill: "#94a3b8", fontSize: 9 }}
                             axisLine={{ stroke: "#475569" }}
                             tickLine={{ stroke: "#475569" }}
                         />
@@ -103,10 +103,14 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                         <XAxis
                             type="number"
                             domain={[0, maxValue]}
-                            tickFormatter={(v) =>
-                                Number(v).toLocaleString("es-VE", { maximumFractionDigits: 0 })
-                            }
-                            tick={{ fill: "#94a3b8", fontSize: 10 }}
+                            tickFormatter={(v) => {
+                                const n = Number(v);
+                                if (n >= 1_000_000) {
+                                    return n.toLocaleString("es-VE", { maximumFractionDigits: 1, notation: "compact", compactDisplay: "short" });
+                                }
+                                return n.toLocaleString("es-VE", { maximumFractionDigits: 0 });
+                            }}
+                            tick={{ fill: "#94a3b8", fontSize: 9 }}
                             axisLine={{ stroke: "#475569" }}
                             tickLine={{ stroke: "#475569" }}
                         />
@@ -115,7 +119,7 @@ const PageOneStats = ({ chartData }: { chartData: ChartData[] }) => {
                             dataKey="realAmount"
                             name="Pagado"
                             fill="#5996ff"
-                            barSize={18}
+                            barSize={14}
                             radius={[0, 6, 6, 0]}
                         />
                     </BarChart>

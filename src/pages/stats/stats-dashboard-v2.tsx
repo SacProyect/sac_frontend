@@ -88,30 +88,30 @@ function StatsPage1Charts({ year }: { year: number }) {
 
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
+  // Un solo bloque con cruz (1 línea vert. + 1 horiz.) en sm+; en móvil solo separadores horizontales
+  const qBase = 'min-h-0 overflow-hidden bg-slate-900/50';
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
-      {/* Top-left */}
-      <div className="overflow-hidden border-b md:border-r border-slate-700 min-h-[400px] md:min-h-0">
-        <PageOneStats chartData={chartData} />
-      </div>
+    <div className="mx-auto flex h-full min-h-0 w-full min-w-0 max-w-5xl flex-1 flex-col px-2 py-2 sm:px-3 md:py-3">
+      <div className="grid h-full min-h-0 flex-1 auto-rows-[minmax(0,1fr)] grid-cols-1 overflow-hidden rounded-lg border border-slate-700/80 sm:grid-cols-2 sm:grid-rows-2">
+        <div className={`${qBase} border-b border-slate-700/60 sm:border-b sm:border-r`}>
+          <PageOneStats chartData={chartData} />
+        </div>
 
-      {/* Top-right */}
-      <div className="overflow-hidden border-b border-slate-700 min-h-[400px] md:min-h-0">
-        {ivaStats ? (
-          <PageTwoStats stats={ivaStats} />
-        ) : (
-          <div className="flex items-center justify-center h-full text-slate-400 text-sm py-20 md:py-0">Sin datos</div>
-        )}
-      </div>
+        <div className={`${qBase} border-b border-slate-700/60 sm:border-b`}>
+          {ivaStats ? (
+            <PageTwoStats stats={ivaStats} />
+          ) : (
+            <div className="flex h-full min-h-[80px] items-center justify-center text-slate-400 text-sm">Sin datos</div>
+          )}
+        </div>
 
-      {/* Bottom-left */}
-      <div className="overflow-y-auto border-b md:border-b-0 md:border-r border-slate-700 custom-scrollbar min-h-[400px] md:min-h-0">
-        <GroupPerformanceStats groupStats={groupStats} />
-      </div>
+        <div className={`${qBase} border-b border-slate-700/60 sm:border-b-0 sm:border-r`}>
+          <GroupPerformanceStats groupStats={groupStats} />
+        </div>
 
-      {/* Bottom-right */}
-      <div className="overflow-hidden min-h-[400px] md:min-h-0">
-        <IvaByGroupChart year={year} />
+        <div className={qBase}>
+          <IvaByGroupChart year={year} />
+        </div>
       </div>
     </div>
   );
@@ -131,11 +131,11 @@ export default function StatsDashboardV2() {
 
   return (
     <div
-      className="flex flex-col bg-slate-900 rounded-xl border border-slate-700 shadow-xl overflow-hidden h-auto min-h-[calc(100vh-120px)] md:h-[calc(100vh-80px)]"
+      className="mx-auto -mt-2 flex h-[calc(100dvh-4.5rem)] max-h-[calc(100dvh-4.5rem)] w-full min-w-0 max-w-5xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-xl md:-mt-3"
     >
       {/* ── Filter Bar ──────────────────────────────────────────────── */}
-      <div className="shrink-0 flex items-center justify-between px-6 py-3 border-b border-slate-700 bg-slate-900/50 backdrop-blur-md">
-        <div className="flex items-center gap-3">
+        <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 border-b border-slate-700 bg-slate-900/50 backdrop-blur-md min-w-0">
+        <div className="flex min-w-0 items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-blue-600/20 border border-blue-500/30 flex items-center justify-center text-blue-400">
             <Filter className="w-4 h-4" />
           </div>
@@ -145,9 +145,9 @@ export default function StatsDashboardV2() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:gap-4">
           <form 
-            className="flex items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-1.5 transition-all focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20"
+            className="flex min-w-0 items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-1.5 sm:px-4 transition-all focus-within:border-blue-500/50 focus-within:ring-1 focus-within:ring-blue-500/20"
             onSubmit={(e) => e.preventDefault()}
           >
             <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
@@ -178,8 +178,14 @@ export default function StatsDashboardV2() {
         </div>
       </div>
 
-      {/* ── Page content ─────────────────────────────────────────────── */}
-      <div className="flex-1 min-h-0">
+      {/* ── Page content: página 1 rellena el área (sin scroll); 2 y 3 desplazables */}
+      <div
+        className={
+          page === 1
+            ? 'min-h-0 flex-1 overflow-hidden flex flex-col'
+            : 'min-h-0 flex-1 overflow-y-auto custom-scrollbar'
+        }
+      >
         {page === 1 && <StatsPage1Charts year={year} />}
         {page === 2 && <StatsPage2Rankings year={year} />}
         {page === 3 && <StatsPage3Cumplimiento year={year} />}

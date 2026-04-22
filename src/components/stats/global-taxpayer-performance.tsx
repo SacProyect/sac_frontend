@@ -60,39 +60,47 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats }> = ({ stats }) =>
     const formatCurrency = (n: number) =>
         n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
 
+    const formatYAxis = (v: number | string) => {
+        const n = Number(v);
+        if (n >= 1_000_000) {
+            return n.toLocaleString("es-VE", { maximumFractionDigits: 1, notation: "compact", compactDisplay: "short" });
+        }
+        return formatCurrency(n);
+    };
+
     return (
-        <div className="w-full h-full pt-16 lg:w-full lg:h-full lg:pt-0">
-            <div className="bg-slate-900 w-full h-full lg:p-4 flex flex-col justify-between">
+        <div className="flex h-full min-h-0 w-full flex-col">
+            <div className="flex h-full min-h-0 w-full flex-col justify-between bg-slate-900/80 px-2 pb-2 pt-3 sm:px-3">
                 {/* Title */}
-                <div className="bg-slate-800 border border-slate-600 rounded-md py-1">
-                    <p className="text-base font-semibold text-center text-white font-inter">
+                <div className="mx-auto w-full max-w-sm shrink-0 rounded-md border border-slate-600 bg-slate-800 py-1">
+                    <p className="px-1 text-center text-xs font-semibold text-white sm:text-sm">
                         RECAUDACIÓN MENSUAL · IVA · {stats?.year ?? ""}
                     </p>
                 </div>
 
                 {/* Description */}
-                <p className="text-[11px] md:text-xs lg:text-xs text-slate-500 font-inter text-center leading-5 lg:py-1 md:py-8">
-                    Monto total recaudado de IVA por mes.
+                <p className="shrink-0 py-1 text-center text-[9px] leading-tight text-slate-500 sm:text-[10px]">
+                    Monto total de IVA recaudado por mes.
                 </p>
 
                 {/* Chart */}
-                <div className="flex-1 min-h-[18rem] md:min-h-[22rem] lg:min-h-[18rem]">
+                <div className="min-h-0 flex-1">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={data} margin={{ top: 10, right: 8, left: 4, bottom: 10 }}>
+                        <BarChart data={data} margin={{ top: 6, right: 4, left: 0, bottom: 4 }}>
                             <CartesianGrid stroke="#334155" strokeDasharray="3 3" vertical={false} />
                             <XAxis
                                 dataKey="label"
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                tick={{ fill: "#94a3b8", fontSize: 9 }}
                                 axisLine={{ stroke: "#475569" }}
                                 tickLine={{ stroke: "#475569" }}
                             />
                             <YAxis
                                 domain={[0, maxDomain]}
-                                tickFormatter={(v) => formatCurrency(v)}
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
+                                tickFormatter={formatYAxis}
+                                tick={{ fill: "#94a3b8", fontSize: 9 }}
                                 axisLine={{ stroke: "#475569" }}
                                 tickLine={{ stroke: "#475569" }}
-                                width={80}
+                                width={52}
                             />
                             <Tooltip content={<CustomTooltip />} />
                             {/* Optional reference line at total */}
@@ -101,15 +109,15 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats }> = ({ stats }) =>
                                 dataKey="value"
                                 name="IVA"
                                 fill="#5996ff"
-                                radius={[6, 6, 0, 0]}
-                                barSize={24}
+                                radius={[4, 4, 0, 0]}
+                                barSize={18}
                             />
                         </BarChart>
                     </ResponsiveContainer>
                 </div>
 
                 {/* Footer summary */}
-                <div className="mt-4 text-center text-xs text-slate-400">
+                <div className="mt-1 shrink-0 text-center text-[10px] text-slate-400 sm:text-xs">
                     Total IVA {stats?.year ?? ""}:{" "}
                     <span className="font-semibold text-white">
                         {formatCurrency(stats?.totalIvaCollected ?? 0)}

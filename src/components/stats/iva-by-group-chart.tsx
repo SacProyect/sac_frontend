@@ -79,47 +79,53 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         );
     }
 
+    const formatY = (value: number) => {
+        const n = Number(value);
+        if (n >= 1_000_000) {
+            return n.toLocaleString("es-VE", { maximumFractionDigits: 1, notation: "compact", compactDisplay: "short" });
+        }
+        return n.toLocaleString("es-VE", { maximumFractionDigits: 0 });
+    };
+
     return (
-        <div className="flex items-center justify-center w-full h-full max-w-full max-h-full lg:max-w-full lg:max-h-full">
-            <div className="w-full h-full bg-slate-900 p-0 flex flex-col overflow-hidden">
+        <div className="flex h-full min-h-0 w-full flex-col">
+            <div className="flex h-full min-h-0 w-full flex-col overflow-hidden bg-slate-900/80 px-2 pb-1 pt-3 sm:px-3">
                 {/* Título */}
-                <div className="flex items-center justify-center pt-4 mb-1 text-xl font-semibold text-center text-white font-inter">
-                    <div className="w-[90vw] lg:w-[35vw] border border-slate-600 bg-slate-800 rounded-md px-2 py-1">
-                        <p className="text-[14px] lg:text-sm font-semibold text-white text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="mb-1 flex shrink-0 justify-center">
+                    <div className="w-full max-w-md rounded-md border border-slate-600 bg-slate-800 px-2 py-1">
+                        <p className="text-center text-xs font-semibold text-white sm:text-sm">
                             RENDIMIENTO DE IVA POR GRUPO
                         </p>
                     </div>
                 </div>
                 {/* Subtítulo */}
-                <p className="text-center text-[8px] leading-[11px] text-slate-500 px-2 mb-1">
-                    Esta gráfica muestra el total de IVA recaudado comparando cada grupo entre sí.
+                <p className="mb-1 line-clamp-2 text-center text-[9px] leading-tight text-slate-500 sm:text-[10px]">
+                    Total de IVA recaudado por grupo (comparación).
                 </p>
                 {/* Gráfico */}
-                <div className="flex-1 min-h-0 pr-4 lg:pr-0">
+                <div className="min-h-0 flex-1 pr-1">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart
                             data={chartData}
-                            margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
-                            barSize={30}
+                            margin={{ top: 4, right: 4, left: 0, bottom: 4 }}
+                            barSize={22}
                         >
                             <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
                             <XAxis
                                 dataKey="group_name"
                                 stroke="#475569"
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
-                                angle={-45}
+                                tick={{ fill: "#94a3b8", fontSize: 8 }}
+                                angle={-35}
                                 textAnchor="end"
-                                height={80}
+                                height={56}
+                                interval={0}
                             />
                             <YAxis
                                 type="number"
                                 stroke="#475569"
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
-                                tickFormatter={(value) =>
-                                    Number(value).toLocaleString("es-VE", {
-                                        maximumFractionDigits: 0,
-                                    })
-                                }
+                                tick={{ fill: "#94a3b8", fontSize: 9 }}
+                                width={44}
+                                tickFormatter={formatY}
                             />
                             <Tooltip content={<CustomTooltip />} />
                             <Bar
