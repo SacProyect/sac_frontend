@@ -692,7 +692,7 @@ function IvaForm() {
                                 </div>
                             )}
 
-                            {selectedTaxpayer && !loadingMonthInfo && (
+                            {/* {selectedTaxpayer && !loadingMonthInfo && (
                                 <div className="p-4 rounded-2xl bg-slate-950/40 border border-slate-800 space-y-3">
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Ajuste manual del periodo</p>
                                     <p className="text-[11px] text-slate-500">
@@ -729,7 +729,7 @@ function IvaForm() {
                                         </div>
                                     </div>
                                 </div>
-                            )}
+                            )} */}
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div className="space-y-2">
