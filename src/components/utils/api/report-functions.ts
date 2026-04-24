@@ -237,6 +237,22 @@ export const getContributions = async (data?: ContributionsInput) => {
 	}
 }
 
+/** Detalle de fiscales con árbol `taxpayer[]` (mismo rango y supervisor que el resumen). */
+export const getFiscalGroupMembers = async (
+	groupId: string,
+	params?: Pick<ContributionsInput, 'startDate' | 'endDate' | 'supervisorId'>
+) => {
+	try {
+		const response = await apiConnection.get(`reports/fiscal-groups/${groupId}/members`, {
+			params,
+		});
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw e;
+	}
+};
+
 export const getIndividualIvaReport = async (id: string | undefined) => {
 	try {
 		const requestUrl = `reports/individual-iva-report`
