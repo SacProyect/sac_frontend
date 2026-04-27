@@ -15,6 +15,8 @@ interface FiscalReviewPage1Props {
   fiscalTaxpayers?: any[];
   fiscalMonthlyCollect?: any;
   fiscalComplianceByProcess?: any;
+  /** Índice 0–3 para resaltar cada tarjeta en rotación TV (inactividad). */
+  tvSpotlightIndex?: number;
 }
 
 // Interfaz para el mock de data por ahora
@@ -31,7 +33,7 @@ interface AssignedTaxpayer {
   date: string;
 }
 
-export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear, setSelectedYear, fiscalTaxpayers, fiscalMonthlyCollect, fiscalComplianceByProcess }: FiscalReviewPage1Props) {
+export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear, setSelectedYear, fiscalTaxpayers, fiscalMonthlyCollect, fiscalComplianceByProcess, tvSpotlightIndex }: FiscalReviewPage1Props) {
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
@@ -171,7 +173,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-in fade-in duration-300">
       {/* Contribuyentes Asignados */}
-      <Card className="bg-slate-800 border-slate-700 overflow-hidden flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 overflow-hidden flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          tvSpotlightIndex === 0 && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
           <span className="text-blue-400">🏢</span>
           <h3 className="font-semibold text-white text-sm">Contribuyentes Asignados</h3>
@@ -233,7 +240,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* Cobro Mensual */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          tvSpotlightIndex === 1 && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="flex flex-col h-full">
           <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
             <span className="text-green-400 font-bold">$</span>
@@ -282,7 +294,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* Evolución Mensual del Rendimiento */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          tvSpotlightIndex === 2 && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
           <span className="text-purple-400 text-sm">📄</span>
           <h3 className="font-semibold text-white text-sm">Evolución Mensual del Rendimiento</h3>
@@ -318,7 +335,12 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
       </Card>
 
       {/* % Cumplimiento por Procedimiento */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          tvSpotlightIndex === 3 && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80">
           <span className="text-yellow-400 text-sm">⏱</span>
           <h3 className="font-semibold text-white text-sm">% Cumplimiento por Procedimiento</h3>

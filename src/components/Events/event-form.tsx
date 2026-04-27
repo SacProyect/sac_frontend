@@ -155,7 +155,7 @@ export interface NewEvent {
     debt?: number;
     expires_at?: string;
     fineEventId?: string;
-
+    description?: string;
 }
 
 export interface PendingPayments {

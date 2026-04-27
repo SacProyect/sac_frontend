@@ -1,6 +1,6 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
-import { FiscalPerformanceData } from '@/hooks/useFiscalStats';
+import { FiscalPerformanceData } from '@/hooks/use-fiscal-stats';
 
 interface FiscalPerformanceChartV2Props {
   data: FiscalPerformanceData[];

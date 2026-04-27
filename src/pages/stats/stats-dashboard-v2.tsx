@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { LoadingState } from '@/components/UI/v2';
+import { useAuth } from '@/hooks/use-auth';
 
 import {
   getGlobalPerformance,
-  getGlobalTaxpayerPerformance,
   getGroupPerformance,
+  getCoordinationGroups,
 } from '@/components/utils/api/report-functions';
 import { decimalToNumber } from '@/components/utils/number.utils';
 
@@ -29,7 +30,7 @@ import StatsPage3Cumplimiento from './stats-page3-cumplimiento';
 
 // ─── Page 1: 2×2 Grid ─────────────────────────────────────────────────────────
 
-function StatsPage1Charts({ year }: { year: number }) {
+function StatsPage1Charts({ year, groupId }: { year: number; groupId?: string }) {
   const [chartData, setChartData] = useState<ChartData[]>([]);
   const [ivaStats, setIvaStats] = useState<MonthlyIvaStats | null>(null);
   const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
@@ -39,10 +40,9 @@ function StatsPage1Charts({ year }: { year: number }) {
     const fetch = async () => {
       setLoading(true);
       try {
-        const [globalPerf, , groupPerf] = await Promise.allSettled([
-          getGlobalPerformance(year),
-          getGlobalTaxpayerPerformance(year),
-          getGroupPerformance(year),
+        const [globalPerf, groupPerf] = await Promise.allSettled([
+          getGlobalPerformance(year, groupId),
+          getGroupPerformance(year, groupId),
         ]);
 
         if (globalPerf.status === 'fulfilled' && Array.isArray(globalPerf.value)) {
@@ -84,7 +84,7 @@ function StatsPage1Charts({ year }: { year: number }) {
       }
     };
     fetch();
-  }, [year]);
+  }, [year, groupId]);
 
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
@@ -110,7 +110,7 @@ function StatsPage1Charts({ year }: { year: number }) {
         </div>
 
         <div className={qBase}>
-          <IvaByGroupChart year={year} />
+          <IvaByGroupChart year={year} groupId={groupId} />
         </div>
       </div>
     </div>
@@ -124,10 +124,38 @@ const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function StatsDashboardV2() {
+  const { user } = useAuth();
+  /** Filtro por coordinación: solo perfiles de visión global (no fiscales). */
+  const showCoordinationFilter = Boolean(user && user.role !== 'FISCAL');
+
   const [page, setPage] = useState(1);
   const [year, setYear] = useState(new Date().getFullYear());
+  const [coordinationId, setCoordinationId] = useState('');
+  const [coordinationOptions, setCoordinationOptions] = useState<{ id: string; name: string }[]>([]);
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
+
+  const activeGroupId = showCoordinationFilter ? (coordinationId.trim() || undefined) : undefined;
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!user || user.role === 'FISCAL') {
+      setCoordinationOptions([]);
+      setCoordinationId('');
+      return;
+    }
+    (async () => {
+      try {
+        const list = await getCoordinationGroups();
+        if (!cancelled) setCoordinationOptions(list);
+      } catch {
+        if (!cancelled) setCoordinationOptions([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   return (
     <div
@@ -165,6 +193,33 @@ export default function StatsDashboardV2() {
               </SelectContent>
             </Select>
           </form>
+
+          {showCoordinationFilter && coordinationOptions.length > 0 && (
+            <form
+              className="flex min-w-0 items-center gap-2 bg-slate-800/50 border border-slate-700 rounded-xl px-3 py-1.5 sm:px-4 transition-all focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20"
+              onSubmit={(e) => e.preventDefault()}
+            >
+              <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+              <label htmlFor="coordination-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
+                Coordinación
+              </label>
+              <Select value={coordinationId || '__all__'} onValueChange={(v) => setCoordinationId(v === '__all__' ? '' : v)}>
+                <SelectTrigger id="coordination-select" className="h-7 min-w-[140px] max-w-[220px] bg-slate-950/50 border-slate-700 text-xs font-semibold text-emerald-400/95 hover:text-emerald-300 transition-colors rounded-lg">
+                  <SelectValue placeholder="Todas" />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-900 border-slate-700 text-slate-300 max-h-[280px]">
+                  <SelectItem value="__all__" className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer">
+                    Todas las coordinaciones
+                  </SelectItem>
+                  {coordinationOptions.map((g) => (
+                    <SelectItem key={g.id} value={g.id} className="text-xs hover:bg-slate-800 focus:bg-slate-800 focus:text-white cursor-pointer">
+                      {g.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </form>
+          )}
           
           <Button 
             variant="outline" 
@@ -186,9 +241,9 @@ export default function StatsDashboardV2() {
             : 'min-h-0 flex-1 overflow-y-auto custom-scrollbar'
         }
       >
-        {page === 1 && <StatsPage1Charts year={year} />}
-        {page === 2 && <StatsPage2Rankings year={year} />}
-        {page === 3 && <StatsPage3Cumplimiento year={year} />}
+        {page === 1 && <StatsPage1Charts year={year} groupId={activeGroupId} />}
+        {page === 2 && <StatsPage2Rankings year={year} groupId={activeGroupId} />}
+        {page === 3 && <StatsPage3Cumplimiento year={year} groupId={activeGroupId} />}
       </div>
 
       {/* ── Pagination bar ────────────────────────────────────────────── */}

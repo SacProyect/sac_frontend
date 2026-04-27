@@ -10,6 +10,7 @@ import {
     Wallet,
     Bell,
     Shield,
+    Telescope,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -22,6 +23,13 @@ export const auditTrailNavItem: NavItem = {
     href: '/auditoria',
     label: 'Auditoría',
     icon: <Shield className="w-4 h-4" />,
+};
+
+/** Solo ADMIN y COORDINATOR — panel operativo detallado (no confundir con `/auditoria`). */
+export const internalAuditNavItem: NavItem = {
+    href: '/auditoria-interna',
+    label: 'Auditoría interna',
+    icon: <Telescope className="w-4 h-4" />,
 };
 
 export const sharedRoutes: NavItem[] = [
@@ -75,4 +83,5 @@ export const RESTRICTED_ROUTES: ReadonlySet<string> = new Set([
     '/fine', '/iva', '/islr', '/census',
     '/show-census', '/taxpayer', '/index-iva', '/warning',
     '/auditoria',
+    '/auditoria-interna',
 ]);

@@ -1,5 +1,6 @@
 import { FiscalInfoExtended } from '@/types/fiscal-stats';
 import { Card } from '@/components/UI/card';
+import { cn } from '@/lib/utils';
 import { Download } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
@@ -13,9 +14,10 @@ interface FiscalReviewPage2Props {
     low?: any[];
   } | null;
   fiscalCollectAnalisis?: any;
+  tvSpotlightIndex?: number;
 }
 
-export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompliance, fiscalCollectAnalisis }: FiscalReviewPage2Props) {
+export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompliance, fiscalCollectAnalisis, tvSpotlightIndex }: FiscalReviewPage2Props) {
   const highCompliance = (fiscalTaxpayerCompliance?.high ?? []).map((t: any) => ({
     id: t.id ?? t.taxpayerId ?? '',
     name: t.name ?? t.businessName ?? t.razonSocial ?? 'N/A',
@@ -50,7 +52,13 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompli
     return new Intl.NumberFormat('es-VE', { style: 'currency', currency: 'VES' }).format(val).replace('VES', 'Bs.S');
   };
 
-  const renderTaxpayerList = (title: string, count: number, color: 'green' | 'yellow' | 'red', items: any[]) => {
+  const renderTaxpayerList = (
+    title: string,
+    count: number,
+    color: 'green' | 'yellow' | 'red',
+    items: any[],
+    isHighlighted?: boolean
+  ) => {
     const colorClasses = {
       green: { text: 'text-green-400', border: 'border-green-500/50', icon: 'text-green-500', iconBg: 'bg-green-600' },
       yellow: { text: 'text-yellow-400', border: 'border-yellow-500/50', icon: 'text-yellow-500', iconBg: 'bg-yellow-600' },
@@ -59,7 +67,12 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompli
     const theme = colorClasses[color];
 
     return (
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          isHighlighted && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="px-4 py-3 border-b border-slate-700 flex items-center justify-between bg-slate-800/80">
           <div className="flex items-center gap-2">
             <span className={theme.icon}>↗</span>
@@ -124,16 +137,21 @@ export function FiscalReviewPage2Cumplimiento({ fiscalInfo, fiscalTaxpayerCompli
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-in fade-in duration-300">
       {/* Contribuyentes Alto Cumplimiento */}
-      {renderTaxpayerList('Alto Cumplimiento (>67%)', highCompliance.length, 'green', highCompliance)}
+      {renderTaxpayerList('Alto Cumplimiento (>67%)', highCompliance.length, 'green', highCompliance, tvSpotlightIndex === 0)}
 
       {/* Contribuyentes Medio Cumplimiento */}
-      {renderTaxpayerList('Medio Cumplimiento (34-66%)', mediumCompliance.length, 'yellow', mediumCompliance)}
+      {renderTaxpayerList('Medio Cumplimiento (34-66%)', mediumCompliance.length, 'yellow', mediumCompliance, tvSpotlightIndex === 1)}
 
       {/* Contribuyentes Bajo Cumplimiento */}
-      {renderTaxpayerList('Bajo Cumplimiento (<33%)', lowCompliance.length, 'red', lowCompliance)}
+      {renderTaxpayerList('Bajo Cumplimiento (<33%)', lowCompliance.length, 'red', lowCompliance, tvSpotlightIndex === 2)}
 
       {/* Distribución de Cumplimiento — gráfico de dona */}
-      <Card className="bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm">
+      <Card
+        className={cn(
+          'bg-slate-800 border-slate-700 flex flex-col h-[400px] shadow-sm transition-all duration-700',
+          tvSpotlightIndex === 3 && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.01]'
+        )}
+      >
         <div className="px-4 py-3 border-b border-slate-700 flex items-center gap-2 bg-slate-800/80 shrink-0">
           <span className="text-purple-400">⏱</span>
           <h3 className="font-semibold text-white text-sm">Distribución de Cumplimiento</h3>

@@ -50,7 +50,7 @@ export function normalizeEventType(raw: unknown): Type | null {
 function normalizeIvaRow(raw: unknown): IVAReports {
     const r = raw as Record<string, unknown>;
     return {
-        ...(r as IVAReports),
+        ...(r as unknown as IVAReports),
         paid: coerceMoney(r.paid),
     };
 }
@@ -60,7 +60,7 @@ function normalizeIslrRow(raw: unknown): ISLRReports {
     return {
         ...r,
         paid: coerceMoney(r.paid),
-    } as ISLRReports;
+    } as unknown as ISLRReports;
 }
 
 function normalizeEventRow(raw: unknown) {

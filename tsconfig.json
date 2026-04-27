@@ -18,6 +18,9 @@
   },
   "include": [
     "src"
+  ],
+  "exclude": [
+    "src/pages/stats/StatsPage.tsx"
   ]
   /* Visit https://aka.ms/tsconfig to read more about this file */
   /* Projects */

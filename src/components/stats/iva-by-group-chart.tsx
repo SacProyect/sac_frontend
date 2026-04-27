@@ -14,9 +14,11 @@ import toast from "react-hot-toast";
 
 interface IvaByGroupChartProps {
     year?: number;
+    /** UUID del grupo fiscal (coordinación); si no se envía, todas. */
+    groupId?: string;
 }
 
-export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
+export const IvaByGroupChart = ({ year, groupId }: IvaByGroupChartProps) => {
     const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -24,7 +26,7 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getGroupPerformance(year);
+                const data = await getGroupPerformance(year, groupId);
                 setGroupStats(data);
             } catch (e) {
                 console.error(e);
@@ -35,7 +37,7 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         };
 
         fetchData();
-    }, [year]);
+    }, [year, groupId]);
 
     // Transformar datos para el gráfico
     const chartData = groupStats.map((group) => ({

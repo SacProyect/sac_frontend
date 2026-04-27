@@ -2,7 +2,29 @@ import { apiConnection } from "./api-connection";
 import { GroupData } from "@/components/contributions/contribution-types";
 import { GroupRecordsApiResponse } from "@/types/group-records";
 import { GetCompleteReportParams } from "@/types/reports";
+import type {
+	InternalAuditDashboard,
+	InternalAuditQueryParams,
+} from "@/types/internal-audit";
 
+/** Año (`date`) y filtro opcional por grupo fiscal (coordinación). */
+function buildStatsQuery(year?: number, groupId?: string): string {
+	const params = new URLSearchParams();
+	if (year != null) params.set("date", String(year));
+	if (groupId) params.set("groupId", groupId);
+	const q = params.toString();
+	return q ? `?${q}` : "";
+}
+
+export const getCoordinationGroups = async (): Promise<{ id: string; name: string }[]> => {
+	try {
+		const response = await apiConnection.get("reports/coordination-groups");
+		return Array.isArray(response.data) ? response.data : [];
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener las coordinaciones.");
+	}
+};
 
 interface ContributionsInput {
 	id?: string,
@@ -60,15 +82,10 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 // 	}
 // }
 
-export const getBestSupervisors = async (year?: number) => {
+export const getBestSupervisors = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-best-supervisor-by-group'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-best-supervisor-by-group${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -76,15 +93,10 @@ export const getBestSupervisors = async (year?: number) => {
 	}
 }
 
-export const getTopFiscals = async (year?: number) => {
+export const getTopFiscals = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-top-fiscals'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-top-fiscals${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -103,15 +115,10 @@ export const getTopCoordinators = async () => {
 	}
 }
 
-export const getTopFiveByGroup = async (year?: number) => {
+export const getTopFiveByGroup = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-top-five-by-group'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-top-five-by-group${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -135,15 +142,10 @@ export const getMonthlyGrowth = async (year?: number) => {
 	}
 }
 
-export const getTaxpayersCompliance = async (year?: number) => {
+export const getTaxpayersCompliance = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-taxpayers-compliance'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-taxpayers-compliance${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -439,50 +441,33 @@ export const getFiscalCollectAnalisis = async (fiscalId: string, year?: number) 
 
 
 
-export const getGlobalPerformance = async (year?: number) => {
+export const getGlobalPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/global-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		return response.data
+		const requestUrl = `reports/global-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento global")
 	}
 }
 
-export const getGlobalTaxpayerPerformance = async (year?: number) => {
+export const getGlobalTaxpayerPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/global-taxpayer-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		// console.log("TAXPAYER PERFORMANCE: " + JSON.stringify(response.data))
-		return response.data
+		const requestUrl = `reports/global-taxpayer-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
 	}
 }
 
-export const getGroupPerformance = async (year?: number) => {
-
+export const getGroupPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/group-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		return response.data
+		const requestUrl = `reports/group-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
@@ -536,4 +521,47 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 		console.error('Error al obtener datos del contribuyente:', e);
 		throw new Error("No se pudieron obtener los datos completos del contribuyente.");
 	}
+};
+
+export function buildInternalAuditDashboardQuery(params: InternalAuditQueryParams): string {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	if (params.shortHours != null && params.shortHours > 0) {
+		q.set("shortHours", String(params.shortHours));
+	}
+	const s = q.toString();
+	return s ? `?${s}` : "";
+}
+
+export const getInternalAuditDashboard = async (
+	params: InternalAuditQueryParams = {},
+): Promise<InternalAuditDashboard> => {
+	const response = await apiConnection.get(
+		`reports/internal-audit-dashboard${buildInternalAuditDashboardQuery(params)}`,
+	);
+	return response.data;
+};
+
+/** Descarga CSV con la misma ventana que el panel (misma query + format=csv). */
+export const downloadInternalAuditCsv = async (params: InternalAuditQueryParams): Promise<void> => {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	if (params.shortHours != null && params.shortHours > 0) {
+		q.set("shortHours", String(params.shortHours));
+	}
+	q.set("format", "csv");
+	const response = await apiConnection.get(`reports/internal-audit-dashboard?${q.toString()}`, {
+		responseType: "blob",
+	});
+	const blob = new Blob([response.data], { type: "text/csv;charset=utf-8" });
+	const url = window.URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = `auditoria-interna-${new Date().toISOString().slice(0, 10)}.csv`;
+	document.body.appendChild(a);
+	a.click();
+	a.remove();
+	window.URL.revokeObjectURL(url);
 };

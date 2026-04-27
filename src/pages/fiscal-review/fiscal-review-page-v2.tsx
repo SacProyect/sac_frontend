@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { useTvIdleRotation } from '@/hooks/use-tv-idle-rotation';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { getFiscalsForReview } from '@/components/utils/api/taxpayer-functions';
@@ -25,7 +26,7 @@ import type { FiscalKpiBreakdownCategory } from '@/components/utils/api/report-f
 /**
  * Vista de detalles de un fiscal específico (3 páginas)
  */
-function FiscalDetailsView({
+export function FiscalDetailsView({
   fiscalId,
   onBack,
   initialYear,
@@ -37,6 +38,12 @@ function FiscalDetailsView({
   const [page, setPage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(initialYear);
   const [kpiBreakdown, setKpiBreakdown] = useState<FiscalKpiBreakdownCategory | null>(null);
+
+  const { tvSpotlightIndex } = useTvIdleRotation({
+    page,
+    setPage,
+    totalPages: 3,
+  });
   const {
     loading,
     fiscalInfo,
@@ -136,9 +143,27 @@ function FiscalDetailsView({
 
        {/* Render current page */}
        <div className="min-h-[400px]">
-        {page === 1 && <FiscalReviewPage1Resumen fiscalInfo={fiscalInfo} performance={fiscalPerformance} selectedYear={selectedYear} setSelectedYear={setSelectedYear} fiscalTaxpayers={fiscalTaxpayers} fiscalMonthlyCollect={fiscalMonthlyCollect} fiscalComplianceByProcess={fiscalComplianceByProcess} />}
-        {page === 2 && <FiscalReviewPage2Cumplimiento fiscalInfo={fiscalInfo} fiscalTaxpayerCompliance={fiscalTaxpayerCompliance} fiscalCollectAnalisis={fiscalCollectAnalisis} />}
-         {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} />}
+        {page === 1 && (
+          <FiscalReviewPage1Resumen
+            fiscalInfo={fiscalInfo}
+            performance={fiscalPerformance}
+            selectedYear={selectedYear}
+            setSelectedYear={setSelectedYear}
+            fiscalTaxpayers={fiscalTaxpayers}
+            fiscalMonthlyCollect={fiscalMonthlyCollect}
+            fiscalComplianceByProcess={fiscalComplianceByProcess}
+            tvSpotlightIndex={tvSpotlightIndex}
+          />
+        )}
+        {page === 2 && (
+          <FiscalReviewPage2Cumplimiento
+            fiscalInfo={fiscalInfo}
+            fiscalTaxpayerCompliance={fiscalTaxpayerCompliance}
+            fiscalCollectAnalisis={fiscalCollectAnalisis}
+            tvSpotlightIndex={tvSpotlightIndex}
+          />
+        )}
+        {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} tvSpotlightIndex={tvSpotlightIndex} />}
        </div>
 
        {/* Pagination */}

@@ -111,6 +111,7 @@ const GroupReportPageV2 = lazyWithRetry(() => import("@/pages/reports/group-repo
 const TaxpayerReportPage = lazyWithRetry(() => import("@/pages/reports/taxpayer-report-page"));
 const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
 const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
+const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
 
 type LoaderData = {
     events: Event[],
@@ -162,6 +163,14 @@ export const router = createBrowserRouter([
                     {
                         path: "auditoria",
                         element: <Suspense fallback={<GlobalLoader message="Cargando auditoría..." />}><AuditTrailPageV2 /></Suspense>,
+                    },
+                    {
+                        path: "auditoria-interna",
+                        element: (
+                            <Suspense fallback={<GlobalLoader message="Cargando auditoría interna..." />}>
+                                <InternalAuditPageV2 />
+                            </Suspense>
+                        ),
                     },
                     {
                         path: "settings",

@@ -10,7 +10,7 @@ import {
   Brush,
 } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/UI/card';
-import { MonthlyRevenueData } from '@/hooks/useFiscalStats';
+import { MonthlyRevenueData } from '@/hooks/use-fiscal-stats';
 
 interface MonthlyRevenueChartV2Props {
   data: MonthlyRevenueData[];

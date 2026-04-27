@@ -309,7 +309,7 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export default function StatsPage3Cumplimiento({ year }: { year: number }) {
+export default function StatsPage3Cumplimiento({ year, groupId }: { year: number; groupId?: string }) {
   const [data, setData] = useState<ComplianceData>({ high: [], medium: [], low: [] });
   const [loading, setLoading] = useState(true);
 
@@ -317,7 +317,7 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await getTaxpayersCompliance(year);
+        const res = await getTaxpayersCompliance(year, groupId);
         const raw = (res as any)?.data ?? res ?? {};
         setData({
           high:   normalize(raw.alto ?? raw.high ?? raw.highCompliance ?? []),
@@ -331,7 +331,7 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
       }
     };
     load();
-  }, [year]);
+  }, [year, groupId]);
 
   if (loading) {
     return (
