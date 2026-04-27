@@ -1,14 +1,32 @@
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Label } from "@/components/UI/label";
-import { Download, RefreshCw, SlidersHorizontal } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/UI/select";
+import { Download, RefreshCw, SlidersHorizontal, CalendarRange } from "lucide-react";
 import { defaultAuditWindow, datetimeLocalValueToIso, isoToDatetimeLocalValue } from "../utils/datetime-local";
 import type { InternalAuditQueryParams } from "@/types/internal-audit";
+
+const CARTERA_YEAR_MIN = 2018;
+const CARTERA_YEAR_MAX = 2032;
+
+function yearOptions(): number[] {
+  const out: number[] = [];
+  for (let y = CARTERA_YEAR_MAX; y >= CARTERA_YEAR_MIN; y -= 1) out.push(y);
+  return out;
+}
 
 export type InternalAuditDraft = {
   fromLocal: string;
   toLocal: string;
   shortHours: number;
+  /** Año civil para casos / pendientes IVA·ISLR (mismo criterio que estadísticas del fiscal). */
+  statsYear: number;
 };
 
 type Props = {
@@ -31,10 +49,10 @@ export function InternalAuditToolbar({
   onPresetDays,
 }: Props) {
   return (
-    <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-4">
+    <div className="rounded-xl border border-slate-700 bg-slate-900/60 p-4 space-y-5">
       <div className="flex flex-wrap items-center gap-2 text-slate-300">
         <SlidersHorizontal className="h-4 w-4 text-slate-500" />
-        <span className="text-sm font-medium text-slate-200">Ventana de análisis</span>
+        <span className="text-sm font-medium text-slate-200">Ventana de análisis (eventos de auditoría en el sistema)</span>
         <div className="flex flex-wrap gap-2 ml-auto">
           <Button type="button" variant="secondary" size="sm" onClick={() => onPresetDays(7)}>
             7 días
@@ -79,7 +97,7 @@ export function InternalAuditToolbar({
               onDraftChange({ ...draft, shortHours: Math.min(168, Math.max(1, Number(e.target.value) || 24)) })
             }
           />
-          <p className="text-[10px] text-slate-500">KPI «últimas N horas» respecto al momento actual</p>
+          <p className="text-[10px] text-slate-500">KPI de actividad: últimas N horas respecto a ahora</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Button type="button" onClick={onApply} disabled={busy} className="flex-1 min-w-[120px]">
@@ -95,6 +113,43 @@ export function InternalAuditToolbar({
           </Button>
         </div>
       </div>
+
+      <div className="border-t border-slate-700 pt-4 flex flex-wrap items-start gap-3">
+        <CalendarRange className="h-4 w-4 text-slate-500 mt-1 shrink-0" />
+        <div className="flex-1 min-w-[200px] space-y-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className="text-sm font-medium text-slate-200">Cartera fiscal y declaraciones</span>
+          </div>
+          <p className="text-xs text-slate-500 leading-relaxed">
+            Independiente de la ventana de arriba: aquí eliges el <strong className="text-slate-400">año civil</strong> para
+            contar casos asignados, pendientes de culminar y contribuyentes sin declaración IVA o ISLR en ese año (misma
+            regla que el módulo Estadísticas por fiscal).
+          </p>
+          <div className="flex flex-wrap items-end gap-4">
+            <div className="space-y-1.5 w-[140px]">
+              <Label className="text-slate-400 text-xs">Año cartera</Label>
+              <Select
+                value={String(draft.statsYear)}
+                onValueChange={(v) => onDraftChange({ ...draft, statsYear: parseInt(v, 10) })}
+              >
+                <SelectTrigger className="bg-slate-950 border-slate-600 text-slate-100">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearOptions().map((y) => (
+                    <SelectItem key={y} value={String(y)}>
+                      {y}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="button" variant="secondary" size="sm" onClick={onApply} disabled={busy}>
+              Aplicar año cartera
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
@@ -104,10 +159,12 @@ export function draftFromQuery(q: InternalAuditQueryParams): InternalAuditDraft 
   const def = defaultAuditWindow();
   const fromIso = q.from ?? def.fromIso;
   const toIso = q.to ?? def.toIso;
+  const y = q.statsYear ?? new Date().getUTCFullYear();
   return {
     fromLocal: isoToDatetimeLocalValue(fromIso),
     toLocal: isoToDatetimeLocalValue(toIso),
     shortHours: q.shortHours ?? 24,
+    statsYear: Math.min(CARTERA_YEAR_MAX, Math.max(CARTERA_YEAR_MIN, y)),
   };
 }
 
@@ -116,5 +173,6 @@ export function queryFromDraft(draft: InternalAuditDraft): InternalAuditQueryPar
     from: datetimeLocalValueToIso(draft.fromLocal),
     to: datetimeLocalValueToIso(draft.toLocal),
     shortHours: draft.shortHours,
+    statsYear: draft.statsYear,
   };
 }

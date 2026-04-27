@@ -1,3 +1,8 @@
+/**
+ * Ventana «Desde/Hasta» de auditoría interna: el input es hora local del navegador;
+ * los ISO enviados al backend son instantes UTC (`toISOString`). Distinto del año de
+ * cartera IVA/ISLR (`statsYear`, año civil UTC unificado en `fiscal-cartera-year.ts`).
+ */
 /** Convierte ISO a valor para `<input type="datetime-local" />` (hora local). */
 export function isoToDatetimeLocalValue(iso: string): string {
   const d = new Date(iso);

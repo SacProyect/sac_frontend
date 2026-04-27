@@ -1,17 +1,20 @@
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/UI/card';
 import { FiscalPerformanceData } from '@/hooks/use-fiscal-stats';
+import { fiscalCarteraYearNow } from '@/utils/fiscal-cartera-year';
 
 interface FiscalPerformanceChartV2Props {
   data: FiscalPerformanceData[];
+  /** Año del período mostrado (cartera fiscal UTC, alineado con el filtro de la vista). */
+  year?: number;
 }
 
-export function FiscalPerformanceChartV2({ data }: FiscalPerformanceChartV2Props) {
+export function FiscalPerformanceChartV2({ data, year = fiscalCarteraYearNow() }: FiscalPerformanceChartV2Props) {
   if (data.length === 0) {
     return (
       <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <CardHeader>
-          <CardTitle className="text-white">Desempeño Personal</CardTitle>
+          <CardTitle className="text-white">Desempeño Personal {year}</CardTitle>
           <CardDescription className="text-slate-400">
             Comparativo de desempeño vs meta mensual
           </CardDescription>
@@ -26,7 +29,7 @@ export function FiscalPerformanceChartV2({ data }: FiscalPerformanceChartV2Props
   return (
     <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
       <CardHeader>
-        <CardTitle className="text-white">Desempeño Personal {new Date().getFullYear()}</CardTitle>
+        <CardTitle className="text-white">Desempeño Personal {year}</CardTitle>
         <CardDescription className="text-slate-400">
           Comparativo de desempeño vs meta mensual
         </CardDescription>

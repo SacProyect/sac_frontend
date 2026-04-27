@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/use-auth';
 import { LoadingState } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { FiscalDetailsView } from '@/pages/fiscal-review/fiscal-review-page-v2';
+import { fiscalCarteraYearNow } from '@/utils/fiscal-cartera-year';
 
 /**
  * Estadísticas personales del fiscal — misma vista que "Exploración de Fiscal"
@@ -16,7 +17,7 @@ export default function FiscalStatsDashboardV2() {
   const backTo = user?.role === 'FISCAL' ? '/admin' : '/stats';
 
   const effectiveFiscalId = fiscalId || user?.id || '';
-  const initialYear = new Date().getFullYear();
+  const initialYear = fiscalCarteraYearNow();
 
   useEffect(() => {
     if (user?.role === 'FISCAL' && user.id !== fiscalId && fiscalId) {

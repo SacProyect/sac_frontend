@@ -6,6 +6,7 @@ import { MapPin, Calendar, Calendar as CalendarIcon, Filter, ChevronDown } from 
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/UI/button';
 import { cn } from '@/lib/utils';
+import { fiscalCarteraYearOptions } from '@/utils/fiscal-cartera-year';
 
 interface FiscalReviewPage1Props {
   fiscalInfo: FiscalInfoExtended;
@@ -37,7 +38,7 @@ export function FiscalReviewPage1Resumen({ fiscalInfo, performance, selectedYear
   const [calendarOpen, setCalendarOpen] = useState(false);
   const calendarRef = useRef<HTMLDivElement>(null);
 
-  const getAvailableYears = () => [2024, 2025,2026];
+  const getAvailableYears = () => fiscalCarteraYearOptions();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {

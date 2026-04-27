@@ -129,7 +129,7 @@ export const getTopFiveByGroup = async (year?: number, groupId?: string) => {
 export const getMonthlyGrowth = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-monthly-growth'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -156,7 +156,7 @@ export const getTaxpayersCompliance = async (year?: number, groupId?: string) =>
 export const getExpectedAmount = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-expected-amount'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -277,10 +277,11 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 	}
 };
 
+/** `year` = año civil UTC de cartera (query `date=YYYY`), igual que estadísticas del fiscal en backend. */
 export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-info/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 
@@ -295,7 +296,7 @@ export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 export const getFiscalTaxpayers = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-taxpayers/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -372,7 +373,7 @@ export const getCompleteReport = async (params: GetCompleteReportParams) => {
 export const getFiscalMonthlyCollect = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-monthly-collect/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -386,7 +387,7 @@ export const getFiscalMonthlyCollect = async (fiscalId: string, year?: number) =
 export const getFiscalMonthlyPerformance = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-monthly-performance/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -400,7 +401,7 @@ export const getFiscalMonthlyPerformance = async (fiscalId: string, year?: numbe
 export const getFiscalComplianceByProcess = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-compliance-by-process/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -414,7 +415,7 @@ export const getFiscalComplianceByProcess = async (fiscalId: string, year?: numb
 export const getFiscalTaxpayerCompliance = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-compliance/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -428,7 +429,7 @@ export const getFiscalTaxpayerCompliance = async (fiscalId: string, year?: numbe
 export const getFiscalCollectAnalisis = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-collect-analisis/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -479,7 +480,7 @@ export const getGlobalKPI = async (year?: number) => {
 	try {
 
 		let requestURL = 'reports/global-kpi'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -530,6 +531,9 @@ export function buildInternalAuditDashboardQuery(params: InternalAuditQueryParam
 	if (params.shortHours != null && params.shortHours > 0) {
 		q.set("shortHours", String(params.shortHours));
 	}
+	if (params.statsYear != null && params.statsYear > 0) {
+		q.set("statsYear", String(params.statsYear));
+	}
 	const s = q.toString();
 	return s ? `?${s}` : "";
 }
@@ -550,6 +554,9 @@ export const downloadInternalAuditCsv = async (params: InternalAuditQueryParams)
 	if (params.to) q.set("to", params.to);
 	if (params.shortHours != null && params.shortHours > 0) {
 		q.set("shortHours", String(params.shortHours));
+	}
+	if (params.statsYear != null && params.statsYear > 0) {
+		q.set("statsYear", String(params.statsYear));
 	}
 	q.set("format", "csv");
 	const response = await apiConnection.get(`reports/internal-audit-dashboard?${q.toString()}`, {
