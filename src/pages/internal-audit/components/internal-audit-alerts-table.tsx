@@ -17,15 +17,17 @@ import { formatWhen } from "../utils/format-when";
 type Props = {
   inactiveFiscals: InternalAuditFiscalRow[];
   windowLabel: string;
+  carteraYear: number;
 };
 
-export function InternalAuditAlertsTable({ inactiveFiscals, windowLabel }: Props) {
+export function InternalAuditAlertsTable({ inactiveFiscals, windowLabel, carteraYear }: Props) {
   return (
     <Card className="bg-slate-900/80 border-slate-700 overflow-hidden">
       <div className="p-4 border-b border-slate-700">
         <h3 className="text-lg font-semibold text-white">Alertas — sin actividad en auditoría</h3>
         <p className="text-sm text-slate-400">
-          Fiscales sin ningún evento en la tabla de auditoría en el periodo: {windowLabel}.
+          Fiscales sin ningún evento en la tabla de auditoría en el periodo: {windowLabel}. Las columnas de cartera son del
+          año <strong className="text-slate-300">{carteraYear}</strong>.
         </p>
       </div>
       <div className="overflow-x-auto max-h-[min(70vh,560px)] overflow-y-auto">
@@ -34,10 +36,13 @@ export function InternalAuditAlertsTable({ inactiveFiscals, windowLabel }: Props
             <TableRow className="border-slate-700 hover:bg-transparent">
               <TableHead className="text-slate-300">Fiscal</TableHead>
               <TableHead className="text-slate-300">Cédula</TableHead>
-              <TableHead className="text-slate-300 text-right">Contrib.</TableHead>
-              <TableHead className="text-slate-300">Últ. auditoría</TableHead>
+              <TableHead className="text-slate-300 text-right">Casos {carteraYear}</TableHead>
+              <TableHead className="text-slate-300 text-right">Pend.</TableHead>
+              <TableHead className="text-slate-300 text-right">∅ IVA</TableHead>
+              <TableHead className="text-slate-300 text-right">∅ ISLR</TableHead>
+              <TableHead className="text-slate-300">Últ. aud.</TableHead>
               <TableHead className="text-slate-300">Últ. login</TableHead>
-              <TableHead className="text-slate-300 w-[120px]">Estadísticas</TableHead>
+              <TableHead className="text-slate-300 w-[100px]">Stats</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -46,8 +51,11 @@ export function InternalAuditAlertsTable({ inactiveFiscals, windowLabel }: Props
                 <TableCell className="font-medium text-amber-200">{f.name}</TableCell>
                 <TableCell className="text-slate-400">{f.personId}</TableCell>
                 <TableCell className="text-right tabular-nums">{f.taxpayerCount}</TableCell>
-                <TableCell className="text-slate-400 text-sm">{formatWhen(f.lastAuditAt)}</TableCell>
-                <TableCell className="text-slate-400 text-sm">{formatWhen(f.lastLoginAt)}</TableCell>
+                <TableCell className="text-right tabular-nums text-orange-300/90">{f.casosPendientes}</TableCell>
+                <TableCell className="text-right tabular-nums text-rose-300/90">{f.sinDeclaracionIva}</TableCell>
+                <TableCell className="text-right tabular-nums text-violet-300/90">{f.sinDeclaracionIslr}</TableCell>
+                <TableCell className="text-slate-400 text-xs">{formatWhen(f.lastAuditAt)}</TableCell>
+                <TableCell className="text-slate-400 text-xs">{formatWhen(f.lastLoginAt)}</TableCell>
                 <TableCell>
                   <Button variant="ghost" size="sm" asChild className="text-sky-400 hover:text-sky-300 h-8 px-2">
                     <Link to={`/stats/fiscal/${f.id}`}>

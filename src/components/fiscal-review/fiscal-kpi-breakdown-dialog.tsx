@@ -50,11 +50,30 @@ export interface FiscalKpiBreakdownRow {
   fase?: string;
   process?: string;
   culminated?: boolean;
+  /** Presente cuando el listado viene de la API completa (modal y tabla comparten criterios). */
   notified?: boolean;
   totalCollected?: unknown;
   collectedIva?: unknown;
   collectedIslr?: unknown;
   collectedFines?: unknown;
+}
+
+function rowsForCategory(
+  rows: FiscalKpiBreakdownRow[],
+  category: FiscalKpiBreakdownCategory,
+): FiscalKpiBreakdownRow[] {
+  switch (category) {
+    case 'assigned':
+      return rows;
+    case 'active':
+      return rows.filter((r) => r.culminated !== true);
+    case 'completed':
+      return rows.filter((r) => r.culminated === true);
+    case 'notified':
+      return rows.filter((r) => r.notified === true);
+    default:
+      return [];
+  }
 }
 
 interface FiscalKpiBreakdownDialogProps {
@@ -63,6 +82,8 @@ interface FiscalKpiBreakdownDialogProps {
   fiscalId: string;
   year: number;
   category: FiscalKpiBreakdownCategory | null;
+  /** Si falla el GET de detalle, se filtran estas filas (p. ej. lista ya cargada en Exploración de Fiscal). */
+  fallbackTaxpayers?: FiscalKpiBreakdownRow[];
 }
 
 export function FiscalKpiBreakdownDialog({
@@ -71,6 +92,7 @@ export function FiscalKpiBreakdownDialog({
   fiscalId,
   year,
   category,
+  fallbackTaxpayers,
 }: FiscalKpiBreakdownDialogProps) {
   const [loading, setLoading] = useState(false);
   const [rows, setRows] = useState<FiscalKpiBreakdownRow[]>([]);
@@ -88,8 +110,19 @@ export function FiscalKpiBreakdownDialog({
         }
       } catch {
         if (!cancelled) {
-          setRows([]);
-          toast.error('No se pudo cargar el detalle. Intenta de nuevo.');
+          const fb =
+            fallbackTaxpayers?.length && category
+              ? rowsForCategory(fallbackTaxpayers, category)
+              : [];
+          if (fb.length) {
+            setRows(fb);
+            toast.error(
+              'No se pudo contactar el servicio de detalle. Mostrando datos ya cargados en esta vista.'
+            );
+          } else {
+            setRows([]);
+            toast.error('No se pudo cargar el detalle. Intenta de nuevo.');
+          }
         }
       } finally {
         if (!cancelled) setLoading(false);

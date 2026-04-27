@@ -14,6 +14,8 @@ export interface InternalAuditDashboard {
   coordinationId?: string;
   coordinationName?: string | null;
   generatedAt: string;
+  /** Año civil para métricas de cartera / pendientes IVA–ISLR. */
+  carteraYear: number;
   window: InternalAuditWindowMeta;
   totals: {
     fiscalHeadcount: number;
@@ -21,6 +23,9 @@ export interface InternalAuditDashboard {
     auditsInWindow: number;
     activeFiscalsInWindow: number;
     taxpayerAssignmentsTotal: number;
+    carteraCasosPendientesTotal: number;
+    carteraSinIvaTotal: number;
+    carteraSinIslrTotal: number;
   };
   fiscals: Array<{
     id: string;
@@ -30,6 +35,9 @@ export interface InternalAuditDashboard {
     lastAuditAt: string | null;
     auditCountInWindow: number;
     taxpayerCount: number;
+    casosPendientes: number;
+    sinDeclaracionIva: number;
+    sinDeclaracionIslr: number;
     lastIvaLoadAt: string | null;
     lastIslrLoadAt: string | null;
   }>;
@@ -51,4 +59,6 @@ export type InternalAuditQueryParams = {
   from?: string;
   to?: string;
   shortHours?: number;
+  /** Año UTC para pendientes de cartera IVA/ISLR (opcional). */
+  statsYear?: number;
 };

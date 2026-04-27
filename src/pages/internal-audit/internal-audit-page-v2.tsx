@@ -32,7 +32,12 @@ const TOTAL_PAGES = 4;
 
 function initialQuery(): InternalAuditQueryParams {
   const { fromIso, toIso } = defaultAuditWindow();
-  return { from: fromIso, to: toIso, shortHours: 24 };
+  return {
+    from: fromIso,
+    to: toIso,
+    shortHours: 24,
+    statsYear: new Date().getUTCFullYear(),
+  };
 }
 
 export default function InternalAuditPageV2() {
@@ -90,6 +95,7 @@ export default function InternalAuditPageV2() {
       fromLocal: isoToDatetimeLocalValue(from.toISOString()),
       toLocal: isoToDatetimeLocalValue(to.toISOString()),
       shortHours: draft.shortHours,
+      statsYear: draft.statsYear,
     });
   };
 
@@ -137,7 +143,7 @@ export default function InternalAuditPageV2() {
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <PageHeader
           title="Auditoría interna"
-          description="Vigilancia operativa con ventana de fechas configurable, exportación CSV y enlaces a estadísticas por fiscal."
+          description="Dos dimensiones: (1) ventana de fechas para eventos en la tabla de auditoría y KPI de actividad; (2) año de cartera para casos pendientes y declaraciones IVA/ISLR (alineado con estadísticas por fiscal). Exportación CSV y alcance según tu rol."
         />
         <div className="flex flex-wrap items-center gap-2">
           {tvMode && (
@@ -159,10 +165,15 @@ export default function InternalAuditPageV2() {
         onPresetDays={handlePresetDays}
       />
 
-      <p className="text-sm text-slate-400">{scopeLabel}</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="text-sm text-slate-400">{scopeLabel}</p>
+        <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
+          {user.role === "ADMIN" ? "Administrador" : "Coordinador"}
+        </Badge>
+      </div>
       <p className="text-xs text-slate-500">
-        Generado: {formatWhen(data.generatedAt)} · Ventana aplicada: {windowHint} · Fiscales:{" "}
-        {data.totals.fiscalHeadcount}
+        Generado: {formatWhen(data.generatedAt)} · Ventana auditoría: {windowHint} · Año cartera KPI:{" "}
+        <strong className="text-slate-400">{data.carteraYear}</strong> · Fiscales: {data.totals.fiscalHeadcount}
       </p>
 
       <div className={`min-h-[420px] transition-opacity ${loading ? "opacity-[0.65]" : ""}`}>
@@ -170,7 +181,11 @@ export default function InternalAuditPageV2() {
         {page === 2 && <InternalAuditFiscalsTable data={data} />}
         {page === 3 && <InternalAuditTimelineTable data={data} />}
         {page === 4 && (
-          <InternalAuditAlertsTable inactiveFiscals={inactiveFiscals} windowLabel={windowHint} />
+          <InternalAuditAlertsTable
+            inactiveFiscals={inactiveFiscals}
+            windowLabel={windowHint}
+            carteraYear={data.carteraYear}
+          />
         )}
       </div>
 

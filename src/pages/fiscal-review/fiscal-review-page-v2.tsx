@@ -13,6 +13,7 @@ import { EmptyState, LoadingState, PageHeader } from '@/components/UI/v2';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import toast from 'react-hot-toast';
+import { fiscalCarteraYearNow, fiscalCarteraYearOptions } from '@/utils/fiscal-cartera-year';
 import { useDebounce } from '@/hooks/use-debounce';
 
 // Subcomponents for the 3 pages
@@ -20,7 +21,10 @@ import { useFiscalStats } from '@/hooks/use-fiscal-stats';
 import { FiscalReviewPage1Resumen } from '@/components/fiscal-review/fiscal-review-page1-resumen';
 import { FiscalReviewPage2Cumplimiento } from '@/components/fiscal-review/fiscal-review-page2-cumplimiento';
 import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-review-page3-reportes';
-import { FiscalKpiBreakdownDialog } from '@/components/fiscal-review/fiscal-kpi-breakdown-dialog';
+import {
+  FiscalKpiBreakdownDialog,
+  type FiscalKpiBreakdownRow,
+} from '@/components/fiscal-review/fiscal-kpi-breakdown-dialog';
 import type { FiscalKpiBreakdownCategory } from '@/components/utils/api/report-functions';
 
 /**
@@ -139,6 +143,7 @@ export function FiscalDetailsView({
          fiscalId={fiscalId}
          year={selectedYear}
          category={kpiBreakdown}
+         fallbackTaxpayers={fiscalTaxpayers as FiscalKpiBreakdownRow[]}
        />
 
        {/* Render current page */}
@@ -217,7 +222,7 @@ export default function FiscalReviewPageV2() {
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
   const [selectedFiscalId, setSelectedFiscalId] = useState<string | null>(null);
-  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState<number>(fiscalCarteraYearNow());
 
   // Paginación del servidor
   const [currentPage, setCurrentPage] = useState(1);
@@ -311,7 +316,7 @@ export default function FiscalReviewPageV2() {
             onChange={(e) => setSelectedYear(Number(e.target.value))}
             className="h-10 min-w-[120px] rounded-md border border-slate-600 bg-slate-700 px-3 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            {[2024, 2025, 2026].map((year) => (
+            {fiscalCarteraYearOptions().map((year) => (
               <option key={year} value={year}>
                 Año {year}
               </option>
