@@ -4,7 +4,7 @@ import ContributionsFilter from "@/components/contributions/contributions-filter
 
 import ContributionsStatistics from "@/components/contributions/contributions-statistics";
 
-import { GroupData } from "@/components/contributions/contribution-types";
+import { GroupData } from "@/components/contributions/contribution-types"; 
 
 import {
   normalizeContributionsGroups,
