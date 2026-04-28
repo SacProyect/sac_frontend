@@ -1,7 +1,7 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
 import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem } from '@/config/nav-routes';
-import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -84,8 +84,11 @@ const applyUserRestrictions = (items: NavItem[], userId: string): NavItem[] => {
 };
 
 const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
-    if (isNotificationsFeatureEnabled) return items;
-    return items.filter((item) => item.href !== '/notifications');
+    return items.filter((item) => {
+        if (!isNotificationsFeatureEnabled && item.href === '/notifications') return false;
+        if (!isInternalAuditFeatureEnabled && item.href === '/auditoria-interna') return false;
+        return true;
+    });
 };
 
 // ─── Función pública ──────────────────────────────────────────────────────────

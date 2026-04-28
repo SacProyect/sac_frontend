@@ -14,7 +14,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 // import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
 // import { PresentationProvider } from '@/components/context/PresentationContext';
@@ -166,11 +166,11 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "auditoria-interna",
-                        element: (
+                        element: isInternalAuditFeatureEnabled ? (
                             <Suspense fallback={<GlobalLoader message="Cargando auditoría interna..." />}>
                                 <InternalAuditPageV2 />
                             </Suspense>
-                        ),
+                        ) : <Navigate to="/admin" replace />,
                     },
                     {
                         path: "settings",

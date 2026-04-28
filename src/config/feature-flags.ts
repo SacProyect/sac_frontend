@@ -20,3 +20,8 @@ export const isNotificationsFeatureEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_NOTIFICATIONS_ENABLED,
   true
 );
+
+export const isInternalAuditFeatureEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_INTERNAL_AUDIT_ENABLED,
+  false
+);
