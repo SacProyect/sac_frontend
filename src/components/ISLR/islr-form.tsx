@@ -240,7 +240,8 @@ function IslrForm() {
     
     const taxpayerArray = useMemo(() => {
         console.log('[DEBUG] IslrForm - Role:', user?.role);
-        const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        // const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        const firstPageFiltered = (firstPageTaxpayers || []);
         const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
         const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
         const allFetched = [...displayedFirst, ...displayedExtra];
@@ -291,7 +292,8 @@ function IslrForm() {
         try {
             const response = await getTaxpayerForEvents(pageToFetch, 50, term);
             const data = (response?.data?.data ?? []) as Taxpayer[];
-            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            // const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            const filtered = data;
             if (isSearching) {
                 setSearchAdditionalPages(prev => [...prev, ...filtered]);
                 setSearchPage(prev => prev + 1);
@@ -342,7 +344,8 @@ function IslrForm() {
                 const response = await getTaxpayerForEvents(1, 50, term);
                 if (cancelled) return;
                 const data = (response?.data?.data ?? []) as Taxpayer[];
-                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                // const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                const filtered = data;
                 setSearchResults(filtered);
                 setSearchTotalPages(response?.data?.totalPages ?? 1);
                 setSearchAdditionalPages([]);
