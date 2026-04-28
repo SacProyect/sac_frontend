@@ -11,6 +11,7 @@ import { Menu, LogOut, Settings, Landmark } from 'lucide-react';
 import { useNavItems } from '@/hooks/use-nav-items';
 import { NotificationBell } from "@/components/Navigation/notification-bell";
 import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
+import { useDemoMode } from '@/hooks/use-demo-mode';
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -28,6 +29,7 @@ const MainLayoutV2 = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuth();
+    const { isDemoModeActive } = useDemoMode();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
@@ -205,14 +207,14 @@ const MainLayoutV2 = () => {
             {isPageLoading && <GlobalLoader />}
             
             <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
-                <Header />
+                {!isDemoModeActive && <Header />}
                 <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
                     {/* Subtle glow effect in the corner */}
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/5 blur-[120px] pointer-events-none rounded-full" />
                     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
                     
                     <div className="px-4 py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 max-w-full relative z-10 transition-all duration-500">
-                        <MaintenanceNotice />
+                        {!isDemoModeActive && <MaintenanceNotice />}
                         <Outlet />
                     </div>
                 </main>

@@ -18,16 +18,21 @@ interface IvaByGroupChartProps {
     groupId?: string;
 }
 
-export const IvaByGroupChart = ({ year, groupId }: IvaByGroupChartProps) => {
-    const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
-    const [loading, setLoading] = useState(true);
+export const IvaByGroupChart = ({ year, groupId, data }: IvaByGroupChartProps & { data?: GroupStat[] }) => {
+    const [groupStats, setGroupStats] = useState<GroupStat[]>(data || []);
+    const [loading, setLoading] = useState(!data);
 
     useEffect(() => {
+        if (data) {
+            setGroupStats(data);
+            setLoading(false);
+            return;
+        }
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getGroupPerformance(year, groupId);
-                setGroupStats(data);
+                const res = await getGroupPerformance(year, groupId);
+                setGroupStats(res);
             } catch (e) {
                 console.error(e);
                 toast.error("No se pudo obtener el rendimiento de IVA por grupo.");
@@ -37,7 +42,7 @@ export const IvaByGroupChart = ({ year, groupId }: IvaByGroupChartProps) => {
         };
 
         fetchData();
-    }, [year, groupId]);
+    }, [year, groupId, data]);
 
     // Transformar datos para el gráfico
     const chartData = groupStats.map((group) => ({

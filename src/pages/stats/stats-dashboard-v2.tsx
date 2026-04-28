@@ -1,8 +1,9 @@
-import { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { ChevronLeft, ChevronRight, Users, Monitor, Activity, Filter, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { LoadingState } from '@/components/UI/v2';
 import { useAuth } from '@/hooks/use-auth';
+import { useDemoMode } from '@/hooks/use-demo-mode';
 
 import {
   getGlobalPerformance,
@@ -18,7 +19,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/UI/select";
-import { Filter, CalendarDays, Activity } from 'lucide-react';
 
 import PageOneStats, { ChartData } from '@/components/stats/global-perfomance';
 import { PageTwoStats, MonthlyIvaStats } from '@/components/stats/global-taxpayer-performance';
@@ -27,35 +27,49 @@ import { IvaByGroupChart } from '@/components/stats/iva-by-group-chart';
 
 import StatsPage2Rankings from './stats-page2-rankings';
 import StatsPage3Cumplimiento from './stats-page3-cumplimiento';
+import StatsDemoMode from './stats-demo-mode';
 
-// ─── Page 1: 2×2 Grid ─────────────────────────────────────────────────────────
+// ─── Shared Stats Hook with Caching ──────────────────────────────────────────
 
-function StatsPage1Charts({ year, groupId }: { year: number; groupId?: string }) {
-  const [chartData, setChartData] = useState<ChartData[]>([]);
-  const [ivaStats, setIvaStats] = useState<MonthlyIvaStats | null>(null);
-  const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
-  const [loading, setLoading] = useState(true);
+function useStatsData(year: number, groupId?: string) {
+  const [data, setData] = useState<{
+    chartData: ChartData[];
+    ivaStats: MonthlyIvaStats | null;
+    groupStats: GroupStat[];
+    loading: boolean;
+  }>({
+    chartData: [],
+    ivaStats: null,
+    groupStats: [],
+    loading: true,
+  });
 
   useEffect(() => {
+    let cancelled = false;
     const fetch = async () => {
-      setLoading(true);
+      setData(prev => ({ ...prev, loading: true }));
       try {
         const [globalPerf, groupPerf] = await Promise.allSettled([
           getGlobalPerformance(year, groupId),
           getGroupPerformance(year, groupId),
         ]);
 
+        if (cancelled) return;
+
+        let chartData: ChartData[] = [];
+        let ivaStats: MonthlyIvaStats | null = null;
+        let groupStats: GroupStat[] = [];
+
         if (globalPerf.status === 'fulfilled' && Array.isArray(globalPerf.value)) {
           const months = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic'];
-          const mapped: ChartData[] = (globalPerf.value as any[]).map((d) => ({
+          chartData = (globalPerf.value as any[]).map((d) => ({
             month: `${year}-${String(d.month).padStart(2,'0')}`,
             realAmount: decimalToNumber(d.realAmount),
             expectedAmount: decimalToNumber(d.expectedAmount),
             taxpayersEmitted: d.taxpayersEmitted ?? 0,
           }));
-          setChartData(mapped);
 
-          const monthStats: MonthlyIvaStats = {
+          ivaStats = {
             year,
             months: (globalPerf.value as any[]).map((d) => ({
               monthIndex: d.month - 1,
@@ -64,31 +78,50 @@ function StatsPage1Charts({ year, groupId }: { year: number; groupId?: string })
             })),
             totalIvaCollected: (globalPerf.value as any[]).reduce((s: number, d: any) => s + decimalToNumber(d.realAmount), 0),
           };
-          setIvaStats(monthStats);
         }
 
         if (groupPerf.status === 'fulfilled' && Array.isArray(groupPerf.value)) {
-          const mappedGroups = (groupPerf.value as any[]).map(g => ({
+          groupStats = (groupPerf.value as any[]).map(g => ({
             ...g,
             totalPaidFines: decimalToNumber(g.totalPaidFines),
             totalPaidAmount: decimalToNumber(g.totalPaidAmount),
             totalIvaCollected: decimalToNumber(g.totalIvaCollected),
             totalIslrCollected: decimalToNumber(g.totalIslrCollected),
           }));
-          setGroupStats(mappedGroups as GroupStat[]);
         }
+
+        setData({ chartData, ivaStats, groupStats, loading: false });
       } catch (e) {
         console.error(e);
-      } finally {
-        setLoading(false);
+        if (!cancelled) setData(prev => ({ ...prev, loading: false }));
       }
     };
     fetch();
+    return () => { cancelled = true; };
   }, [year, groupId]);
 
+  return data;
+}
+
+// ─── Page 1: 2×2 Grid ─────────────────────────────────────────────────────────
+
+function StatsPage1Charts({ 
+  chartData, 
+  ivaStats, 
+  groupStats, 
+  loading,
+  year,
+  groupId
+}: { 
+  chartData: ChartData[];
+  ivaStats: MonthlyIvaStats | null;
+  groupStats: GroupStat[];
+  loading: boolean;
+  year: number; 
+  groupId?: string;
+}) {
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
-  // Un solo bloque con cruz (1 línea vert. + 1 horiz.) en sm+; en móvil solo separadores horizontales
   const qBase = 'min-h-0 overflow-hidden bg-slate-900/50';
   return (
     <div className="mx-auto flex h-full min-h-0 w-full min-w-0 max-w-5xl flex-1 flex-col px-2 py-2 sm:px-3 md:py-3">
@@ -110,7 +143,7 @@ function StatsPage1Charts({ year, groupId }: { year: number; groupId?: string })
         </div>
 
         <div className={qBase}>
-          <IvaByGroupChart year={year} groupId={groupId} />
+          <IvaByGroupChart year={year} groupId={groupId} data={groupStats} />
         </div>
       </div>
     </div>
@@ -125,8 +158,11 @@ const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
 
 export default function StatsDashboardV2() {
   const { user } = useAuth();
+  const { isDemoModeActive, activateDemoMode, deactivateDemoMode } = useDemoMode();
+  
   /** Filtro por coordinación: solo perfiles de visión global (no fiscales). */
   const showCoordinationFilter = Boolean(user && user.role !== 'FISCAL');
+  const isAdmin = user?.role === 'ADMIN';
 
   const [page, setPage] = useState(1);
   const [year, setYear] = useState(new Date().getFullYear());
@@ -134,8 +170,9 @@ export default function StatsDashboardV2() {
   const [coordinationOptions, setCoordinationOptions] = useState<{ id: string; name: string }[]>([]);
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-
   const activeGroupId = showCoordinationFilter ? (coordinationId.trim() || undefined) : undefined;
+
+  const { chartData, ivaStats, groupStats, loading } = useStatsData(year, activeGroupId);
 
   useEffect(() => {
     let cancelled = false;
@@ -152,15 +189,58 @@ export default function StatsDashboardV2() {
         if (!cancelled) setCoordinationOptions([]);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
+    return () => { cancelled = true; };
   }, [user]);
+
+  // Shortcut Ctrl+Shift+D to toggle Demo Mode (Admins only)
+  useEffect(() => {
+    if (!isAdmin) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'D') {
+        if (isDemoModeActive) deactivateDemoMode();
+        else activateDemoMode();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAdmin, isDemoModeActive, activateDemoMode, deactivateDemoMode]);
+
+  const demoPages = useMemo(() => [
+    {
+      id: 1,
+      title: 'Rendimiento Global de IVA',
+      component: <div className="h-full w-full p-4"><PageOneStats chartData={chartData} /></div>,
+    },
+    {
+      id: 2,
+      title: 'Recaudación Mensual',
+      component: <div className="h-full w-full p-4">{ivaStats && <PageTwoStats stats={ivaStats} />}</div>,
+    },
+    {
+      id: 3,
+      title: 'Rendimiento por Grupo',
+      component: <div className="h-full w-full p-4"><GroupPerformanceStats groupStats={groupStats} /></div>,
+    },
+    {
+      id: 4,
+      title: 'Rendimiento de IVA por Grupo',
+      component: <div className="h-full w-full p-4"><IvaByGroupChart year={year} groupId={activeGroupId} data={groupStats} /></div>,
+    },
+  ], [chartData, ivaStats, groupStats, year, activeGroupId]);
 
   return (
     <div
       className="mx-auto -mt-2 flex h-[calc(100dvh-4.5rem)] max-h-[calc(100dvh-4.5rem)] w-full min-w-0 max-w-5xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-xl md:-mt-3"
     >
+      {isDemoModeActive && isAdmin && (
+        <StatsDemoMode 
+          year={year} 
+          groupId={activeGroupId} 
+          pages={demoPages} 
+          onClose={deactivateDemoMode} 
+        />
+      )}
+
       {/* ── Filter Bar ──────────────────────────────────────────────── */}
         <div className="shrink-0 flex flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 border-b border-slate-700 bg-slate-900/50 backdrop-blur-md min-w-0">
         <div className="flex min-w-0 items-center gap-3">
@@ -220,16 +300,30 @@ export default function StatsDashboardV2() {
               </Select>
             </form>
           )}
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="h-9 px-3 border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl gap-2 text-xs"
-            onClick={() => window.location.reload()}
-          >
-            <Activity className="w-3.5 h-3.5" />
-            Actualizar
-          </Button>
+
+          <div className="flex items-center gap-2">
+            {isAdmin && (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="h-9 px-3 border-blue-700/50 bg-blue-600/10 text-blue-400 hover:text-white hover:bg-blue-600 rounded-xl gap-2 text-xs font-bold transition-all group shadow-lg shadow-blue-900/20"
+                onClick={activateDemoMode}
+              >
+                <Monitor className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                Modo DEMO
+              </Button>
+            )}
+            
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="h-9 px-3 border-slate-700 bg-slate-900/50 text-slate-400 hover:text-white hover:bg-slate-800 rounded-xl gap-2 text-xs"
+              onClick={() => window.location.reload()}
+            >
+              <Activity className="w-3.5 h-3.5" />
+              Actualizar
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -241,7 +335,16 @@ export default function StatsDashboardV2() {
             : 'min-h-0 flex-1 overflow-y-auto custom-scrollbar'
         }
       >
-        {page === 1 && <StatsPage1Charts year={year} groupId={activeGroupId} />}
+        {page === 1 && (
+          <StatsPage1Charts 
+            year={year} 
+            groupId={activeGroupId} 
+            chartData={chartData}
+            ivaStats={ivaStats}
+            groupStats={groupStats}
+            loading={loading}
+          />
+        )}
         {page === 2 && <StatsPage2Rankings year={year} groupId={activeGroupId} />}
         {page === 3 && <StatsPage3Cumplimiento year={year} groupId={activeGroupId} />}
       </div>
