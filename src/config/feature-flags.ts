@@ -25,3 +25,8 @@ export const isInternalAuditFeatureEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_INTERNAL_AUDIT_ENABLED,
   false
 );
+
+export const isTaxpayerDashboardFeatureEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_TAXPAYER_DASHBOARD_ENABLED,
+  false
+);

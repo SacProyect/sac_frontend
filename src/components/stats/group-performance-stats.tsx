@@ -1,4 +1,5 @@
 import React from "react";
+import { StatsDesignVariant } from "./global-perfomance";
 
 export interface GroupStat {
     groupName: string;
@@ -10,9 +11,37 @@ export interface GroupStat {
 
 interface Props {
     groupStats: GroupStat[];
+    designVariant?: StatsDesignVariant;
 }
 
-export const GroupPerformanceStats = ({ groupStats }: Props) => {
+const DESIGN_STYLES: Record<StatsDesignVariant, {
+    panelBg: string;
+    titleBorder: string;
+    titleBg: string;
+    subtitle: string;
+}> = {
+    classic: {
+        panelBg: "bg-slate-950/80",
+        titleBorder: "border-slate-500",
+        titleBg: "bg-slate-800/90",
+        subtitle: "text-slate-400",
+    },
+    contrast: {
+        panelBg: "bg-slate-950",
+        titleBorder: "border-blue-400/60",
+        titleBg: "bg-blue-950/60",
+        subtitle: "text-slate-200",
+    },
+    minimal: {
+        panelBg: "bg-slate-900/40",
+        titleBorder: "border-slate-700",
+        titleBg: "bg-slate-900/30",
+        subtitle: "text-slate-500",
+    },
+};
+
+export const GroupPerformanceStats = ({ groupStats, designVariant = "classic" }: Props) => {
+    const style = DESIGN_STYLES[designVariant];
     const totalPaid = groupStats.reduce((sum, g) => sum + Number(g.totalPaidFines), 0);
     const totalCollected = groupStats.reduce((sum, g) => sum + Number(g.totalPaidAmount), 0);
 
@@ -42,6 +71,11 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
     const fmtBs = (n: number) =>
         n.toLocaleString("es-VE", { maximumFractionDigits: 0 });
 
+    const formatPercentage = (value: number, total: number) => {
+        if (!total) return "0.0%";
+        return `${((value / total) * 100).toFixed(1)}%`;
+    };
+
     const MetricRow = ({
         label,
         colorClass,
@@ -65,7 +99,7 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                 <div className={`absolute left-0 top-0 h-full rounded-full ${barClass}`} style={{ width: pct, minWidth: "2px" }} />
             </div>
             <div
-                className={`min-w-0 text-right text-[7px] tabular-nums sm:text-[10px] ${colorClass} truncate`}
+                className={`min-w-0 text-right text-[8px] tabular-nums sm:text-[10px] ${colorClass} truncate`}
                 title={valueTitle}
             >
                 {value}
@@ -75,21 +109,21 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
 
     return (
         <div className="flex h-full min-h-0 w-full flex-col">
-            <div className="flex h-full min-h-0 w-full flex-col bg-slate-900/80 px-2 pb-2 pt-3 sm:px-3">
+            <div className={`flex h-full min-h-0 w-full flex-col ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
                 <div className="shrink-0 text-center text-white">
-                    <p className="mx-auto max-w-sm rounded-md border border-slate-600 bg-slate-800 py-0.5 text-[10px] font-semibold sm:py-1 sm:text-xs">
+                    <p className={`mx-auto max-w-sm rounded-md border ${style.titleBorder} ${style.titleBg} py-0.5 text-[10px] font-semibold tracking-wide sm:py-1 sm:text-xs`}>
                         RENDIMIENTO POR GRUPO
                     </p>
                 </div>
 
-                <p className="mb-1 line-clamp-1 text-center text-[8px] leading-tight text-slate-500 sm:text-[9px]">
-                    Multas, IVA, ISLR.
+                <p className={`mb-1 line-clamp-1 text-center text-[10px] leading-tight ${style.subtitle}`}>
+                    Multas, IVA, ISLR con participación relativa por coordinación.
                 </p>
 
                 <div className="custom-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5">
                     {sortedStats.map((group, i) => (
                         <div key={i} className="border-b border-slate-800/80 pb-1.5 last:border-0 last:pb-0">
-                            <div className="mb-1 line-clamp-1 text-left text-[10px] font-semibold text-slate-200 sm:text-xs" title={group.groupName}>
+                            <div className="mb-1 line-clamp-1 text-left text-[10px] font-semibold text-slate-100 sm:text-xs" title={group.groupName}>
                                 {group.groupName}
                             </div>
 
@@ -99,14 +133,14 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                     colorClass="text-sky-400"
                                     barClass="bg-sky-500"
                                     pct={getBarWidth(group.totalPaidFines, totalPaid)}
-                                    value={group.totalPaidFines}
+                                    value={`${group.totalPaidFines} · ${formatPercentage(group.totalPaidFines, totalPaid)}`}
                                 />
                                 <MetricRow
                                     label="Pagado multas"
                                     colorClass="text-emerald-400"
                                     barClass="bg-emerald-500"
                                     pct={getBarWidth(group.totalPaidAmount, totalCollected)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalPaidAmount))}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalPaidAmount))} · {formatPercentage(group.totalPaidAmount, totalCollected)}</span>}
                                     valueTitle={String(group.totalPaidAmount)}
                                 />
                                 <MetricRow
@@ -114,14 +148,14 @@ export const GroupPerformanceStats = ({ groupStats }: Props) => {
                                     colorClass="text-amber-400"
                                     barClass="bg-amber-500"
                                     pct={getBarWidth(group.totalIvaCollected, totalIva)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalIvaCollected))}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalIvaCollected))} · {formatPercentage(group.totalIvaCollected, totalIva)}</span>}
                                 />
                                 <MetricRow
                                     label="ISLR pagado"
                                     colorClass="text-rose-400"
                                     barClass="bg-rose-500"
                                     pct={getBarWidth(group.totalIslrCollected, totalIslr)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalIslrCollected))}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalIslrCollected))} · {formatPercentage(group.totalIslrCollected, totalIslr)}</span>}
                                 />
                             </div>
                         </div>

@@ -8,10 +8,10 @@ import { ErrorFallback } from './components/errors/error-fallback'
 import './index.css'
 
 createRoot(document.getElementById('root')!).render(
-  <StrictMode>
+  <>
     <Toaster position='top-right' />
     <ErrorBoundary FallbackComponent={ErrorFallback}>
       <AppRouter />
     </ErrorBoundary>
-  </StrictMode >,
+  </>,
 )

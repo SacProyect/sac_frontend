@@ -19,8 +19,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/UI/select";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/UI/tabs";
 
-import PageOneStats, { ChartData } from '@/components/stats/global-perfomance';
+import PageOneStats, { ChartData, StatsDesignVariant } from '@/components/stats/global-perfomance';
 import { PageTwoStats, MonthlyIvaStats } from '@/components/stats/global-taxpayer-performance';
 import { GroupPerformanceStats, GroupStat } from '@/components/stats/group-performance-stats';
 import { IvaByGroupChart } from '@/components/stats/iva-by-group-chart';
@@ -103,7 +104,7 @@ function useStatsData(year: number, groupId?: string) {
   return data;
 }
 
-// ─── Page 1: 2×2 Grid ─────────────────────────────────────────────────────────
+// ─── Page 1: Charts in Tabs ───────────────────────────────────────────────────
 
 function StatsPage1Charts({ 
   chartData, 
@@ -111,7 +112,9 @@ function StatsPage1Charts({
   groupStats, 
   loading,
   year,
-  groupId
+  groupId,
+  designVariant,
+  onDesignVariantChange,
 }: { 
   chartData: ChartData[];
   ivaStats: MonthlyIvaStats | null;
@@ -119,33 +122,78 @@ function StatsPage1Charts({
   loading: boolean;
   year: number; 
   groupId?: string;
+  designVariant: StatsDesignVariant;
+  onDesignVariantChange: (variant: StatsDesignVariant) => void;
 }) {
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
-  const qBase = 'min-h-0 overflow-hidden bg-slate-900/50';
   return (
     <div className="mx-auto flex h-full min-h-0 w-full min-w-0 max-w-5xl flex-1 flex-col px-2 py-2 sm:px-3 md:py-3">
-      <div className="grid h-full min-h-0 flex-1 auto-rows-[minmax(0,1fr)] grid-cols-1 overflow-hidden rounded-lg border border-slate-700/80 sm:grid-cols-2 sm:grid-rows-2">
-        <div className={`${qBase} border-b border-slate-700/60 sm:border-b sm:border-r`}>
-          <PageOneStats chartData={chartData} />
+      <Tabs defaultValue="global-iva" className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-slate-700/70 bg-slate-950/35">
+        <div className="shrink-0 border-b border-slate-700/50 px-2 py-2 sm:px-3">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900/70 p-1 sm:w-auto">
+            <TabsTrigger
+              value="global-iva"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              Global IVA
+            </TabsTrigger>
+            <TabsTrigger
+              value="recaudacion-mensual"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              Recaudación mensual
+            </TabsTrigger>
+            <TabsTrigger
+              value="rendimiento-grupo"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              Rendimiento por grupo
+            </TabsTrigger>
+            <TabsTrigger
+              value="iva-grupo"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none"
+            >
+              IVA por grupo
+            </TabsTrigger>
+            </TabsList>
+            <div className="flex items-center gap-2 self-end sm:self-auto">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Diseño</span>
+              <Select value={designVariant} onValueChange={(v) => onDesignVariantChange(v as StatsDesignVariant)}>
+                <SelectTrigger className="h-8 w-[170px] rounded-md border-slate-700 bg-slate-900/70 text-xs text-slate-200">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="border-slate-700 bg-slate-900 text-slate-200">
+                  <SelectItem value="classic" className="text-xs">Clásico</SelectItem>
+                  <SelectItem value="contrast" className="text-xs">Alto contraste</SelectItem>
+                  <SelectItem value="minimal" className="text-xs">Minimal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
 
-        <div className={`${qBase} border-b border-slate-700/60 sm:border-b`}>
+        <TabsContent value="global-iva" className="mt-0 min-h-0 flex-1 overflow-hidden">
+          <PageOneStats chartData={chartData} designVariant={designVariant} />
+        </TabsContent>
+
+        <TabsContent value="recaudacion-mensual" className="mt-0 min-h-0 flex-1 overflow-hidden">
           {ivaStats ? (
-            <PageTwoStats stats={ivaStats} />
+            <PageTwoStats stats={ivaStats} designVariant={designVariant} />
           ) : (
-            <div className="flex h-full min-h-[80px] items-center justify-center text-slate-400 text-sm">Sin datos</div>
+            <div className="flex h-full min-h-[120px] items-center justify-center text-slate-400 text-sm">Sin datos</div>
           )}
-        </div>
+        </TabsContent>
 
-        <div className={`${qBase} border-b border-slate-700/60 sm:border-b-0 sm:border-r`}>
-          <GroupPerformanceStats groupStats={groupStats} />
-        </div>
+        <TabsContent value="rendimiento-grupo" className="mt-0 min-h-0 flex-1 overflow-hidden">
+          <GroupPerformanceStats groupStats={groupStats} designVariant={designVariant} />
+        </TabsContent>
 
-        <div className={qBase}>
-          <IvaByGroupChart year={year} groupId={groupId} data={groupStats} />
-        </div>
-      </div>
+        <TabsContent value="iva-grupo" className="mt-0 min-h-0 flex-1 overflow-hidden">
+          <IvaByGroupChart year={year} groupId={groupId} data={groupStats} designVariant={designVariant} />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
@@ -167,6 +215,7 @@ export default function StatsDashboardV2() {
   const [page, setPage] = useState(1);
   const [year, setYear] = useState(new Date().getFullYear());
   const [coordinationId, setCoordinationId] = useState('');
+  const [designVariant, setDesignVariant] = useState<StatsDesignVariant>("classic");
   const [coordinationOptions, setCoordinationOptions] = useState<{ id: string; name: string }[]>([]);
 
   const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
@@ -192,11 +241,18 @@ export default function StatsDashboardV2() {
     return () => { cancelled = true; };
   }, [user]);
 
-  // Shortcut Ctrl+Shift+D to toggle Demo Mode (Admins only)
+  // Shortcut Ctrl+Shift+D / Ctrl+Alt+D to toggle Demo Mode (Admins only)
   useEffect(() => {
     if (!isAdmin) return;
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.ctrlKey && e.shiftKey && e.key.toUpperCase() === 'D') {
+      // Prefer `code` for layout-independent detection and support a fallback combo
+      // because some environments can swallow Ctrl+Shift+D.
+      const isDKey = e.code === 'KeyD' || e.key.toLowerCase() === 'd';
+      const primaryCombo = e.ctrlKey && e.shiftKey;
+      const fallbackCombo = e.ctrlKey && e.altKey;
+
+      if (isDKey && (primaryCombo || fallbackCombo)) {
+        e.preventDefault();
         if (isDemoModeActive) deactivateDemoMode();
         else activateDemoMode();
       }
@@ -209,24 +265,24 @@ export default function StatsDashboardV2() {
     {
       id: 1,
       title: 'Rendimiento Global de IVA',
-      component: <div className="h-full w-full p-4"><PageOneStats chartData={chartData} /></div>,
+      component: <div className="h-full w-full p-4"><PageOneStats chartData={chartData} designVariant={designVariant} /></div>,
     },
     {
       id: 2,
       title: 'Recaudación Mensual',
-      component: <div className="h-full w-full p-4">{ivaStats && <PageTwoStats stats={ivaStats} />}</div>,
+      component: <div className="h-full w-full p-4">{ivaStats && <PageTwoStats stats={ivaStats} designVariant={designVariant} />}</div>,
     },
     {
       id: 3,
       title: 'Rendimiento por Grupo',
-      component: <div className="h-full w-full p-4"><GroupPerformanceStats groupStats={groupStats} /></div>,
+      component: <div className="h-full w-full p-4"><GroupPerformanceStats groupStats={groupStats} designVariant={designVariant} /></div>,
     },
     {
       id: 4,
       title: 'Rendimiento de IVA por Grupo',
-      component: <div className="h-full w-full p-4"><IvaByGroupChart year={year} groupId={activeGroupId} data={groupStats} /></div>,
+      component: <div className="h-full w-full p-4"><IvaByGroupChart year={year} groupId={activeGroupId} data={groupStats} designVariant={designVariant} /></div>,
     },
-  ], [chartData, ivaStats, groupStats, year, activeGroupId]);
+  ], [chartData, ivaStats, groupStats, year, activeGroupId, designVariant]);
 
   return (
     <div
@@ -308,6 +364,7 @@ export default function StatsDashboardV2() {
                 size="sm" 
                 className="h-9 px-3 border-blue-700/50 bg-blue-600/10 text-blue-400 hover:text-white hover:bg-blue-600 rounded-xl gap-2 text-xs font-bold transition-all group shadow-lg shadow-blue-900/20"
                 onClick={activateDemoMode}
+                title="Atajo: Ctrl+Shift+D (o Ctrl+Alt+D)"
               >
                 <Monitor className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
                 Modo DEMO
@@ -343,6 +400,8 @@ export default function StatsDashboardV2() {
             ivaStats={ivaStats}
             groupStats={groupStats}
             loading={loading}
+            designVariant={designVariant}
+            onDesignVariantChange={setDesignVariant}
           />
         )}
         {page === 2 && <StatsPage2Rankings year={year} groupId={activeGroupId} />}

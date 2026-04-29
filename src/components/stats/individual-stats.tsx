@@ -29,7 +29,15 @@ interface IndividualStatsProps {
     events: Event[],
     IVAReports: IVAReports[],
     taxpayerData?: TaxpayerData;
+    observations?: ObservationData[];
     onTaxpayerDataLoaded?: (summary: TaxpayerSummaryStrip | null) => void;
+}
+
+interface ObservationData {
+    id: string;
+    description: string;
+    date: string;
+    created_at?: string;
 }
 
 function IndividualStatsLeftSkeleton() {
@@ -90,9 +98,9 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerDataFromLoader, observations: observationsFromLoader, onTaxpayerDataLoaded }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
-    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(undefined);
+    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(taxpayerDataFromLoader);
     const { user } = useAuth();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showModal, setShowModal] = useState(false); // Nuevo estado para mostrar modal
@@ -133,6 +141,12 @@ export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: In
     const [loadingDetails, setLoadingDetails] = useState(true);
 
     useEffect(() => {
+        if (taxpayerDataFromLoader) {
+            setTaxpayerData(taxpayerDataFromLoader);
+            setLoadingDetails(false);
+            return;
+        }
+
         const fetchData = async () => {
             try {
                 if (taxpayer) {
@@ -147,7 +161,7 @@ export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: In
             }
         };
         fetchData();
-    }, [taxpayer]);
+    }, [taxpayer, taxpayerDataFromLoader]);
 
     useEffect(() => {
         if (!onTaxpayerDataLoaded) return;
@@ -763,7 +777,7 @@ export const IndividualStats = ({ events, IVAReports, onTaxpayerDataLoaded }: In
 
                 {/* ── Columna Derecha — Observaciones ── */}
                 <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 border-slate-700/50 min-h-[300px] lg:min-h-[420px]">
-                  <ObservationsPanel taxpayerId={taxpayer} />
+                  <ObservationsPanel taxpayerId={taxpayer} initialObservations={observationsFromLoader ?? []} />
                 </div>
             </div>
             {showFaseModal && (

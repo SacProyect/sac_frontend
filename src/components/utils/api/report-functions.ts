@@ -524,6 +524,31 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 	}
 };
 
+export interface TaxpayerDashboardResponse {
+	taxpayerId: string;
+	generatedAt: string;
+	taxpayerData?: unknown;
+	events?: unknown[];
+	fineHistory?: unknown;
+	paymentHistory?: unknown;
+	pendingEvents?: unknown[];
+	ivaPerformance?: unknown;
+	taxSummary?: unknown[] | { data?: unknown[] };
+	islrReports?: unknown[] | { data?: unknown[] };
+	observations?: unknown[];
+}
+
+/** Endpoint agregador del dashboard de detalle de contribuyente. */
+export const getTaxpayerDashboard = async (taxpayerId: string): Promise<TaxpayerDashboardResponse> => {
+	try {
+		const response = await apiConnection.get(`reports/taxpayer-dashboard/${taxpayerId}`);
+		return response.data as TaxpayerDashboardResponse;
+	} catch (e) {
+		console.error("Error al obtener taxpayer dashboard:", e);
+		throw new Error("No se pudo obtener el dashboard del contribuyente.");
+	}
+};
+
 export function buildInternalAuditDashboardQuery(params: InternalAuditQueryParams): string {
 	const q = new URLSearchParams();
 	if (params.from) q.set("from", params.from);

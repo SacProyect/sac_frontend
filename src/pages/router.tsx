@@ -2,7 +2,7 @@ import { ProtectedRoute } from '@/components/Navigation/protected-route';
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout } from '@/hooks/use-auth';
-import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/report-functions';
+import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory, getTaxpayerDashboard } from '@/components/utils/api/report-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayoutV2 from '@/main-layout-v2';
@@ -14,7 +14,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 // import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
 // import { PresentationProvider } from '@/components/context/PresentationContext';
@@ -120,6 +120,7 @@ type LoaderData = {
     taxSummary: IVAReports[],
     islrReports: ISLRReports[],
     taxpayerData: any;
+    observations: any[];
 }
 
 export interface Fines {
@@ -396,7 +397,35 @@ export const router = createBrowserRouter([
                         loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
                             try {
                                 const taxpayerId = params.taxpayer;
-                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null };
+                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null, observations: [] };
+
+                                if (isTaxpayerDashboardFeatureEnabled) {
+                                    const dashboard = await getTaxpayerDashboard(taxpayerId);
+                                    const events = Array.isArray(dashboard?.events) ? (dashboard.events as Event[]) : [];
+                                    events.forEach((event) => (event.id = `${event.id}`));
+
+                                    const taxSummaryPayload = dashboard?.taxSummary as { data?: IVAReports[] } | IVAReports[] | undefined;
+                                    const taxSummary = Array.isArray(taxSummaryPayload)
+                                        ? taxSummaryPayload
+                                        : Array.isArray(taxSummaryPayload?.data)
+                                            ? taxSummaryPayload.data
+                                            : [];
+
+                                    const islrPayload = dashboard?.islrReports as { data?: ISLRReports[] } | ISLRReports[] | undefined;
+                                    const islrReports = Array.isArray(islrPayload)
+                                        ? islrPayload
+                                        : Array.isArray(islrPayload?.data)
+                                            ? islrPayload.data
+                                            : [];
+
+                                    const fines = (dashboard?.fineHistory ?? []) as Fines[];
+                                    const payments = (dashboard?.paymentHistory ?? []) as Payment[];
+                                    const taxpayerData = dashboard?.taxpayerData ?? null;
+                                    const observations = Array.isArray(dashboard?.observations) ? dashboard.observations : [];
+
+                                    return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations };
+                                }
+
                                 const taxpayerData = await getTaxpayerData(taxpayerId);
                                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                                 events.forEach((event) => (event.id = `${event.id}`));
@@ -406,10 +435,10 @@ export const router = createBrowserRouter([
                                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
                                 const islrReports = (await getIslrReports(taxpayerId)).data
 
-                                return { events, fines, payments, taxSummary, islrReports, taxpayerData };
+                                return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations: [] };
                             } catch (error) {
                                 console.error(error);
-                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null };
+                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null, observations: [] };
                             }
                         },
                     },
