@@ -114,6 +114,8 @@ function StatsPage1Charts({
   loading,
   year,
   groupId,
+  activeTab,
+  onTabChange,
   designVariant,
   onDesignVariantChange,
 }: { 
@@ -123,6 +125,8 @@ function StatsPage1Charts({
   loading: boolean;
   year: number; 
   groupId?: string;
+  activeTab: StatsTabValue;
+  onTabChange: (tab: StatsTabValue) => void;
   designVariant: StatsDesignVariant;
   onDesignVariantChange: (variant: StatsDesignVariant) => void;
 }) {
@@ -130,7 +134,7 @@ function StatsPage1Charts({
 
   return (
     <div className="mx-auto flex h-auto w-full min-w-0 max-w-6xl flex-col px-2 py-2 sm:px-3 md:py-3">
-      <Tabs defaultValue="global-iva" className="flex h-auto flex-col overflow-visible rounded-lg border border-slate-700/70 bg-slate-950/35">
+      <Tabs value={activeTab} onValueChange={(v) => onTabChange(v as StatsTabValue)} className="flex h-auto flex-col overflow-visible rounded-lg border border-slate-700/70 bg-slate-950/35">
         <div className="shrink-0 border-b border-slate-700/50 px-2 py-2 sm:px-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900/70 p-1 sm:w-auto">
@@ -204,6 +208,9 @@ function StatsPage1Charts({
 const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
 const COORDINATION_QUERY_KEY = 'coordination';
 const DATE_QUERY_KEY = 'date';
+const TAB_QUERY_KEY = 'tab';
+const TAB_VALUES = ['global-iva', 'recaudacion-mensual', 'rendimiento-grupo', 'iva-grupo'] as const;
+type StatsTabValue = typeof TAB_VALUES[number];
 
 function sanitizeCoordinationId(raw: string | null): string {
   const value = (raw ?? '').trim();
@@ -217,6 +224,11 @@ function sanitizeYear(raw: string | null, allowedYears: number[], fallbackYear: 
   if (!/^\d{4}$/.test(value)) return fallbackYear;
   const year = Number(value);
   return allowedYears.includes(year) ? year : fallbackYear;
+}
+
+function sanitizeTab(raw: string | null): StatsTabValue {
+  const value = (raw ?? '').trim();
+  return (TAB_VALUES as readonly string[]).includes(value) ? (value as StatsTabValue) : 'global-iva';
 }
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
@@ -239,6 +251,7 @@ export default function StatsDashboardV2() {
   const [coordinationOptions, setCoordinationOptions] = useState<{ id: string; name: string }[]>([]);
 
   const coordinationId = sanitizeCoordinationId(searchParams.get(COORDINATION_QUERY_KEY));
+  const activeTab = sanitizeTab(searchParams.get(TAB_QUERY_KEY));
   const activeGroupId = showCoordinationFilter ? (coordinationId || undefined) : undefined;
 
   const setYearParam = useCallback((nextYear: number) => {
@@ -257,6 +270,13 @@ export default function StatsDashboardV2() {
     setSearchParams(next, { replace: true });
   }, [searchParams, setSearchParams]);
 
+  const setTabParam = useCallback((tab: StatsTabValue) => {
+    const safeTab = sanitizeTab(tab);
+    const next = new URLSearchParams(searchParams);
+    next.set(TAB_QUERY_KEY, safeTab);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
   const { chartData, ivaStats, groupStats, loading } = useStatsData(year, activeGroupId);
 
   useEffect(() => {
@@ -272,6 +292,16 @@ export default function StatsDashboardV2() {
       setYear(safeYear);
     }
   }, [searchParams, setSearchParams, years, currentYear, year]);
+
+  useEffect(() => {
+    const safeTab = sanitizeTab(searchParams.get(TAB_QUERY_KEY));
+    const rawTab = searchParams.get(TAB_QUERY_KEY);
+    if (rawTab !== safeTab) {
+      const next = new URLSearchParams(searchParams);
+      next.set(TAB_QUERY_KEY, safeTab);
+      setSearchParams(next, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
 
   useEffect(() => {
     let cancelled = false;
@@ -461,6 +491,8 @@ export default function StatsDashboardV2() {
           <StatsPage1Charts 
             year={year} 
             groupId={activeGroupId} 
+            activeTab={activeTab}
+            onTabChange={setTabParam}
             chartData={chartData}
             ivaStats={ivaStats}
             groupStats={groupStats}
