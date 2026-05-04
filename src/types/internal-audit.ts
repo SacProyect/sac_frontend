@@ -62,3 +62,37 @@ export type InternalAuditQueryParams = {
   /** Año UTC para pendientes de cartera IVA/ISLR (opcional). */
   statsYear?: number;
 };
+
+export type UsageRankingScope = "all" | "coordination" | "supervisor";
+
+export interface UsageRankingFiscalRow {
+  userId: string;
+  name: string;
+  personId: number;
+  groupId: string | null;
+  auditActions: number;
+  taxpayersTouched: number;
+  ivaLoads: number;
+  islrLoads: number;
+  taxLoads: number;
+  usageScore: number;
+  lastActivityAt: string | null;
+}
+
+export interface UsageRankingTopBottomResponse {
+  generatedAt: string;
+  scope: UsageRankingScope;
+  window: {
+    from: string;
+    to: string;
+    defaultWindowDays: number;
+  };
+  weights: {
+    auditAction: number;
+    taxpayerTouch: number;
+    ivaLoad: number;
+    islrLoad: number;
+  };
+  top5: UsageRankingFiscalRow[];
+  bottom5: UsageRankingFiscalRow[];
+}

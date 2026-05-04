@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Label } from "@/components/UI/label";
@@ -14,6 +15,22 @@ import type { InternalAuditQueryParams } from "@/types/internal-audit";
 
 const CARTERA_YEAR_MIN = 2018;
 const CARTERA_YEAR_MAX = 2032;
+
+const inputDense =
+  "h-8 text-xs bg-slate-900 border-slate-700/80 text-slate-100 py-1 px-2 shadow-none";
+
+function clampShortHours(n: number): number {
+  return Math.min(168, Math.max(1, Math.round(n)));
+}
+
+/** Vacío o inválido → fallback (último valor conocido del borrador). */
+function parseShortHoursInput(raw: string, fallback: number): number {
+  const t = raw.trim();
+  if (t === "") return clampShortHours(fallback);
+  const n = parseInt(t, 10);
+  if (Number.isNaN(n)) return clampShortHours(fallback);
+  return clampShortHours(n);
+}
 
 function yearOptions(): number[] {
   const out: number[] = [];
@@ -32,7 +49,8 @@ export type InternalAuditDraft = {
 type Props = {
   draft: InternalAuditDraft;
   onDraftChange: (d: InternalAuditDraft) => void;
-  onApply: () => void;
+  /** Recibe el borrador consolidado (horas cortas tomadas del input). */
+  onApply: (next: InternalAuditDraft) => void;
   onExportCsv: () => void;
   onRefresh: () => void;
   busy?: boolean;
@@ -48,122 +66,159 @@ export function InternalAuditToolbar({
   busy,
   onPresetDays,
 }: Props) {
+  const [hoursStr, setHoursStr] = useState(() => String(draft.shortHours));
+
+  useEffect(() => {
+    setHoursStr(String(draft.shortHours));
+  }, [draft.shortHours]);
+
+  const mergeCommittedShortHours = (base: InternalAuditDraft): InternalAuditDraft => {
+    const shortHours = parseShortHoursInput(hoursStr, base.shortHours);
+    setHoursStr(String(shortHours));
+    return { ...base, shortHours };
+  };
+
+  const runApply = () => {
+    const next = mergeCommittedShortHours(draft);
+    onDraftChange(next);
+    onApply(next);
+  };
+
   return (
-    <div className="rounded-xl border border-slate-800 bg-slate-950/70 p-4 space-y-5">
-      <div className="flex flex-col gap-3 text-slate-300 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-2">
-          <SlidersHorizontal className="h-4 w-4 text-cyan-400/70" />
-          <span className="text-sm font-medium text-slate-200">Ventana de análisis de adopción (eventos en auditoría)</span>
+    <div className="rounded-lg border border-slate-800/90 bg-slate-950/80 p-3 space-y-3">
+      {/* Fila 1: título + presets */}
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between gap-y-2">
+        <div className="flex items-center gap-1.5 min-w-0">
+          <SlidersHorizontal className="h-3.5 w-3.5 shrink-0 text-cyan-400/70" aria-hidden />
+          <span className="text-xs font-medium text-slate-200 truncate">
+            Ventana de adopción <span className="text-slate-500 font-normal">(auditoría)</span>
+          </span>
         </div>
-        <div className="grid grid-cols-3 gap-2 w-full md:w-auto">
-          <Button type="button" variant="secondary" size="sm" className="w-full" onClick={() => onPresetDays(7)}>
-            7 días
-          </Button>
-          <Button type="button" variant="secondary" size="sm" className="w-full" onClick={() => onPresetDays(30)}>
-            30 días
-          </Button>
-          <Button type="button" variant="secondary" size="sm" className="w-full" onClick={() => onPresetDays(90)}>
-            90 días
-          </Button>
+        <div className="flex items-center gap-1 shrink-0">
+          {([7, 30, 90] as const).map((d) => (
+            <Button
+              key={d}
+              type="button"
+              variant="secondary"
+              size="sm"
+              className="h-7 px-2 text-[11px]"
+              onClick={() => onPresetDays(d)}
+            >
+              {d}d
+            </Button>
+          ))}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-12 gap-4 items-end">
-        <div className="space-y-1.5 xl:col-span-3">
-          <Label className="text-slate-400 text-xs">Desde</Label>
+      {/* Fila 2: fechas + horas + acciones — grilla densa alineada */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-x-3 gap-y-2 items-end">
+        <div className="space-y-0.5 sm:col-span-1 lg:col-span-3">
+          <Label className="text-[10px] uppercase tracking-wide text-slate-500">Desde</Label>
           <Input
             type="datetime-local"
-            className="bg-slate-900 border-slate-700 text-slate-100"
+            className={inputDense}
             value={draft.fromLocal}
             onChange={(e) => onDraftChange({ ...draft, fromLocal: e.target.value })}
           />
         </div>
-        <div className="space-y-1.5 xl:col-span-3">
-          <Label className="text-slate-400 text-xs">Hasta</Label>
+        <div className="space-y-0.5 sm:col-span-1 lg:col-span-3">
+          <Label className="text-[10px] uppercase tracking-wide text-slate-500">Hasta</Label>
           <Input
             type="datetime-local"
-            className="bg-slate-900 border-slate-700 text-slate-100"
+            className={inputDense}
             value={draft.toLocal}
             onChange={(e) => onDraftChange({ ...draft, toLocal: e.target.value })}
           />
         </div>
-        <div className="space-y-1.5 xl:col-span-3">
-          <Label className="text-slate-400 text-xs">Ventana corta (horas)</Label>
+        <div className="space-y-0.5 sm:col-span-1 lg:col-span-2">
+          <Label
+            className="text-[10px] uppercase tracking-wide text-slate-500"
+            title="KPI actividad: últimas N horas desde ahora"
+          >
+            Horas cortas
+          </Label>
           <Input
-            type="number"
-            min={1}
-            max={168}
-            className="bg-slate-900 border-slate-700 text-slate-100"
-            value={draft.shortHours}
-            onChange={(e) =>
-              onDraftChange({ ...draft, shortHours: Math.min(168, Math.max(1, Number(e.target.value) || 24)) })
-            }
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            maxLength={3}
+            className={`${inputDense} tabular-nums`}
+            value={hoursStr}
+            onChange={(e) => setHoursStr(e.target.value)}
+            onBlur={() => {
+              const n = parseShortHoursInput(hoursStr, draft.shortHours);
+              setHoursStr(String(n));
+              if (n !== draft.shortHours) onDraftChange({ ...draft, shortHours: n });
+            }}
           />
-          <p className="text-[10px] text-slate-500">KPI de actividad: últimas N horas respecto a ahora</p>
         </div>
-        <div className="xl:col-span-3">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 xl:pt-[22px]">
-            <Button type="button" onClick={onApply} disabled={busy} className="w-full h-10">
-            Aplicar filtros
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void onRefresh()}
-              disabled={busy}
-              className="w-full h-10 justify-center"
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${busy ? "animate-spin" : ""}`} />
-              Actualizar
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => void onExportCsv()}
-              disabled={busy}
-              className="w-full h-10 justify-center"
-            >
-              <Download className="h-4 w-4 mr-2" />
-              CSV
-            </Button>
-          </div>
+        <div className="flex flex-wrap gap-1.5 sm:col-span-2 lg:col-span-4 lg:justify-end">
+          <Button type="button" size="sm" className="h-8 text-xs px-3" onClick={runApply} disabled={busy}>
+            Aplicar
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs px-2.5"
+            onClick={() => void onRefresh()}
+            disabled={busy}
+          >
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${busy ? "animate-spin" : ""}`} />
+            Actualizar
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            className="h-8 text-xs px-2.5"
+            onClick={() => void onExportCsv()}
+            disabled={busy}
+          >
+            <Download className="h-3.5 w-3.5 mr-1.5" />
+            CSV
+          </Button>
         </div>
       </div>
 
-      <div className="border-t border-slate-800 pt-4 flex flex-wrap items-start gap-3">
-        <CalendarRange className="h-4 w-4 text-slate-500 mt-1 shrink-0" />
-        <div className="flex-1 min-w-[200px] space-y-3">
-          <div className="flex flex-wrap items-center gap-2">
-            <span className="text-sm font-medium text-slate-200">Cartera fiscal y declaraciones</span>
-          </div>
-          <p className="text-xs text-slate-500 leading-relaxed">
-            Independiente de la ventana de arriba: aquí eliges el <strong className="text-slate-400">año civil</strong> para
-            contar casos asignados, pendientes de culminar y contribuyentes sin declaración IVA o ISLR en ese año (misma
-            regla que el módulo Estadísticas por fiscal).
-          </p>
-          <div className="grid grid-cols-1 sm:grid-cols-[140px_auto] items-end gap-3">
-            <div className="space-y-1.5">
-              <Label className="text-slate-400 text-xs">Año cartera</Label>
-              <Select
-                value={String(draft.statsYear)}
-                onValueChange={(v) => onDraftChange({ ...draft, statsYear: parseInt(v, 10) })}
+      {/* Fila 3: cartera — una sola línea compacta */}
+      <div className="border-t border-slate-800/80 pt-2 flex flex-col gap-2 sm:flex-row sm:items-center sm:flex-wrap sm:gap-x-3 sm:gap-y-1">
+        <div className="flex items-center gap-1.5 text-slate-400 shrink-0">
+          <CalendarRange className="h-3.5 w-3.5" aria-hidden />
+          <span className="text-xs font-medium text-slate-300">Cartera</span>
+        </div>
+        <div className="flex flex-wrap items-end gap-2 sm:gap-3 flex-1 min-w-0">
+          <div className="flex items-center gap-2">
+            <Label htmlFor="audit-stats-year" className="text-[10px] uppercase tracking-wide text-slate-500 sr-only">
+              Año cartera
+            </Label>
+            <span className="text-[10px] text-slate-500 hidden sm:inline">Año</span>
+            <Select
+              value={String(draft.statsYear)}
+              onValueChange={(v) => onDraftChange({ ...draft, statsYear: parseInt(v, 10) })}
+            >
+              <SelectTrigger
+                id="audit-stats-year"
+                className="h-8 w-[88px] text-xs bg-slate-900 border-slate-700/80 text-slate-100"
+                title="Año civil para casos, pendientes y ∅ IVA/ISLR (misma regla que estadísticas por fiscal)."
               >
-                <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-100">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {yearOptions().map((y) => (
-                    <SelectItem key={y} value={String(y)}>
-                      {y}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <Button type="button" variant="secondary" className="w-full sm:w-auto h-10" onClick={onApply} disabled={busy}>
-              Aplicar año cartera
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {yearOptions().map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button type="button" variant="secondary" size="sm" className="h-8 text-xs px-2.5" onClick={runApply} disabled={busy}>
+              Aplicar año
             </Button>
           </div>
+          <p className="text-[10px] text-slate-500 sm:ml-auto max-w-[min(100%,28rem)] leading-snug">
+            Independiente de las fechas de arriba: métricas de cartera usan este año civil.
+          </p>
         </div>
       </div>
     </div>

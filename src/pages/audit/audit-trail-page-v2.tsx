@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/UI/v2";
@@ -49,12 +49,61 @@ const ACCIONES = [
   { value: "BORRAR_DECLARACION_ISLR", label: "Borrar declaración ISLR" },
 ];
 
-function formatJson(value: unknown): string {
-  try {
-    return JSON.stringify(value, null, 2);
-  } catch {
-    return String(value);
+function asRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+}
+
+function formatFieldLabel(key: string): string {
+  const normalized = key
+    .replace(/_/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .trim();
+  return normalized.charAt(0).toUpperCase() + normalized.slice(1);
+}
+
+function isDateField(key: string): boolean {
+  const k = key.toLowerCase();
+  return k.includes("date") || k.endsWith("_at") || k.includes("fecha");
+}
+
+function formatObjectValue(value: Record<string, unknown>): string {
+  const name = typeof value.name === "string" ? value.name : undefined;
+  const id = typeof value.id === "string" ? value.id : undefined;
+  const label = typeof value.label === "string" ? value.label : undefined;
+  const code = typeof value.code === "string" ? value.code : undefined;
+
+  if (name && id) return `${name} (ID: ${id})`;
+  if (label && id) return `${label} (ID: ${id})`;
+  if (name) return name;
+  if (label) return label;
+  if (id && code) return `${code} (ID: ${id})`;
+  if (id) return `ID: ${id}`;
+
+  const readablePairs = Object.entries(value)
+    .filter(([, v]) => v !== null && v !== undefined && typeof v !== "object")
+    .slice(0, 4)
+    .map(([k, v]) => `${formatFieldLabel(k)}: ${String(v)}`);
+
+  if (readablePairs.length > 0) return readablePairs.join(" · ");
+  return "Dato compuesto";
+}
+
+function formatFieldValue(key: string, value: unknown): string {
+  if (value === null || value === undefined || value === "") return "—";
+  if (typeof value === "boolean") return value ? "Sí" : "No";
+  if (isDateField(key) && typeof value === "string") {
+    const parsed = new Date(value);
+    if (!Number.isNaN(parsed.getTime())) return parsed.toLocaleString("es-VE");
   }
+  if (typeof value === "object" && !Array.isArray(value)) {
+    return formatObjectValue(value as Record<string, unknown>);
+  }
+  if (Array.isArray(value)) {
+    if (value.length === 0) return "—";
+    return `${value.length} elemento(s)`;
+  }
+  return String(value);
 }
 
 export default function AuditTrailPageV2() {
@@ -81,6 +130,27 @@ export default function AuditTrailPageV2() {
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailRow, setDetailRow] = useState<AuditoriaRow | null>(null);
+  const diffRows = useMemo(() => {
+    if (!detailRow) return [];
+    const oldValues = asRecord(detailRow.valores_anteriores);
+    const newValues = asRecord(detailRow.valores_nuevos);
+    const keys = Array.from(new Set([...Object.keys(oldValues), ...Object.keys(newValues)]));
+
+    return keys
+      .map((key) => {
+        const before = oldValues[key];
+        const after = newValues[key];
+        return {
+          key,
+          label: formatFieldLabel(key),
+          beforeText: formatFieldValue(key, before),
+          afterText: formatFieldValue(key, after),
+          changed: before !== after,
+        };
+      })
+      .filter((row) => row.changed)
+      .sort((a, b) => Number(b.changed) - Number(a.changed));
+  }, [detailRow]);
 
   const allowed = user?.role === "ADMIN" || user?.role === "COORDINATOR";
 
@@ -402,16 +472,38 @@ export default function AuditTrailPageV2() {
                 </div>
               </div>
               <div>
-                <span className="text-slate-500">Valores anteriores</span>
-                <pre className="mt-1 p-3 rounded bg-slate-950 text-xs overflow-x-auto text-slate-300">
-                  {formatJson(detailRow.valores_anteriores)}
-                </pre>
-              </div>
-              <div>
-                <span className="text-slate-500">Valores nuevos</span>
-                <pre className="mt-1 p-3 rounded bg-slate-950 text-xs overflow-x-auto text-slate-300">
-                  {formatJson(detailRow.valores_nuevos)}
-                </pre>
+                <div className="rounded-lg border border-slate-800 overflow-hidden">
+                  <div className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] bg-slate-950/70 px-3 py-2 text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-800">
+                    <span>Campo</span>
+                    <span>Antes</span>
+                    <span>Ahora</span>
+                  </div>
+                  <div className="max-h-[360px] overflow-y-auto">
+                    {diffRows.length === 0 ? (
+                      <div className="px-3 py-4 text-xs text-slate-400">No hay cambios detectados en los campos comparables.</div>
+                    ) : (
+                      diffRows.map((row) => (
+                        <div
+                          key={row.key}
+                          className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] gap-3 px-3 py-2 border-b border-slate-800/80 last:border-b-0 bg-amber-500/5"
+                        >
+                          <div className="text-slate-300 text-xs font-medium">
+                            {row.label}
+                            <span className="ml-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
+                              Cambió
+                            </span>
+                          </div>
+                          <div className="text-xs break-all text-rose-300">
+                            {row.beforeText}
+                          </div>
+                          <div className="text-xs break-all text-emerald-300">
+                            {row.afterText}
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           )}

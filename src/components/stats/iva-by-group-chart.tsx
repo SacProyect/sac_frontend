@@ -1,20 +1,9 @@
 import React, { useEffect, useState } from "react";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Tooltip,
-    Legend,
-    ChartOptions,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { getGroupPerformance } from "@/components/utils/api/report-functions";
 import { GroupStat } from "./group-performance-stats";
 import { StatsDesignVariant } from "./global-perfomance";
 import toast from "react-hot-toast";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 interface IvaByGroupChartProps {
     year?: number;
@@ -98,6 +87,7 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
     // Transformar datos para el gráfico
     const chartData = groupStats.map((group) => ({
         group_name: group.groupName,
+        short_name: group.groupName.length > 16 ? `${group.groupName.slice(0, 16)}...` : group.groupName,
         totalIva: Number(group.totalIvaCollected),
     })).sort((a, b) => b.totalIva - a.totalIva); // Ordenar de mayor a menor
 
@@ -124,6 +114,23 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
         return n.toLocaleString("es-VE", { maximumFractionDigits: 1, notation: "compact", compactDisplay: "short" });
     };
 
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const data = payload[0].payload;
+            const value = Number(data.totalIva) || 0;
+            const share = totalIvaCollected > 0 ? (value / totalIvaCollected) * 100 : 0;
+            
+            return (
+                <div className={`p-2 border border-slate-700 rounded-md text-xs shadow-xl ${style.tooltipBg}`}>
+                    <p className="font-bold text-white mb-1">{data.group_name}</p>
+                    <p className="text-white">IVA recaudado: Bs. {value.toLocaleString("es-VE", { maximumFractionDigits: 0 })}</p>
+                    <p className="text-slate-300">Participación del total: {share.toFixed(1)}%</p>
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
         <div className="flex h-full min-h-0 w-full flex-col">
             <div className={`flex h-full min-h-0 w-full flex-col overflow-hidden ${style.panelBg} px-2 pb-1 pt-3 sm:px-3`}>
@@ -140,63 +147,31 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
                     Total de IVA recaudado por grupo y participación porcentual.
                 </p>
                 {/* Gráfico */}
-                <div className="min-h-0 flex-1 pr-1">
-                    <Bar
-                        data={{
-                            labels: chartData.map((d) => (d.group_name?.length > 16 ? `${d.group_name.slice(0, 16)}...` : d.group_name)),
-                            datasets: [
-                                {
-                                    label: "IVA recaudado",
-                                    data: chartData.map((d) => d.totalIva),
-                                    backgroundColor: style.bar,
-                                    borderRadius: 6,
-                                    borderSkipped: false,
-                                },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        title: (items) => {
-                                            const idx = items[0]?.dataIndex ?? 0;
-                                            return chartData[idx]?.group_name ?? "";
-                                        },
-                                        label: (ctx) =>
-                                            `IVA recaudado: Bs. ${Number(ctx.raw).toLocaleString("es-VE", { maximumFractionDigits: 0 })}`,
-                                        afterLabel: (ctx) => {
-                                            const value = Number(ctx.raw) || 0;
-                                            const share = totalIvaCollected > 0 ? (value / totalIvaCollected) * 100 : 0;
-                                            return `Participación del total: ${share.toFixed(1)}%`;
-                                        },
-                                    },
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    grid: { color: style.grid, borderDash: [2, 3], drawBorder: false },
-                                    ticks: {
-                                        color: style.xTick,
-                                        font: { size: 10, weight: "600" },
-                                        maxRotation: 30,
-                                        minRotation: 30,
-                                    },
-                                },
-                                y: {
-                                    beginAtZero: true,
-                                    grid: { color: style.grid, borderDash: [2, 3], drawBorder: false },
-                                    ticks: {
-                                        color: style.yTick,
-                                        font: { size: 10 },
-                                        callback: (value) => formatY(Number(value)),
-                                    },
-                                },
-                            },
-                        } as ChartOptions<"bar">}
-                    />
+                <div className="min-h-0 flex-1 mt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 35 }}>
+                            <CartesianGrid strokeDasharray="2 3" stroke={style.grid} vertical={false} />
+                            <XAxis 
+                                dataKey="short_name" 
+                                stroke={style.xTick}
+                                tick={{ fontSize: 10, fontWeight: "600" }}
+                                angle={-30}
+                                textAnchor="end"
+                                interval={0}
+                            />
+                            <YAxis 
+                                stroke={style.yTick}
+                                tickFormatter={(val) => formatY(Number(val))}
+                                tick={{ fontSize: 10 }}
+                            />
+                            <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} content={<CustomTooltip />} />
+                            <Bar dataKey="totalIva" radius={[4, 4, 0, 0]}>
+                                {chartData.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={style.bar} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
             </div>
         </div>

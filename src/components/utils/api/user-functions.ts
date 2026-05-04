@@ -44,3 +44,13 @@ export const getOfficers = async () => {
         return []
     }
 }
+
+export const sendPresenceHeartbeat = async () => {
+    try {
+        await apiConnection.post("/user/presence");
+        return true;
+    } catch {
+        // Silencioso para no generar ruido en UI si backend aún no expone el endpoint
+        return false;
+    }
+}

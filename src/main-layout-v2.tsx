@@ -12,6 +12,7 @@ import { useNavItems } from '@/hooks/use-nav-items';
 import { NotificationBell } from "@/components/Navigation/notification-bell";
 import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
 import { useDemoMode } from '@/hooks/use-demo-mode';
+import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -32,8 +33,29 @@ const MainLayoutV2 = () => {
     const { isDemoModeActive } = useDemoMode();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    usePresenceHeartbeat({
+        enabled: Boolean(user && !isDemoModeActive),
+    });
+
     // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
     const navItems = useNavItems();
+
+    const isRouteActive = (currentPath: string, targetPath: string): boolean => {
+        if (currentPath === targetPath) return true;
+        if (targetPath === "/") return currentPath === "/";
+        return currentPath.startsWith(`${targetPath}/`);
+    };
+
+    const isInternalAuditRoute = location.pathname === "/auditoria-interna";
+
+    const buildInternalAuditTabHref = (tab: "kpis" | "fiscales" | "actividad" | "alertas") => {
+        const params = new URLSearchParams(location.search);
+        params.set("tab", tab);
+        params.delete("page");
+        return `/auditoria-interna?${params.toString()}`;
+    };
+
+    const currentInternalAuditTab = new URLSearchParams(location.search).get("tab") ?? "kpis";
 
     const handleLogout = () => {
         logout();
@@ -59,8 +81,7 @@ const MainLayoutV2 = () => {
                 <div className="space-y-1">
                     <p className="px-3 text-[10px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Menú Principal</p>
                     {navItems.map((item) => {
-                        const isActive = location.pathname === item.href || 
-                                       (item.href !== '/' && location.pathname.startsWith(item.href));
+                        const isActive = isRouteActive(location.pathname, item.href);
                         return (
                             <Link
                                 key={item.href}
@@ -125,8 +146,8 @@ const MainLayoutV2 = () => {
 
         return (
             <header className="bg-[#0f172a]/80 backdrop-blur-md border-b border-slate-800/50 sticky top-0 z-40 transition-all duration-300">
-                <div className="flex items-center justify-between px-4 md:px-8 py-3">
-                    <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 px-4 md:px-8 py-3">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
                         <SidebarMenu />
                         {breadcrumbs && breadcrumbs.length > 0 ? (
                             <Breadcrumb>
@@ -155,7 +176,33 @@ const MainLayoutV2 = () => {
                         )}
                     </div>
 
-                    <div className="flex items-center gap-4">
+                    {isInternalAuditRoute && (
+                        <div className="hidden md:grid md:grid-cols-4 gap-2 shrink-0 w-full max-w-xl lg:max-w-2xl px-2">
+                            {[
+                                { id: "kpis", label: "KPIs" },
+                                { id: "fiscales", label: "Fiscales" },
+                                { id: "actividad", label: "Actividad de uso" },
+                                { id: "alertas", label: "Alertas" },
+                            ].map((tab) => {
+                                const active = currentInternalAuditTab === tab.id;
+                                return (
+                                    <Link
+                                        key={tab.id}
+                                        to={buildInternalAuditTabHref(tab.id as "kpis" | "fiscales" | "actividad" | "alertas")}
+                                        className={`min-h-9 min-w-0 px-2 py-1.5 rounded-md text-xs font-semibold transition-colors border text-center leading-tight flex items-center justify-center ${
+                                            active
+                                                ? "bg-slate-800 text-cyan-300 border-slate-700"
+                                                : "bg-slate-900/40 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/70"
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
+
+                    <div className="flex items-center gap-4 flex-1 justify-end">
                         <NotificationBell />
                         <div className="h-6 w-[1px] bg-slate-800 hidden sm:block mx-1" />
                         <DropdownMenu>
@@ -195,6 +242,33 @@ const MainLayoutV2 = () => {
                         </DropdownMenu>
                     </div>
                 </div>
+                {isInternalAuditRoute && (
+                    <div className="px-4 md:px-8 pb-2 md:hidden">
+                        <div className="grid grid-cols-2 gap-2 w-full max-w-md mx-auto">
+                            {[
+                                { id: "kpis", label: "KPIs" },
+                                { id: "fiscales", label: "Fiscales" },
+                                { id: "actividad", label: "Actividad de uso" },
+                                { id: "alertas", label: "Alertas" },
+                            ].map((tab) => {
+                                const active = currentInternalAuditTab === tab.id;
+                                return (
+                                    <Link
+                                        key={tab.id}
+                                        to={buildInternalAuditTabHref(tab.id as "kpis" | "fiscales" | "actividad" | "alertas")}
+                                        className={`min-h-10 min-w-0 px-2 py-2 rounded-md text-xs font-semibold transition-colors border text-center leading-snug flex items-center justify-center ${
+                                            active
+                                                ? "bg-slate-800 text-cyan-300 border-slate-700"
+                                                : "bg-slate-900/40 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/70"
+                                        }`}
+                                    >
+                                        {tab.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </header>
         );
     };

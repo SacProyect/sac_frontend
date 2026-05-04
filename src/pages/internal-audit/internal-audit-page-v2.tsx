@@ -1,23 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
-import { useTvIdleRotation } from "@/hooks/use-tv-idle-rotation";
+import { Navigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import {
   getInternalAuditDashboard,
   downloadInternalAuditCsv,
+  getUsageRankingTopBottom,
 } from "@/components/utils/api/report-functions";
-import type { InternalAuditDashboard, InternalAuditQueryParams } from "@/types/internal-audit";
+import type {
+  InternalAuditDashboard,
+  InternalAuditQueryParams,
+  UsageRankingTopBottomResponse,
+} from "@/types/internal-audit";
 import { Button } from "@/components/UI/button";
 import { Badge } from "@/components/UI/badge";
 import { PageHeader, LoadingState } from "@/components/UI/v2";
-import { Radio } from "lucide-react";
 import toast from "react-hot-toast";
 
 import { InternalAuditKpiPanel } from "./components/internal-audit-kpi-panel";
 import { InternalAuditFiscalsTable } from "./components/internal-audit-fiscals-table";
-import { InternalAuditTimelineTable } from "./components/internal-audit-timeline-table";
+import { InternalAuditUsageRankingPanel } from "./components/internal-audit-usage-ranking-panel";
 import { InternalAuditAlertsTable } from "./components/internal-audit-alerts-table";
-import { InternalAuditPaginationBar } from "./components/internal-audit-pagination-bar";
 import {
   InternalAuditToolbar,
   draftFromQuery,
@@ -28,7 +30,13 @@ import { InternalAuditRoadmapCard } from "./components/internal-audit-roadmap-ca
 import { defaultAuditWindow, isoToDatetimeLocalValue } from "./utils/datetime-local";
 import { formatWhen } from "./utils/format-when";
 
-const TOTAL_PAGES = 4;
+const AUDIT_TABS = ["kpis", "fiscales", "actividad", "alertas"] as const;
+type AuditTab = (typeof AUDIT_TABS)[number];
+
+function normalizeTab(value: string | null): AuditTab {
+  if (!value) return "kpis";
+  return (AUDIT_TABS as readonly string[]).includes(value) ? (value as AuditTab) : "kpis";
+}
 
 function initialQuery(): InternalAuditQueryParams {
   const { fromIso, toIso } = defaultAuditWindow();
@@ -42,31 +50,36 @@ function initialQuery(): InternalAuditQueryParams {
 
 export default function InternalAuditPageV2() {
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
   const allowed = user?.role === "ADMIN" || user?.role === "COORDINATOR";
 
   const [appliedQuery, setAppliedQuery] = useState<InternalAuditQueryParams>(initialQuery);
   const [draft, setDraft] = useState<InternalAuditDraft>(() => draftFromQuery(initialQuery()));
 
   const [data, setData] = useState<InternalAuditDashboard | null>(null);
+  const [usageRanking, setUsageRanking] = useState<UsageRankingTopBottomResponse | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
 
-  const { tvMode, tvSpotlightIndex } = useTvIdleRotation({
-    page,
-    setPage,
-    totalPages: TOTAL_PAGES,
-  });
+  const currentTab = normalizeTab(searchParams.get("tab"));
 
   const load = useCallback(async () => {
     setLoading(true);
     setLoadError(false);
     try {
-      const res = await getInternalAuditDashboard(appliedQuery);
-      setData(res);
+      const [dashboardRes, usageRankingRes] = await Promise.all([
+        getInternalAuditDashboard(appliedQuery),
+        getUsageRankingTopBottom({
+          from: appliedQuery.from,
+          to: appliedQuery.to,
+        }),
+      ]);
+      setData(dashboardRes);
+      setUsageRanking(usageRankingRes);
     } catch {
       toast.error("No se pudo cargar el panel de auditoría interna.");
       setData(null);
+      setUsageRanking(null);
       setLoadError(true);
     } finally {
       setLoading(false);
@@ -78,15 +91,25 @@ export default function InternalAuditPageV2() {
     void load();
   }, [allowed, load]);
 
+  useEffect(() => {
+    const raw = searchParams.get("tab");
+    const normalized = normalizeTab(raw);
+    if (raw !== normalized) {
+      const nextParams = new URLSearchParams(searchParams);
+      nextParams.set("tab", normalized);
+      setSearchParams(nextParams, { replace: true });
+    }
+  }, [searchParams, setSearchParams]);
+
   const inactiveFiscals = useMemo(() => {
     if (!data?.fiscals.length) return [];
     return data.fiscals.filter((f) => f.auditCountInWindow === 0);
   }, [data]);
 
-  const handleApply = () => {
-    setAppliedQuery(queryFromDraft(draft));
-    setPage(1);
-  };
+  const handleApply = useCallback((next: InternalAuditDraft) => {
+    setDraft(next);
+    setAppliedQuery(queryFromDraft(next));
+  }, []);
 
   const handlePresetDays = (days: number) => {
     const to = new Date();
@@ -147,40 +170,32 @@ export default function InternalAuditPageV2() {
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden pb-8 animate-in fade-in duration-300">
       <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 sm:p-6">
-      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-        <PageHeader
-          title="Auditoría interna"
-          description="Centro de monitoreo para medir adopción operativa, inactividad y riesgo tributario por fiscal. Filtros de ventana y año de cartera trabajan en conjunto para seguimiento y decisiones."
-        />
-        <div className="flex flex-wrap items-center gap-2">
-          {tvMode && (
-            <Badge variant="outline" className="border-amber-500/60 text-amber-300 gap-1">
-              <Radio className="h-3 w-3 animate-pulse" />
-              Modo pantalla
-            </Badge>
-          )}
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+          <PageHeader
+            title="Auditoría interna"
+            description="Centro de monitoreo para medir adopción operativa, inactividad y riesgo tributario por fiscal. Filtros de ventana y año de cartera trabajan en conjunto para seguimiento y decisiones."
+          />
         </div>
-      </div>
-      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
-        <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Adopción de actividad</p>
-          <p className="mt-1 text-2xl font-semibold text-cyan-300 tabular-nums">{activeRate}%</p>
-          <p className="text-xs text-slate-400">Fiscales con eventos en la ventana seleccionada</p>
+        <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Adopción de actividad</p>
+            <p className="mt-1 text-2xl font-semibold text-cyan-300 tabular-nums">{activeRate}%</p>
+            <p className="text-xs text-slate-400">Fiscales con eventos en la ventana seleccionada</p>
+          </div>
+          <div className={`rounded-lg border px-4 py-3 ${monitorTone}`}>
+            <p className="text-xs uppercase tracking-wide opacity-80">Sin actividad</p>
+            <p className="mt-1 text-2xl font-semibold tabular-nums">{inactiveCount}</p>
+            <p className="text-xs opacity-80">Fiscales sin trazas en auditoría durante el periodo</p>
+          </div>
+          <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
+            <p className="text-xs uppercase tracking-wide text-slate-500">Cobertura actual</p>
+            <p className="mt-1 text-lg font-medium text-slate-200">{scopeLabel}</p>
+            <p className="text-xs text-slate-400">Contexto de vista para interpretación del panel</p>
+          </div>
         </div>
-        <div className={`rounded-lg border px-4 py-3 ${monitorTone}`}>
-          <p className="text-xs uppercase tracking-wide opacity-80">Sin actividad</p>
-          <p className="mt-1 text-2xl font-semibold tabular-nums">{inactiveCount}</p>
-          <p className="text-xs opacity-80">Fiscales sin trazas en auditoría durante el periodo</p>
-        </div>
-        <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
-          <p className="text-xs uppercase tracking-wide text-slate-500">Cobertura actual</p>
-          <p className="mt-1 text-lg font-medium text-slate-200">{scopeLabel}</p>
-          <p className="text-xs text-slate-400">Contexto de vista para interpretación del panel</p>
-        </div>
-      </div>
       </div>
 
-      {/* <InternalAuditToolbar
+      <InternalAuditToolbar
         draft={draft}
         onDraftChange={setDraft}
         onApply={handleApply}
@@ -188,7 +203,7 @@ export default function InternalAuditPageV2() {
         onRefresh={() => void load()}
         busy={loading}
         onPresetDays={handlePresetDays}
-      /> */}
+      />
 
       <div className="flex flex-wrap items-center gap-2">
         <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
@@ -201,10 +216,10 @@ export default function InternalAuditPageV2() {
       </p>
 
       <div className={`min-h-[420px] transition-opacity ${loading ? "opacity-[0.65]" : ""}`}>
-        {page === 1 && <InternalAuditKpiPanel data={data} tvSpotlightIndex={tvSpotlightIndex} />}
-        {page === 2 && <InternalAuditFiscalsTable data={data} />}
-        {page === 3 && <InternalAuditTimelineTable data={data} />}
-        {page === 4 && (
+        {currentTab === "kpis" && <InternalAuditKpiPanel data={data} />}
+        {currentTab === "fiscales" && <InternalAuditFiscalsTable data={data} />}
+        {currentTab === "actividad" && <InternalAuditUsageRankingPanel ranking={usageRanking} />}
+        {currentTab === "alertas" && (
           <InternalAuditAlertsTable
             inactiveFiscals={inactiveFiscals}
             windowLabel={windowHint}
@@ -212,13 +227,6 @@ export default function InternalAuditPageV2() {
           />
         )}
       </div>
-
-      <InternalAuditPaginationBar
-        page={page}
-        totalPages={TOTAL_PAGES}
-        setPage={setPage}
-        labels={["KPIs", "Fiscales", "Línea de tiempo", "Alertas"]}
-      />
 
       <InternalAuditRoadmapCard />
     </div>

@@ -1,17 +1,6 @@
 // comments in English
 import React, { useMemo } from "react";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Tooltip,
-    Legend,
-    ChartOptions,
-} from "chart.js";
-import { Bar } from "react-chartjs-2";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 
 export type ChartData = {
     month: string;            // "2025-01"
@@ -76,8 +65,6 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
         return months[monthNum - 1] || monthStr;
     };
 
-    // comments in English
-    // Prepare data for horizontal bars: keep extra fields for tooltip
     const data = useMemo(
         () =>
             (chartData ?? []).map(d => ({
@@ -95,12 +82,6 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
         [data]
     );
 
-    // A sane max domain so short bars don’t look microscopic; base on max between real and expected
-    const maxValue = useMemo(
-        () => Math.max(1, ...data.map(d => Math.max(d.realAmount, d.expectedAmount))),
-        [data]
-    );
-
     const fmtCurrency = (n: number) =>
         (n ?? 0).toLocaleString("es-VE", {
             style: "currency",
@@ -115,70 +96,23 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
             maximumFractionDigits: 1,
         });
 
-    // Custom tooltip to show expected and emitted on hover
-    const labels = data.map((d) => d.monthLabel);
-    const values = data.map((d) => d.realAmount);
-    const expected = data.map((d) => d.expectedAmount);
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const d = payload[0].payload;
+            const paid = Number(d.realAmount) || 0;
+            const exp = Number(d.expectedAmount) || 0;
+            const monthlyShare = totalCollected > 0 ? (paid / totalCollected) * 100 : 0;
 
-    const chartDataset = {
-        labels,
-        datasets: [
-            {
-                label: "IVA pagado",
-                data: values,
-                backgroundColor: style.bar,
-                borderRadius: 6,
-                borderSkipped: false as const,
-                barThickness: 14,
-            },
-        ],
-    };
-
-    const options: ChartOptions<"bar"> = {
-        indexAxis: "y",
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-            legend: { display: false },
-            tooltip: {
-                callbacks: {
-                    title: (items) => `Mes: ${items[0]?.label ?? ""}`,
-                    label: (ctx) => `IVA pagado: ${fmtCurrency(Number(ctx.raw) || 0)}`,
-                    afterLabel: (ctx) => {
-                        const i = ctx.dataIndex;
-                        const paid = Number(values[i] || 0);
-                        const exp = Number(expected[i] || 0);
-                        const monthlyShare = totalCollected > 0 ? (paid / totalCollected) * 100 : 0;
-                        return [`Esperado: ${fmtCurrency(exp)}`, `Participación del total: ${monthlyShare.toFixed(1)}%`];
-                    },
-                },
-            },
-        },
-        scales: {
-            y: {
-                grid: {
-                    color: style.grid,
-                    borderDash: [2, 3],
-                },
-                ticks: {
-                    color: style.yTick,
-                    font: { size: 11, weight: "600" },
-                },
-            },
-            x: {
-                min: 0,
-                max: maxValue,
-                grid: {
-                    color: style.grid,
-                    borderDash: [2, 3],
-                },
-                ticks: {
-                    color: style.xTick,
-                    font: { size: 10 },
-                    callback: (value) => formatCompact(Number(value)),
-                },
-            },
-        },
+            return (
+                <div className={`p-2 border border-slate-700 rounded-md text-xs shadow-xl ${style.tooltipBg}`}>
+                    <p className="font-bold text-white mb-1">Mes: {d.monthLabel}</p>
+                    <p className="text-white">IVA pagado: {fmtCurrency(paid)}</p>
+                    <p className="text-slate-300">Esperado: {fmtCurrency(exp)}</p>
+                    <p className="text-slate-300">Participación del total: {monthlyShare.toFixed(1)}%</p>
+                </div>
+            );
+        }
+        return null;
     };
 
     return (
@@ -195,9 +129,36 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
                 </p>
             </div>
 
-            {/* Chart — ocupa el resto del bloque, proporción equilibrada */}
-            <div className="min-h-0 w-full flex-1 text-xs">
-                <Bar data={chartDataset} options={options} />
+            {/* Chart */}
+            <div className="min-h-0 w-full flex-1 text-xs mt-2">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                        data={data}
+                        layout="vertical"
+                        margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                    >
+                        <CartesianGrid strokeDasharray="2 3" stroke={style.grid} horizontal={false} />
+                        <XAxis 
+                            type="number" 
+                            stroke={style.xTick} 
+                            tickFormatter={(val) => formatCompact(Number(val))}
+                            tick={{ fontSize: 10 }}
+                        />
+                        <YAxis 
+                            dataKey="monthLabel" 
+                            type="category" 
+                            stroke={style.yTick}
+                            tick={{ fontSize: 11, fontWeight: "600" }}
+                            width={40}
+                        />
+                        <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} content={<CustomTooltip />} />
+                        <Bar dataKey="realAmount" radius={[0, 6, 6, 0]} barSize={14}>
+                            {data.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={style.bar} />
+                            ))}
+                        </Bar>
+                    </BarChart>
+                </ResponsiveContainer>
             </div>
         </div>
     );

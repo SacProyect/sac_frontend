@@ -5,6 +5,7 @@ import { GetCompleteReportParams } from "@/types/reports";
 import type {
 	InternalAuditDashboard,
 	InternalAuditQueryParams,
+	UsageRankingTopBottomResponse,
 } from "@/types/internal-audit";
 
 /** Año (`date`) y filtro opcional por grupo fiscal (coordinación). */
@@ -568,6 +569,19 @@ export const getInternalAuditDashboard = async (
 ): Promise<InternalAuditDashboard> => {
 	const response = await apiConnection.get(
 		`reports/internal-audit-dashboard${buildInternalAuditDashboardQuery(params)}`,
+	);
+	return response.data;
+};
+
+export const getUsageRankingTopBottom = async (
+	params: Pick<InternalAuditQueryParams, "from" | "to"> = {},
+): Promise<UsageRankingTopBottomResponse> => {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	const query = q.toString();
+	const response = await apiConnection.get(
+		`reports/usage-ranking-top-bottom${query ? `?${query}` : ""}`,
 	);
 	return response.data;
 };

@@ -1,18 +1,7 @@
 // comments in English
 import React, { useMemo } from "react";
-import {
-    Chart as ChartJS,
-    CategoryScale,
-    LinearScale,
-    BarElement,
-    Tooltip,
-    Legend,
-    ChartOptions,
-} from "chart.js";
-import { Bar as BarChart } from "react-chartjs-2";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { StatsDesignVariant } from "./global-perfomance";
-
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 // API response shape
 export interface MonthlyIvaStats {
@@ -135,12 +124,6 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
         [stats?.months, currentMonthIndexVz]
     );
 
-    // If total is zero (edge case), fall back to max month to avoid flat line domain
-    const maxDomain =
-        stats?.totalIvaCollected && stats.totalIvaCollected > 0
-            ? stats.totalIvaCollected
-            : Math.max(...data.map((d) => d.value), 1);
-
     const formatCurrency = (n: number) =>
         n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
 
@@ -154,6 +137,28 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
     const formatYAxis = (v: number | string) => {
         const n = Number(v);
         return formatCompact(n);
+    };
+
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const item = payload[0].payload;
+            const previous = item?.previousValue ?? 0;
+            const current = Number(item?.value ?? 0);
+            const variation = previous > 0 ? ((current - previous) / previous) * 100 : null;
+            
+            return (
+                <div className={`p-2 border border-slate-700 rounded-md text-xs shadow-xl ${style.tooltipBg}`}>
+                    <p className="font-bold text-white mb-1">{item.label}</p>
+                    <p className="text-white">IVA: Bs. {formatCurrency(current)}</p>
+                    <p className="text-slate-300">
+                        {variation === null
+                            ? "Var. vs mes anterior: N/A"
+                            : `Var. vs mes anterior: ${variation >= 0 ? "+" : ""}${variation.toFixed(1)}%`}
+                    </p>
+                </div>
+            );
+        }
+        return null;
     };
 
     return (
@@ -172,65 +177,31 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
                 </p>
 
                 {/* Chart */}
-                <div className="min-h-0 flex-1">
-                    <BarChart
-                        data={{
-                            labels: data.map((d) => d.label),
-                            datasets: [
-                                {
-                                    label: "IVA",
-                                    data: data.map((d) => d.value),
-                                    backgroundColor: style.bar,
-                                    borderRadius: 4,
-                                    borderSkipped: false,
-                                    barThickness: 18,
-                                },
-                            ],
-                        }}
-                        options={{
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: { display: false },
-                                tooltip: {
-                                    callbacks: {
-                                        title: (items) => items[0]?.label ?? "",
-                                        label: (ctx) => `IVA: Bs. ${formatCurrency(Number(ctx.raw) || 0)}`,
-                                        afterLabel: (ctx) => {
-                                            const item = data[ctx.dataIndex];
-                                            const previous = item?.previousValue ?? 0;
-                                            const current = Number(item?.value ?? 0);
-                                            const variation = previous > 0 ? ((current - previous) / previous) * 100 : null;
-                                            return variation === null
-                                                ? "Var. vs mes anterior: N/A"
-                                                : `Var. vs mes anterior: ${variation >= 0 ? "+" : ""}${variation.toFixed(1)}%`;
-                                        },
-                                    },
-                                },
-                            },
-                            scales: {
-                                x: {
-                                    grid: { color: style.grid, borderDash: [2, 3], drawBorder: false },
-                                    ticks: {
-                                        color: style.xTick,
-                                        font: { size: 11, weight: "600" },
-                                        maxRotation: 35,
-                                        minRotation: 35,
-                                    },
-                                },
-                                y: {
-                                    min: 0,
-                                    max: maxDomain,
-                                    grid: { color: style.grid, borderDash: [2, 3], drawBorder: false },
-                                    ticks: {
-                                        color: style.yTick,
-                                        font: { size: 10 },
-                                        callback: (value) => formatYAxis(Number(value)),
-                                    },
-                                },
-                            },
-                        } as ChartOptions<"bar">}
-                    />
+                <div className="min-h-0 flex-1 mt-2">
+                    <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={data} margin={{ top: 10, right: 5, left: -20, bottom: 25 }}>
+                            <CartesianGrid strokeDasharray="2 3" stroke={style.grid} vertical={false} />
+                            <XAxis 
+                                dataKey="label" 
+                                stroke={style.xTick}
+                                tick={{ fontSize: 11, fontWeight: "600" }}
+                                angle={-35}
+                                textAnchor="end"
+                                interval={0}
+                            />
+                            <YAxis 
+                                stroke={style.yTick}
+                                tickFormatter={(val) => formatYAxis(Number(val))}
+                                tick={{ fontSize: 10 }}
+                            />
+                            <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} content={<CustomTooltip />} />
+                            <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={18}>
+                                {data.map((entry, index) => (
+                                    <Cell key={`cell-${index}`} fill={style.bar} />
+                                ))}
+                            </Bar>
+                        </BarChart>
+                    </ResponsiveContainer>
                 </div>
 
                 {/* Footer summary */}
