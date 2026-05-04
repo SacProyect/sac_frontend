@@ -137,13 +137,20 @@ export default function InternalAuditPageV2() {
       : "Alcance nacional (todos los fiscales)";
 
   const windowHint = `${formatWhen(data.window.from)} → ${formatWhen(data.window.to)}`;
+  const inactiveCount = inactiveFiscals.length;
+  const activeRate = data.totals.fiscalHeadcount
+    ? Math.round((data.totals.activeFiscalsInWindow / data.totals.fiscalHeadcount) * 100)
+    : 0;
+  const monitorTone =
+    inactiveCount === 0 ? "text-emerald-300 border-emerald-500/30 bg-emerald-500/10" : "text-amber-200 border-amber-500/30 bg-amber-500/10";
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden pb-8 animate-in fade-in duration-300">
+      <div className="rounded-2xl border border-slate-800 bg-slate-950/70 p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <PageHeader
           title="Auditoría interna"
-          description="Dos dimensiones: (1) ventana de fechas para eventos en la tabla de auditoría y KPI de actividad; (2) año de cartera para casos pendientes y declaraciones IVA/ISLR (alineado con estadísticas por fiscal). Exportación CSV y alcance según tu rol."
+          description="Centro de monitoreo para medir adopción operativa, inactividad y riesgo tributario por fiscal. Filtros de ventana y año de cartera trabajan en conjunto para seguimiento y decisiones."
         />
         <div className="flex flex-wrap items-center gap-2">
           {tvMode && (
@@ -154,8 +161,26 @@ export default function InternalAuditPageV2() {
           )}
         </div>
       </div>
+      <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Adopción de actividad</p>
+          <p className="mt-1 text-2xl font-semibold text-cyan-300 tabular-nums">{activeRate}%</p>
+          <p className="text-xs text-slate-400">Fiscales con eventos en la ventana seleccionada</p>
+        </div>
+        <div className={`rounded-lg border px-4 py-3 ${monitorTone}`}>
+          <p className="text-xs uppercase tracking-wide opacity-80">Sin actividad</p>
+          <p className="mt-1 text-2xl font-semibold tabular-nums">{inactiveCount}</p>
+          <p className="text-xs opacity-80">Fiscales sin trazas en auditoría durante el periodo</p>
+        </div>
+        <div className="rounded-lg border border-slate-800 bg-slate-900/80 px-4 py-3">
+          <p className="text-xs uppercase tracking-wide text-slate-500">Cobertura actual</p>
+          <p className="mt-1 text-lg font-medium text-slate-200">{scopeLabel}</p>
+          <p className="text-xs text-slate-400">Contexto de vista para interpretación del panel</p>
+        </div>
+      </div>
+      </div>
 
-      <InternalAuditToolbar
+      {/* <InternalAuditToolbar
         draft={draft}
         onDraftChange={setDraft}
         onApply={handleApply}
@@ -163,10 +188,9 @@ export default function InternalAuditPageV2() {
         onRefresh={() => void load()}
         busy={loading}
         onPresetDays={handlePresetDays}
-      />
+      /> */}
 
       <div className="flex flex-wrap items-center gap-2">
-        <p className="text-sm text-slate-400">{scopeLabel}</p>
         <Badge variant="secondary" className="text-[10px] uppercase tracking-wide">
           {user.role === "ADMIN" ? "Administrador" : "Coordinador"}
         </Badge>
@@ -189,7 +213,12 @@ export default function InternalAuditPageV2() {
         )}
       </div>
 
-      <InternalAuditPaginationBar page={page} totalPages={TOTAL_PAGES} setPage={setPage} />
+      <InternalAuditPaginationBar
+        page={page}
+        totalPages={TOTAL_PAGES}
+        setPage={setPage}
+        labels={["KPIs", "Fiscales", "Línea de tiempo", "Alertas"]}
+      />
 
       <InternalAuditRoadmapCard />
     </div>

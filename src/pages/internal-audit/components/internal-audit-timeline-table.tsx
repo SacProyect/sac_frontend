@@ -16,22 +16,22 @@ type Props = { data: InternalAuditDashboard };
 
 export function InternalAuditTimelineTable({ data }: Props) {
   return (
-    <Card className="bg-slate-900/80 border-slate-700 overflow-hidden">
-      <div className="p-4 border-b border-slate-700">
+    <Card className="bg-slate-900/80 border-slate-800 overflow-hidden">
+      <div className="p-4 border-b border-slate-800">
         <h3 className="text-lg font-semibold text-white">Línea de tiempo — auditoría en el rango</h3>
         <p className="text-sm text-slate-400">
           Eventos sensibles ejecutados por fiscales en alcance (máx. 120 en esta respuesta).
         </p>
       </div>
-      <div className="overflow-x-auto max-h-[min(70vh,560px)] overflow-y-auto">
+      <div className="relative [&>div]:max-h-[min(70vh,560px)] [&>div]:overflow-y-auto [&>div]:overflow-x-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="z-30 bg-slate-900">
             <TableRow className="border-slate-700 hover:bg-transparent">
-              <TableHead className="text-slate-300">Fecha</TableHead>
-              <TableHead className="text-slate-300">Fiscal</TableHead>
-              <TableHead className="text-slate-300">Acción</TableHead>
-              <TableHead className="text-slate-300">Entidad</TableHead>
-              <TableHead className="text-slate-300">Referencia</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Fecha</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Fiscal</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Acción</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Entidad</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Referencia</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

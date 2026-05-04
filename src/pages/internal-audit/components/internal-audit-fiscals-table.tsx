@@ -19,38 +19,38 @@ type Props = { data: InternalAuditDashboard };
 export function InternalAuditFiscalsTable({ data }: Props) {
   const y = data.carteraYear;
   return (
-    <Card className="bg-slate-900/80 border-slate-700 overflow-hidden">
-      <div className="p-4 border-b border-slate-700">
+    <Card className="bg-slate-900/80 border-slate-800 overflow-hidden">
+      <div className="p-4 border-b border-slate-800">
         <h3 className="text-lg font-semibold text-white">Fiscales — cartera {y} y actividad</h3>
         <p className="text-sm text-slate-400">
           Columnas de casos / pendientes / IVA·ISLR usan el año <strong className="text-slate-300">{y}</strong>. Las fechas de
           última auditoría y eventos del rango son independientes de ese año.
         </p>
       </div>
-      <div className="overflow-x-auto max-h-[min(70vh,560px)] overflow-y-auto">
+      <div className="relative [&>div]:max-h-[min(70vh,560px)] [&>div]:overflow-y-auto [&>div]:overflow-x-auto">
         <Table>
-          <TableHeader>
+          <TableHeader className="z-30 bg-slate-900">
             <TableRow className="border-slate-700 hover:bg-transparent">
-              <TableHead className="text-slate-300 sticky left-0 bg-slate-900/95 z-[1]">Fiscal</TableHead>
-              <TableHead className="text-slate-300">Cédula</TableHead>
-              <TableHead className="text-slate-300 text-right" title={`Casos en cartera ${y}`}>
+              <TableHead className="text-slate-300 sticky top-0 left-0 bg-slate-900 z-40">Fiscal</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Cédula</TableHead>
+              <TableHead className="text-slate-300 text-right sticky top-0 bg-slate-900 z-30" title={`Casos en cartera ${y}`}>
                 Casos {y}
               </TableHead>
-              <TableHead className="text-slate-300 text-right" title="Sin culminar">
+              <TableHead className="text-slate-300 text-right sticky top-0 bg-slate-900 z-30" title="Sin culminar">
                 Pend.
               </TableHead>
-              <TableHead className="text-slate-300 text-right" title={`Sin declaración IVA en ${y}`}>
+              <TableHead className="text-slate-300 text-right sticky top-0 bg-slate-900 z-30" title={`Sin declaración IVA en ${y}`}>
                 ∅ IVA
               </TableHead>
-              <TableHead className="text-slate-300 text-right" title={`Sin declaración ISLR en ${y}`}>
+              <TableHead className="text-slate-300 text-right sticky top-0 bg-slate-900 z-30" title={`Sin declaración ISLR en ${y}`}>
                 ∅ ISLR
               </TableHead>
-              <TableHead className="text-slate-300">Últ. login</TableHead>
-              <TableHead className="text-slate-300">Últ. aud.</TableHead>
-              <TableHead className="text-slate-300">Últ. IVA*</TableHead>
-              <TableHead className="text-slate-300">Últ. ISLR*</TableHead>
-              <TableHead className="text-slate-300 text-right">Evt. fecha</TableHead>
-              <TableHead className="text-slate-300 w-[100px]">Stats</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Últ. login</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Últ. aud.</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Últ. IVA*</TableHead>
+              <TableHead className="text-slate-300 sticky top-0 bg-slate-900 z-30">Últ. ISLR*</TableHead>
+              <TableHead className="text-slate-300 text-right sticky top-0 bg-slate-900 z-30">Evt. fecha</TableHead>
+              <TableHead className="text-slate-300 w-[120px] text-center sticky top-0 bg-slate-900 z-30">Acciones</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -67,10 +67,11 @@ export function InternalAuditFiscalsTable({ data }: Props) {
                 <TableCell className="text-slate-300 whitespace-nowrap text-xs">{formatWhen(f.lastIvaLoadAt)}</TableCell>
                 <TableCell className="text-slate-300 whitespace-nowrap text-xs">{formatWhen(f.lastIslrLoadAt)}</TableCell>
                 <TableCell className="text-right tabular-nums text-slate-400">{f.auditCountInWindow}</TableCell>
-                <TableCell>
-                  <Button variant="ghost" size="sm" asChild className="text-sky-400 hover:text-sky-300 h-8 px-2">
-                    <Link to={`/stats/fiscal/${f.id}`} title="Estadísticas del fiscal">
+                <TableCell className="text-center">
+                  <Button variant="outline" size="sm" asChild className="h-8 px-3 border-slate-700 text-cyan-300 hover:text-cyan-200 hover:bg-slate-800/70">
+                    <Link to={`/stats/fiscal/${f.id}`} title="Abrir estadísticas del fiscal" className="inline-flex items-center gap-1">
                       <BarChart3 className="h-4 w-4 mr-1 inline" />
+                      Ver
                       <ExternalLink className="h-3 w-3 inline opacity-70" />
                     </Link>
                   </Button>
