@@ -162,8 +162,8 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
     };
 
     return (
-        <div className="flex h-full min-h-0 w-full flex-col">
-            <div className={`flex h-full min-h-0 w-full flex-col justify-between ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
+        <div className="flex w-full flex-col">
+            <div className={`flex w-full flex-col ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
                 {/* Title */}
                 <div className={`mx-auto w-full max-w-sm shrink-0 rounded-md border ${style.titleBorder} ${style.titleBg} py-1`}>
                     <p className="px-1 text-center text-xs font-semibold tracking-wide text-white sm:text-sm">
@@ -177,7 +177,7 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
                 </p>
 
                 {/* Chart */}
-                <div className="min-h-0 flex-1 mt-2">
+                <div className="mt-2 h-[240px] sm:h-[270px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={data} margin={{ top: 10, right: 5, left: -20, bottom: 25 }}>
                             <CartesianGrid strokeDasharray="2 3" stroke={style.grid} vertical={false} />
@@ -205,7 +205,7 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
                 </div>
 
                 {/* Footer summary */}
-                <div className="mt-1 shrink-0 text-center text-[10px] text-slate-300 sm:text-xs">
+                <div className="mt-2 shrink-0 text-center text-[10px] text-slate-300 sm:text-xs">
                     Total IVA {stats?.year ?? ""}:{" "}
                     <span className="font-semibold text-blue-200">
                         Bs. {(stats?.totalIvaCollected ?? 0).toLocaleString("es-VE", { maximumFractionDigits: 2 })}

@@ -132,8 +132,8 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
     };
 
     return (
-        <div className="flex h-full min-h-0 w-full flex-col">
-            <div className={`flex h-full min-h-0 w-full flex-col overflow-hidden ${style.panelBg} px-2 pb-1 pt-3 sm:px-3`}>
+        <div className="flex w-full flex-col">
+            <div className={`flex w-full flex-col overflow-hidden ${style.panelBg} px-2 pb-1 pt-3 sm:px-3`}>
                 {/* Título */}
                 <div className="mb-1 flex shrink-0 justify-center">
                     <div className={`w-full max-w-md rounded-md border ${style.titleBorder} ${style.titleBg} px-2 py-1`}>
@@ -147,7 +147,7 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
                     Total de IVA recaudado por grupo y participación porcentual.
                 </p>
                 {/* Gráfico */}
-                <div className="min-h-0 flex-1 mt-2">
+                <div className="mt-2 h-[240px] sm:h-[270px]">
                     <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 35 }}>
                             <CartesianGrid strokeDasharray="2 3" stroke={style.grid} vertical={false} />
