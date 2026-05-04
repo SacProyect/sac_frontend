@@ -71,11 +71,6 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic" }:
     const fmtBs = (n: number) =>
         n.toLocaleString("es-VE", { maximumFractionDigits: 0 });
 
-    const formatPercentage = (value: number, total: number) => {
-        if (!total) return "0.0%";
-        return `${((value / total) * 100).toFixed(1)}%`;
-    };
-
     const MetricRow = ({
         label,
         colorClass,
@@ -133,14 +128,14 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic" }:
                                     colorClass="text-sky-400"
                                     barClass="bg-sky-500"
                                     pct={getBarWidth(group.totalPaidFines, totalPaid)}
-                                    value={`${group.totalPaidFines} · ${formatPercentage(group.totalPaidFines, totalPaid)}`}
+                                    value={`${group.totalPaidFines}`}
                                 />
                                 <MetricRow
                                     label="Pagado multas"
                                     colorClass="text-emerald-400"
                                     barClass="bg-emerald-500"
                                     pct={getBarWidth(group.totalPaidAmount, totalCollected)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalPaidAmount))} · {formatPercentage(group.totalPaidAmount, totalCollected)}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalPaidAmount))}</span>}
                                     valueTitle={String(group.totalPaidAmount)}
                                 />
                                 <MetricRow
@@ -148,14 +143,14 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic" }:
                                     colorClass="text-amber-400"
                                     barClass="bg-amber-500"
                                     pct={getBarWidth(group.totalIvaCollected, totalIva)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalIvaCollected))} · {formatPercentage(group.totalIvaCollected, totalIva)}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalIvaCollected))}</span>}
                                 />
                                 <MetricRow
                                     label="ISLR pagado"
                                     colorClass="text-rose-400"
                                     barClass="bg-rose-500"
                                     pct={getBarWidth(group.totalIslrCollected, totalIslr)}
-                                    value={<span>Bs. {fmtBs(Number(group.totalIslrCollected))} · {formatPercentage(group.totalIslrCollected, totalIslr)}</span>}
+                                    value={<span>Bs. {fmtBs(Number(group.totalIslrCollected))}</span>}
                                 />
                             </div>
                         </div>

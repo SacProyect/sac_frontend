@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Users, Monitor, Activity, Filter, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { LoadingState } from '@/components/UI/v2';
@@ -128,8 +129,8 @@ function StatsPage1Charts({
   if (loading) return <LoadingState message="Cargando gráficas..." />;
 
   return (
-    <div className="mx-auto flex h-full min-h-0 w-full min-w-0 max-w-5xl flex-1 flex-col px-2 py-2 sm:px-3 md:py-3">
-      <Tabs defaultValue="global-iva" className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-slate-700/70 bg-slate-950/35">
+    <div className="mx-auto flex h-auto w-full min-w-0 max-w-6xl flex-col px-2 py-2 sm:px-3 md:py-3">
+      <Tabs defaultValue="global-iva" className="flex h-auto flex-col overflow-visible rounded-lg border border-slate-700/70 bg-slate-950/35">
         <div className="shrink-0 border-b border-slate-700/50 px-2 py-2 sm:px-3">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900/70 p-1 sm:w-auto">
@@ -174,11 +175,11 @@ function StatsPage1Charts({
           </div>
         </div>
 
-        <TabsContent value="global-iva" className="mt-0 min-h-0 flex-1 overflow-hidden">
+        <TabsContent value="global-iva" className="mt-0 h-auto overflow-visible">
           <PageOneStats chartData={chartData} designVariant={designVariant} />
         </TabsContent>
 
-        <TabsContent value="recaudacion-mensual" className="mt-0 min-h-0 flex-1 overflow-hidden">
+        <TabsContent value="recaudacion-mensual" className="mt-0 h-auto overflow-visible">
           {ivaStats ? (
             <PageTwoStats stats={ivaStats} designVariant={designVariant} />
           ) : (
@@ -186,11 +187,11 @@ function StatsPage1Charts({
           )}
         </TabsContent>
 
-        <TabsContent value="rendimiento-grupo" className="mt-0 min-h-0 flex-1 overflow-hidden">
+        <TabsContent value="rendimiento-grupo" className="mt-0 h-auto overflow-visible">
           <GroupPerformanceStats groupStats={groupStats} designVariant={designVariant} />
         </TabsContent>
 
-        <TabsContent value="iva-grupo" className="mt-0 min-h-0 flex-1 overflow-hidden">
+        <TabsContent value="iva-grupo" className="mt-0 h-auto overflow-visible">
           <IvaByGroupChart year={year} groupId={groupId} data={groupStats} designVariant={designVariant} />
         </TabsContent>
       </Tabs>
@@ -201,33 +202,86 @@ function StatsPage1Charts({
 // ─── Page labels ──────────────────────────────────────────────────────────────
 
 const PAGES = ['Gráficas', 'Rankings', 'Cumplimiento'];
+const COORDINATION_QUERY_KEY = 'coordination';
+const DATE_QUERY_KEY = 'date';
+
+function sanitizeCoordinationId(raw: string | null): string {
+  const value = (raw ?? '').trim();
+  // Allow only safe characters for ids coming from URL.
+  if (!/^[a-zA-Z0-9_-]{1,64}$/.test(value)) return '';
+  return value;
+}
+
+function sanitizeYear(raw: string | null, allowedYears: number[], fallbackYear: number): number {
+  const value = (raw ?? '').trim();
+  if (!/^\d{4}$/.test(value)) return fallbackYear;
+  const year = Number(value);
+  return allowedYears.includes(year) ? year : fallbackYear;
+}
 
 // ─── Main Dashboard ───────────────────────────────────────────────────────────
 
 export default function StatsDashboardV2() {
   const { user } = useAuth();
   const { isDemoModeActive, activateDemoMode, deactivateDemoMode } = useDemoMode();
+  const [searchParams, setSearchParams] = useSearchParams();
   
   /** Filtro por coordinación: solo perfiles de visión global (no fiscales). */
   const showCoordinationFilter = Boolean(user && user.role !== 'FISCAL');
   const isAdmin = user?.role === 'ADMIN';
 
+  const currentYear = new Date().getFullYear();
+  const years = useMemo(() => Array.from({ length: 5 }, (_, i) => currentYear - i), [currentYear]);
+
   const [page, setPage] = useState(1);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [coordinationId, setCoordinationId] = useState('');
+  const [year, setYear] = useState<number>(() => sanitizeYear(searchParams.get(DATE_QUERY_KEY), years, currentYear));
   const [designVariant, setDesignVariant] = useState<StatsDesignVariant>("classic");
   const [coordinationOptions, setCoordinationOptions] = useState<{ id: string; name: string }[]>([]);
 
-  const years = Array.from({ length: 5 }, (_, i) => new Date().getFullYear() - i);
-  const activeGroupId = showCoordinationFilter ? (coordinationId.trim() || undefined) : undefined;
+  const coordinationId = sanitizeCoordinationId(searchParams.get(COORDINATION_QUERY_KEY));
+  const activeGroupId = showCoordinationFilter ? (coordinationId || undefined) : undefined;
+
+  const setYearParam = useCallback((nextYear: number) => {
+    const safeYear = sanitizeYear(String(nextYear), years, currentYear);
+    const next = new URLSearchParams(searchParams);
+    next.set(DATE_QUERY_KEY, String(safeYear));
+    setSearchParams(next, { replace: true });
+    setYear(safeYear);
+  }, [searchParams, setSearchParams, years, currentYear]);
+
+  const setCoordinationParam = useCallback((id: string) => {
+    const safeId = sanitizeCoordinationId(id);
+    const next = new URLSearchParams(searchParams);
+    if (!safeId) next.delete(COORDINATION_QUERY_KEY);
+    else next.set(COORDINATION_QUERY_KEY, safeId);
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
 
   const { chartData, ivaStats, groupStats, loading } = useStatsData(year, activeGroupId);
+
+  useEffect(() => {
+    const safeYear = sanitizeYear(searchParams.get(DATE_QUERY_KEY), years, currentYear);
+    const urlYear = searchParams.get(DATE_QUERY_KEY);
+    if (urlYear !== String(safeYear)) {
+      const next = new URLSearchParams(searchParams);
+      next.set(DATE_QUERY_KEY, String(safeYear));
+      setSearchParams(next, { replace: true });
+      return;
+    }
+    if (year !== safeYear) {
+      setYear(safeYear);
+    }
+  }, [searchParams, setSearchParams, years, currentYear, year]);
 
   useEffect(() => {
     let cancelled = false;
     if (!user || user.role === 'FISCAL') {
       setCoordinationOptions([]);
-      setCoordinationId('');
+      if (searchParams.get(COORDINATION_QUERY_KEY)) {
+        const next = new URLSearchParams(searchParams);
+        next.delete(COORDINATION_QUERY_KEY);
+        setSearchParams(next, { replace: true });
+      }
       return;
     }
     (async () => {
@@ -239,7 +293,18 @@ export default function StatsDashboardV2() {
       }
     })();
     return () => { cancelled = true; };
-  }, [user]);
+  }, [user, searchParams, setSearchParams]);
+
+  useEffect(() => {
+    if (!showCoordinationFilter || !coordinationId) return;
+    if (coordinationOptions.length === 0) return;
+    const exists = coordinationOptions.some((opt) => opt.id === coordinationId);
+    if (!exists) {
+      const next = new URLSearchParams(searchParams);
+      next.delete(COORDINATION_QUERY_KEY);
+      setSearchParams(next, { replace: true });
+    }
+  }, [showCoordinationFilter, coordinationId, coordinationOptions, searchParams, setSearchParams]);
 
   // Shortcut Ctrl+Shift+D / Ctrl+Alt+D to toggle Demo Mode (Admins only)
   useEffect(() => {
@@ -286,7 +351,7 @@ export default function StatsDashboardV2() {
 
   return (
     <div
-      className="mx-auto -mt-2 flex h-[calc(100dvh-4.5rem)] max-h-[calc(100dvh-4.5rem)] w-full min-w-0 max-w-5xl flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-900 shadow-xl md:-mt-3"
+      className="mx-auto -mt-2 flex min-h-[calc(100dvh-3.5rem)] h-auto w-full min-w-0 max-w-6xl flex-col overflow-visible rounded-xl border border-slate-700 bg-slate-900 shadow-xl md:-mt-3"
     >
       {isDemoModeActive && isAdmin && (
         <StatsDemoMode 
@@ -316,7 +381,7 @@ export default function StatsDashboardV2() {
           >
             <CalendarDays className="w-3.5 h-3.5 text-slate-400" />
             <label htmlFor="year-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1">Período</label>
-            <Select value={year.toString()} onValueChange={(v) => setYear(parseInt(v))}>
+            <Select value={year.toString()} onValueChange={(v) => setYearParam(Number(v))}>
               <SelectTrigger id="year-select" className="h-7 w-[110px] bg-slate-950/50 border-slate-700 text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors rounded-lg">
                 <SelectValue placeholder="Año" />
               </SelectTrigger>
@@ -339,7 +404,7 @@ export default function StatsDashboardV2() {
               <label htmlFor="coordination-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
                 Coordinación
               </label>
-              <Select value={coordinationId || '__all__'} onValueChange={(v) => setCoordinationId(v === '__all__' ? '' : v)}>
+              <Select value={coordinationId || '__all__'} onValueChange={(v) => setCoordinationParam(v === '__all__' ? '' : v)}>
                 <SelectTrigger id="coordination-select" className="h-7 min-w-[140px] max-w-[220px] bg-slate-950/50 border-slate-700 text-xs font-semibold text-emerald-400/95 hover:text-emerald-300 transition-colors rounded-lg">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
@@ -388,7 +453,7 @@ export default function StatsDashboardV2() {
       <div
         className={
           page === 1
-            ? 'min-h-0 flex-1 overflow-hidden flex flex-col'
+            ? 'h-auto flex flex-col overflow-visible'
             : 'min-h-0 flex-1 overflow-y-auto custom-scrollbar'
         }
       >
