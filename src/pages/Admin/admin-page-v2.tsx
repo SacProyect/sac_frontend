@@ -34,7 +34,17 @@ import {
   DialogTitle,
 } from '@/components/UI/dialog';
 import { Button as DialogButton } from '@/components/UI/button';
-import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import {
+  MoreVertical,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Plus,
+  FileText,
+  Scale,
+} from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -463,21 +473,24 @@ export default function AdminPageV2() {
           <div className="hidden lg:flex gap-2 flex-shrink-0">
             <Button
               onClick={() => setIsAddContribuyenteOpen(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-md transition-all duration-200"
+              className="h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm"
             >
-              Agregar Contribuyente
+              <Plus className="w-4 h-4 mr-2" />
+              Contribuyente
             </Button>
             <Button
               onClick={() => setIsAddAvisoOpen(true)}
-              className="bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-md transition-all duration-200"
+              className="h-11 px-5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm"
             >
-              Agregar Aviso
+              <FileText className="w-4 h-4 mr-2" />
+              Aviso
             </Button>
             <Button
               onClick={() => setIsAddMultaOpen(true)}
-              className="bg-red-600 hover:bg-red-700 text-white font-semibold rounded-md transition-all duration-200"
+              className="h-11 px-5 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm"
             >
-              Agregar Multa
+              <Scale className="w-4 h-4 mr-2" />
+              Multa
             </Button>
             <Button
               onClick={() => navigate('/index-iva')}

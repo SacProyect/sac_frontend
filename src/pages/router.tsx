@@ -53,6 +53,7 @@ import { ISLRReports } from '@/types/islr-reports';
 
 const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
 const AdminPageV2 = lazy(() => import("@/pages/Admin/admin-page-v2"));
+const VisitsMonitorPage = lazy(() => import("@/pages/Visits/visits-monitor-page"));
 const SettingsPageV2 = lazy(() => import("@/pages/Settings/settings-page-v2"));
 const StatsDashboardV2 = lazy(() => import("@/pages/stats/stats-dashboard-v2"));
 const FiscalStatsDashboardV2 = lazy(() => import("@/pages/stats/fiscal-stats-dashboard-v2"));
@@ -117,6 +118,16 @@ export const router = createBrowserRouter([
                             </div>
                         }>
                             <AdminPageV2 />
+                        </Suspense>,
+                    },
+                    {
+                        path: "visits-monitor",
+                        element: <Suspense fallback={
+                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                Cargando Monitoreo de Visitas...
+                            </div>
+                        }>
+                            <VisitsMonitorPage />
                         </Suspense>,
                     },
                     {

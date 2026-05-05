@@ -6,6 +6,7 @@ import { qrcode } from 'vite-plugin-qrcode'
 export default defineConfig({
   plugins: [react(), qrcode()],
   resolve: {
+    dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },

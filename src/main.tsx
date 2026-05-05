@@ -1,6 +1,5 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { RouterProvider } from 'react-router-dom'
 import toast, { Toaster } from 'react-hot-toast';
 import AppRouter from './components/router/app-router'
 import { ErrorBoundary } from 'react-error-boundary'
