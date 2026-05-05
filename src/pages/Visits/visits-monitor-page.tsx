@@ -57,6 +57,14 @@ const wsStatusClassName: Record<string, string> = {
   error: "bg-rose-500/20 text-rose-300 border-rose-500/20",
 };
 
+const realtimeEventLabel: Record<string, string> = {
+  "visit.created": "Nueva visita registrada",
+  "visit.attended": "Visita atendida",
+  "visit.updated": "Visita actualizada",
+  "visit.exited": "Salida registrada",
+  "visit.deleted": "Visita eliminada",
+};
+
 const formatDateTime = (date: string, time: string) => {
   if (!date && !time) return "-";
   if (!date) return time;
@@ -84,6 +92,7 @@ export default function VisitsMonitorPage() {
     loading,
     error,
     wsStatus,
+    lastRealtimeEvent,
     dashboard,
     liveVisits,
     history,
@@ -132,6 +141,15 @@ export default function VisitsMonitorPage() {
           </div>
           <div className="flex items-center gap-3">
             <Badge className={wsStatusClassName[wsStatus]}>{wsStatusLabel[wsStatus]}</Badge>
+            {lastRealtimeEvent && (
+              <span className="text-xs text-slate-400">
+                {realtimeEventLabel[lastRealtimeEvent.type] ?? lastRealtimeEvent.type} ·{" "}
+                {new Date(lastRealtimeEvent.occurredAt).toLocaleTimeString("es-VE", {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })}
+              </span>
+            )}
           </div>
         </div>
       </section>
@@ -206,8 +224,8 @@ export default function VisitsMonitorPage() {
         <Table>
           <TableHeader>
             <TableRow className="border-slate-800/70 hover:bg-transparent">
-              <TableHead className="hidden text-slate-400 md:table-cell">Foto</TableHead>
-              <TableHead className="text-slate-400">ID</TableHead>
+              <TableHead className="text-slate-400">Foto</TableHead>
+              <TableHead className="hidden text-slate-400 sm:table-cell">ID</TableHead>
               <TableHead className="text-slate-400">Visitante</TableHead>
               <TableHead className="text-slate-400">RIF</TableHead>
               <TableHead className="text-slate-400">Zona / Depto.</TableHead>
@@ -226,7 +244,7 @@ export default function VisitsMonitorPage() {
                 ))
               : liveVisits.map((visit) => (
                   <TableRow key={visit.id} className="border-slate-800/60 hover:bg-slate-800/30">
-                    <TableCell className="hidden md:table-cell">
+                    <TableCell>
                       {getVisitPhotoUrl(visit) ? (
                         <button
                           type="button"
@@ -251,7 +269,9 @@ export default function VisitsMonitorPage() {
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="font-mono text-xs text-indigo-300">{visit.id.slice(0, 8)}</TableCell>
+                    <TableCell className="hidden font-mono text-xs text-indigo-300 sm:table-cell">
+                      {visit.id.slice(0, 8)}
+                    </TableCell>
                     <TableCell className="font-medium text-slate-100">{getVisitContributorName(visit)}</TableCell>
                     <TableCell className="text-slate-300">{getVisitContributorRif(visit)}</TableCell>
                     <TableCell className="text-slate-300">{visit.department ?? "-"}</TableCell>
@@ -274,7 +294,7 @@ export default function VisitsMonitorPage() {
         </Table>
       </section>
 
-      <section className="rounded-xl border border-slate-800/70 bg-slate-900/50">
+      {/* <section className="rounded-xl border border-slate-800/70 bg-slate-900/50">
         <div className="flex items-center justify-between border-b border-slate-800/70 px-5 py-4">
           <h2 className="text-sm font-semibold uppercase tracking-wider text-slate-300">Historial</h2>
           <span className="text-xs text-slate-500">{history.total} total</span>
@@ -320,7 +340,7 @@ export default function VisitsMonitorPage() {
             )}
           </TableBody>
         </Table>
-      </section>
+      </section> */}
 
       {error && (
         <div className="rounded-lg border border-rose-500/30 bg-rose-500/10 px-4 py-3 text-sm text-rose-200">

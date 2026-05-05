@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import toast from "react-hot-toast";
 import {
   getAdvancedVisitsDashboard,
   getVisitsHistory,
@@ -20,10 +21,24 @@ export interface VisitsMonitorFilters {
   status: "todos" | VisitStatus;
 }
 
+export interface RealtimeVisitEventInfo {
+  type: VisitWsEvent["type"];
+  occurredAt: string;
+  visitId?: string;
+}
+
 const DEFAULT_HISTORY_PARAMS: VisitHistoryParams = {
   incluir_finalizados: false,
   skip: 0,
   limit: 8,
+};
+
+const realtimeEventToastLabel: Record<VisitWsEvent["type"], string> = {
+  "visit.created": "Nueva visita registrada",
+  "visit.attended": "Visita atendida",
+  "visit.updated": "Visita actualizada",
+  "visit.exited": "Salida registrada",
+  "visit.deleted": "Visita eliminada",
 };
 
 export const useVisitsMonitor = () => {
@@ -33,6 +48,7 @@ export const useVisitsMonitor = () => {
 
   const [dashboard, setDashboard] = useState<DashboardAdvancedResponse | null>(null);
   const [liveVisits, setLiveVisits] = useState<VisitItem[]>([]);
+  const [lastRealtimeEvent, setLastRealtimeEvent] = useState<RealtimeVisitEventInfo | null>(null);
   const [history, setHistory] = useState<PaginatedResponse<VisitHistoryItem>>({
     total: 0,
     skip: 0,
@@ -42,6 +58,7 @@ export const useVisitsMonitor = () => {
   const [filters, setFilters] = useState<VisitsMonitorFilters>({ search: "", status: "todos" });
 
   const refetchTimer = useRef<number | null>(null);
+  const lastToastEventKeyRef = useRef<string | null>(null);
 
   const refreshSnapshot = useCallback(async () => {
     const [dashboardRes, liveRes, historyRes] = await Promise.all([
@@ -56,6 +73,33 @@ export const useVisitsMonitor = () => {
   }, []);
 
   const applyVisitEvent = useCallback((event: VisitWsEvent) => {
+    const eventVisitId = "id" in event.payload ? event.payload.id : undefined;
+    const eventKey = `${event.type}-${event.occurred_at}-${eventVisitId ?? "none"}`;
+    if (lastToastEventKeyRef.current !== eventKey) {
+      lastToastEventKeyRef.current = eventKey;
+      const contributorName =
+        "id" in event.payload
+          ? (event.payload as VisitItem).contributor_name ??
+            (event.payload as VisitItem).contribuyente ??
+            "Sin contribuyente"
+          : "Sin contribuyente";
+      toast(`${realtimeEventToastLabel[event.type]} · ${contributorName}`, {
+        icon: "🔔",
+        duration: 3500,
+        style: {
+          background: "#0f172a",
+          color: "#e2e8f0",
+          border: "1px solid rgba(99,102,241,0.45)",
+        },
+      });
+    }
+
+    setLastRealtimeEvent({
+      type: event.type,
+      occurredAt: event.occurred_at,
+      visitId: eventVisitId,
+    });
+
     if (event.type === "visit.deleted" && "id" in event.payload) {
       setLiveVisits((prev) => prev.filter((visit) => visit.id !== event.payload.id));
       setHistory((prev) => ({
@@ -184,6 +228,7 @@ export const useVisitsMonitor = () => {
     loading,
     error,
     wsStatus,
+    lastRealtimeEvent,
     dashboard,
     liveVisits: filteredLiveVisits,
     history,
