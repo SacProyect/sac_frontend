@@ -42,6 +42,9 @@ export interface VisitsListParams {
   fiscal_id?: string | number;
   rif?: string;
   entry_date?: string;
+  /** Rango (si el API de visitas lo soporta) para listados globales */
+  entry_date_from?: string;
+  entry_date_to?: string;
   include_images?: boolean;
   skip?: number;
   limit?: number;

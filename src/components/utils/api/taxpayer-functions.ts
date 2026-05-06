@@ -538,12 +538,36 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 	}
 }
 
-export const uploadRepairReport = async (taxpayerId: string, file: File) => {
+/** Metadatos opcionales alineados a la plantilla «ACTAS DE REPARO» (fechas en ISO yyyy-mm-dd). */
+export type RepairReportUploadMeta = {
+	fechaEntrega?: string;
+	/** UUID de usuario fiscal (rol FISCAL) enlazado al acta. */
+	fiscalActuanteUserId?: string;
+	/** UUID de usuario supervisor (rol SUPERVISOR) enlazado al acta. */
+	supervisorUserId?: string;
+	fiscalActuante?: string;
+	supervisorNombre?: string;
+	impuestoTipo?: string;
+	numeroExpediente?: string;
+	ejercicioFiscalPeriodo?: string;
+	numeroReparo?: string;
+	fechaNotificado?: string;
+	montoIslr?: string;
+	montoIva?: string;
+	montoAceptacionPago?: string;
+	montoTotal?: string;
+};
+
+export const uploadRepairReport = async (taxpayerId: string, file: File, meta?: RepairReportUploadMeta) => {
 	try {
 		const formData = new FormData();
 		formData.append("repairReport", file);
+		if (meta) {
+			for (const [key, val] of Object.entries(meta)) {
+				if (val !== undefined && val !== "") formData.append(key, val);
+			}
+		}
 
-		// Ajusta la URL y método según tu backend
 		const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
 			headers: {
 				"Content-Type": "multipart/form-data"

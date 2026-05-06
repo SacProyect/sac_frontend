@@ -19,8 +19,10 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// MODO DESARROLLO: Usuario admin fake para revisar V2 sin backend
-const DEV_MODE = false; // Cambiar a false cuando quieras usar autenticación real
+/** Solo en `vite` dev: define VITE_DEV_FAKE_AUTH=true en .env.development.local */
+const devFakeAuth =
+    import.meta.env.DEV && import.meta.env.VITE_DEV_FAKE_AUTH === "true";
+
 const FAKE_ADMIN_USER: User = {
     id: "dev-admin-fake-id",
     personId: "12345678",
@@ -37,42 +39,45 @@ const FAKE_ADMIN_USER: User = {
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [storedUser, setStoredUser] = useLocalStorage("user", null);
     const [storedToken, setStoredToken] = useLocalStorage("authToken", null);
-    const user = storedUser;
+    const user = devFakeAuth && !storedUser ? FAKE_ADMIN_USER : storedUser;
     const token = storedToken;
 
-    const setUser = (newUser: User | null) => {
+    const setUser = useCallback((newUser: User | null) => {
         setStoredUser(newUser);
-    };
+    }, [setStoredUser]);
 
-    const setToken = (newToken: string | null) => {
+    const setToken = useCallback((newToken: string | null) => {
         setStoredToken(newToken);
-    };
-    
+    }, [setStoredToken]);
+
     const navigate = useNavigate();
 
-    const login = async (user: User, token: string) => {
-        setUser(user);
-        setToken(token);
-        navigate("/");
-    };
+    const login = useCallback(
+        async (user: User, token: string) => {
+            setStoredUser(user);
+            setStoredToken(token);
+            navigate("/");
+        },
+        [navigate, setStoredUser, setStoredToken]
+    );
 
-    const logout = () => {
-        setUser(null);
-        setToken(null);
+    const logout = useCallback(() => {
+        setStoredUser(null);
+        setStoredToken(null);
         navigate("/", { replace: true });
-    };
+    }, [navigate, setStoredUser, setStoredToken]);
 
     const refreshUser = useCallback(async () => {
-        if (!token) return;
+        if (!storedToken) return;
         try {
             const resp = await apiConnection.get<{
                 user: User;
                 token: string;
             }>("/user/me", {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${storedToken}` },
             });
-            setUser(resp.data.user);
-            setToken(resp.data.token);
+            setStoredUser(resp.data.user);
+            setStoredToken(resp.data.token);
         } catch (err: any) {
             console.error("Failed to refresh user:", err);
             if (err.response?.status === 401) {
@@ -82,7 +87,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
                 console.warn("Non-auth error during refresh, not logging out.");
             }
         }
-    }, [token]);
+    }, [storedToken, logout, setStoredUser, setStoredToken]);
 
     const value = useMemo(
         () => ({
@@ -91,9 +96,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             login,
             token,
             logout,
-            refreshUser
+            refreshUser,
         }),
-        [user]
+        [user, token, login, logout, refreshUser, setUser]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

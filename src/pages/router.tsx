@@ -1,7 +1,7 @@
 import { ProtectedRoute } from '@/components/Navigation/protected-route';
 import { getPendingPayments, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
-import { AuthLayout } from '@/hooks/use-auth';
+import { AuthLayout, useAuth } from '@/hooks/use-auth';
 import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/report-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
@@ -73,6 +73,25 @@ const IndexIvaV2 = lazy(() => import("@/pages/index-iva/index-iva-v2"));
 const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 const GroupReportPageV2 = lazy(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazy(() => import("@/pages/reports/taxpayer-report-page"));
+const GestionPersonalPageV2 = lazy(() => import("@/pages/gestion-personal/gestion-personal-page-v2"));
+function GestionPersonalRoute() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role !== "ADMIN" && user.role !== "COORDINATOR") {
+        return <Navigate to="/admin" replace />;
+    }
+    return (
+        <Suspense
+            fallback={
+                <div className="absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-lg items-center text-center justify-center z-50 bg-background text-foreground">
+                    Cargando Gestión de personal...
+                </div>
+            }
+        >
+            <GestionPersonalPageV2 />
+        </Suspense>
+    );
+}
 
 type LoaderData = {
     events: Event[],
@@ -179,6 +198,14 @@ export const router = createBrowserRouter([
                         }>
                             <FiscalReviewPageV2 />
                         </Suspense>,
+                    },
+                    {
+                        path: "fiscalizacion",
+                        element: <Navigate to="/gestion-personal" replace />,
+                    },
+                    {
+                        path: "gestion-personal",
+                        element: <GestionPersonalRoute />,
                     },
                     {
                         path: "observations/:taxpayerId",

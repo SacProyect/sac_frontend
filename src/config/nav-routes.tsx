@@ -9,6 +9,7 @@ import {
     FileText,
     ClipboardList,
     Wallet,
+    UserCog,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -46,6 +47,11 @@ export const routeBlocks = {
         { href: '/contributions', label: 'Contribuciones', icon: <Wallet className="w-4 h-4" /> },
     ] as NavItem[],
 
+    /** Solo ADMIN (vision global) y COORDINATOR (su grupo) — alineado con API fiscal-operaciones. */
+    gestionPersonal: [
+        { href: '/gestion-personal', label: 'Gestión de personal', icon: <UserCog className="w-4 h-4" /> },
+    ] as NavItem[],
+
     /** Genera la ruta de estadísticas personalizada con el ID del usuario */
     fiscalStats: (userId: string): NavItem[] => [
         { href: `/stats/fiscal/${userId}`, label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
@@ -65,5 +71,5 @@ export const RESTRICTED_USER_IDS: ReadonlySet<string> = new Set([
  */
 export const RESTRICTED_ROUTES: ReadonlySet<string> = new Set([
     '/fine', '/iva', '/islr', '/census',
-    '/show-census', '/taxpayer', '/index-iva', '/warning',
+    '/show-census', '/taxpayer', '/index-iva', '/warning', '/fiscalizacion', '/gestion-personal',
 ]);

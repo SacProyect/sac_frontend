@@ -15,6 +15,7 @@ type NavStrategy = (user: User) => NavItem[];
  */
 const adminStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    ...routeBlocks.gestionPersonal,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
@@ -25,6 +26,7 @@ const adminStrategy: NavStrategy = () => [
  */
 const coordinatorStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    ...routeBlocks.gestionPersonal,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
