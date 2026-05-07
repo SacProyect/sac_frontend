@@ -134,7 +134,7 @@ function AmountField({
       required: "Campo obligatorio",
       validate: (v) => {
         const n = parseFloat(v);
-        if (!v || isNaN(n) || n <= 0) return "El monto debe ser mayor a 0";
+        // if (!v || isNaN(n) || n <= 0) return "El monto debe ser mayor a 0";
         return true;
       },
     },
@@ -237,33 +237,52 @@ function IslrForm() {
 
     // Unified list of taxpayers
     const isSearching = searchDebounce.trim() !== '';
-    const firstPageFiltered = useMemo(
-        () => (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP"),
-        [firstPageTaxpayers]
-    );
+    
+    const taxpayerArray = useMemo(() => {
+        console.log('[DEBUG] IslrForm - Role:', user?.role);
+        // const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        const firstPageFiltered = (firstPageTaxpayers || []);
+        const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const allFetched = [...displayedFirst, ...displayedExtra];
 
-    const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
-    const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
-    const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
-
-    const taxpayerArray = useMemo(
-        () => [...displayedFirst, ...displayedExtra],
-        [displayedFirst, displayedExtra]
-    );
+        if (user?.role === 'ADMIN') {
+            console.log('[DEBUG] IslrForm - ADMIN taxpayers Count:', allFetched.length);
+            return allFetched;
+        } else {
+            // Fiscal role: Filter by user.id
+            console.log('[DEBUG] IslrForm - FISCAL filtering by ID:', user?.id);
+            const filtered = allFetched.filter(t => t.user?.id === user?.id);
+            console.log('[DEBUG] IslrForm - Filtered result count:', filtered.length);
+            return filtered;
+        }
+    }, [user, firstPageTaxpayers, searchResults, searchAdditionalPages, additionalPages, isSearching, searchDebounce]);
 
     const hasMore = useMemo(() => {
+        const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
+        const totalPagesDisplayed = isSearching ? searchTotalPages : totalPages;
         const loadedPagesCount = 1 + Math.floor(displayedExtra.length / 50);
         return loadedPagesCount < totalPagesDisplayed;
-    }, [displayedExtra.length, totalPagesDisplayed]);
+    }, [isSearching, searchAdditionalPages, additionalPages, searchTotalPages, totalPages]);
 
+    /**
+     * Filtrado de contribuyentes:
+     * - Si hay búsqueda del backend activa, mostramos los resultados directamente SIN filtrar localmente.
+     * - Solo filtramos localmente cuando NO hay búsqueda del backend (modo paginación simple).
+     */
     const filteredTaxpayers = useMemo(() => {
+        // Si hay búsqueda del backend activa, mostrar resultados directamente
+        if (isSearching) {
+            return taxpayerArray;
+        }
+        // Solo filtrar localmente cuando NO hay búsqueda del backend
         if (!searchValue) return taxpayerArray;
         const s = searchValue.toLowerCase();
-        return taxpayerArray.filter(t => 
-            t.name.toLowerCase().includes(s) || 
+        return taxpayerArray.filter(t =>
+            t.name.toLowerCase().includes(s) ||
             t.rif.toLowerCase().includes(s)
         );
-    }, [searchValue, taxpayerArray]);
+    }, [searchValue, taxpayerArray, isSearching]);
 
     const loadMoreTaxpayers = useCallback(async () => {
         if (!hasMore || isLoadingMore) return;
@@ -273,7 +292,8 @@ function IslrForm() {
         try {
             const response = await getTaxpayerForEvents(pageToFetch, 50, term);
             const data = (response?.data?.data ?? []) as Taxpayer[];
-            const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            // const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+            const filtered = data;
             if (isSearching) {
                 setSearchAdditionalPages(prev => [...prev, ...filtered]);
                 setSearchPage(prev => prev + 1);
@@ -324,7 +344,8 @@ function IslrForm() {
                 const response = await getTaxpayerForEvents(1, 50, term);
                 if (cancelled) return;
                 const data = (response?.data?.data ?? []) as Taxpayer[];
-                const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                // const filtered = data.filter((t: Taxpayer) => t.process !== "FP");
+                const filtered = data;
                 setSearchResults(filtered);
                 setSearchTotalPages(response?.data?.totalPages ?? 1);
                 setSearchAdditionalPages([]);
@@ -461,6 +482,7 @@ function IslrForm() {
                                                                 <div className="flex flex-col gap-0.5">
                                                                     <span className="font-semibold">{t.name}</span>
                                                                     <span className="text-[10px] opacity-70 uppercase">{t.rif}</span>
+                                                                    <span className="text-[10px] opacity-70 uppercase">{new Date(t.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
                                                                 </div>
                                                             </div>
                                                         ))

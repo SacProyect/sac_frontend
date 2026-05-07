@@ -4,6 +4,7 @@ import { User, Lock, Bell } from 'lucide-react';
 import { ProfileTabV2 } from '@/components/settings/profile-tab-v2';
 import { SecurityTabV2 } from '@/components/settings/security-tab-v2';
 import { NotificationsTabV2 } from '@/components/settings/notifications-tab-v2';
+import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 /**
  * SettingsPageV2 - Página de Ajustes con diseño Shadcn UI v2.0
@@ -42,13 +43,15 @@ export default function SettingsPageV2() {
                 <Lock className="h-5 w-5" />
                 <span>Seguridad</span>
               </TabsTrigger>
-              <TabsTrigger
-                value="notifications"
-                className="w-full justify-start gap-3 text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white py-3 px-4 transition-all duration-200"
-              >
-                <Bell className="h-5 w-5" />
-                <span>Notificaciones</span>
-              </TabsTrigger>
+              {isNotificationsFeatureEnabled && (
+                <TabsTrigger
+                  value="notifications"
+                  className="w-full justify-start gap-3 text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white py-3 px-4 transition-all duration-200"
+                >
+                  <Bell className="h-5 w-5" />
+                  <span>Notificaciones</span>
+                </TabsTrigger>
+              )}
             </TabsList>
           </div>
 
@@ -60,9 +63,11 @@ export default function SettingsPageV2() {
             <TabsContent value="security" className="mt-0">
               <SecurityTabV2 />
             </TabsContent>
-            <TabsContent value="notifications" className="mt-0">
-              <NotificationsTabV2 />
-            </TabsContent>
+            {isNotificationsFeatureEnabled && (
+              <TabsContent value="notifications" className="mt-0">
+                <NotificationsTabV2 />
+              </TabsContent>
+            )}
           </div>
         </div>
       </Tabs>

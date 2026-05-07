@@ -1,6 +1,7 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS } from '@/config/nav-routes';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem } from '@/config/nav-routes';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -16,6 +17,8 @@ type NavStrategy = (user: User) => NavItem[];
 const adminStrategy: NavStrategy = () => [
     ...sharedRoutes,
     ...routeBlocks.gestionPersonal,
+    auditTrailNavItem,
+    internalAuditNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
@@ -27,6 +30,8 @@ const adminStrategy: NavStrategy = () => [
 const coordinatorStrategy: NavStrategy = () => [
     ...sharedRoutes,
     ...routeBlocks.gestionPersonal,
+    auditTrailNavItem,
+    internalAuditNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
@@ -38,6 +43,7 @@ const coordinatorStrategy: NavStrategy = () => [
 const supervisorStrategy: NavStrategy = (user) => [
     ...sharedRoutes,
     ...routeBlocks.fiscalStats(user.id),
+    auditTrailNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.contributions,
 ];
@@ -46,8 +52,12 @@ const supervisorStrategy: NavStrategy = (user) => [
  * FISCAL: Acceso a IVA/ISLR y estadísticas personales. Sin contribuciones.
  */
 const fiscalStrategy: NavStrategy = (user) => [
-    ...sharedRoutes,
-    ...routeBlocks.fiscalStats(user.id),
+    ...sharedRoutes.filter((item) => item.href !== '/stats' && item.href !== '/fiscal-review'),
+    {
+        href: `/stats/fiscal/${user.id}`,
+        label: 'Revisión Fiscal',
+        icon: routeBlocks.fiscalStats(user.id)[0].icon,
+    },
     ...routeBlocks.ivaIslr,
 ];
 
@@ -58,10 +68,10 @@ const fiscalStrategy: NavStrategy = (user) => [
  * Para agregar un nuevo rol: añadir una entrada aquí y su estrategia arriba.
  */
 const NAV_STRATEGIES: Record<string, NavStrategy> = {
-    ADMIN:       adminStrategy,
+    ADMIN: adminStrategy,
     COORDINATOR: coordinatorStrategy,
-    SUPERVISOR:  supervisorStrategy,
-    FISCAL:      fiscalStrategy,
+    SUPERVISOR: supervisorStrategy,
+    FISCAL: fiscalStrategy,
 };
 
 // ─── Función de post-procesamiento ───────────────────────────────────────────
@@ -73,6 +83,14 @@ const NAV_STRATEGIES: Record<string, NavStrategy> = {
 const applyUserRestrictions = (items: NavItem[], userId: string): NavItem[] => {
     if (!RESTRICTED_USER_IDS.has(userId)) return items;
     return items.filter((item) => !RESTRICTED_ROUTES.has(item.href));
+};
+
+const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
+    return items.filter((item) => {
+        if (!isNotificationsFeatureEnabled && item.href === '/notifications') return false;
+        if (!isInternalAuditFeatureEnabled && item.href === '/auditoria-interna') return false;
+        return true;
+    });
 };
 
 // ─── Función pública ──────────────────────────────────────────────────────────
@@ -95,7 +113,7 @@ export const resolveNavItems = (user: User | null): NavItem[] => {
     }
 
     const items = strategy(user);
-    const filtered = applyUserRestrictions(items, user.id);
+    const filtered = applyFeatureFlags(applyUserRestrictions(items, user.id));
 
     // Ajustes siempre al último, visible para todos los roles
     return [...filtered, settingsRoute];

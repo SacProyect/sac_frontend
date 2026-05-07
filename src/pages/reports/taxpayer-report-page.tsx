@@ -28,6 +28,7 @@ import {
   getPaymentHistory,
   getPendingEvents,
   getIndividualIvaReport,
+  getTaxpayerDashboard,
 } from '@/components/utils/api/report-functions';
 import { getIslrReports, getTaxHistory } from '@/components/utils/api/report-functions';
 import { getTaxpayerData } from '@/components/utils/api/report-functions';
@@ -167,6 +168,9 @@ const MONTHS_LABEL: Record<string, string> = {
   septiembre: 'Sep', octubre: 'Oct', noviembre: 'Nov', diciembre: 'Dic',
 };
 
+const TAXPAYER_DASHBOARD_FF =
+  String(import.meta.env.VITE_TAXPAYER_DASHBOARD_ENABLED ?? 'false').toLowerCase() === 'true';
+
 // ─── Sub-components ──────────────────────────────────────────────────────────
 function StatCard({ icon, label, value, color = 'text-white', sub }: {
   icon: React.ReactNode; label: string; value: React.ReactNode; color?: string; sub?: string;
@@ -219,6 +223,44 @@ export default function TaxpayerReportPage() {
     const load = async () => {
       setLoading(true);
       try {
+        if (TAXPAYER_DASHBOARD_FF) {
+          const dashboard = await getTaxpayerDashboard(taxpayerId);
+
+          setTaxpayer((dashboard?.taxpayerData as TaxpayerDetail) ?? null);
+
+          const fineHistory = dashboard?.fineHistory;
+          setFineResp(
+            typeof fineHistory === 'object' && fineHistory !== null && 'FINEs' in fineHistory
+              ? (fineHistory as FineApiResponse)
+              : { FINEs: Array.isArray(fineHistory) ? (fineHistory as FineRecord[]) : [] },
+          );
+
+          const paymentHistory = dashboard?.paymentHistory;
+          setPayResp(
+            typeof paymentHistory === 'object' && paymentHistory !== null && 'payments' in paymentHistory
+              ? (paymentHistory as PaymentApiResponse)
+              : { payments: [] },
+          );
+
+          setPending(Array.isArray(dashboard?.pendingEvents) ? dashboard.pendingEvents : []);
+
+          if (dashboard?.ivaPerformance && typeof dashboard.ivaPerformance === 'object') {
+            setIvaPerf(dashboard.ivaPerformance as IvaReport);
+          } else {
+            setIvaPerf({});
+          }
+
+          const islrPayload = (dashboard?.islrReports as { data?: unknown[] } | unknown[] | undefined);
+          const islrRaw = Array.isArray(islrPayload) ? islrPayload : islrPayload?.data;
+          setIslr(Array.isArray(islrRaw) ? (islrRaw as IslrRecord[]) : []);
+
+          const taxSummaryPayload = (dashboard?.taxSummary as { data?: unknown[] } | unknown[] | undefined);
+          const ivaRaw = Array.isArray(taxSummaryPayload) ? taxSummaryPayload : taxSummaryPayload?.data;
+          setIvaRecords(Array.isArray(ivaRaw) ? (ivaRaw as IvaRecord[]) : []);
+
+          return;
+        }
+
         const [detailRes, fineRes, payRes, pendRes, ivaPerfRes, islrRes, taxSumRes] =
           await Promise.allSettled([
             getTaxpayerData(taxpayerId),          // /taxpayer/data/:id

@@ -1,8 +1,8 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Event } from "@/types/event";
 import toast from "react-hot-toast";
 import { downloadInvestigationPdf, downloadRepairPdf, getTaxpayerData, modifyIndividualIndexIva, notifyTaxpayer, updateCulminated, updateFase, uploadRepairReport } from "../utils/api/taxpayer-functions";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { IVAReports } from "@/types/iva-reports";
 import { RepairReports } from "@/types/repair-reports";
@@ -10,15 +10,65 @@ import { InvestigationPdf } from "@/types/investigation-pdf";
 import { User } from "@/types/user";
 import Decimal from "decimal.js";
 import { Parish, TaxpayerCategory } from "@/types/taxpayer";
-import { Settings } from "lucide-react";
+import { Settings, Edit2 } from "lucide-react";
 import { ObservationsPanel } from "@/components/observations/observations-panel";
+import { EditTaxpayerModal } from "@/components/Taxpayer/edit-taxpayer-modal";
 
 
 
+
+/** Resumen compacto para barra informativa en móvil (página detalle). */
+export interface TaxpayerSummaryStrip {
+    rif: string;
+    fase: string;
+    notified: boolean;
+    notificationLabel: string;
+}
 
 interface IndividualStatsProps {
     events: Event[],
     IVAReports: IVAReports[],
+    taxpayerData?: TaxpayerData;
+    observations?: ObservationData[];
+    onTaxpayerDataLoaded?: (summary: TaxpayerSummaryStrip | null) => void;
+}
+
+interface ObservationData {
+    id: string;
+    description: string;
+    date: string;
+    created_at?: string;
+}
+
+function IndividualStatsLeftSkeleton() {
+    return (
+        <div
+            className="w-full min-w-0 min-h-[380px] lg:min-h-[420px] p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4 animate-pulse border-b lg:border-b-0 lg:border-r border-slate-700/80 bg-slate-800/90"
+            aria-hidden
+        >
+            <div className="flex justify-between gap-2">
+                <div className="space-y-2 flex-1 min-w-0">
+                    <div className="h-2.5 w-24 rounded bg-slate-600" />
+                    <div className="h-5 w-48 max-w-full rounded bg-slate-600" />
+                </div>
+                <div className="h-8 w-20 rounded-full bg-slate-600 shrink-0" />
+            </div>
+            <div className="h-px bg-slate-700" />
+            <div className="grid grid-cols-2 gap-x-4 gap-y-3">
+                {Array.from({ length: 10 }).map((_, i) => (
+                    <div key={i} className="space-y-2">
+                        <div className="h-2 w-16 rounded bg-slate-600" />
+                        <div className="h-4 w-full rounded bg-slate-600/70" />
+                    </div>
+                ))}
+            </div>
+            <div className="h-px bg-slate-700" />
+            <div className="flex flex-wrap gap-2">
+                <div className="h-9 w-44 rounded-md bg-slate-600" />
+                <div className="h-9 w-40 rounded-md bg-slate-600" />
+            </div>
+        </div>
+    );
 }
 
 interface TaxpayerData {
@@ -48,11 +98,10 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerDataFromLoader, observations: observationsFromLoader, onTaxpayerDataLoaded }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
-    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData>()
+    const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(taxpayerDataFromLoader);
     const { user } = useAuth();
-    const navigate = useNavigate();
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
     const [showModal, setShowModal] = useState(false); // Nuevo estado para mostrar modal
     const [loading, setLoading] = useState(false);
@@ -61,66 +110,91 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     const [showCulminatedModal, setShowCulminatedModal] = useState(false);
     const [showNotifiedModal, setShowNotifiedModal] = useState(false);
     const [showIndexModal, setShowIndexModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
     const [newIndexIva, setNewIndexIva] = useState("");
 
+    const canEditTaxpayer = 
+        user?.role === 'ADMIN' || 
+        user?.id === taxpayerData?.officerId || 
+        user?.taxpayer?.some(t => t.id === taxpayer);
+
+    const parseDecimalLike = (value: unknown): number => {
+        if (typeof value === "number") return value;
+        if (typeof value === "string") {
+            const parsed = Number(value);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+        if (!value || typeof value !== "object") return 0;
+
+        const maybeDecimal = value as { d?: unknown };
+        if (!Array.isArray(maybeDecimal.d) || maybeDecimal.d.length === 0) return 0;
+        const firstChunk = Number(maybeDecimal.d[0]);
+        return Number.isFinite(firstChunk) ? firstChunk : 0;
+    };
+
+    const formatCurrency = (value: unknown) => {
+        const amount = parseDecimalLike(value);
+        return amount.toLocaleString("es-VE", { style: "currency", currency: "VES" });
+    };
 
 
+    const [loadingDetails, setLoadingDetails] = useState(true);
 
     useEffect(() => {
+        if (taxpayerDataFromLoader) {
+            setTaxpayerData(taxpayerDataFromLoader);
+            setLoadingDetails(false);
+            return;
+        }
+
         const fetchData = async () => {
             try {
-
                 if (taxpayer) {
                     const data = await getTaxpayerData(taxpayer);
-
-
                     setTaxpayerData(data);
                 }
-
             } catch (e) {
                 console.error(e);
-                toast.error("Ha ocurrido un error obteniendo los datos del contribuyente")
+                toast.error("Ha ocurrido un error obteniendo los datos del contribuyente");
+            } finally {
+                setLoadingDetails(false);
             }
+        };
+        fetchData();
+    }, [taxpayer, taxpayerDataFromLoader]);
+
+    useEffect(() => {
+        if (!onTaxpayerDataLoaded) return;
+        if (loadingDetails) return;
+        if (!taxpayerData) {
+            onTaxpayerDataLoaded(null);
+            return;
         }
-        fetchData()
-
-
-    }, [])
+        onTaxpayerDataLoaded({
+            rif: taxpayerData.rif ?? "—",
+            fase: taxpayerData.fase ?? "—",
+            notified: !!taxpayerData.notified,
+            notificationLabel:
+                taxpayerData.notified && taxpayerData.updated_at
+                    ? new Date(taxpayerData.updated_at).toLocaleDateString("es-VE", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                      })
+                    : taxpayerData.notified
+                      ? "Notificado"
+                      : "Pendiente",
+        });
+    }, [loadingDetails, taxpayerData, onTaxpayerDataLoaded]);
 
     let fines = 0;
 
-
-    let buys = 0;
-    let sells = 0;
-    if (IVAReports && Array.isArray(IVAReports)) {
-        IVAReports.forEach((rep) => {
-            buys += Number(rep.purchases) || 0;
-            sells += Number(rep.sells) || 0;
-        });
-    }
 
     if (events && Array.isArray(events)) {
         events.forEach((event) => {
             if (event.type === "FINE") fines += 1;
         });
     }
-
-
-    const dataMock = [
-        {
-            name: "COMPRAS (BS)",
-            value: buys > 0 ? parseFloat(buys.toFixed(2)) : 1,
-            formatted: buys.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
-            color: "#0080c1"
-        },
-        {
-            name: "VENTAS (BS)",
-            value: sells > 0 ? parseFloat(sells.toFixed(2)) : 1,
-            formatted: sells.toLocaleString("es-VE", { style: "currency", currency: "VES" }),
-            color: "#737373"
-        },
-    ];
-
 
 
     const fases = ["FASE_1", "FASE_2", "FASE_3", "FASE_4"];
@@ -303,27 +377,6 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
     // console.log("Taxpayer data: " + JSON.stringify(taxpayerData))
 
 
-    // Datos para el gráfico de barras: compras y ventas por mes (desde IVAReports)
-    const barChartData = useMemo(() => {
-        if (!IVAReports || !Array.isArray(IVAReports) || IVAReports.length === 0) return [];
-        const monthNames = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-        const sorted = [...IVAReports].sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-        return sorted.map((r) => {
-            const d = new Date(r.date);
-            const monthLabel = `${monthNames[d.getMonth()]} ${d.getFullYear()}`;
-            return {
-                month: monthLabel,
-                compras: Number(r.purchases) || 0,
-                ventas: Number(r.sells) || 0,
-            };
-        });
-    }, [IVAReports]);
-
-    // Índice meta para la ReferenceLine: propio (currentEffectiveIndex) o null si no hay
-    const indexMeta = taxpayerData?.currentEffectiveIndex != null && taxpayerData.currentEffectiveIndex > 0
-        ? taxpayerData.currentEffectiveIndex
-        : null;
-
     const submitNewIndexIva = async () => {
         if (!taxpayer || !newIndexIva) return;
 
@@ -350,16 +403,16 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
 
 
     return (
-        <div className="w-full text-black mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
+        <div className="w-full text-slate-100 mt-4 px-3 sm:px-6 md:px-8 lg:px-0 lg:mt-0 overflow-x-hidden">
 
-          {/* ── Design tokens ── */}
+          {/* ── Design tokens (tema oscuro, alineado al dashboard v2) ── */}
           <style>{`
             .is-card {
-              --card-bg: #ffffff;
-              --card-border: rgba(15,23,42,0.08);
-              --tag-bg: rgba(15,23,42,0.05);
-              --label-color: #64748b;
-              --value-color: #0f172a;
+              --card-bg: #0b1220;
+              --card-border: rgba(148,163,184,0.22);
+              --tag-bg: rgba(148,163,184,0.12);
+              --label-color: #94a3b8;
+              --value-color: #f8fafc;
               --accent: #1d4ed8;
               --accent-dim: rgba(29,78,216,0.08);
               --badge-special-bg: rgba(245,158,11,0.12);
@@ -370,6 +423,21 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
               --badge-notif-color: #065f46;
               --badge-pending-bg: rgba(239,68,68,0.08);
               --badge-pending-color: #b91c1c;
+              --card-bg: #1e293b;
+              --card-border: rgba(148,163,184,0.12);
+              --tag-bg: rgba(148,163,184,0.08);
+              --label-color: #94a3b8;
+              --value-color: #f1f5f9;
+              --accent: #3b82f6;
+              --accent-dim: rgba(59,130,246,0.15);
+              --badge-special-bg: rgba(245,158,11,0.2);
+              --badge-special-color: #fbbf24;
+              --badge-ordinary-bg: rgba(16,185,129,0.18);
+              --badge-ordinary-color: #34d399;
+              --badge-notif-bg: rgba(16,185,129,0.18);
+              --badge-notif-color: #34d399;
+              --badge-pending-bg: rgba(239,68,68,0.18);
+              --badge-pending-color: #f87171;
               font-family: 'Inter', system-ui, sans-serif;
             }
             .is-field { display: flex; flex-direction: column; gap: 2px; }
@@ -443,21 +511,26 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             .is-action-btn.success { background: #059669; color: #fff; }
             .is-action-btn.ghost {
               background: transparent;
-              border: 1.5px solid rgba(15,23,42,0.15);
-              color: #475569;
+              border: 1.5px solid rgba(148,163,184,0.35);
+              color: #cbd5e1;
+              border: 1.5px solid rgba(148,163,184,0.25);
+              color: #e2e8f0;
             }
             /* settings cog */
             .is-cog-btn {
               padding: 5px;
               border-radius: 6px;
               border: 1px solid var(--card-border);
-              background: white;
-              color: #64748b;
+              background: #111827;
+              color: #cbd5e1;
+              border: 1px solid rgba(148,163,184,0.25);
+              background: rgba(15,23,42,0.5);
+              color: #94a3b8;
               cursor: pointer;
               transition: background 0.15s;
               display: flex; align-items: center; justify-content: center;
             }
-            .is-cog-btn:hover { background: var(--tag-bg); }
+            .is-cog-btn:hover { background: var(--tag-bg); color: #e2e8f0; }
             /* obs panel wrapper */
             .obs-panel-outer {
               background: #0f172a;
@@ -466,21 +539,24 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
             @media (min-width: 1024px) {
               .obs-panel-outer {
                 border-radius: 0 12px 12px 0;
-                border-left: 1px solid rgba(148,163,184,0.10);
+                border-left: 1px solid rgba(148,163,184,0.12);
               }
             }
           `}</style>
 
-          <div className="is-card flex flex-col lg:flex-row w-full max-w-full lg:max-w-[960px] lg:mx-auto shadow-xl rounded-xl overflow-hidden" style={{ background: 'white', border: '1px solid rgba(15,23,42,0.09)' }}>
+          <div className="is-card flex flex-col lg:flex-row w-full max-w-full lg:max-w-[960px] lg:mx-auto shadow-xl rounded-xl overflow-hidden border border-slate-700/90 bg-slate-800">
 
                 {/* ── Columna Izquierda — Datos del Contribuyente ── */}
-                <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4">
+                {loadingDetails && !taxpayerData ? (
+                  <IndividualStatsLeftSkeleton />
+                ) : (
+                <div className="w-full min-w-0 p-4 sm:p-5 lg:p-6 lg:w-[45%] flex flex-col gap-4 border-b lg:border-b-0 lg:border-r border-slate-700/80 bg-slate-800/90">
 
                   {/* Header */}
                   <div className="flex items-center justify-between gap-2">
                     <div>
-                      <p className="is-field-label" style={{color:'#94a3b8',fontSize:'10px'}}>CONTRIBUYENTE</p>
-                      <p className="is-field-value prominent" style={{fontSize:'15px',fontWeight:700,color:'#0f172a'}}>
+                      <p className="is-field-label" style={{fontSize:'10px'}}>CONTRIBUYENTE</p>
+                      <p className="is-field-value prominent" style={{fontSize:'15px',fontWeight:700}}>
                         {taxpayerData?.name ?? '—'}
                       </p>
                     </div>
@@ -506,6 +582,18 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                           }}
                         >
                           <Settings size={15} />
+                        </button>
+                      )}
+                      
+                      {/* Botón Editar Contribuyente */}
+                      {canEditTaxpayer && taxpayerData && (
+                        <button
+                          type="button"
+                          className="is-cog-btn"
+                          title="Editar Información"
+                          onClick={() => setShowEditModal(true)}
+                        >
+                          <Edit2 size={15} />
                         </button>
                       )}
                     </div>
@@ -556,8 +644,20 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                       <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.user?.name ?? 'No asignado'}</span>
                     </div>
                     <div className="is-field">
+                      <span className="is-field-label">Supervisor</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.user?.supervisor?.name ?? 'No asignado'}
+                      </span>
+                    </div>
+                    <div className="is-field">
+                      <span className="is-field-label">Grupo</span>
+                      <span className="is-field-value" style={{fontSize:'12px'}}>
+                        {taxpayerData?.user?.group?.name ?? 'No asignado'}
+                      </span>
+                    </div>
+                    <div className="is-field">
                       <span className="is-field-label">Excedente IVA</span>
-                      <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? taxpayerData.IVAReports[0].excess.toString() : '—'}</span>
+                      <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? formatCurrency(taxpayerData.IVAReports[0].excess) : '—'}</span>
                     </div>
                     <div className="is-field">
                       <span className="is-field-label">Fecha Procedimiento</span>
@@ -660,7 +760,7 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                               ))}
                             </div>
                             {taxpayerData?.fase && (
-                              <p className="text-xs italic mt-2" style={{color:'#64748b',lineHeight:1.5}}>
+                              <p className="text-xs italic mt-2 text-slate-400 leading-relaxed">
                                 {taxpayerData.fase === 'FASE_1' && 'Notificación de providencia, acta de requerimientos, constancias y actas de recepción.'}
                                 {taxpayerData.fase === 'FASE_2' && 'Análisis y desarrollo de hojas de trabajo y predeterminación con soportes.'}
                                 {taxpayerData.fase === 'FASE_3' && 'Determinación y reparo definitivo: acta de reparo, informe y requerimiento finales.'}
@@ -673,11 +773,11 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                     </>
                   )}
                 </div>
+                )}
 
                 {/* ── Columna Derecha — Observaciones ── */}
-                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0" style={{minHeight:'420px'}}>
-
-                  <ObservationsPanel taxpayerId={taxpayer} />
+                <div className="obs-panel-outer flex flex-col w-full min-w-0 lg:w-[55%] border-t lg:border-t-0 border-slate-700/50 min-h-[300px] lg:min-h-[420px]">
+                  <ObservationsPanel taxpayerId={taxpayer} initialObservations={observationsFromLoader ?? []} />
                 </div>
             </div>
             {showFaseModal && (
@@ -780,6 +880,12 @@ export const IndividualStats = ({ events, IVAReports }: IndividualStatsProps) =>
                 </div>
             )}
 
+            <EditTaxpayerModal 
+              isOpen={showEditModal} 
+              onClose={() => setShowEditModal(false)} 
+              taxpayerData={taxpayerData} 
+              onSuccess={(updatedData) => setTaxpayerData(updatedData)} 
+            />
         </div>
 
     );

@@ -1,31 +1,121 @@
 import React, { useEffect, useState } from "react";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip,
-    ResponsiveContainer,
-} from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Cell } from "recharts";
 import { getGroupPerformance } from "@/components/utils/api/report-functions";
 import { GroupStat } from "./group-performance-stats";
+import { StatsDesignVariant } from "./global-perfomance";
 import toast from "react-hot-toast";
 
 interface IvaByGroupChartProps {
     year?: number;
+    /** UUID del grupo fiscal (coordinación); si no se envía, todas. */
+    groupId?: string;
+    designVariant?: StatsDesignVariant;
 }
 
-export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
-    const [groupStats, setGroupStats] = useState<GroupStat[]>([]);
-    const [loading, setLoading] = useState(true);
+// ─── Paletas de colores escalables ───────────────────────────────────────────
+
+/**
+ * Paleta principal (classic / minimal): 12 colores curados que se ciclan
+ * automáticamente si hay más grupos que colores.
+ */
+const PALETTE_CLASSIC = [
+    "#3b82f6", // blue-500
+    "#10b981", // emerald-500
+    "#f59e0b", // amber-500
+    "#8b5cf6", // violet-500
+    "#ef4444", // red-500
+    "#06b6d4", // cyan-500
+    "#f97316", // orange-500
+    "#84cc16", // lime-500
+    "#ec4899", // pink-500
+    "#14b8a6", // teal-500
+    "#a855f7", // purple-500
+    "#eab308", // yellow-500
+];
+
+/** Paleta cálida para el variant 'contrast' (ámbar/naranja). */
+const PALETTE_CONTRAST = [
+    "#f59e0b", // amber-500
+    "#fbbf24", // amber-400
+    "#d97706", // amber-600
+    "#f97316", // orange-500
+    "#fb923c", // orange-400
+    "#ea580c", // orange-600
+    "#fcd34d", // amber-300
+    "#fde68a", // amber-200
+    "#fdba74", // orange-300
+    "#fed7aa", // orange-200
+    "#fef3c7", // amber-100
+    "#ffedd5", // orange-100
+];
+
+const getBarColor = (variant: StatsDesignVariant, index: number): string => {
+    const palette = variant === "contrast" ? PALETTE_CONTRAST : PALETTE_CLASSIC;
+    return palette[index % palette.length];
+};
+
+// ─── Estilos por variant ─────────────────────────────────────────────────────
+
+const STYLES: Record<StatsDesignVariant, {
+    panelBg: string;
+    titleBorder: string;
+    titleBg: string;
+    subtitle: string;
+    grid: string;
+    xTick: string;
+    yTick: string;
+    tooltipBg: string;
+}> = {
+    classic: {
+        panelBg: "bg-slate-950/80",
+        titleBorder: "border-slate-500",
+        titleBg: "bg-slate-800/90",
+        subtitle: "text-slate-400",
+        grid: "#334155",
+        xTick: "#cbd5e1",
+        yTick: "#94a3b8",
+        tooltipBg: "bg-slate-900/95",
+    },
+    contrast: {
+        panelBg: "bg-slate-950",
+        titleBorder: "border-amber-300/70",
+        titleBg: "bg-amber-950/40",
+        subtitle: "text-slate-200",
+        grid: "#f59e0b",
+        xTick: "#ffffff",
+        yTick: "#fde68a",
+        tooltipBg: "bg-amber-950/90",
+    },
+    minimal: {
+        panelBg: "bg-slate-900/40",
+        titleBorder: "border-slate-700",
+        titleBg: "bg-slate-900/30",
+        subtitle: "text-slate-500",
+        grid: "#1e293b",
+        xTick: "#94a3b8",
+        yTick: "#64748b",
+        tooltipBg: "bg-slate-900/90",
+    },
+};
+
+// ─── Componente principal ────────────────────────────────────────────────────
+
+export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic" }: IvaByGroupChartProps & { data?: GroupStat[] }) => {
+    const [groupStats, setGroupStats] = useState<GroupStat[]>(data || []);
+    const [loading, setLoading] = useState(!data);
+    const style = STYLES[designVariant];
 
     useEffect(() => {
+        if (data) {
+            setGroupStats(data);
+            setLoading(false);
+            return;
+        }
         const fetchData = async () => {
             setLoading(true);
             try {
-                const data = await getGroupPerformance(year);
-                setGroupStats(data);
+                const res = await getGroupPerformance(year, groupId);
+                setGroupStats(res);
             } catch (e) {
                 console.error(e);
                 toast.error("No se pudo obtener el rendimiento de IVA por grupo.");
@@ -35,33 +125,16 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         };
 
         fetchData();
-    }, [year]);
+    }, [year, groupId, data]);
 
     // Transformar datos para el gráfico
     const chartData = groupStats.map((group) => ({
         group_name: group.groupName,
+        short_name: group.groupName.length > 16 ? `${group.groupName.slice(0, 16)}...` : group.groupName,
         totalIva: Number(group.totalIvaCollected),
-    })).sort((a, b) => b.totalIva - a.totalIva); // Ordenar de mayor a menor
+    })).sort((a, b) => b.totalIva - a.totalIva);
 
-    const CustomTooltip = ({ active, payload }: any) => {
-        if (active && payload && payload.length) {
-            const data = payload[0].payload;
-            return (
-                <div className="bg-slate-800 border border-slate-600 px-3 py-2 rounded-lg text-xs text-white shadow-xl">
-                    <p className="mb-1 font-bold">{data.group_name}</p>
-                    <p className="text-amber-400">
-                        IVA Recaudado:{" "}
-                        {Number(data.totalIva).toLocaleString("es-VE", {
-                            style: "currency",
-                            currency: "VES",
-                            minimumFractionDigits: 0,
-                        })}
-                    </p>
-                </div>
-            );
-        }
-        return null;
-    };
+    const totalIvaCollected = chartData.reduce((sum, group) => sum + group.totalIva, 0);
 
     if (loading) {
         return (
@@ -79,54 +152,75 @@ export const IvaByGroupChart = ({ year }: IvaByGroupChartProps) => {
         );
     }
 
+    const formatY = (value: number) => {
+        const n = Number(value);
+        return n.toLocaleString("es-VE", { maximumFractionDigits: 1, notation: "compact", compactDisplay: "short" });
+    };
+
+    const CustomTooltip = ({ active, payload }: any) => {
+        if (active && payload && payload.length) {
+            const d = payload[0].payload;
+            const value = Number(d.totalIva) || 0;
+            const share = totalIvaCollected > 0 ? (value / totalIvaCollected) * 100 : 0;
+            const idx = chartData.findIndex(c => c.group_name === d.group_name);
+            const barColor = getBarColor(designVariant, idx);
+
+            return (
+                <div className={`p-2 border border-slate-700 rounded-md text-xs shadow-xl ${style.tooltipBg}`}>
+                    <div className="flex items-center gap-1.5 mb-1">
+                        <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: barColor }} />
+                        <p className="font-bold text-white">{d.group_name}</p>
+                    </div>
+                    <p className="text-white">IVA recaudado: Bs. {value.toLocaleString("es-VE", { maximumFractionDigits: 0 })}</p>
+                    <p className="text-slate-300">Participación del total: {share.toFixed(1)}%</p>
+                </div>
+            );
+        }
+        return null;
+    };
+
     return (
-        <div className="flex items-center justify-center w-full h-full max-w-full max-h-full lg:max-w-full lg:max-h-full">
-            <div className="w-full h-full bg-slate-900 p-0 flex flex-col overflow-hidden">
+        <div className="flex w-full flex-col h-full overflow-y-auto custom-scrollbar">
+            <div className={`flex w-full flex-col h-full ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
                 {/* Título */}
-                <div className="flex items-center justify-center pt-4 mb-1 text-xl font-semibold text-center text-white font-inter">
-                    <div className="w-[90vw] lg:w-[35vw] border border-slate-600 bg-slate-800 rounded-md px-2 py-1">
-                        <p className="text-[14px] lg:text-sm font-semibold text-white text-center whitespace-nowrap overflow-hidden text-ellipsis">
+                <div className="mb-1 flex shrink-0 justify-center">
+                    <div className={`w-full max-w-md rounded-md border ${style.titleBorder} ${style.titleBg} px-2 py-1`}>
+                        <p className="text-center text-xs font-semibold tracking-wide text-white sm:text-sm">
                             RENDIMIENTO DE IVA POR GRUPO
                         </p>
                     </div>
                 </div>
                 {/* Subtítulo */}
-                <p className="text-center text-[8px] leading-[11px] text-slate-500 px-2 mb-1">
-                    Esta gráfica muestra el total de IVA recaudado comparando cada grupo entre sí.
+                <p className={`mb-1 line-clamp-2 text-center text-[10px] leading-tight ${style.subtitle}`}>
+                    Total de IVA recaudado por grupo y participación porcentual.
                 </p>
                 {/* Gráfico */}
-                <div className="flex-1 min-h-0 pr-4 lg:pr-0">
+                <div className="mt-2 flex-1 min-h-[300px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart
-                            data={chartData}
-                            margin={{ top: 10, right: 30, left: 0, bottom: 20 }}
-                            barSize={30}
-                        >
-                            <CartesianGrid stroke="#334155" strokeDasharray="3 3" />
+                        <BarChart data={chartData} margin={{ top: 10, right: 5, left: -20, bottom: 35 }}>
+                            <CartesianGrid strokeDasharray="2 3" stroke={style.grid} vertical={false} />
                             <XAxis
-                                dataKey="group_name"
-                                stroke="#475569"
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
-                                angle={-45}
+                                dataKey="short_name"
+                                stroke={style.xTick}
+                                tick={{ fontSize: 10, fontWeight: "600" }}
+                                angle={-30}
                                 textAnchor="end"
-                                height={80}
+                                interval={0}
                             />
                             <YAxis
-                                type="number"
-                                stroke="#475569"
-                                tick={{ fill: "#94a3b8", fontSize: 10 }}
-                                tickFormatter={(value) =>
-                                    Number(value).toLocaleString("es-VE", {
-                                        maximumFractionDigits: 0,
-                                    })
-                                }
+                                stroke={style.yTick}
+                                tickFormatter={(val) => formatY(Number(val))}
+                                tick={{ fontSize: 10 }}
                             />
-                            <Tooltip content={<CustomTooltip />} />
-                            <Bar
-                                dataKey="totalIva"
-                                fill="#ffc74d"
-                                radius={[6, 6, 0, 0]}
-                            />
+                            <Tooltip cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }} content={<CustomTooltip />} />
+                            <Bar dataKey="totalIva" radius={[4, 4, 0, 0]}>
+                                {chartData.map((_, index) => (
+                                    <Cell
+                                        key={`cell-${index}`}
+                                        fill={getBarColor(designVariant, index)}
+                                    />
+                                ))}
+                            </Bar>
                         </BarChart>
                     </ResponsiveContainer>
                 </div>

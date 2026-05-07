@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useDeferredValue, useCallback, useRef } from 'react';
+import React, { useState, useMemo, useDeferredValue, useCallback, useRef, useEffect } from 'react';
 import { Controller, Control } from 'react-hook-form';
 import { Taxpayer } from '../../types/taxpayer';
 import { EventFormData } from '../Events/event-form';
@@ -24,9 +24,27 @@ interface Props {
 const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpayers = [], onSearchChange, searchLoading, placeholder = 'Buscar contribuyente...', onLoadMore, hasMore, loadingMore }) => {
     const [inputValue, setInputValue] = useState('');
     const [isDropdownOpen, setDropdownOpen] = useState(false);
+    const [isWaitingForBackend, setIsWaitingForBackend] = useState(false);
     const listRef = useRef<HTMLUListElement>(null);
 
     const deferredInput = useDeferredValue(inputValue);
+
+    // Detectar cuando el usuario está escribiendo y esperando respuesta del backend
+    useEffect(() => {
+        // Si hay input del usuario y hay una función de búsqueda, estamos esperando al backend
+        if (inputValue.trim().length > 0 && !!onSearchChange) {
+            setIsWaitingForBackend(true);
+        } else {
+            setIsWaitingForBackend(false);
+        }
+    }, [inputValue, onSearchChange]);
+
+    // Cuando searchLoading cambia a false, significa que el backend respondió
+    useEffect(() => {
+        if (!searchLoading && isWaitingForBackend) {
+            setIsWaitingForBackend(false);
+        }
+    }, [searchLoading, isWaitingForBackend]);
 
     const handleScroll = useCallback(() => {
         const el = listRef.current;
@@ -38,12 +56,25 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
         }
     }, [onLoadMore, hasMore, loadingMore]);
 
+    /**
+     * Filtrado de contribuyentes:
+     * - Si hay búsqueda del backend activa (searchLoading o input del usuario con onSearchChange),
+     *   mostramos los resultados del backend directamente SIN filtrar localmente.
+     * - Solo filtramos localmente cuando NO hay búsqueda del backend (modo paginación simple).
+     */
+    const isBackendSearchActive = deferredInput.trim().length > 0 && !!onSearchChange;
+
     const filteredTaxpayers = useMemo(() => {
+        // Si hay búsqueda del backend, mostrar resultados directamente
+        if (isBackendSearchActive) {
+            return taxpayers;
+        }
+        // Solo filtrar localmente cuando NO hay búsqueda del backend
         const query = normalize(deferredInput);
         return taxpayers.filter((t) =>
             normalize(`${t.providenceNum} ${t.process} ${t.rif} ${t.name}`).includes(query)
         );
-    }, [deferredInput, taxpayers]);
+    }, [deferredInput, taxpayers, isBackendSearchActive]);
 
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>, onChange: (val: string) => void) => {
         const val = e.target.value;
@@ -90,9 +121,11 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
 
                     {isDropdownOpen && (
                         <>
-                            {searchLoading && filteredTaxpayers.length === 0 ? (
-                                <div className="absolute z-10 w-full mt-1 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-500">
-                                    Buscando...
+                            {/* Estado: Cargando búsqueda del backend */}
+                            {(searchLoading || isWaitingForBackend) && isBackendSearchActive ? (
+                                <div className="absolute z-10 w-full mt-1 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-500 flex items-center gap-2">
+                                    <span className="inline-block w-4 h-4 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin"></span>
+                                    Buscando contribuyentes...
                                 </div>
                             ) : filteredTaxpayers.length > 0 ? (
                         <ul
@@ -100,24 +133,52 @@ const TaxpayerList: React.FC<Props> = React.memo(({ control, name, label, taxpay
                             className="absolute z-10 w-full mt-1 overflow-y-auto bg-white border border-gray-300 rounded-md shadow-lg max-h-40"
                             onScroll={handleScroll}
                         >
-                            {filteredTaxpayers.map((taxpayer) => (
-                                <li
-                                    key={taxpayer.id}
-                                    className="px-3 py-2 cursor-pointer hover:bg-blue-100"
-                                    onClick={() => handleSelect(taxpayer, field.onChange)}
-                                >
-                                    <div className="font-semibold">{taxpayer.name}</div>
-                                    <div className="text-sm text-gray-500">
-                                        {taxpayer.rif} - {taxpayer.process} - {taxpayer.emition_date}
-                                    </div>
-                                </li>
-                            ))}
+                            {filteredTaxpayers.map((taxpayer) => {
+                                const currentYear = new Date().getFullYear();
+                                const year = taxpayer.emition_date ? new Date(taxpayer.emition_date).getFullYear() : 0;
+                                const isCurrentYear = year === currentYear;
+
+                                return (
+                                    <li
+                                        key={taxpayer.id}
+                                        className="px-3 py-2 cursor-pointer hover:bg-blue-100"
+                                        onClick={() => handleSelect(taxpayer, field.onChange)}
+                                    >
+                                        <div className="font-semibold">{taxpayer.name}</div>
+                                        <div className="flex items-center gap-2 flex-wrap">
+                                            <span className="text-sm text-gray-500">{taxpayer.rif}</span>
+                                            <span className="text-xs text-gray-400">•</span>
+                                            <span className="text-sm text-gray-500">{taxpayer.process}</span>
+                                            {/* Fecha de emisión con indicador de año actual */}
+                                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                                                isCurrentYear
+                                                    ? 'bg-emerald-100 text-emerald-600'
+                                                    : 'bg-gray-100 text-gray-500'
+                                            }`}>
+                                                {taxpayer.emition_date
+                                                    ? new Date(taxpayer.emition_date).toLocaleDateString('es-VE', {
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric'
+                                                    })
+                                                    : 'Sin fecha'}
+                                                {isCurrentYear && ' ✓'}
+                                            </span>
+                                        </div>
+                                    </li>
+                                );
+                            })}
                             {loadingMore && (
                                 <li className="px-3 py-2 text-sm text-gray-500 text-center">
                                     Cargando...
                                 </li>
                             )}
                         </ul>
+                            ) : isBackendSearchActive && !searchLoading && !isWaitingForBackend ? (
+                                // Mostrar mensaje cuando el backend respondió y no hay resultados
+                                <div className="absolute z-10 w-full mt-1 px-3 py-2 bg-white border border-gray-300 rounded-md shadow-lg text-sm text-gray-500">
+                                    No se encontraron contribuyentes
+                                </div>
                             ) : null}
                         </>
                     )}

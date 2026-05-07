@@ -265,3 +265,23 @@ Problema:
 Screenshot: 
 Error de consola: 
 ```
+
+---
+
+## 🔔 20. Milestone 3 - Notificaciones Frontend
+**URL**: `http://localhost:5173/notifications` y `http://localhost:5173/settings`
+
+- [ ] La campana de notificaciones aparece en el header con badge de no leídas
+- [ ] La ruta `/notifications` carga y muestra listado paginado sin errores
+- [ ] El botón "Marcar leída" actualiza estado visual y contador
+- [ ] El botón "Refrescar" sincroniza lista y contador con backend
+- [ ] Ante `notification:new` se agrega al listado sin duplicados
+- [ ] Si cae socket (`disconnect/connect_error`), activa fallback polling
+- [ ] Al reconectar socket, se desactiva polling y se resincroniza
+- [ ] Evento `maintenance:alert` muestra banner en el layout
+- [ ] Evento `maintenance:start` muestra bloqueo/aviso global
+- [ ] En Ajustes > Notificaciones, umbrales por procedimiento cargan y guardan
+- [ ] Umbral por defecto carga y guarda correctamente
+- [ ] Configuración de escalamiento aparece solo en Ajustes y solo para ADMIN
+- [ ] Configuración de escalamiento NO aparece en módulo Administración
+- [ ] Manejo de 403/401 en configuración muestra feedback de error al usuario

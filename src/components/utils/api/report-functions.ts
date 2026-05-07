@@ -2,7 +2,30 @@ import { apiConnection } from "./api-connection";
 import { GroupData } from "@/components/contributions/contribution-types";
 import { GroupRecordsApiResponse } from "@/types/group-records";
 import { GetCompleteReportParams } from "@/types/reports";
+import type {
+	InternalAuditDashboard,
+	InternalAuditQueryParams,
+	UsageRankingTopBottomResponse,
+} from "@/types/internal-audit";
 
+/** Año (`date`) y filtro opcional por grupo fiscal (coordinación). */
+function buildStatsQuery(year?: number, groupId?: string): string {
+	const params = new URLSearchParams();
+	if (year != null) params.set("date", String(year));
+	if (groupId) params.set("groupId", groupId);
+	const q = params.toString();
+	return q ? `?${q}` : "";
+}
+
+export const getCoordinationGroups = async (): Promise<{ id: string; name: string }[]> => {
+	try {
+		const response = await apiConnection.get("reports/coordination-groups");
+		return Array.isArray(response.data) ? response.data : [];
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener las coordinaciones.");
+	}
+};
 
 interface ContributionsInput {
 	id?: string,
@@ -46,30 +69,24 @@ export const getPaymentHistory = async (taxpayerId: string) => {
 	}
 }
 
-export const getIslrReports = async (taxpayerId: string) => {
+// export const getIslrReports = async (taxpayerId: string) => {
+// 	try {
+// 		let requestURL = `taxpayer/get-islr`;
 
+// 		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
+
+// 		const response = await apiConnection.get(requestURL);
+// 		return response;
+// 	} catch (e) {
+// 		console.error(e);
+// 		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
+// 	}
+// }
+
+export const getBestSupervisors = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = `taxpayer/get-islr`;
-
-		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
-
+		const requestURL = `reports/get-best-supervisor-by-group${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-		return response;
-	} catch (e) {
-		console.error(e);
-		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
-	}
-}
-
-export const getBestSupervisors = async (year?: number) => {
-	try {
-		let requestURL = 'reports/get-best-supervisor-by-group'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -77,15 +94,10 @@ export const getBestSupervisors = async (year?: number) => {
 	}
 }
 
-export const getTopFiscals = async (year?: number) => {
+export const getTopFiscals = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-top-fiscals'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-top-fiscals${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -104,15 +116,10 @@ export const getTopCoordinators = async () => {
 	}
 }
 
-export const getTopFiveByGroup = async (year?: number) => {
+export const getTopFiveByGroup = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-top-five-by-group'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-top-five-by-group${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -123,7 +130,7 @@ export const getTopFiveByGroup = async (year?: number) => {
 export const getMonthlyGrowth = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-monthly-growth'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -136,15 +143,10 @@ export const getMonthlyGrowth = async (year?: number) => {
 	}
 }
 
-export const getTaxpayersCompliance = async (year?: number) => {
+export const getTaxpayersCompliance = async (year?: number, groupId?: string) => {
 	try {
-		let requestURL = 'reports/get-taxpayers-compliance'
-		if (year) {
-			requestURL += `?date=${year}`
-		}
-
+		const requestURL = `reports/get-taxpayers-compliance${buildStatsQuery(year, groupId)}`;
 		const response = await apiConnection.get(requestURL);
-
 		return response;
 	} catch (e) {
 		console.error(e);
@@ -155,7 +157,7 @@ export const getTaxpayersCompliance = async (year?: number) => {
 export const getExpectedAmount = async (year?: number) => {
 	try {
 		let requestURL = 'reports/get-expected-amount'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -166,6 +168,22 @@ export const getExpectedAmount = async (year?: number) => {
 		console.error(e);
 		throw new Error("No se pudo obtener el pagado esperado.")
 	}
+}
+
+export const getIslrReports = async (taxpayerId: string) => {
+
+	try { 
+		let requestURL = `taxpayer/get-islr`;
+
+		if (taxpayerId) requestURL = `${requestURL}/${taxpayerId}`;
+
+		const response = await apiConnection.get(requestURL);
+		return response;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudieron obtener los reportes de ISLR, por favor, intente de nuevo.")
+	}
+
 }
 
 export const getTaxHistory = async (taxpayerId: string) => {
@@ -222,6 +240,22 @@ export const getContributions = async (data?: ContributionsInput) => {
 	}
 }
 
+/** Detalle de fiscales con árbol `taxpayer[]` (mismo rango y supervisor que el resumen). */
+export const getFiscalGroupMembers = async (
+	groupId: string,
+	params?: Pick<ContributionsInput, 'startDate' | 'endDate' | 'supervisorId'>
+) => {
+	try {
+		const response = await apiConnection.get(`reports/fiscal-groups/${groupId}/members`, {
+			params,
+		});
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw e;
+	}
+};
+
 export const getIndividualIvaReport = async (id: string | undefined) => {
 	try {
 		const requestUrl = `reports/individual-iva-report`
@@ -244,10 +278,11 @@ export const getGroupRecords = async (data: GroupRecordsInput): Promise<GroupRec
 	}
 };
 
+/** `year` = año civil UTC de cartera (query `date=YYYY`), igual que estadísticas del fiscal en backend. */
 export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-info/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 
@@ -262,7 +297,7 @@ export const getFiscalInfo = async (fiscalId: string, year?: number) => {
 export const getFiscalTaxpayers = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-taxpayers/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -270,6 +305,28 @@ export const getFiscalTaxpayers = async (fiscalId: string, year?: number) => {
 	} catch (e) {
 		console.error('Error al obtener el reporte de contribuyentes:', e)
 		throw e
+	}
+};
+
+export type FiscalKpiBreakdownCategory = 'assigned' | 'active' | 'completed' | 'notified';
+
+export const getFiscalKpiBreakdown = async (
+	fiscalId: string,
+	category: FiscalKpiBreakdownCategory,
+	year?: number
+) => {
+	try {
+		const requestUrl = `reports/get-fiscal-kpi-breakdown/${fiscalId}`;
+		const response = await apiConnection.get(requestUrl, {
+			params: {
+				category,
+				...(year != null ? { date: year } : {}),
+			},
+		});
+		return response.data;
+	} catch (e) {
+		console.error('Error al obtener el detalle del indicador fiscal:', e);
+		throw e;
 	}
 };
 
@@ -317,7 +374,7 @@ export const getCompleteReport = async (params: GetCompleteReportParams) => {
 export const getFiscalMonthlyCollect = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-monthly-collect/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -331,7 +388,7 @@ export const getFiscalMonthlyCollect = async (fiscalId: string, year?: number) =
 export const getFiscalMonthlyPerformance = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-monthly-performance/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -345,7 +402,7 @@ export const getFiscalMonthlyPerformance = async (fiscalId: string, year?: numbe
 export const getFiscalComplianceByProcess = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-compliance-by-process/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -359,7 +416,7 @@ export const getFiscalComplianceByProcess = async (fiscalId: string, year?: numb
 export const getFiscalTaxpayerCompliance = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-compliance/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -373,7 +430,7 @@ export const getFiscalTaxpayerCompliance = async (fiscalId: string, year?: numbe
 export const getFiscalCollectAnalisis = async (fiscalId: string, year?: number) => {
 	try {
 		let requestUrl = `reports/get-fiscal-collect-analisis/${fiscalId}`
-		if (year) {
+		if (year != null) {
 			requestUrl += `?date=${year}`
 		}
 		const response = await apiConnection.get(requestUrl);
@@ -386,50 +443,33 @@ export const getFiscalCollectAnalisis = async (fiscalId: string, year?: number) 
 
 
 
-export const getGlobalPerformance = async (year?: number) => {
+export const getGlobalPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/global-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		return response.data
+		const requestUrl = `reports/global-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento global")
 	}
 }
 
-export const getGlobalTaxpayerPerformance = async (year?: number) => {
+export const getGlobalTaxpayerPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/global-taxpayer-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		// console.log("TAXPAYER PERFORMANCE: " + JSON.stringify(response.data))
-		return response.data
+		const requestUrl = `reports/global-taxpayer-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
 	}
 }
 
-export const getGroupPerformance = async (year?: number) => {
-
+export const getGroupPerformance = async (year?: number, groupId?: string) => {
 	try {
-		let requestUrl = `reports/group-performance`
-		if (year) {
-			requestUrl += `?date=${year}`
-		}
-
-		const response = await apiConnection.get(requestUrl)
-
-		return response.data
+		const requestUrl = `reports/group-performance${buildStatsQuery(year, groupId)}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
 	} catch (e) {
 		console.error(e)
 		throw new Error("No se pudo obtener el rendimiento de los contribuyentes")
@@ -441,7 +481,7 @@ export const getGlobalKPI = async (year?: number) => {
 	try {
 
 		let requestURL = 'reports/global-kpi'
-		if (year) {
+		if (year != null) {
 			requestURL += `?date=${year}`
 		}
 
@@ -483,4 +523,91 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 		console.error('Error al obtener datos del contribuyente:', e);
 		throw new Error("No se pudieron obtener los datos completos del contribuyente.");
 	}
+};
+
+export interface TaxpayerDashboardResponse {
+	taxpayerId: string;
+	generatedAt: string;
+	taxpayerData?: unknown;
+	events?: unknown[];
+	fineHistory?: unknown;
+	paymentHistory?: unknown;
+	pendingEvents?: unknown[];
+	ivaPerformance?: unknown;
+	taxSummary?: unknown[] | { data?: unknown[] };
+	islrReports?: unknown[] | { data?: unknown[] };
+	observations?: unknown[];
+}
+
+/** Endpoint agregador del dashboard de detalle de contribuyente. */
+export const getTaxpayerDashboard = async (taxpayerId: string): Promise<TaxpayerDashboardResponse> => {
+	try {
+		const response = await apiConnection.get(`reports/taxpayer-dashboard/${taxpayerId}`);
+		return response.data as TaxpayerDashboardResponse;
+	} catch (e) {
+		console.error("Error al obtener taxpayer dashboard:", e);
+		throw new Error("No se pudo obtener el dashboard del contribuyente.");
+	}
+};
+
+export function buildInternalAuditDashboardQuery(params: InternalAuditQueryParams): string {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	if (params.shortHours != null && params.shortHours > 0) {
+		q.set("shortHours", String(params.shortHours));
+	}
+	if (params.statsYear != null && params.statsYear > 0) {
+		q.set("statsYear", String(params.statsYear));
+	}
+	const s = q.toString();
+	return s ? `?${s}` : "";
+}
+
+export const getInternalAuditDashboard = async (
+	params: InternalAuditQueryParams = {},
+): Promise<InternalAuditDashboard> => {
+	const response = await apiConnection.get(
+		`reports/internal-audit-dashboard${buildInternalAuditDashboardQuery(params)}`,
+	);
+	return response.data;
+};
+
+export const getUsageRankingTopBottom = async (
+	params: Pick<InternalAuditQueryParams, "from" | "to"> = {},
+): Promise<UsageRankingTopBottomResponse> => {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	const query = q.toString();
+	const response = await apiConnection.get(
+		`reports/usage-ranking-top-bottom${query ? `?${query}` : ""}`,
+	);
+	return response.data;
+};
+
+/** Descarga CSV con la misma ventana que el panel (misma query + format=csv). */
+export const downloadInternalAuditCsv = async (params: InternalAuditQueryParams): Promise<void> => {
+	const q = new URLSearchParams();
+	if (params.from) q.set("from", params.from);
+	if (params.to) q.set("to", params.to);
+	if (params.shortHours != null && params.shortHours > 0) {
+		q.set("shortHours", String(params.shortHours));
+	}
+	if (params.statsYear != null && params.statsYear > 0) {
+		q.set("statsYear", String(params.statsYear));
+	}
+	q.set("format", "csv");
+	const response = await apiConnection.get(`reports/internal-audit-dashboard?${q.toString()}`, {
+		responseType: "blob",
+	});
+	const blob = new Blob([response.data], { type: "text/csv;charset=utf-8" });
+	const url = window.URL.createObjectURL(blob);
+	const a = document.createElement("a");
+	a.href = url;
+	a.download = `auditoria-interna-${new Date().toISOString().slice(0, 10)}.csv`;
+	document.body.appendChild(a);
+	a.click();
+	a.remove();
+	window.URL.revokeObjectURL(url);
 };

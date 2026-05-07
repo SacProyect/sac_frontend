@@ -16,6 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/UI/select';
+import { 
+  Building2, 
+  Hash, 
+  Workflow, 
+  CreditCard, 
+  MapPin, 
+  Activity, 
+  Calendar, 
+  UserCheck, 
+  FileUp, 
+  Globe,
+  Check
+} from 'lucide-react';
+import { cn } from "@/lib/utils";
 import { createTaxpayer, getParishList, getTaxpayerCategories } from '@/components/utils/api/taxpayer-functions';
 import { contract_type, Parish, taxpayer_process } from '@/types/taxpayer';
 import { ModalFooter } from '@/components/UI/v2';
@@ -23,6 +37,7 @@ import toast from 'react-hot-toast';
 import { getOfficers } from '../utils/api/user-functions';
 import { TaxpayerCategories } from '@/types/taxpayer-categories';
 import { useAuth } from '@/hooks/use-auth';
+import { invalidateCache } from '@/hooks/useCachedData';
 
 interface AddContribuyenteModalV2Props {
   isOpen: boolean;
@@ -182,9 +197,9 @@ export function AddContribuyenteModalV2({
     if (!formData.officerId) {
       newErrors.officerId = 'Funcionario es requerido';
     }
-    if (!selectedPdf) {
-      newErrors.pdf = 'Debe subir al menos un PDF';
-    }
+    // if (!selectedPdf) {
+    //   newErrors.pdf = 'Debe subir al menos un PDF';
+    // }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -235,6 +250,10 @@ export function AddContribuyenteModalV2({
 
       if (result.success) {
         toast.success('Contribuyente creado exitosamente');
+        
+        // ✅ Invalidar caché de contribuyentes para refrescar listas
+        invalidateCache('taxpayers');
+        
         // Reset form
         setFormData({
           providenceNum: '',
@@ -282,91 +301,81 @@ export function AddContribuyenteModalV2({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white max-h-[90vh] overflow-y-auto transition-all duration-200">
-        <DialogHeader>
-          <DialogTitle className="text-white">Agregar Contribuyente</DialogTitle>
+      <DialogContent className="bg-slate-900 border-slate-800 text-white max-w-2xl w-full transition-all duration-200">
+        <DialogHeader className="pb-2 border-b border-slate-800">
+          <DialogTitle className="text-white text-base font-semibold flex items-center gap-2">
+            <Building2 className="w-4 h-4 text-indigo-400" /> Agregar Contribuyente
+          </DialogTitle>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Row 1: Nro Providencia & Procedimiento */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="providenceNum" className="text-slate-300 mb-2 block">
-                Nro Providencia
-              </Label>
-              <Input
-                id="providenceNum"
-                type="number"
-                placeholder="12345"
-                value={formData.providenceNum}
-                onChange={(e) => handleChange('providenceNum', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                  errors.providenceNum ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.providenceNum && (
-                <p className="text-red-400 text-xs mt-1">{errors.providenceNum}</p>
-              )}
-            </div>
+        <form onSubmit={handleSubmit} className="grid grid-cols-2 gap-x-4 gap-y-3 pt-1">
 
-            <div>
-              <Label htmlFor="process" className="text-slate-300 mb-2 block">
-                Procedimiento
-              </Label>
-              <Select
-                value={formData.process}
-                onValueChange={(value) => handleChange('process', value as taxpayer_process)}
-              >
-                <SelectTrigger
-                  className={`bg-slate-700 border-slate-600 text-white ${
-                    errors.process ? 'border-red-500' : ''
-                  }`}
-                >
-                  <SelectValue placeholder="Seleccionar..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value={taxpayer_process.FP}>FP</SelectItem>
-                  <SelectItem value={taxpayer_process.AF}>AF</SelectItem>
-                  <SelectItem value={taxpayer_process.VDF}>VDF</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.process && (
-                <p className="text-red-400 text-xs mt-1">{errors.process}</p>
+          {/* Nro Providencia */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Hash className="w-2.5 h-2.5 text-indigo-400" /> Nro Providencia
+            </Label>
+            <Input
+              id="providenceNum"
+              type="number"
+              placeholder="123456"
+              value={formData.providenceNum}
+              onChange={(e) => handleChange('providenceNum', e.target.value)}
+              className={cn(
+                "bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm transition-all",
+                errors.providenceNum && "border-rose-500/60 bg-rose-500/5"
               )}
-            </div>
+            />
+            {errors.providenceNum && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.providenceNum}</p>}
           </div>
 
-          {/* Row 2: Razón Social */}
-          <div>
-            <Label htmlFor="name" className="text-slate-300 mb-2 block">
-              Razón Social
+          {/* Procedimiento */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Workflow className="w-2.5 h-2.5 text-emerald-400" /> Procedimiento
+            </Label>
+            <Select value={formData.process} onValueChange={(value: string) => handleChange('process', value as taxpayer_process)}>
+              <SelectTrigger className={cn("bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm", errors.process && "border-rose-500/60")}>
+                <SelectValue placeholder="Seleccionar..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                <SelectItem value={taxpayer_process.FP}>FP — Fiscalización</SelectItem>
+                <SelectItem value={taxpayer_process.AF}>AF — Aviso Fiscal</SelectItem>
+                <SelectItem value={taxpayer_process.VDF}>VDF — Verificación</SelectItem>
+              </SelectContent>
+            </Select>
+            {errors.process && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.process}</p>}
+          </div>
+
+          {/* Razón Social — full width */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Building2 className="w-2.5 h-2.5 text-blue-400" /> Razón Social
             </Label>
             <Input
               id="name"
-              placeholder="Nombre de la empresa"
+              placeholder="Nombre legal de la empresa o contribuyente..."
               value={formData.name}
               onChange={(e) => handleChange('name', e.target.value)}
-              className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                errors.name ? 'border-red-500' : ''
-              }`}
+              className={cn(
+                "bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm transition-all",
+                errors.name && "border-rose-500/60 bg-rose-500/5"
+              )}
             />
-            {errors.name && <p className="text-red-400 text-xs mt-1">{errors.name}</p>}
+            {errors.name && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.name}</p>}
           </div>
 
-          {/* Row 3: RIF */}
-          <div>
-            <Label htmlFor="rif" className="text-slate-300 mb-2 block">
-              RIF
+          {/* RIF */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <CreditCard className="w-2.5 h-2.5 text-amber-400" /> RIF
             </Label>
-            <div className="flex gap-2">
-              <Select
-                value={formData.rifPrefix}
-                onValueChange={(value) => handleChange('rifPrefix', value)}
-              >
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white w-20">
+            <div className="flex gap-1.5">
+              <Select value={formData.rifPrefix} onValueChange={(value: string) => handleChange('rifPrefix', value)}>
+                <SelectTrigger className="bg-slate-950/40 border-slate-700/60 text-white w-[72px] h-9 rounded-lg text-sm shrink-0">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
+                <SelectContent className="bg-slate-900 border-slate-800 text-white">
                   <SelectItem value="J">J-</SelectItem>
                   <SelectItem value="V">V-</SelectItem>
                   <SelectItem value="G">G-</SelectItem>
@@ -379,176 +388,135 @@ export function AddContribuyenteModalV2({
                 placeholder="123456789"
                 value={formData.rif}
                 onChange={(e) => handleChange('rif', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 flex-1 ${
-                  errors.rif ? 'border-red-500' : ''
-                }`}
+                className={cn(
+                  "flex-1 bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm font-mono transition-all",
+                  errors.rif && "border-rose-500/60 bg-rose-500/5"
+                )}
               />
             </div>
-            {errors.rif && <p className="text-red-400 text-xs mt-1">{errors.rif}</p>}
+            {errors.rif && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.rif}</p>}
           </div>
 
-          {/* Row 4: Dirección & Parroquia */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="address" className="text-slate-300 mb-2 block">
-                Dirección
-              </Label>
-              <Input
-                id="address"
-                placeholder="Calle Principal #100"
-                value={formData.address}
-                onChange={(e) => handleChange('address', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 ${
-                  errors.address ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.address && (
-                <p className="text-red-400 text-xs mt-1">{errors.address}</p>
-              )}
-            </div>
+          {/* Parroquia */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Globe className="w-2.5 h-2.5 text-cyan-400" /> Parroquia
+            </Label>
+            <Select value={formData.parish} onValueChange={(value: string) => handleChange('parish', value)}>
+              <SelectTrigger className={cn("bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm", errors.parish && "border-rose-500/60")}>
+                <SelectValue placeholder="Seleccionar..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 max-h-52 overflow-y-auto text-white">
+                {parishList.map((parish) => (
+                  <SelectItem key={parish.id} value={parish.id}>{parish.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.parish && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.parish}</p>}
+          </div>
 
-            <div>
-              <Label htmlFor="parish" className="text-slate-300 mb-2 block">
-                Parroquia
-              </Label>
-              <Select
-                value={formData.parish}
-                onValueChange={(value) => handleChange('parish', value)}
-              >
-                <SelectTrigger
-                  className={`bg-slate-700 border-slate-600 text-white ${
-                    errors.parish ? 'border-red-500' : ''
-                  }`}
-                >
-                  <SelectValue placeholder="Seleccionar..." />
+          {/* Dirección — full width */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <MapPin className="w-2.5 h-2.5 text-rose-400" /> Dirección Fiscal
+            </Label>
+            <Input
+              id="address"
+              placeholder="Calle, edificio, oficina..."
+              value={formData.address}
+              onChange={(e) => handleChange('address', e.target.value)}
+              className={cn(
+                "bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm transition-all",
+                errors.address && "border-rose-500/60 bg-rose-500/5"
+              )}
+            />
+            {errors.address && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.address}</p>}
+          </div>
+
+          {/* Actividad Comercial — full width */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Activity className="w-2.5 h-2.5 text-violet-400" /> Actividad Comercial
+            </Label>
+            <Select value={formData.category} onValueChange={(value: string) => handleChange('category', value)}>
+              <SelectTrigger className={cn("bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm", errors.category && "border-rose-500/60")}>
+                <SelectValue placeholder="Seleccionar actividad..." />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 max-h-52 overflow-y-auto text-white">
+                {taxpayerCategories.map((cat) => (
+                  <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {errors.category && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.category}</p>}
+          </div>
+
+          {/* Fecha de Emisión */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Calendar className="w-2.5 h-2.5 text-emerald-400" /> Fecha de Emisión
+            </Label>
+            <Input
+              id="emition_date"
+              type="date"
+              value={formData.emition_date}
+              onChange={(e) => handleChange('emition_date', e.target.value)}
+              className={cn(
+                "w-full bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm transition-all",
+                errors.emition_date && "border-rose-500/60 bg-rose-500/5"
+              )}
+            />
+            {errors.emition_date && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.emition_date}</p>}
+          </div>
+
+          {/* Tipo Contribuyente */}
+          <div className="space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <Workflow className="w-2.5 h-2.5 text-indigo-400" /> Clasificación
+            </Label>
+            <Select value={formData.contract_type} onValueChange={(value: string) => handleChange('contract_type', value as contract_type)}>
+              <SelectTrigger className="w-full bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent className="bg-slate-900 border-slate-800 text-white">
+                <SelectItem value={contract_type.ORDINARY}>Ordinario</SelectItem>
+                <SelectItem value={contract_type.SPECIAL}>Especial</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Fiscal Asignado — full width */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <UserCheck className="w-2.5 h-2.5 text-sky-400" /> Fiscal Asignado
+            </Label>
+            {user?.role === 'FISCAL' ? (
+              <div className="flex items-center gap-2 text-slate-300 text-xs bg-slate-950/40 border border-slate-800 rounded-lg px-3 h-9">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shrink-0" />
+                <span className="truncate">{user.name}</span>
+                <span className="ml-auto text-slate-600 text-[9px] uppercase font-bold">Auto-asignado</span>
+              </div>
+            ) : (
+              <Select value={formData.officerId} onValueChange={(value: string) => handleChange('officerId', value)}>
+                <SelectTrigger className={cn("bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm", errors.officerId && "border-rose-500/60")}>
+                  <SelectValue placeholder="Seleccionar funcionario..." />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  {parishList.map((parish) => (
-                    <SelectItem key={parish.id} value={parish.id}>
-                      {parish.name}
+                <SelectContent className="bg-slate-900 border-slate-800 max-h-52 overflow-y-auto text-white">
+                  {filteredOfficers.map((officer) => (
+                    <SelectItem key={officer.id} value={officer.id}>
+                      {officer.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-              {errors.parish && (
-                <p className="text-red-400 text-xs mt-1">{errors.parish}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Row 5: Actividad Comercial */}
-          <div>
-            <Label htmlFor="category" className="text-slate-300 mb-2 block">
-              Actividad Comercial
-            </Label>
-            <Select
-              value={formData.category}
-              onValueChange={(value) => handleChange('category', value)}
-            >
-              <SelectTrigger
-                className={`bg-slate-700 border-slate-600 text-white ${
-                  errors.category ? 'border-red-500' : ''
-                }`}
-              >
-                <SelectValue placeholder="Seleccionar..." />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
-                {taxpayerCategories.map((cat) => (
-                  <SelectItem key={cat.id} value={cat.id}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && (
-              <p className="text-red-400 text-xs mt-1">{errors.category}</p>
             )}
+            {errors.officerId && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.officerId}</p>}
           </div>
 
-          {/* Row 6: Fecha de Emisión, Tipo, Funcionario */}
-          <div className="grid grid-cols-3 gap-4">
-            <div>
-              <Label htmlFor="emition_date" className="text-slate-300 mb-2 block">
-                Fecha de Emisión
-              </Label>
-              <Input
-                id="emition_date"
-                type="date"
-                value={formData.emition_date}
-                onChange={(e) => handleChange('emition_date', e.target.value)}
-                className={`bg-slate-700 border-slate-600 text-white ${
-                  errors.emition_date ? 'border-red-500' : ''
-                }`}
-              />
-              {errors.emition_date && (
-                <p className="text-red-400 text-xs mt-1">{errors.emition_date}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="contract_type" className="text-slate-300 mb-2 block">
-                Tipo Contribuyente
-              </Label>
-              <Select
-                value={formData.contract_type}
-                onValueChange={(value) => handleChange('contract_type', value as contract_type)}
-              >
-                <SelectTrigger className="bg-slate-700 border-slate-600 text-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-700 border-slate-600">
-                  <SelectItem value={contract_type.ORDINARY}>Ordinario</SelectItem>
-                  <SelectItem value={contract_type.SPECIAL}>Especial</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="officerId" className="text-slate-300 mb-2 block">
-                Funcionario
-              </Label>
-
-              {user?.role === 'FISCAL' ? (
-                <>
-                  <p className="text-slate-200 text-sm bg-slate-700/40 border border-slate-600 rounded-md px-3 py-2">
-                    {user.name} (solo puedes agregarte a ti)
-                  </p>
-                  {errors.officerId && (
-                    <p className="text-red-400 text-xs mt-1">{errors.officerId}</p>
-                  )}
-                </>
-              ) : (
-                <Select
-                  value={formData.officerId}
-                  onValueChange={(value) => handleChange('officerId', value)}
-                >
-                  <SelectTrigger
-                    className={`bg-slate-700 border-slate-600 text-white ${
-                      errors.officerId ? 'border-red-500' : ''
-                    }`}
-                  >
-                    <SelectValue placeholder="Seleccionar..." />
-                  </SelectTrigger>
-                  <SelectContent className="bg-slate-700 border-slate-600">
-                    {filteredOfficers.map((officer) => (
-                      <SelectItem key={officer.id} value={officer.id}>
-                        {officer.name} - C.I.: {officer.personId}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-
-              {user?.role !== 'FISCAL' && errors.officerId && (
-                <p className="text-red-400 text-xs mt-1">{errors.officerId}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Row 7: PDF requerido por el backend */}
-          <div>
-            <Label htmlFor="pdf" className="text-slate-300 mb-2 block">
-              Soporte PDF
+          {/* PDF — full width */}
+          <div className="col-span-2 space-y-1">
+            <Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+              <FileUp className="w-2.5 h-2.5 text-indigo-400" /> Soporte Documental (PDF)
             </Label>
             <Input
               key={pdfInputKey}
@@ -556,20 +524,25 @@ export function AddContribuyenteModalV2({
               type="file"
               accept=".pdf,application/pdf"
               onChange={handlePdfChange}
-              className={`bg-slate-700 border-slate-600 text-white ${
-                errors.pdf ? 'border-red-500' : ''
-              }`}
+              className={cn(
+                "bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm transition-all pt-1.5",
+                errors.pdf && "border-rose-500/60 bg-rose-500/5"
+              )}
             />
-            {selectedPdf && (
-              <p className="text-slate-200 text-xs mt-2 break-words">
-                Archivo seleccionado: <span className="text-white">{selectedPdf.name}</span>
-              </p>
+            {selectedPdf ? (
+              <div className="flex items-center gap-1.5 text-[9px] font-medium text-emerald-400 uppercase tracking-wider">
+                <Check className="w-2.5 h-2.5" />
+                <span className="truncate">{selectedPdf.name}</span>
+              </div>
+            ) : (
+              <p className="text-[9px] text-slate-600 italic">Formato: .pdf — Máx 10MB</p>
             )}
-            {errors.pdf && <p className="text-red-400 text-xs mt-1">{errors.pdf}</p>}
+            {errors.pdf && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.pdf}</p>}
           </div>
+
         </form>
 
-        <DialogFooter>
+        <DialogFooter className="pt-2 border-t border-slate-800 mt-1">
           <ModalFooter
             onCancel={onClose}
             onConfirm={handleSubmit}

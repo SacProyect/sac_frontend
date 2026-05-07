@@ -31,5 +31,7 @@ dist-ssr
 
 .vercel
 *.md
+!DOCUMENTACION_FEATURE_FLAGS.md
 plans/
 docs/
+.env

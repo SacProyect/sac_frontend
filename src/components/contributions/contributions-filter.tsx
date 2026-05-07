@@ -29,6 +29,8 @@ interface ContributionsFilterProps {
     setEndDate: (endDate: string) => void;
     setSelectedGroup: (groupId: string) => void;
     setSelectedSupervisorId: (supervisorId: string | null) => void;
+    /** Llamado tras elegir vista completa de una coordinación (p. ej. scroll a la sección de estadísticas). */
+    onViewFullCoordination?: () => void;
 }
 
 function ContributionsFilter({
@@ -37,12 +39,13 @@ function ContributionsFilter({
     setEndDate,
     setSelectedGroup,
     setSelectedSupervisorId,
+    onViewFullCoordination,
 }: ContributionsFilterProps) {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [optionClicked, setOptionClicked] = useState("Year");
-    const [selectedYear, setSelectedYear] = useState(2025);
+    const [selectedYear, setSelectedYear] = useState(2026);
     const [selectedMonth, setSelectedMonth] = useState<number | null>(null);
     const [selectedSupervisors, setSelectedSupervisors] = useState<Record<string, string | null>>({});
     const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
@@ -370,6 +373,11 @@ function ContributionsFilter({
                                             setSelectedSupervisors(prev => ({ ...prev, [group.id]: null }));
                                             setSelectedGroup(group.id);
                                             setSelectedSupervisorId(null);
+                                            if (onViewFullCoordination) {
+                                                requestAnimationFrame(() => {
+                                                    onViewFullCoordination();
+                                                });
+                                            }
                                         }}
                                         className={cn(
                                             'w-full py-3 px-4 text-xs font-bold rounded-xl transition-all border flex items-center gap-3 justify-center',

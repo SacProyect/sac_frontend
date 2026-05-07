@@ -1,5 +1,6 @@
-import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate, useNavigation } from "react-router-dom";
 import { useState } from 'react';
+import { GlobalLoader } from '@/components/UI/global-loader';
 import { useAuth } from '@/hooks/use-auth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/UI/sheet';
 import { Button } from '@/components/UI/button';
@@ -9,6 +10,10 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Menu, LogOut, Settings, Landmark, Moon, Sun } from 'lucide-react';
 import { useNavItems } from '@/hooks/use-nav-items';
 import { useTheme } from '@/hooks/theme-provider';
+import { NotificationBell } from "@/components/Navigation/notification-bell";
+import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
+import { useDemoMode } from '@/hooks/use-demo-mode';
+import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -26,17 +31,39 @@ const MainLayoutV2 = () => {
     const location = useLocation();
     const navigate = useNavigate();
     const { user, logout } = useAuth();
-    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const { isDemoModeActive } = useDemoMode();
+    const [sidebarOpen, setSidebarOpen] = useState(false);
+
+    usePresenceHeartbeat({
+        enabled: Boolean(user && !isDemoModeActive),
+    });
 
     // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
     const navItems = useNavItems();
+
+    const isRouteActive = (currentPath: string, targetPath: string): boolean => {
+        if (currentPath === targetPath) return true;
+        if (targetPath === "/") return currentPath === "/";
+        return currentPath.startsWith(`${targetPath}/`);
+    };
+
+    const isInternalAuditRoute = location.pathname === "/auditoria-interna";
+
+    const buildInternalAuditTabHref = (tab: "kpis" | "fiscales" | "actividad" | "alertas") => {
+        const params = new URLSearchParams(location.search);
+        params.set("tab", tab);
+        params.delete("page");
+        return `/auditoria-interna?${params.toString()}`;
+    };
+
+    const currentInternalAuditTab = new URLSearchParams(location.search).get("tab") ?? "kpis";
 
     const handleLogout = () => {
         logout();
         navigate('/login');
     };
 
-    // Componente del contenido del sidebar (reutilizable para desktop y mobile)
+    // Contenido del panel lateral (Sheet en todas las resoluciones)
     const SidebarContent = () => (
         <div className="flex flex-col h-full text-card-foreground">
             <div className="p-6">
@@ -55,18 +82,16 @@ const MainLayoutV2 = () => {
                 <div className="space-y-1">
                     <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Menú Principal</p>
                     {navItems.map((item) => {
-                        const isActive = location.pathname === item.href || 
-                                       (item.href !== '/' && location.pathname.startsWith(item.href));
+                        const isActive = isRouteActive(location.pathname, item.href);
                         return (
                             <Link
                                 key={item.href}
                                 to={item.href}
-                                onClick={() => setMobileMenuOpen(false)}
-                                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative ${
-                                    isActive
+                                onClick={() => setSidebarOpen(false)}
+                                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative ${isActive
                                         ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-400 font-medium'
                                         : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
-                                }`}
+                                    }`}
                             >
                                 {isActive && (
                                     <div className="absolute left-0 w-1 h-5 bg-indigo-600 dark:bg-indigo-500 rounded-r-full" />
@@ -91,22 +116,20 @@ const MainLayoutV2 = () => {
         </div>
     );
 
-    // Sidebar para desktop
-    const DesktopSidebar = () => (
-        <div className="hidden md:flex flex-col w-64 bg-card h-screen border-r border-border sticky top-0 self-start shadow-sm">
-            <SidebarContent />
-        </div>
-    );
-
-    // Sidebar móvil (Sheet)
-    const MobileSidebar = () => (
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+    /** Navegación lateral: mismo Sheet en móvil, tablet y escritorio (sidebar no fijo en PC). */
+    const SidebarMenu = () => (
+        <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="md:hidden text-foreground hover:bg-muted/80">
+                <Button
+                    variant="ghost"
+                    size="icon"
+                    className="text-foreground hover:bg-muted/80 shrink-0"
+                    aria-label="Abrir menú de navegación"
+                >
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 border-r border-border">
+            <SheetContent side="left" className="p-0 w-64 sm:w-72 max-w-[min(100vw,20rem)]">
                 <SidebarContent />
             </SheetContent>
         </Sheet>
@@ -124,9 +147,9 @@ const MainLayoutV2 = () => {
 
         return (
             <header className="bg-card/85 dark:bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300">
-                <div className="flex items-center justify-between px-4 md:px-8 py-3">
-                    <div className="flex items-center gap-4">
-                        <MobileSidebar />
+                <div className="flex items-center gap-4 px-4 md:px-8 py-3">
+                    <div className="flex items-center gap-4 flex-1 min-w-0">
+                        <SidebarMenu />
                         {breadcrumbs && breadcrumbs.length > 0 ? (
                             <Breadcrumb>
                                 <BreadcrumbList>
@@ -166,65 +189,124 @@ const MainLayoutV2 = () => {
                             {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
                         </Button>
                         <div className="h-6 w-px bg-border hidden sm:block mx-1" />
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="hover:bg-muted/80 p-1 pl-3 h-10 rounded-full border border-border gap-3 group transition-all">
-                                    <div className="text-right hidden sm:block">
-                                        <p className="text-xs font-bold text-foreground leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user?.name || 'Usuario'}</p>
-                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
-                                            {user?.role === 'COORDINATOR' ? 'Coordinador' : user?.role || 'Usuario'}
-                                        </p>
-                                    </div>
-                                    <Avatar className="h-8 w-8 ring-2 ring-border group-hover:ring-indigo-500/50 transition-all">
-                                        <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
-                                            {userInitials}
-                                        </AvatarFallback>
-                                    </Avatar>
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="w-56">
-                                <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mb-1 border-b border-border">Mi Cuenta</div>
-                                <DropdownMenuItem
-                                    onClick={toggleTheme}
-                                    className="gap-2 cursor-pointer py-2.5"
-                                >
-                                    {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                                    <span className="text-sm font-medium">{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                    onClick={() => navigate('/settings')}
-                                    className="gap-2 cursor-pointer py-2.5"
-                                >
-                                    <Settings className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Configuración</span>
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                    onClick={handleLogout}
-                                    className="gap-2 cursor-pointer text-rose-600 dark:text-rose-400 focus:text-rose-600 dark:focus:text-rose-400 transition-all py-2.5"
-                                >
-                                    <LogOut className="h-4 w-4" />
-                                    <span className="text-sm font-medium">Cerrar Sesión</span>
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                        {isInternalAuditRoute && (
+                            <div className="hidden md:grid md:grid-cols-4 gap-2 shrink-0 w-full max-w-xl lg:max-w-2xl px-2">
+                                {[
+                                    { id: "kpis", label: "KPIs" },
+                                    { id: "fiscales", label: "Fiscales" },
+                                    { id: "actividad", label: "Actividad de uso" },
+                                    { id: "alertas", label: "Alertas" },
+                                ].map((tab) => {
+                                    const active = currentInternalAuditTab === tab.id;
+                                    return (
+                                        <Link
+                                            key={tab.id}
+                                            to={buildInternalAuditTabHref(tab.id as "kpis" | "fiscales" | "actividad" | "alertas")}
+                                            className={`min-h-9 min-w-0 px-2 py-1.5 rounded-md text-xs font-semibold transition-colors border text-center leading-tight flex items-center justify-center ${active
+                                                    ? "bg-slate-800 text-cyan-300 border-slate-700"
+                                                    : "bg-slate-900/40 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/70"
+                                                }`}
+                                        >
+                                            {tab.label}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        <div className="flex items-center gap-4 flex-1 justify-end">
+                            <NotificationBell />
+                            <div className="h-6 w-[1px] bg-border hidden sm:block mx-1" />
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="hover:bg-muted/80 p-1 pl-3 h-10 rounded-full border border-border gap-3 group transition-all">
+                                        <div className="text-right hidden sm:block">
+                                            <p className="text-xs font-bold text-foreground leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user?.name || 'Usuario'}</p>
+                                            <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
+                                                {user?.role === 'COORDINATOR' ? 'Coordinador' : user?.role || 'Usuario'}
+                                            </p>
+                                        </div>
+                                        <Avatar className="h-8 w-8 ring-2 ring-border group-hover:ring-indigo-500/50 transition-all">
+                                            <AvatarFallback className="bg-indigo-600 text-white text-[10px] font-bold">
+                                                {userInitials}
+                                            </AvatarFallback>
+                                        </Avatar>
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-56">
+                                    <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mb-1 border-b border-border">Mi Cuenta</div>
+                                    <DropdownMenuItem
+                                        onClick={toggleTheme}
+                                        className="gap-2 cursor-pointer py-2.5"
+                                    >
+                                        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                                        <span className="text-sm font-medium">{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        onClick={() => navigate('/settings')}
+                                        className="gap-2 cursor-pointer py-2.5"
+                                    >
+                                        <Settings className="h-4 w-4" />
+                                        <span className="text-sm font-medium">Configuración</span>
+                                    </DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem
+                                        onClick={handleLogout}
+                                        className="gap-2 cursor-pointer text-rose-600 dark:text-rose-400 focus:text-rose-600 dark:focus:text-rose-400 transition-all py-2.5"
+                                    >
+                                        <LogOut className="h-4 w-4" />
+                                        <span className="text-sm font-medium">Cerrar Sesión</span>
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </div>
+                {isInternalAuditRoute && (
+                    <div className="px-4 md:px-8 pb-2 md:hidden">
+                        <div className="grid grid-cols-2 gap-2 w-full max-w-md mx-auto">
+                            {[
+                                { id: "kpis", label: "KPIs" },
+                                { id: "fiscales", label: "Fiscales" },
+                                { id: "actividad", label: "Actividad de uso" },
+                                { id: "alertas", label: "Alertas" },
+                            ].map((tab) => {
+                                const active = currentInternalAuditTab === tab.id;
+                                return (
+                                    <Link
+                                        key={tab.id}
+                                        to={buildInternalAuditTabHref(tab.id as "kpis" | "fiscales" | "actividad" | "alertas")}
+                                        className={`min-h-10 min-w-0 px-2 py-2 rounded-md text-xs font-semibold transition-colors border text-center leading-snug flex items-center justify-center ${active
+                                                ? "bg-slate-800 text-cyan-300 border-slate-700"
+                                                : "bg-slate-900/40 text-slate-400 border-slate-800 hover:text-slate-200 hover:bg-slate-800/70"
+                                            }`}
+                                    >
+                                        {tab.label}
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
             </header>
         );
     };
 
+    const navigation = useNavigation();
+    const isPageLoading = navigation.state === 'loading';
+
     return (
-        <div className="flex min-h-screen bg-background text-foreground">
-            <DesktopSidebar />
-            <div className="flex-1 flex flex-col min-w-0">
-                <Header />
-                <main className="flex-1 overflow-auto overflow-x-hidden relative">
+        <div className="flex h-screen overflow-hidden bg-background text-foreground">
+            <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
+                {isPageLoading && <GlobalLoader />}
+                {!isDemoModeActive && <Header />}
+                <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
                     {/* Subtle glow effect in the corner */}
                     <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/[0.07] dark:bg-indigo-500/5 blur-[120px] pointer-events-none rounded-full" />
                     <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/[0.06] dark:bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
-                    
-                    <div className="px-4 py-6 md:px-10 md:py-8 lg:px-12 min-h-full max-w-full relative z-10 transition-all duration-500">
+
+                    <div className="px-4 py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 max-w-full relative z-10 transition-all duration-500">
+                        {!isDemoModeActive && <MaintenanceNotice />}
                         <Outlet />
                     </div>
                 </main>
@@ -234,3 +316,4 @@ const MainLayoutV2 = () => {
 };
 
 export default MainLayoutV2;
+
