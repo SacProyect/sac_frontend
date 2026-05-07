@@ -30,3 +30,8 @@ export const isTaxpayerDashboardFeatureEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_TAXPAYER_DASHBOARD_ENABLED,
   false
 );
+
+export const isThemeToggleEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_THEME_TOGGLE_ENABLED,
+  true
+);

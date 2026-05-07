@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Menu, LogOut, Settings, Landmark, Moon, Sun } from 'lucide-react';
 import { useNavItems } from '@/hooks/use-nav-items';
 import { useTheme } from '@/hooks/theme-provider';
+import { isInternalAuditFeatureEnabled, isThemeToggleEnabled } from '@/config/feature-flags';
 import { NotificationBell } from "@/components/Navigation/notification-bell";
 import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
 import { useDemoMode } from '@/hooks/use-demo-mode';
@@ -178,16 +179,18 @@ const MainLayoutV2 = () => {
                     </div>
 
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            className="shrink-0 border-border text-foreground"
-                            onClick={toggleTheme}
-                            title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
-                        >
-                            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                        </Button>
+                        {isThemeToggleEnabled && (
+                            <Button
+                                type="button"
+                                variant="outline"
+                                size="icon"
+                                className="shrink-0 border-border text-foreground"
+                                onClick={toggleTheme}
+                                title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
+                            >
+                                {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                            </Button>
+                        )}
                         <div className="h-6 w-px bg-border hidden sm:block mx-1" />
                         {isInternalAuditRoute && (
                             <div className="hidden md:grid md:grid-cols-4 gap-2 shrink-0 w-full max-w-xl lg:max-w-2xl px-2">
@@ -235,13 +238,15 @@ const MainLayoutV2 = () => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-56">
                                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mb-1 border-b border-border">Mi Cuenta</div>
-                                    <DropdownMenuItem
-                                        onClick={toggleTheme}
-                                        className="gap-2 cursor-pointer py-2.5"
-                                    >
-                                        {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
-                                        <span className="text-sm font-medium">{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
-                                    </DropdownMenuItem>
+                                    {isThemeToggleEnabled && (
+                                        <DropdownMenuItem
+                                            onClick={toggleTheme}
+                                            className="gap-2 cursor-pointer py-2.5"
+                                        >
+                                            {theme === "dark" ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+                                            <span className="text-sm font-medium">{theme === "dark" ? "Modo claro" : "Modo oscuro"}</span>
+                                        </DropdownMenuItem>
+                                    )}
                                     <DropdownMenuItem
                                         onClick={() => navigate('/settings')}
                                         className="gap-2 cursor-pointer py-2.5"
