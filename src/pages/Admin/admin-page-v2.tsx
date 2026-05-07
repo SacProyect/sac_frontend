@@ -415,7 +415,8 @@ export default function AdminPageV2() {
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
             <Button
               onClick={() => setIsAddContribuyenteOpen(true)}
-              className="h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg transition-all duration-200 shadow-sm"
+              size="sm"
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
             >
               <Plus className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Contribuyente</span>
