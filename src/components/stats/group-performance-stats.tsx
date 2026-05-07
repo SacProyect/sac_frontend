@@ -16,6 +16,34 @@ interface Props {
     autoScroll?: boolean;
 }
 
+// ─── Design Variants ────────────────────────────────────────────────────────────
+
+const DESIGN_STYLES: Record<StatsDesignVariant, {
+    panelBg: string;
+    titleBorder: string;
+    titleBg: string;
+    subtitle: string;
+}> = {
+    classic: {
+        panelBg: "bg-slate-950/80",
+        titleBorder: "border-slate-500",
+        titleBg: "bg-slate-800/90",
+        subtitle: "text-slate-400",
+    },
+    contrast: {
+        panelBg: "bg-slate-950",
+        titleBorder: "border-amber-300/70",
+        titleBg: "bg-amber-950/40",
+        subtitle: "text-slate-200",
+    },
+    minimal: {
+        panelBg: "bg-slate-900/40",
+        titleBorder: "border-slate-700",
+        titleBg: "bg-slate-900/30",
+        subtitle: "text-slate-500",
+    },
+};
+
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 const fmtBs = (n: number) => {
@@ -177,6 +205,7 @@ function KpiStrip({ label, value, color }: { label: string; value: number; color
 export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", autoScroll = false }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const animRef = useRef<number | null>(null);
+    const style = DESIGN_STYLES[designVariant];
 
     // Auto-scroll continuo en modo demo
     useEffect(() => {
@@ -238,18 +267,21 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
     }
 
     return (
-        <div className="flex h-full min-h-0 flex-col bg-slate-950/80 px-2 pb-2 pt-3 sm:px-3">
+        <div className={`flex h-full min-h-0 flex-col ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
             {/* Header */}
             <div className="mb-2 shrink-0">
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div>
-                        <p className="text-xs font-black uppercase tracking-widest text-white">
+                <div className="mb-2 w-full max-w-md shrink-0 text-center mx-auto">
+                    <div className={`w-full rounded-md border ${style.titleBorder} ${style.titleBg}`}>
+                        <h1 className="px-2 py-1.5 text-xs font-semibold tracking-wide text-white sm:text-sm uppercase">
                             Rendimiento por Coordinación
-                        </p>
-                        <p className="text-[9px] text-slate-500 font-medium mt-0.5">
-                            Ordenados por IVA + ISLR recaudado · {sorted.length} grupos
-                        </p>
+                        </h1>
                     </div>
+                    <p className={`mt-1.5 line-clamp-2 text-[10px] leading-tight ${style.subtitle}`}>
+                        Ordenados por IVA + ISLR recaudado · {sorted.length} grupos
+                    </p>
+                </div>
+                <div className="flex items-center justify-between gap-2 flex-wrap">
+                    <div />
                     {autoScroll && (
                         <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-600/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-400">
                             <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />

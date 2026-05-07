@@ -169,8 +169,8 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
     };
 
     return (
-        <div className={`flex h-full min-h-0 flex-col items-center ${style.panelBg} px-2 pb-2 pt-3 text-white font-inter sm:px-3`}>
-            
+        <div className={`flex w-full flex-col h-full overflow-y-auto custom-scrollbar ${style.panelBg}`}>
+            <div className={`flex flex-col min-h-full items-center px-2 pb-2 pt-3 text-white font-inter sm:px-3`}>
             {/* Title */}
             <div className="mb-3 w-full max-w-md shrink-0 text-center">
                 <div className={`mx-auto w-full max-w-sm rounded-md border ${style.titleBorder} ${style.titleBg}`}>
@@ -275,6 +275,7 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
                     <span>IVA Recaudado (cumplimiento)</span>
                 </div>
             </div>
+        </div>
         </div>
     );
 };

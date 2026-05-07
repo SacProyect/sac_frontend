@@ -34,9 +34,10 @@ export const internalAuditNavItem: NavItem = {
     icon: <Telescope className="w-4 h-4" />,
 };
 
+export const visitsRoute: NavItem = { href: '/visits-monitor', label: 'Visitas', icon: <ScanEye className="w-4 h-4" /> };
+
 export const sharedRoutes: NavItem[] = [
     { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/visits-monitor', label: 'Visitas', icon: <ScanEye className="w-4 h-4" /> },
     { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },
     { href: '/fiscal-review', label: 'Revisión Fiscal', icon: <CheckCircle className="w-4 h-4" /> },
     { href: '/gen-reports', label: 'Reportes', icon: <FileBarChart className="w-4 h-4" /> },

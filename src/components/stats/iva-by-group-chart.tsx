@@ -180,8 +180,8 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
     };
 
     return (
-        <div className="flex w-full flex-col h-full overflow-y-auto custom-scrollbar">
-            <div className={`flex w-full flex-col h-full ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
+        <div className={`flex w-full flex-col h-full overflow-y-auto custom-scrollbar ${style.panelBg}`}>
+            <div className={`flex w-full flex-col min-h-full px-2 pb-2 pt-3 sm:px-3`}>
                 {/* Título */}
                 <div className="mb-1 flex shrink-0 justify-center">
                     <div className={`w-full max-w-md rounded-md border ${style.titleBorder} ${style.titleBg} px-2 py-1`}>

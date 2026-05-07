@@ -190,8 +190,8 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
     };
 
     return (
-        <div className="flex w-full flex-col h-full overflow-y-auto custom-scrollbar">
-            <div className={`flex w-full flex-col h-full ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
+        <div className={`flex w-full flex-col h-full overflow-y-auto custom-scrollbar ${style.panelBg}`}>
+            <div className={`flex w-full flex-col min-h-full px-2 pb-2 pt-3 sm:px-3`}>
                 
                 {/* Title */}
                 <div className="mb-3 w-full max-w-md shrink-0 text-center mx-auto">
