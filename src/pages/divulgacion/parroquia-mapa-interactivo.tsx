@@ -171,7 +171,7 @@ function ZoomTracker({ onZoom }: { onZoom: (z: number) => void }) {
 		onZoom(map.getZoom());
 	}, [map, onZoom]);
 	useMapEvents({
-		zoomend: (e) => onZoom(e.target.getZoom()),
+		zoomend: (e: L.LeafletEvent) => onZoom(e.target.getZoom()),
 	});
 	return null;
 }
@@ -243,11 +243,10 @@ export default function ParroquiaMapaInteractivo({
 					<span>Asistentes:</span><span style="text-align:right;font-weight:600">${agg?.asistentes ?? 0}</span>
 					<span>Visitas:</span><span style="text-align:right;font-weight:600">${agg?.visitas ?? 0}</span>
 				</div>
-				${
-					!agg
-						? '<div style="font-size:10px;font-style:italic;color:#64748b;margin-top:4px">Sin actividad en el período.</div>'
-						: ""
-				}
+				${!agg
+				? '<div style="font-size:10px;font-style:italic;color:#64748b;margin-top:4px">Sin actividad en el período.</div>'
+				: ""
+			}
 			</div>`;
 		path.bindTooltip(tooltipHtml, { sticky: true, direction: "top" });
 
@@ -338,13 +337,11 @@ export default function ParroquiaMapaInteractivo({
 							: jornadas > 0
 								? "has-activity"
 								: "";
-						const labelHtml = `<div class="parroquia-label-leaflet ${labelClass}">${
-							PARROQUIA_LABELS[p]
-						}${
-							jornadas > 0
+						const labelHtml = `<div class="parroquia-label-leaflet ${labelClass}">${PARROQUIA_LABELS[p]
+							}${jornadas > 0
 								? ` <span class="dot">${jornadas}</span>`
 								: ""
-						}</div>`;
+							}</div>`;
 						const icon = L.divIcon({
 							className: "parroquia-label-wrapper",
 							html: labelHtml,
