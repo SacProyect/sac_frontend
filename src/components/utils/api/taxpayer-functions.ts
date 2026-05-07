@@ -18,6 +18,28 @@ interface TaxpayerData {
 	officerId: string,
 }
 
+export type TaxpayerCheckResponse =
+	| {
+		exists: true;
+		kind: "EXISTENTE";
+		message: string;
+		taxpayer: {
+			id: string;
+			rif: string;
+			name: string;
+			estatus: "Especial" | "Ordinario";
+			contract_type: "SPECIAL" | "ORDINARY";
+			process: string;
+			emition_date: string;
+		};
+	}
+	| {
+		exists: false;
+		kind: "NUEVO_REGISTRO";
+		message: string;
+		rif: string;
+	};
+
 interface UpdateObservationPayload {
 	description: string;
 }
@@ -626,6 +648,20 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 	} catch (e) {
 		console.error(e);
 		throw new Error("Ha ocurrido un error");
+	}
+}
+
+export const checkTaxpayerByRif = async (rif: string): Promise<TaxpayerCheckResponse> => {
+	try {
+		const response = await apiConnection.get(`/taxpayer/check/${encodeURIComponent(rif)}`);
+		return response.data as TaxpayerCheckResponse;
+	} catch (e: any) {
+		const backendMessage =
+			e?.response?.data?.error ||
+			e?.response?.data?.message ||
+			e?.message ||
+			"No se pudo validar el RIF.";
+		throw new Error(String(backendMessage));
 	}
 }
 

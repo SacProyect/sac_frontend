@@ -1,4 +1,5 @@
 import { ProtectedRoute } from '@/components/Navigation/protected-route';
+import { AdminOnly } from '@/components/Navigation/admin-only';
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout, useAuth } from '@/hooks/use-auth';
@@ -110,6 +111,8 @@ const GestionPersonalPageV2 = lazyWithRetry(() => import("@/pages/gestion-person
 const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
 const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
 const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
+const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-presencia-page"));
+const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
 
 type LoaderData = {
     events: Event[],
@@ -233,6 +236,34 @@ export const router = createBrowserRouter([
                     {
                         path: "gestion-personal",
                         element: <GestionPersonalRoute />,
+                    },
+                    {
+                        path: "divulgacion-presencia-fiscal",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Divulgación y Presencia Fiscal..." />}>
+                                    <DivulgacionPresenciaPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
+                    },
+                    {
+                        path: "divulgacion-presencia-fiscal/:id",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando jornada..." />}>
+                                    <DivulgacionDetallePage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
+                    },
+                    {
+                        path: "divulgacion/fiscal",
+                        element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
+                    },
+                    {
+                        path: "divulgacion/coordinador",
+                        element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
                     },
                     {
                         path: "observations/:taxpayerId",

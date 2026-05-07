@@ -23,10 +23,12 @@ const adminStrategy: NavStrategy = () => [
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
+    ...routeBlocks.divulgacion,
 ];
 
 /**
- * COORDINATOR: Igual que ADMIN en términos de acceso a rutas.
+ * COORDINATOR: Igual que ADMIN, salvo el módulo de Divulgación
+ * (restringido a ADMIN únicamente).
  */
 const coordinatorStrategy: NavStrategy = () => [
     ...sharedRoutes,
@@ -39,6 +41,7 @@ const coordinatorStrategy: NavStrategy = () => [
 
 /**
  * SUPERVISOR: Acceso a IVA/ISLR, contribuciones, y estadísticas personales.
+ * (Módulo de Divulgación restringido a ADMIN.)
  */
 const supervisorStrategy: NavStrategy = (user) => [
     ...sharedRoutes,
@@ -50,6 +53,7 @@ const supervisorStrategy: NavStrategy = (user) => [
 
 /**
  * FISCAL: Acceso a IVA/ISLR y estadísticas personales. Sin contribuciones.
+ * (Módulo de Divulgación restringido a ADMIN.)
  */
 const fiscalStrategy: NavStrategy = (user) => [
     ...sharedRoutes.filter((item) => item.href !== '/stats' && item.href !== '/fiscal-review'),

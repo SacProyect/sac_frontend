@@ -13,6 +13,7 @@ import {
     Bell,
     Shield,
     Telescope,
+    Megaphone,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -69,6 +70,11 @@ export const routeBlocks = {
     /** Solo ADMIN (vision global) y COORDINATOR (su grupo) — alineado con API fiscal-operaciones. */
     gestionPersonal: [
         { href: '/gestion-personal', label: 'Gestión de personal', icon: <UserCog className="w-4 h-4" /> },
+    ] as NavItem[],
+
+    /** Solo ADMIN — módulo Divulgación y Presencia Fiscal. */
+    divulgacion: [
+        { href: '/divulgacion-presencia-fiscal', label: 'Divulgación y Presencia Fiscal', icon: <Megaphone className="w-4 h-4" /> },
     ] as NavItem[],
 
     /** Genera la ruta de estadísticas personalizada con el ID del usuario */
