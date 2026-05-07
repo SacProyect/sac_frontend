@@ -8,11 +8,7 @@ import { qrcode } from 'vite-plugin-qrcode'
 export default defineConfig({
   plugins: [react(), qrcode()],
   resolve: {
-<<<<<<< HEAD
     dedupe: ['react', 'react-dom', 'react-router', 'react-router-dom'],
-=======
-    dedupe: ['react', 'react-dom'],
->>>>>>> staging2.0
     alias: {
       '@': path.resolve(__dirname, 'src'),
     },
