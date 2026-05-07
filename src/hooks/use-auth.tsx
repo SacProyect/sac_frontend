@@ -1,10 +1,11 @@
-import { createContext, useCallback, useContext, useMemo } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useLocalStorage } from "./use-local-storage";
 import { useOutlet } from "react-router-dom";
 import { User } from "../types/user";
 import { ReactNode } from "react";
 import apiConnection from "@/components/utils/api/api-connection";
+import DevRoleSwitcher from "@/components/dev/DevRoleSwitcher";
 
 
 interface AuthContextType {
@@ -19,28 +20,114 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-/** Solo en `vite` dev: define VITE_DEV_FAKE_AUTH=true en .env.development.local */
-const devFakeAuth =
-    import.meta.env.DEV && import.meta.env.VITE_DEV_FAKE_AUTH === "true";
+// MODO DESARROLLO: Usuario fake para revisar V2 sin backend/login.
+// Cambia el rol por query (?devRole=FISCAL) o por el switcher visible.
+// Solo en `vite` dev: define VITE_DEV_FAKE_AUTH=true en .env.development.local
+export const DEV_MODE = import.meta.env.DEV && import.meta.env.VITE_DEV_FAKE_AUTH === "true";
+type DevRole = "ADMIN" | "COORDINATOR" | "SUPERVISOR" | "FISCAL";
 
-const FAKE_ADMIN_USER: User = {
-    id: "dev-admin-fake-id",
-    personId: "12345678",
-    name: "Admin Test (Fake)",
-    role: "ADMIN",
-    password: "",
-    status: true,
-    taxpayer: [],
-    coordinatedGroup: null as any,
-    group: null as any,
-    groupId: "",
-};
+const FAKE_GROUP_ID = "dev-group-fake-id";
+const FAKE_GROUP = { id: FAKE_GROUP_ID, name: "Equipo Demo" } as any;
+
+function buildFakeUser(role: DevRole): User {
+    const base = {
+        password: "",
+        status: true,
+        taxpayer: [],
+    } as Partial<User> as any;
+    if (role === "ADMIN") {
+        return {
+            ...base,
+            id: "dev-admin-fake-id",
+            personId: "12345678",
+            name: "Admin Test (Fake)",
+            role: "ADMIN",
+            coordinatedGroup: null,
+            group: null,
+            groupId: "",
+        };
+    }
+    if (role === "COORDINATOR") {
+        return {
+            ...base,
+            id: "dev-coord-fake-id",
+            personId: "23456789",
+            name: "Coordinador Test (Fake)",
+            role: "COORDINATOR",
+            coordinatedGroup: FAKE_GROUP,
+            group: FAKE_GROUP,
+            groupId: FAKE_GROUP_ID,
+        };
+    }
+    if (role === "SUPERVISOR") {
+        return {
+            ...base,
+            id: "dev-super-fake-id",
+            personId: "34567890",
+            name: "Supervisor Test (Fake)",
+            role: "SUPERVISOR",
+            coordinatedGroup: null,
+            group: FAKE_GROUP,
+            groupId: FAKE_GROUP_ID,
+        };
+    }
+    return {
+        ...base,
+        id: "dev-fiscal-fake-id",
+        personId: "45678901",
+        name: "Fiscal Test (Fake)",
+        role: "FISCAL",
+        coordinatedGroup: null,
+        group: FAKE_GROUP,
+        groupId: FAKE_GROUP_ID,
+    };
+}
+
+const DEV_ROLE_KEY = "dev-fake-role";
+const VALID_DEV_ROLES: DevRole[] = ["ADMIN", "COORDINATOR", "SUPERVISOR", "FISCAL"];
+
+function readDevRole(): DevRole {
+    try {
+        const fromQuery = new URLSearchParams(window.location.search).get("devRole")?.toUpperCase();
+        if (fromQuery && VALID_DEV_ROLES.includes(fromQuery as DevRole)) {
+            // sessionStorage = por pestaña, así dos ventanas pueden tener roles distintos.
+            window.sessionStorage.setItem(DEV_ROLE_KEY, fromQuery);
+            return fromQuery as DevRole;
+        }
+        const fromSession = window.sessionStorage.getItem(DEV_ROLE_KEY);
+        if (fromSession && VALID_DEV_ROLES.includes(fromSession as DevRole)) return fromSession as DevRole;
+        const saved = window.localStorage.getItem(DEV_ROLE_KEY);
+        if (saved && VALID_DEV_ROLES.includes(saved as DevRole)) return saved as DevRole;
+    } catch {}
+    return "ADMIN";
+}
+
+export function setDevFakeRole(role: DevRole) {
+    try {
+        window.sessionStorage.setItem(DEV_ROLE_KEY, role);
+        window.localStorage.setItem(DEV_ROLE_KEY, role);
+        window.localStorage.removeItem("user");
+        window.localStorage.removeItem("authToken");
+        window.location.reload();
+    } catch {}
+}
+export function getDevFakeRole(): DevRole {
+    return readDevRole();
+}
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [storedUser, setStoredUser] = useLocalStorage("user", null);
     const [storedToken, setStoredToken] = useLocalStorage("authToken", null);
-    const user = devFakeAuth && !storedUser ? FAKE_ADMIN_USER : storedUser;
-    const token = storedToken;
+
+    // En DEV_MODE, derivamos el user del sessionStorage (por pestaña) — esto permite
+    // tener distintas ventanas con roles distintos al mismo tiempo.
+    const devUser = useMemo<User | null>(() => {
+        if (!DEV_MODE) return null;
+        return buildFakeUser(readDevRole());
+    }, []);
+
+    const user = DEV_MODE ? devUser : storedUser;
+    const token = DEV_MODE ? "dev-fake-token" : storedToken;
 
     const setUser = useCallback((newUser: User | null) => {
         setStoredUser(newUser);
@@ -51,6 +138,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }, [setStoredToken]);
 
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!DEV_MODE) return;
+        if (!storedToken) setStoredToken("dev-fake-token");
+    }, [storedToken, setStoredToken]);
 
     const login = useCallback(
         async (user: User, token: string) => {
@@ -118,6 +210,9 @@ export const AuthLayout = () => {
     const outlet = useOutlet();
 
     return (
-        <AuthProvider>{outlet}</AuthProvider>
+        <AuthProvider>
+            {outlet}
+            <DevRoleSwitcher />
+        </AuthProvider>
     );
 };
