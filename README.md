@@ -8,8 +8,6 @@ Frontend del **Sistema de Administración Central (SAC)**. Una plataforma robust
 - **Herramientas de IA:** v0 & Vercel
 - **Estado & API:** React Query / Axios
 
-## 📚 Documentación del Proyecto
-- [Documentación de Feature Flags](./DOCUMENTACION_FEATURE_FLAGS.md) (actualizada al 2026-05-04)
 
 ## 🔒 Propiedad Intelectual
 **Copyright (c) 2026 Gabriel Longa. Todos los derechos reservados.**
