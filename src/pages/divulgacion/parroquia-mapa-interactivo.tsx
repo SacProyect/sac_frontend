@@ -140,6 +140,8 @@ type ParroquiaMapaInteractivoProps = {
 	data: MapaParroquiaAgregado[];
 	selected: ParroquiaCaracas | null;
 	onSelect: (p: ParroquiaCaracas | null) => void;
+	mode?: "normal" | "heat";
+	heatMetric?: "jornadas" | "visitas" | "asistentes" | "impacto_iva";
 	className?: string;
 };
 
@@ -180,6 +182,8 @@ export default function ParroquiaMapaInteractivo({
 	data,
 	selected,
 	onSelect,
+	mode = "normal",
+	heatMetric = "visitas",
 	className,
 }: ParroquiaMapaInteractivoProps) {
 	const [zoom, setZoom] = useState<number>(12);
@@ -190,13 +194,48 @@ export default function ParroquiaMapaInteractivo({
 		return m;
 	}, [data]);
 
+	const getIvaCount = (agg?: MapaParroquiaAgregado) => {
+		if (!agg?.actividades) return 0;
+		return Object.entries(agg.actividades).reduce((sum, [name, value]) => {
+			return /iva/i.test(name) ? sum + value : sum;
+		}, 0);
+	};
+
 	const maxJornadas = useMemo(() => {
 		let m = 0;
 		for (const p of data) if (p.jornadas > m) m = p.jornadas;
 		return m;
 	}, [data]);
+	const maxHeatMetric = useMemo(() => {
+		let m = 0;
+		for (const p of data) {
+			const val =
+				heatMetric === "asistentes"
+					? p.asistentes
+					: heatMetric === "jornadas"
+						? p.jornadas
+						: heatMetric === "impacto_iva"
+							? p.visitas + getIvaCount(p) * 2
+							: p.visitas;
+			if (val > m) m = val;
+		}
+		return m;
+	}, [data, heatMetric]);
 
 	const intensityFor = (p: ParroquiaCaracas): number => {
+		if (mode === "heat") {
+			const value =
+				heatMetric === "asistentes"
+					? (dataByParroquia.get(p)?.asistentes ?? 0)
+					: heatMetric === "jornadas"
+						? (dataByParroquia.get(p)?.jornadas ?? 0)
+						: heatMetric === "impacto_iva"
+							? (dataByParroquia.get(p)?.visitas ?? 0) + getIvaCount(dataByParroquia.get(p)) * 2
+						: (dataByParroquia.get(p)?.visitas ?? 0);
+			if (value === 0) return 0;
+			if (maxHeatMetric <= 0) return 0.5;
+			return Math.min(1, value / maxHeatMetric);
+		}
 		const j = dataByParroquia.get(p)?.jornadas ?? 0;
 		if (j === 0) return 0;
 		if (maxJornadas <= 0) return 0.5;
@@ -217,11 +256,11 @@ export default function ParroquiaMapaInteractivo({
 		const key = (feature as any)?._parroquia_key as ParroquiaCaracas;
 		const isSel = selected === key;
 		const t = intensityFor(key);
-		const fillOpacity = t === 0 ? 0.55 : 0.6 + t * 0.3;
+		const fillOpacity = mode === "heat" ? Math.min(0.92, t * 0.92) : t === 0 ? 0.55 : 0.6 + t * 0.3;
 		return {
 			color: isSel ? "#fbbf24" : "#0b1220",
 			weight: isSel ? 3.5 : 1.2,
-			fillColor: BASE_COLOR[key] ?? "#94a3b8",
+			fillColor: mode === "heat" ? "#ef4444" : (BASE_COLOR[key] ?? "#94a3b8"),
 			fillOpacity,
 			opacity: 1,
 			dashArray: "",
@@ -269,7 +308,7 @@ export default function ParroquiaMapaInteractivo({
 	};
 
 	/** Re-render del GeoJSON cada vez que cambia la selección o los datos (para refrescar styleFn). */
-	const geoKey = `${selected ?? "none"}-${data.length}-${maxJornadas}`;
+	const geoKey = `${selected ?? "none"}-${data.length}-${maxJornadas}-${mode}-${heatMetric}`;
 
 	return (
 		<div className={`relative w-full ${className ?? ""}`}>
@@ -383,20 +422,41 @@ export default function ParroquiaMapaInteractivo({
 					)}
 				</span>
 				<span className="ml-auto inline-flex items-center gap-2">
-					<span className="inline-flex items-center gap-1">
-						<span
-							className="inline-block w-3 h-3 rounded-full"
-							style={{ background: "#0f172a", border: "1px solid #475569" }}
-						/>
-						sin actividad
-					</span>
-					<span className="inline-flex items-center gap-1">
-						<span
-							className="inline-block w-3 h-3 rounded-full"
-							style={{ background: "#fbbf24", border: "1px solid #d97706" }}
-						/>
-						con jornadas
-					</span>
+					{mode === "heat" ? (
+						<>
+							<span className="inline-flex items-center gap-1">
+								<span
+									className="inline-block w-3 h-3 rounded-full"
+									style={{ background: "rgba(239,68,68,0.15)", border: "1px solid #7f1d1d" }}
+								/>
+								baja actividad (casi transparente)
+							</span>
+							<span className="inline-flex items-center gap-1">
+								<span
+									className="inline-block w-3 h-3 rounded-full"
+									style={{ background: "#ef4444", border: "1px solid #7f1d1d" }}
+								/>
+								alta actividad (rojo intenso · {heatMetric})
+							</span>
+						</>
+					) : (
+						<>
+							<span className="inline-flex items-center gap-1">
+								<span
+									className="inline-block w-3 h-3 rounded-full"
+									style={{ background: "#0f172a", border: "1px solid #475569" }}
+								/>
+								sin actividad
+							</span>
+							<span className="inline-flex items-center gap-1">
+								<span
+									className="inline-block w-3 h-3 rounded-full"
+									style={{ background: "#fbbf24", border: "1px solid #d97706" }}
+								/>
+								con jornadas
+							</span>
+						</>
+					)}
 				</span>
 			</div>
 
