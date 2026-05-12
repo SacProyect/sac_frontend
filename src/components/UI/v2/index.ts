@@ -7,10 +7,10 @@
  * import { YearSelector, LoadingState, ErrorState } from '@/components/UI/v2';
  */
 
-export { YearSelector } from './YearSelector';
-export { LoadingState } from './LoadingState';
-export { ErrorState } from './ErrorState';
-export { PageHeader } from './PageHeader';
-export { BackButton } from './BackButton';
-export { ModalFooter } from './ModalFooter';
-export { EmptyState } from './EmptyState';
+export { YearSelector } from './year-selector';
+export { LoadingState } from './loading-state';
+export { ErrorState } from './error-state';
+export { PageHeader } from './page-header';
+export { BackButton } from './back-button';
+export { ModalFooter } from './modal-footer';
+export { EmptyState } from './empty-state';

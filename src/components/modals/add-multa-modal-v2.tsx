@@ -20,7 +20,6 @@ import {
 import { createEvent, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import type { Taxpayer } from '@/types/taxpayer';
 import toast from 'react-hot-toast';
-import { useAuth } from '@/hooks/use-auth';
 import { cn } from '@/lib/utils';
 import { formatBs, parseBs } from '@/components/utils/number.utils';
 
@@ -38,7 +37,6 @@ export interface MultaFormData {
 }
 
 export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2Props) {
-  const { user } = useAuth();
   const [formData, setFormData] = useState<MultaFormData>({
     taxpayerId: '',
     date: '',
@@ -61,7 +59,6 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   // Búsqueda
   const [searchTaxpayer, setSearchTaxpayer] = useState('');
   const [searchDebounce, setSearchDebounce] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const [searchResults, setSearchResults] = useState<Taxpayer[] | null>(null);
   const [searchPage, setSearchPage] = useState(1);
   const [searchTotalPages, setSearchTotalPages] = useState(1);
@@ -72,6 +69,8 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   const [filterByCurrentYear, setFilterByCurrentYear] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  /** Conserva nombre/RIF si el id ya no está en la página actual ni en resultados de búsqueda (p. ej. tras limpiar la búsqueda). */
+  const [selectionSnapshot, setSelectionSnapshot] = useState<Taxpayer | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -97,10 +96,9 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
         const res = await getTaxpayerForEvents(1, 50);
         const data = (res?.data?.data ?? []) as Taxpayer[];
         const total = res?.data?.totalPages ?? 1;
-        let filtered = data.filter((t) => t.process !== 'FP');
-        if (user?.role !== 'ADMIN') {
-          filtered = filtered.filter((t) => t.user?.id === user?.id);
-        }
+        // El backend ya filtra por rol (FISCAL, SUPERVISOR, COORDINATOR, ADMIN). No filtrar aquí por
+        // t.user?.id === user.id: el fiscal asignado al contribuyente no coincide con el id del coordinador/supervisor.
+        const filtered = data.filter((t) => t.process !== 'FP');
         setTaxpayers(filtered);
         setTotalPages(total);
         setCurrentPage(2);
@@ -118,29 +116,25 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
     setSearchTaxpayer('');
     setSearchDebounce('');
     setIsDropdownOpen(false);
+    setSelectionSnapshot(null);
     setErrors({});
-  }, [isOpen, user?.id, user?.role]);
+  }, [isOpen]);
 
   // Búsqueda backend
   useEffect(() => {
     const term = searchDebounce.trim();
     if (!term) {
       setSearchResults(null);
-      setIsSearching(false);
       return;
     }
     let cancelled = false;
     const fetch = async () => {
       setSearchLoading(true);
-      setIsSearching(true);
       try {
         const res = await getTaxpayerForEvents(1, 50, term);
         if (cancelled) return;
         const data = (res?.data?.data ?? []) as Taxpayer[];
-        let filtered = data.filter((t) => t.process !== 'FP');
-        if (user?.role !== 'ADMIN') {
-          filtered = filtered.filter((t) => t.user?.id === user?.id);
-        }
+        const filtered = data.filter((t) => t.process !== 'FP');
         setSearchResults(filtered);
         setSearchTotalPages(res?.data?.totalPages ?? 1);
         setSearchPage(2);
@@ -152,7 +146,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
     };
     fetch();
     return () => { cancelled = true; };
-  }, [searchDebounce, user?.id, user?.role]);
+  }, [searchDebounce]);
 
   // Scroll infinito
   const loadMore = useCallback(async () => {
@@ -165,10 +159,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
     try {
       const res = await getTaxpayerForEvents(page, 50, inSearch ? searchDebounce : undefined);
       const data = (res?.data?.data ?? []) as Taxpayer[];
-      let filtered = data.filter((t) => t.process !== 'FP');
-      if (user?.role !== 'ADMIN') {
-        filtered = filtered.filter((t) => t.user?.id === user?.id);
-      }
+      const filtered = data.filter((t) => t.process !== 'FP');
       if (inSearch) {
         setSearchResults((prev) => [...(prev ?? []), ...filtered]);
         setSearchPage((p) => p + 1);
@@ -178,7 +169,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
       }
     } catch { /* silencioso */ }
     finally { setLoadingMore(false); }
-  }, [loadingMore, searchDebounce, currentPage, searchPage, totalPages, searchTotalPages, user?.id, user?.role]);
+  }, [loadingMore, searchDebounce, currentPage, searchPage, totalPages, searchTotalPages]);
 
   const handleScroll = useCallback(() => {
     const el = listRef.current;
@@ -187,9 +178,13 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   }, [loadMore, loadingMore]);
 
   const selectedTaxpayer = useMemo(() => {
-    const list = isSearching && searchResults ? searchResults : taxpayers;
-    return list.find((t) => t.id === formData.taxpayerId);
-  }, [taxpayers, searchResults, formData.taxpayerId, isSearching]);
+    if (!formData.taxpayerId) return undefined;
+    const merged = [...taxpayers, ...(searchResults ?? [])];
+    const fromList = merged.find((t) => t.id === formData.taxpayerId);
+    if (fromList) return fromList;
+    if (selectionSnapshot?.id === formData.taxpayerId) return selectionSnapshot;
+    return undefined;
+  }, [taxpayers, searchResults, formData.taxpayerId, selectionSnapshot]);
 
   const getYear = (dateStr: string) => {
     if (!dateStr) return 0;
@@ -200,9 +195,10 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   };
 
   const displayedTaxpayers = useMemo(() => {
-    const base = isSearching && searchResults ? searchResults : taxpayers;
+    const hasSearchTerm = searchDebounce.trim().length > 0;
+    const base = hasSearchTerm ? (searchResults ?? []) : taxpayers;
     return filterByCurrentYear ? base.filter((t) => getYear(t.emition_date) === currentYear) : base;
-  }, [taxpayers, searchResults, isSearching, filterByCurrentYear, currentYear]);
+  }, [taxpayers, searchResults, searchDebounce, filterByCurrentYear, currentYear]);
 
   // ── Monto: formateo ───────────────────────────────────────────────────────
   const handleAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -405,7 +401,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
                         </div>
                       ) : displayedTaxpayers.length === 0 ? (
                         <div className="py-6 text-center text-xs text-slate-500">
-                          {isSearching
+                          {searchDebounce.trim().length > 0
                             ? 'Sin resultados para tu búsqueda'
                             : 'No hay contribuyentes disponibles'}
                         </div>
@@ -419,6 +415,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
                                 key={taxpayer.id}
                                 onClick={() => {
                                   handleChange('taxpayerId', taxpayer.id);
+                                  setSelectionSnapshot(taxpayer);
                                   setIsDropdownOpen(false);
                                   setSearchTaxpayer('');
                                   setFilterByCurrentYear(false);

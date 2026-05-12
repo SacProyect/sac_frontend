@@ -25,15 +25,16 @@ export class ChunkErrorBoundary extends Component<Props, State> {
 
     static getDerivedStateFromError(error: Error): State {
         // Detectar si es un error de carga de chunk dinámico
-        const isChunkError = 
+        const isChunkError = Boolean(
             error.message?.includes('Failed to fetch dynamically imported module') ||
             error.message?.includes('Failed to load module script') ||
             error.message?.includes('Importing a module script failed') ||
             error.message?.includes('error loading dynamically imported module') ||
             error.message?.includes('Loading chunk') ||
             error.message?.includes('Loading CSS chunk') ||
-            // Errores de red relacionados con archivos .js
-            (error.message?.includes('Failed to fetch') && error.stack?.includes('.js'));
+            (Boolean(error.message?.includes('Failed to fetch')) &&
+                Boolean(error.stack?.includes('.js'))),
+        );
 
         return { hasError: true, isChunkError };
     }
