@@ -69,7 +69,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   const [filterByCurrentYear, setFilterByCurrentYear] = useState(false);
 
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  /** Conserva nombre/RIF si el id ya no está en la página actual ni en resultados de búsqueda. */
+  /** Conserva nombre/RIF si el id ya no está en la página actual ni en resultados de búsqueda (p. ej. tras limpiar la búsqueda). */
   const [selectionSnapshot, setSelectionSnapshot] = useState<Taxpayer | null>(null);
   const listRef = useRef<HTMLDivElement>(null);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -96,7 +96,8 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
         const res = await getTaxpayerForEvents(1, 50);
         const data = (res?.data?.data ?? []) as Taxpayer[];
         const total = res?.data?.totalPages ?? 1;
-        // El backend ya filtra por rol. No filtrar por t.user?.id === user.id (rompe coordinador/supervisor).
+        // El backend ya filtra por rol (FISCAL, SUPERVISOR, COORDINATOR, ADMIN). No filtrar aquí por
+        // t.user?.id === user.id: el fiscal asignado al contribuyente no coincide con el id del coordinador/supervisor.
         const filtered = data.filter((t) => t.process !== 'FP');
         setTaxpayers(filtered);
         setTotalPages(total);
