@@ -7,6 +7,8 @@ import { Taxpayer } from "./taxpayer"
 export interface User {
     id: string;
     name: string;
+    /** Presente según endpoint de perfil / login */
+    email?: string;
     role: string;
     personId: string;
     password?: string;

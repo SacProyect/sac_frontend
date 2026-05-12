@@ -87,7 +87,7 @@ export default function FiscalStatsDashboardV2() {
                 : `Estás en el top ${fiscalInfo.position || 'N/A'} de fiscales.`}
             </p>
           </div>
-          {fiscalInfo.complianceRate >= 90 && (
+          {(fiscalInfo.complianceRate ?? 0) >= 90 && (
             <Badge className="bg-green-600 text-white">Desempeño Excelente</Badge>
           )}
         </div>

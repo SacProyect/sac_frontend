@@ -1,34 +1,34 @@
-import { useEffect } from 'react';
-import { Dialog } from 'react-aria-components';
-import { DialogTrigger } from 'react-aria-components';
-import { Popover, Button } from 'react-aria-components';
+import { useEffect, type ReactNode } from 'react';
 
-const Alert = ({ message, isOpen, onClose, timeout = 3000 }) => {
-	useEffect(() => {
-		if (isOpen) {
-			const timer = setTimeout(() => {
-				onClose();
-			}, timeout);
+type AlertProps = {
+  message: ReactNode;
+  isOpen: boolean;
+  onClose: () => void;
+  timeout?: number;
+};
 
-			// Cleanup the timer on unmount or when isOpen changes
-			return () => clearTimeout(timer);
-		}
-	}, [isOpen, onClose, timeout]);
+const Alert = ({ message, isOpen, onClose, timeout = 3000 }: AlertProps) => {
+  useEffect(() => {
+    if (!isOpen) return;
+    const timer = setTimeout(() => {
+      onClose();
+    }, timeout);
+    return () => clearTimeout(timer);
+  }, [isOpen, onClose, timeout]);
 
-	if (!isOpen) return null;
+  if (!isOpen) return null;
 
-	return (
-		<DialogTrigger isOpen={isOpen} className={"justify-self-center self-center"}>
-			<Button className={"hidden"} ></Button>
-			<Popover onClose={onClose} placement="bottom" className={"origin-center"}>
-				<Dialog>
-					<div className="p-4 text-white bg-green-500 rounded-lg shadow-lg">
-						<p>{message}</p>
-					</div>
-				</Dialog>
-			</Popover>
-		</DialogTrigger>
-	);
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+      role="alertdialog"
+      aria-modal="true"
+    >
+      <div className="p-4 text-white bg-green-500 rounded-lg shadow-lg max-w-sm">
+        <p>{message}</p>
+      </div>
+    </div>
+  );
 };
 
 export default Alert;
