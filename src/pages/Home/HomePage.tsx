@@ -33,7 +33,6 @@ function HomePage() {
     const [total, setTotal] = useState(0);
     const [limit] = useState(50);
     const [loading, setLoading] = useState(false);
-    }
 
     const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
 
