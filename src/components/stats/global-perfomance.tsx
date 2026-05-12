@@ -23,7 +23,6 @@ export type StatsDesignVariant = "classic" | "contrast" | "minimal";
 
 const DESIGN_STYLES: Record<StatsDesignVariant, {
     panelBg: string;
-    titleBorder: string;
     titleBg: string;
     subtitle: string;
     grid: string;
@@ -35,39 +34,36 @@ const DESIGN_STYLES: Record<StatsDesignVariant, {
 }> = {
     classic: {
         panelBg: "bg-slate-950/80",
-        titleBorder: "border-slate-500",
-        titleBg: "bg-slate-800/90",
+        titleBg: "bg-slate-900/40",
         subtitle: "text-slate-400",
-        grid: "#334155",
-        yTick: "#cbd5e1",
+        grid: "#1e293b", // softer grid
+        yTick: "#94a3b8",
         xTick: "#94a3b8",
         tooltipBg: "bg-slate-900/95",
-        barReal: "#3b82f6",     // bright blue
-        barExpected: "#334155", // dark slate
+        barReal: "#3b82f6",
+        barExpected: "#1e293b",
     },
     contrast: {
         panelBg: "bg-slate-950",
-        titleBorder: "border-blue-400/60",
-        titleBg: "bg-blue-950/60",
-        subtitle: "text-slate-200",
-        grid: "#3b82f6",
-        yTick: "#ffffff",
+        titleBg: "bg-blue-950/30",
+        subtitle: "text-slate-300",
+        grid: "#1e3a8a",
+        yTick: "#e2e8f0",
         xTick: "#e2e8f0",
         tooltipBg: "bg-blue-950/95",
         barReal: "#0ea5e9",
-        barExpected: "#1e3a8a",
+        barExpected: "#0f172a",
     },
     minimal: {
         panelBg: "bg-slate-900/40",
-        titleBorder: "border-slate-700",
-        titleBg: "bg-slate-900/30",
+        titleBg: "transparent",
         subtitle: "text-slate-500",
-        grid: "#1e293b",
-        yTick: "#94a3b8",
+        grid: "#0f172a",
+        yTick: "#64748b",
         xTick: "#64748b",
         tooltipBg: "bg-slate-900/90",
         barReal: "#60a5fa",
-        barExpected: "#1e293b",
+        barExpected: "#0f172a",
     },
 };
 
@@ -132,34 +128,34 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
             const monthlyShare = totalCollected > 0 ? (d.realAmount / totalCollected) * 100 : 0;
 
             return (
-                <div className={`p-3 border border-slate-700 rounded-xl text-xs shadow-2xl ${style.tooltipBg}`}>
-                    <p className="font-bold text-white mb-2 pb-1 border-b border-slate-700/50 uppercase tracking-wider">
+                <div className={`p-3 border border-slate-700/40 rounded-xl text-xs shadow-2xl backdrop-blur-sm ${style.tooltipBg}`}>
+                    <p className="font-bold text-slate-200 mb-2 pb-1.5 border-b border-slate-700/30 uppercase tracking-widest text-[9px]">
                         Recaudación: {d.monthLabel}
                     </p>
                     
                     <div className="space-y-2 mb-3">
                         <div>
-                            <p className="text-slate-400 text-[10px] uppercase font-semibold">IVA Recaudado</p>
+                            <p className="text-slate-500 text-[9px] uppercase font-bold tracking-wider">IVA Recaudado</p>
                             <p className="text-lg font-black text-white leading-none mt-0.5" style={{ color: d.color }}>
                                 {fmtCurrency(d.realAmount)}
                             </p>
                         </div>
                         <div>
-                            <p className="text-slate-500 text-[10px] uppercase font-semibold">Meta Estimada</p>
-                            <p className="text-sm font-semibold text-slate-300 leading-none mt-0.5">
+                            <p className="text-slate-500 text-[9px] uppercase font-bold tracking-wider">Meta Estimada</p>
+                            <p className="text-[13px] font-bold text-slate-300 leading-none mt-1">
                                 {fmtCurrency(d.expectedAmount)}
                             </p>
                         </div>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-700/50 space-y-1">
-                        <p className="flex justify-between gap-4 text-slate-300">
-                            <span className="text-slate-500 text-[9px] uppercase font-bold">Cumplimiento:</span>
-                            <span className="font-bold" style={{ color: d.color }}>{d.compliance.toFixed(1)}%</span>
+                    <div className="pt-2 border-t border-slate-700/30 space-y-1">
+                        <p className="flex items-center justify-between gap-4 text-slate-300">
+                            <span className="text-slate-500 text-[9px] uppercase font-bold">Cumplimiento</span>
+                            <span className="font-bold tabular-nums" style={{ color: d.color }}>{d.compliance.toFixed(1)}%</span>
                         </p>
-                        <p className="flex justify-between gap-4 text-slate-300">
-                            <span className="text-slate-500 text-[9px] uppercase font-bold">Aporte Anual:</span>
-                            <span className="font-bold text-blue-300">{monthlyShare.toFixed(1)}%</span>
+                        <p className="flex items-center justify-between gap-4 text-slate-300">
+                            <span className="text-slate-500 text-[9px] uppercase font-bold">Aporte Anual</span>
+                            <span className="font-bold text-blue-400 tabular-nums">{monthlyShare.toFixed(1)}%</span>
                         </p>
                     </div>
                 </div>
@@ -172,28 +168,28 @@ const PageOneStats = ({ chartData, designVariant = "classic" }: { chartData: Cha
         <div className={`flex w-full flex-col h-full overflow-y-auto custom-scrollbar ${style.panelBg}`}>
             <div className={`flex flex-col min-h-full items-center px-2 pb-2 pt-3 text-white font-inter sm:px-3`}>
             {/* Title */}
-            <div className="mb-3 w-full max-w-md shrink-0 text-center">
-                <div className={`mx-auto w-full max-w-sm rounded-md border ${style.titleBorder} ${style.titleBg}`}>
-                    <h1 className="px-2 py-1.5 text-xs font-semibold tracking-wide text-white sm:text-sm uppercase">
+            <div className="mb-4 w-full max-w-md shrink-0 text-center">
+                <div className={`mx-auto w-full max-w-sm rounded-lg ${style.titleBg} py-1.5`}>
+                    <h1 className="px-2 text-xs font-bold tracking-widest text-slate-200 sm:text-sm uppercase">
                         Rendimiento Global de IVA
                     </h1>
                 </div>
-                <p className={`mt-1.5 line-clamp-2 text-[10px] leading-tight ${style.subtitle}`}>
+                <p className={`mt-2 line-clamp-2 text-[10px] leading-relaxed font-medium ${style.subtitle}`}>
                     Análisis mensual del monto real recaudado frente a la meta proyectada.
                 </p>
             </div>
 
             {/* KPI Cards */}
             <div className="w-full shrink-0 flex items-center justify-center gap-3 mb-2 max-w-4xl px-1">
-                <div className="flex-1 flex flex-col items-center py-2 bg-slate-900/50 border border-slate-700 rounded-lg">
-                    <p className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-widest mb-0.5 flex items-center gap-1">
-                        <DollarSign className="w-3 h-3" /> Total Recaudado
+                <div className="flex-1 flex flex-col items-center py-2.5 bg-slate-900/30 border border-slate-700/30 rounded-xl transition-colors hover:bg-slate-900/40">
+                    <p className="text-[9px] text-emerald-400/90 uppercase font-bold tracking-widest mb-1 flex items-center gap-1.5">
+                        <DollarSign className="w-3.5 h-3.5" /> Total Recaudado
                     </p>
                     <p className="text-lg sm:text-xl font-black text-white">{formatCompact(totalCollected)}</p>
                 </div>
-                <div className="flex-1 flex flex-col items-center py-2 bg-slate-900/50 border border-slate-700 rounded-lg">
-                    <p className="text-[10px] text-slate-400 uppercase font-bold tracking-widest mb-0.5 flex items-center gap-1">
-                        <Target className="w-3 h-3" /> Meta Acumulada
+                <div className="flex-1 flex flex-col items-center py-2.5 bg-slate-900/30 border border-slate-700/30 rounded-xl transition-colors hover:bg-slate-900/40">
+                    <p className="text-[9px] text-slate-400 uppercase font-bold tracking-widest mb-1 flex items-center gap-1.5">
+                        <Target className="w-3.5 h-3.5" /> Meta Acumulada
                     </p>
                     <p className="text-lg sm:text-xl font-black text-slate-300">{formatCompact(totalExpected)}</p>
                 </div>

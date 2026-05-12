@@ -9,7 +9,6 @@
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
-    "resolveJsonModule": true,
     "baseUrl": "src",
     "paths": {
       "@/*": [
@@ -21,6 +20,7 @@
     "src"
   ],
   "exclude": [
+    "node_modules",
     "src/pages/stats/StatsPage.tsx"
   ]
   /* Visit https://aka.ms/tsconfig to read more about this file */

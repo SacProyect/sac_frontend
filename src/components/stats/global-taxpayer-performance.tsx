@@ -17,7 +17,6 @@ export interface MonthlyIvaStats {
 
 const DESIGN_STYLES: Record<StatsDesignVariant, {
     panelBg: string;
-    titleBorder: string;
     titleBg: string;
     subtitle: string;
     grid: string;
@@ -28,33 +27,30 @@ const DESIGN_STYLES: Record<StatsDesignVariant, {
 }> = {
     classic: {
         panelBg: "bg-slate-950/80",
-        titleBorder: "border-slate-500",
-        titleBg: "bg-slate-800/90",
+        titleBg: "bg-slate-900/40",
         subtitle: "text-slate-400",
-        grid: "#334155",
-        xTick: "#cbd5e1",
+        grid: "#1e293b",
+        xTick: "#94a3b8",
         yTick: "#94a3b8",
         tooltipBg: "bg-slate-900/95",
         barBase: "#4f8cff",
     },
     contrast: {
         panelBg: "bg-slate-950",
-        titleBorder: "border-blue-400/60",
-        titleBg: "bg-blue-950/60",
-        subtitle: "text-slate-200",
-        grid: "#3b82f6",
-        xTick: "#ffffff",
+        titleBg: "bg-blue-950/30",
+        subtitle: "text-slate-300",
+        grid: "#1e3a8a",
+        xTick: "#e2e8f0",
         yTick: "#e2e8f0",
         tooltipBg: "bg-blue-950/95",
         barBase: "#38bdf8",
     },
     minimal: {
         panelBg: "bg-slate-900/40",
-        titleBorder: "border-slate-700",
-        titleBg: "bg-slate-900/30",
+        titleBg: "transparent",
         subtitle: "text-slate-500",
-        grid: "#1e293b",
-        xTick: "#94a3b8",
+        grid: "#0f172a",
+        xTick: "#64748b",
         yTick: "#64748b",
         tooltipBg: "bg-slate-900/90",
         barBase: "#60a5fa",
@@ -64,6 +60,13 @@ const DESIGN_STYLES: Record<StatsDesignVariant, {
 export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: StatsDesignVariant }> = ({ stats, designVariant = "classic" }) => {
     const style = DESIGN_STYLES[designVariant];
     const monthNames = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+    const currentMonthIndexVz = Number(
+        new Intl.DateTimeFormat("en-US", {
+            timeZone: "America/Caracas",
+            month: "numeric",
+        }).format(new Date())
+    ) - 1;
+
     const resolveMonthIndex = (monthIndex?: number, monthName?: string) => {
         if (typeof monthIndex === "number" && monthIndex >= 0 && monthIndex <= 11) {
             return monthIndex;
@@ -126,17 +129,13 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
                     variation,
                     color,
                 };
-            }),
-        [stats?.months, style.barBase]
+            }).filter((m) => (m.monthIndex === null ? true : m.monthIndex <= currentMonthIndexVz)),
+        [stats?.months, currentMonthIndexVz, style.barBase]
     );
 
     const totalCollected = stats?.totalIvaCollected ?? 0;
     const avgMonthly = data.length > 0 ? totalCollected / data.length : 0;
     const bestMonth = data.length > 0 ? [...data].sort((a, b) => b.value - a.value)[0] : null;
-
-    const maxDomain = totalCollected && totalCollected > 0
-        ? totalCollected
-        : Math.max(...data.map((d) => d.value), 1);
 
     const formatCurrency = (n: number) => n.toLocaleString("es-VE", { maximumFractionDigits: 2 });
     
@@ -155,29 +154,29 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
             const isDown = variation !== null && variation < 0;
             
             return (
-                <div className={`p-3 border border-slate-700 rounded-xl text-xs shadow-2xl ${style.tooltipBg}`}>
-                    <p className="font-bold text-white mb-2 pb-1 border-b border-slate-700/50 uppercase tracking-wider">
+                <div className={`p-3 border border-slate-700/40 rounded-xl text-xs shadow-2xl backdrop-blur-sm ${style.tooltipBg}`}>
+                    <p className="font-bold text-slate-200 mb-2 pb-1.5 border-b border-slate-700/30 uppercase tracking-widest text-[9px]">
                         {item.label}
                     </p>
                     
                     <div className="mb-3">
-                        <p className="text-slate-400 text-[10px] uppercase font-semibold">Recaudado</p>
+                        <p className="text-slate-500 text-[9px] uppercase font-bold tracking-wider">Recaudado</p>
                         <p className="text-lg font-black text-white leading-none mt-0.5" style={{ color: item.color }}>
                             Bs. {formatCurrency(item.value)}
                         </p>
                     </div>
 
-                    <div className="pt-2 border-t border-slate-700/50">
-                        <p className="text-slate-500 text-[9px] uppercase font-bold mb-1">Evolución vs Mes Anterior</p>
+                    <div className="pt-2 border-t border-slate-700/30">
+                        <p className="text-slate-500 text-[9px] uppercase font-bold tracking-wider mb-1.5">Evolución vs Mes Anterior</p>
                         {variation === null ? (
-                            <span className="text-slate-400 font-semibold flex items-center gap-1">
-                                <BarChart3 className="w-3 h-3" /> Primer registro (N/A)
+                            <span className="text-slate-400 font-semibold flex items-center gap-1.5">
+                                <BarChart3 className="w-3.5 h-3.5" /> Primer registro (N/A)
                             </span>
                         ) : (
                             <span className={`font-bold flex items-center gap-1.5 ${isUp ? 'text-emerald-400' : isDown ? 'text-red-400' : 'text-slate-300'}`}>
                                 {isUp ? <TrendingUp className="w-4 h-4" /> : isDown ? <TrendingDown className="w-4 h-4" /> : null}
                                 {isUp ? "+" : ""}{variation.toFixed(1)}% 
-                                <span className="text-slate-500 font-normal ml-1">
+                                <span className="text-slate-500 font-normal ml-1 tabular-nums">
                                     (Bs. {formatCompact(Math.abs(item.value - item.previousValue))})
                                 </span>
                             </span>
@@ -194,34 +193,34 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
             <div className={`flex w-full flex-col min-h-full px-2 pb-2 pt-3 sm:px-3`}>
                 
                 {/* Title */}
-                <div className="mb-3 w-full max-w-md shrink-0 text-center mx-auto">
-                    <div className={`w-full rounded-md border ${style.titleBorder} ${style.titleBg}`}>
-                        <h1 className="px-2 py-1.5 text-xs font-semibold tracking-wide text-white sm:text-sm uppercase">
+                <div className="mb-4 w-full max-w-md shrink-0 text-center mx-auto">
+                    <div className={`w-full rounded-lg ${style.titleBg} py-1.5`}>
+                        <h1 className="px-2 text-xs font-bold tracking-widest text-slate-200 sm:text-sm uppercase">
                             Evolución de Recaudación Mensual ({stats?.year ?? ""})
                         </h1>
                     </div>
-                    <p className={`mt-1.5 line-clamp-2 text-[10px] leading-tight ${style.subtitle}`}>
+                    <p className={`mt-2 line-clamp-2 text-[10px] leading-relaxed font-medium ${style.subtitle}`}>
                         Análisis del crecimiento intermensual. Verde indica alza; rojo indica baja.
                     </p>
                 </div>
 
                 {/* KPI Cards */}
-                <div className="w-full shrink-0 grid grid-cols-3 gap-2 mb-2 max-w-4xl px-1 mx-auto">
-                    <div className="flex flex-col items-center py-2 bg-slate-900/50 border border-slate-700 rounded-lg">
-                        <p className="text-[9px] text-blue-400 uppercase font-bold tracking-widest mb-0.5 flex items-center gap-1">
-                            <DollarSign className="w-3 h-3" /> Acumulado
+                <div className="w-full shrink-0 grid grid-cols-3 gap-3 mb-2 max-w-4xl px-1 mx-auto">
+                    <div className="flex flex-col items-center py-2.5 bg-slate-900/30 border border-slate-700/30 rounded-xl transition-colors hover:bg-slate-900/40">
+                        <p className="text-[9px] text-blue-400/90 uppercase font-bold tracking-widest mb-1 flex items-center gap-1.5">
+                            <DollarSign className="w-3.5 h-3.5" /> Acumulado
                         </p>
-                        <p className="text-sm sm:text-lg font-black text-white">{formatCompact(totalCollected)}</p>
+                        <p className="text-sm sm:text-lg font-black text-white tabular-nums">{formatCompact(totalCollected)}</p>
                     </div>
-                    <div className="flex flex-col items-center py-2 bg-slate-900/50 border border-slate-700 rounded-lg">
-                        <p className="text-[9px] text-purple-400 uppercase font-bold tracking-widest mb-0.5 flex items-center gap-1">
-                            <BarChart3 className="w-3 h-3" /> Promedio / Mes
+                    <div className="flex flex-col items-center py-2.5 bg-slate-900/30 border border-slate-700/30 rounded-xl transition-colors hover:bg-slate-900/40">
+                        <p className="text-[9px] text-purple-400/90 uppercase font-bold tracking-widest mb-1 flex items-center gap-1.5">
+                            <BarChart3 className="w-3.5 h-3.5" /> Promedio / Mes
                         </p>
-                        <p className="text-sm sm:text-lg font-black text-slate-300">{formatCompact(avgMonthly)}</p>
+                        <p className="text-sm sm:text-lg font-black text-slate-300 tabular-nums">{formatCompact(avgMonthly)}</p>
                     </div>
-                    <div className="flex flex-col items-center py-2 bg-slate-900/50 border border-slate-700 rounded-lg">
-                        <p className="text-[9px] text-amber-400 uppercase font-bold tracking-widest mb-0.5 flex items-center gap-1">
-                            <Award className="w-3 h-3" /> Mes Pico
+                    <div className="flex flex-col items-center py-2.5 bg-slate-900/30 border border-slate-700/30 rounded-xl transition-colors hover:bg-slate-900/40">
+                        <p className="text-[9px] text-amber-400/90 uppercase font-bold tracking-widest mb-1 flex items-center gap-1.5">
+                            <Award className="w-3.5 h-3.5" /> Mes Pico
                         </p>
                         <p className="text-sm sm:text-lg font-black text-white">
                             {bestMonth ? bestMonth.label : 'N/A'}
@@ -262,16 +261,16 @@ export const PageTwoStats: React.FC<{ stats: MonthlyIvaStats; designVariant?: St
                 </div>
                 
                 {/* Visual Legend */}
-                <div className="shrink-0 flex items-center justify-center gap-4 mt-3 text-[9px] text-slate-400 uppercase font-bold tracking-wider">
-                    <div className="flex items-center gap-1.5">
+                <div className="shrink-0 flex items-center justify-center gap-5 mt-3 pt-2 text-[9px] text-slate-400 uppercase font-bold tracking-widest border-t border-slate-800/30">
+                    <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-sm bg-[#10b981]" />
                         <span>Crecimiento (+%)</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-sm bg-[#ef4444]" />
                         <span>Caída (-%)</span>
                     </div>
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-2">
                         <div className="w-2.5 h-2.5 rounded-sm" style={{ backgroundColor: style.barBase }} />
                         <span>Base / Estable</span>
                     </div>

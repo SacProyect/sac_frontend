@@ -1,10 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import { StatsDesignVariant } from "./global-perfomance";
+import { Trophy, Award, Star } from "lucide-react";
 
 export interface GroupStat {
     groupName: string;
-    totalPaidFines: number;
-    totalPaidAmount: number;
+    totalPaidFines: number;     // Amount of fines count/assigned
+    totalPaidAmount: number;    // Amount of fines paid
     totalIvaCollected: number;
     totalIslrCollected: number;
 }
@@ -20,15 +21,17 @@ interface Props {
 
 const DESIGN_STYLES: Record<StatsDesignVariant, {
     panelBg: string;
-    titleBorder: string;
     titleBg: string;
     subtitle: string;
+    cardBg: string;
+    cardBorder: string;
 }> = {
     classic: {
         panelBg: "bg-slate-950/80",
-        titleBorder: "border-slate-500",
-        titleBg: "bg-slate-800/90",
+        titleBg: "bg-slate-900/50",
         subtitle: "text-slate-400",
+        cardBg: "bg-slate-900/40",
+        cardBorder: "border-slate-700/30",
     },
     contrast: {
         panelBg: "bg-slate-950",
@@ -38,9 +41,10 @@ const DESIGN_STYLES: Record<StatsDesignVariant, {
     },
     minimal: {
         panelBg: "bg-slate-900/40",
-        titleBorder: "border-slate-700",
-        titleBg: "bg-slate-900/30",
+        titleBg: "transparent",
         subtitle: "text-slate-500",
+        cardBg: "bg-white/[0.02]",
+        cardBorder: "border-white/[0.05]",
     },
 };
 
@@ -58,9 +62,9 @@ const pct = (value: number, total: number) =>
 // ─── Medal colors by rank ─────────────────────────────────────────────────────
 
 const MEDAL = [
-    { ring: "ring-amber-400/60",   bg: "bg-amber-400/10",   text: "text-amber-300",   dot: "bg-amber-400"   },
-    { ring: "ring-slate-400/40",   bg: "bg-slate-400/10",   text: "text-slate-300",   dot: "bg-slate-400"   },
-    { ring: "ring-orange-600/50",  bg: "bg-orange-700/10",  text: "text-orange-400",  dot: "bg-orange-600"  },
+    { ring: "ring-amber-400/60", bg: "bg-amber-400/10", text: "text-amber-300", dot: "bg-amber-400" },
+    { ring: "ring-slate-400/40", bg: "bg-slate-400/10", text: "text-slate-300", dot: "bg-slate-400" },
+    { ring: "ring-orange-600/50", bg: "bg-orange-700/10", text: "text-orange-400", dot: "bg-orange-600" },
 ];
 
 const getMedal = (i: number) =>
@@ -245,9 +249,9 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
         };
     }, [autoScroll]);
 
-    const totalIva   = groupStats.reduce((s, g) => s + g.totalIvaCollected, 0);
-    const totalIslr  = groupStats.reduce((s, g) => s + g.totalIslrCollected, 0);
-    const totalPaid  = groupStats.reduce((s, g) => s + g.totalPaidAmount, 0);
+    const totalIva = groupStats.reduce((s, g) => s + g.totalIvaCollected, 0);
+    const totalIslr = groupStats.reduce((s, g) => s + g.totalIslrCollected, 0);
+    const totalPaid = groupStats.reduce((s, g) => s + g.totalPaidAmount, 0);
     const totalFines = groupStats.reduce((s, g) => s + g.totalPaidFines, 0);
 
     const sorted = [...groupStats].sort(
@@ -292,9 +296,9 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
 
                 {/* KPI totals strip */}
                 <div className="mt-2 flex items-center justify-around rounded-lg border border-slate-800 bg-slate-900/60 py-1.5 divide-x divide-slate-800">
-                    <KpiStrip label="IVA total"  value={totalIva}   color="text-amber-400"   />
-                    <KpiStrip label="ISLR total" value={totalIslr}  color="text-violet-400"  />
-                    <KpiStrip label="Pagos"      value={totalPaid}  color="text-emerald-400" />
+                    <KpiStrip label="IVA total" value={totalIva} color="text-amber-400" />
+                    <KpiStrip label="ISLR total" value={totalIslr} color="text-violet-400" />
+                    <KpiStrip label="Pagos" value={totalPaid} color="text-emerald-400" />
                 </div>
             </div>
 
