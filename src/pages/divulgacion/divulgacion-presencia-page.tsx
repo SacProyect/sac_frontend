@@ -1,9 +1,24 @@
 import { useEffect, useMemo, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/UI/v2";
+import { Button } from "@/components/UI/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/UI/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/UI/select";
+import { Label } from "@/components/UI/label";
+import { Input } from "@/components/UI/input";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/UI/dialog";
+import { ModalFooter } from "@/components/UI/v2";
+import { getUsersByRole } from "@/components/utils/api/user-functions";
 import { useAuth } from "@/hooks/use-auth";
+import toast from "react-hot-toast";
 import {
 	closeDivulgacion,
 	createDivulgacion,
@@ -49,8 +64,6 @@ type DivulgacionRow = {
 	notas?: string | null;
 };
 
-// El antiguo "Totales" se reemplazó por MisStats (KPIs personalizados por rol).
-
 function todayISO(): string {
 	return new Date().toISOString().slice(0, 10);
 }
@@ -62,8 +75,6 @@ function firstOfMonthISO(): string {
 export default function DivulgacionPresenciaPage() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
-	// Este módulo está restringido a ADMIN — los flags se mantienen
-	// como defensa en profundidad pero todos resuelven a true.
 	const role = user?.role ?? "";
 	const canCreate = role === "ADMIN";
 	const canCloseReopen = role === "ADMIN";
@@ -78,7 +89,7 @@ export default function DivulgacionPresenciaPage() {
 	const [actionInfo, setActionInfo] = useState("");
 	const [busy, setBusy] = useState<string | null>(null);
 
-	const [showForm, setShowForm] = useState(false);
+	const [dialogOpen, setDialogOpen] = useState(false);
 	const [parroquiaForm, setParroquiaForm] = useState<ParroquiaCaracas>("SUCRE");
 	const [fechaForm, setFechaForm] = useState<string>(todayISO);
 	const [horaInicioForm, setHoraInicioForm] = useState("08:00");
@@ -95,6 +106,7 @@ export default function DivulgacionPresenciaPage() {
 	const [apoyoInstitucionalForm, setApoyoInstitucionalForm] = useState("");
 	const [observacionesOperativas, setObservacionesOperativas] = useState("");
 	const [notas, setNotas] = useState("");
+	const [coordinadores, setCoordinadores] = useState<Array<{ id: string; name: string }>>([]);
 
 	const [desde, setDesde] = useState<string>(firstOfMonthISO);
 	const [hasta, setHasta] = useState<string>(todayISO);
@@ -104,6 +116,8 @@ export default function DivulgacionPresenciaPage() {
 	const [page, setPage] = useState(1);
 	const pageSize = 20;
 	const [total, setTotal] = useState(0);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const tabParam = searchParams.get("tab") || "dashboard";
 	const [downloading, setDownloading] = useState(false);
 	const [selectedIds, setSelectedIds] = useState<string[]>([]);
 	const [readyToLoad, setReadyToLoad] = useState(false);
@@ -122,7 +136,6 @@ export default function DivulgacionPresenciaPage() {
 		estado: filtroEstado || undefined,
 		q: q.trim() || undefined,
 	});
-
 
 	const cargar = async (overridePage?: number) => {
 		try {
@@ -182,6 +195,9 @@ export default function DivulgacionPresenciaPage() {
 	useEffect(() => {
 		if (!readyToLoad) return;
 		cargar();
+		getUsersByRole("COORDINATOR").then((users) => {
+			setCoordinadores(Array.isArray(users) ? users : []);
+		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [readyToLoad]);
 
@@ -233,8 +249,8 @@ export default function DivulgacionPresenciaPage() {
 		}
 	};
 
-	const onCreate = async (e: React.FormEvent) => {
-		e.preventDefault();
+	const onCreate = async (e?: React.FormEvent) => {
+		e?.preventDefault();
 		try {
 			setBusy("create");
 			await createDivulgacion({
@@ -246,7 +262,8 @@ export default function DivulgacionPresenciaPage() {
 						.join(" | ") || undefined,
 				notas: buildNotasOperacion(),
 			});
-			setShowForm(false);
+			toast.success("Jornada creada exitosamente");
+			setDialogOpen(false);
 			setUbicacionReferencia("");
 			setSectorForm("");
 			setDireccionDetalladaForm("");
@@ -257,6 +274,7 @@ export default function DivulgacionPresenciaPage() {
 			setNotas("");
 			await cargar();
 		} catch (e: any) {
+			toast.error(e?.response?.data?.error ?? e?.message ?? "No se pudo crear la jornada.");
 			setError(e?.message ?? "No se pudo crear la jornada.");
 		} finally {
 			setBusy(null);
@@ -475,7 +493,6 @@ export default function DivulgacionPresenciaPage() {
 			`Apoyo institucional: ${apoyoInstitucionalForm.trim() || "No especificado"}`,
 			`Observaciones operativas: ${observacionesOperativas.trim() || "No aplica"}`,
 		];
-
 		const notaLibre = notas.trim();
 		if (notaLibre) {
 			bloques.push(`Notas adicionales: ${notaLibre}`);
@@ -553,828 +570,542 @@ export default function DivulgacionPresenciaPage() {
 				title="Divulgación y Presencia Fiscal"
 				description="Jornadas por parroquia. Coordinador agrega asistentes; Fiscal registra contribuyentes visitados; Admin abre/cierra."
 				action={
-					canCreate ? (
-						<button
-							onClick={() => setShowForm((v) => !v)}
-							className="px-3 py-2 rounded-md bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium shadow-md transition-all"
+					<div className="flex items-center gap-2">
+						{canCreate && (
+							<Button onClick={() => setDialogOpen(true)}>
+								Nueva jornada
+							</Button>
+						)}
+						<Button
+							variant="secondary"
+							onClick={onExportExcel}
+							disabled={downloading || loading}
 						>
-							{showForm ? "Cancelar" : "Nueva jornada"}
-						</button>
-					) : null
+							{downloading ? "Generando..." : "Exportar Excel"}
+						</Button>
+						<Button
+							variant="outline"
+							onClick={onImprimirResumen}
+						>
+							Imprimir resumen
+						</Button>
+					</div>
 				}
 			/>
-			<style>{`
-				.divulgacion-module [data-slot="card-title"] { color: #f1f5f9; font-size: 1rem; }
-				.divulgacion-module [data-slot="card-description"] { color: #cbd5e1; }
-				.divulgacion-module input,
-				.divulgacion-module select,
-				.divulgacion-module textarea {
-					color: #f1f5f9;
-				}
-				.divulgacion-module input::placeholder,
-				.divulgacion-module textarea::placeholder { color: #64748b; }
-				.divulgacion-module label { color: #cbd5e1; }
-				.divulgacion-module .field-label { color: #94a3b8; }
-				.divulgacion-module .card-anim {
-					animation: dvFadeUp 320ms ease-out both;
-				}
-				@keyframes dvFadeUp {
-					from { opacity: 0; transform: translateY(8px); }
-					to { opacity: 1; transform: translateY(0); }
-				}
-			`}</style>
 
-			{adminStats && (
-				<>
-					<div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-8 gap-3">
-						<KpiCard label="Jornadas hoy" value={adminStats.jornadasHoy} />
-						<KpiCard label="Abiertas hoy" value={adminStats.abiertasHoy} accent="emerald" />
-						<KpiCard label="Cerradas hoy" value={adminStats.cerradasHoy} accent="rose" />
-						<KpiCard label="Visitas hoy" value={adminStats.visitasHoy} />
-						<KpiCard label="Jornadas período" value={totalJornadasPeriodo} />
-						<KpiCard label="Visitas período" value={totalVisitasPeriodo} accent="emerald" />
-						<KpiCard label="Parroquias activas" value={parroquiasConActividad} />
-						<KpiCard label="Tasa de cierre" value={tasaCierre} />
-					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-						<KpiCard label="Jornadas del mes" value={adminStats.jornadasMes} />
-						<KpiCard label="Visitas del mes" value={adminStats.visitasMes} accent="emerald" />
-						<KpiCard
-							label="Abiertas en total"
-							value={adminStats.jornadasAbiertasTotal}
-							accent="emerald"
-						/>
-						<KpiCard label="Promedio visitas/jornada" value={promedioVisitasPorJornada} />
-					</div>
-					<div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-2">
-						<KpiCard label="Meta de visitas período" value={metaVisitasPeriodoNum} />
-						<KpiCard label="Cumplimiento meta" value={`${cumplimientoMetaPct}%`} accent="emerald" />
-						<KpiCard label="Jornadas sin visitas" value={jornadasSinVisitas} accent="rose" />
-						<KpiCard label="Abiertas sin asistentes" value={jornadasAbiertasSinAsistentes} accent="rose" />
-					</div>
-				</>
-			)}
+			<Tabs
+				value={tabParam}
+				onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
+				className="w-full"
+			>
+				<TabsList className="bg-slate-900/60 border border-slate-800/50 p-1 rounded-xl gap-1 h-auto w-full sm:w-auto">
+					<TabsTrigger value="dashboard" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
+						Dashboard
+					</TabsTrigger>
+					<TabsTrigger value="jornadas" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
+						Jornadas
+						{items.length > 0 && (
+							<span className="ml-2 px-1.5 py-0.5 rounded-full bg-muted text-[10px] tabular-nums">
+								{total}
+							</span>
+						)}
+					</TabsTrigger>
+					<TabsTrigger value="mapa" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
+						Georreferencia
+					</TabsTrigger>
+				</TabsList>
 
-			<Card className="bg-slate-900/40 border-slate-800 rounded-2xl">
-				<CardHeader>
-					<CardTitle>Alertas operativas</CardTitle>
-					<CardDescription>Te ayudan a priorizar supervisión y cierre del período.</CardDescription>
-				</CardHeader>
-				<CardContent className="grid grid-cols-1 md:grid-cols-3 gap-3 text-sm">
-					<AlertItem
-						label="Jornadas abiertas sin asistentes"
-						value={jornadasAbiertasSinAsistentes}
-						tone={jornadasAbiertasSinAsistentes > 0 ? "warning" : "ok"}
-					/>
-					<AlertItem
-						label="Jornadas sin visitas registradas"
-						value={jornadasSinVisitas}
-						tone={jornadasSinVisitas > 0 ? "warning" : "ok"}
-					/>
-					<AlertItem
-						label="Parroquias sin actividad"
-						value={parroquiasSinActividad}
-						tone={parroquiasSinActividad > 0 ? "warning" : "ok"}
-					/>
-				</CardContent>
-			</Card>
-
-			{/* Panel rápido para asignar equipo a una jornada (solo Admin) */}
-			{canManageEquipo && (
-				<EquipoQuickAdd role={role} onChanged={() => cargar()} />
-			)}
-
-			{showForm && canCreate && (
-				<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
-					<CardHeader>
-						<CardTitle>Nueva jornada de divulgación</CardTitle>
-						<CardDescription>
-							Carga operativa completa para ejecucion, seguimiento comercial y control de presencia fiscal.
-						</CardDescription>
-					</CardHeader>
-					<CardContent>
-						<form className="space-y-5 max-w-4xl" onSubmit={onCreate}>
-							<div className="rounded-xl border border-slate-800 p-4 space-y-4 bg-slate-950/40">
-								<div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">
-									Datos base de la jornada
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-									<div>
-										<label className="block text-sm font-medium mb-1">Fecha</label>
-										<input
-											type="date"
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={fechaForm}
-											onChange={(e) => setFechaForm(e.target.value)}
-											required
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Hora inicio</label>
-										<input
-											type="time"
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={horaInicioForm}
-											onChange={(e) => setHoraInicioForm(e.target.value)}
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Hora fin</label>
-										<input
-											type="time"
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={horaFinForm}
-											onChange={(e) => setHoraFinForm(e.target.value)}
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Tipo de jornada</label>
-										<select
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={tipoJornadaForm}
-											onChange={(e) => setTipoJornadaForm(e.target.value)}
-										>
-											<option value="DIVULGACION">Divulgacion</option>
-											<option value="PRESENCIA_FISCAL">Presencia fiscal</option>
-											<option value="MIXTA">Mixta</option>
-											<option value="INSPECCION">Inspeccion comercial</option>
-										</select>
-									</div>
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-									<div>
-										<label className="block text-sm font-medium mb-1">Parroquia</label>
-										<select
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={parroquiaForm}
-											onChange={(e) => setParroquiaForm(e.target.value as ParroquiaCaracas)}
-										>
-											{PARROQUIAS_CARACAS.map((p) => (
-												<option key={p} value={p}>
-													{PARROQUIA_LABELS[p]}
-												</option>
-											))}
-										</select>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Sector / comunidad</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="Ej: La Pastora norte, Calle Real"
-											value={sectorForm}
-											onChange={(e) => setSectorForm(e.target.value)}
-										/>
-									</div>
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-									<div>
-										<label className="block text-sm font-medium mb-1">Punto de referencia</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="Av. Sucre, frente a..."
-											value={ubicacionReferencia}
-											onChange={(e) => setUbicacionReferencia(e.target.value)}
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Direccion detallada</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="Cruce, local, manzana o edificio"
-											value={direccionDetalladaForm}
-											onChange={(e) => setDireccionDetalladaForm(e.target.value)}
-										/>
-									</div>
-								</div>
-							</div>
-							<div className="rounded-xl border border-slate-800 p-4 space-y-4 bg-slate-950/40">
-								<div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">
-									Plan comercial y operativo
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-									<div>
-										<label className="block text-sm font-medium mb-1">Meta de visitas</label>
-										<input
-											type="number"
-											min={1}
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={metaVisitasForm}
-											onChange={(e) => setMetaVisitasForm(e.target.value)}
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Canal de convocatoria</label>
-										<select
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											value={canalConvocatoriaForm}
-											onChange={(e) => setCanalConvocatoriaForm(e.target.value)}
-										>
-											<option value="PUERTA_A_PUERTA">Puerta a puerta</option>
-											<option value="PUNTO_FIJO">Punto fijo</option>
-											<option value="VOLANTEO">Volanteo</option>
-											<option value="REDES">Redes comunitarias</option>
-											<option value="MIXTO">Mixto</option>
-										</select>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Apoyo institucional</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="Consejo comunal, Sundde, etc."
-											value={apoyoInstitucionalForm}
-											onChange={(e) => setApoyoInstitucionalForm(e.target.value)}
-										/>
-									</div>
-								</div>
-								<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-									<div>
-										<label className="block text-sm font-medium mb-1">Responsable operativo</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="Nombre y cargo"
-											value={responsableForm}
-											onChange={(e) => setResponsableForm(e.target.value)}
-										/>
-									</div>
-									<div>
-										<label className="block text-sm font-medium mb-1">Telefono de contacto</label>
-										<input
-											className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-											placeholder="0412-0000000"
-											value={telefonoResponsableForm}
-											onChange={(e) => setTelefonoResponsableForm(e.target.value)}
-										/>
-									</div>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-1">Objetivo de la jornada</label>
-									<textarea
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-										rows={2}
-										value={objetivoForm}
-										onChange={(e) => setObjetivoForm(e.target.value)}
-										placeholder="Que se busca lograr en la parroquia seleccionada"
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-1">Observaciones operativas</label>
-									<textarea
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-										rows={2}
-										value={observacionesOperativas}
-										onChange={(e) => setObservacionesOperativas(e.target.value)}
-										placeholder="Riesgos, requerimientos logisticos, recomendaciones"
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-1">Notas adicionales (opcional)</label>
-									<textarea
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-										rows={3}
-										value={notas}
-										onChange={(e) => setNotas(e.target.value)}
-										placeholder="Cualquier detalle extra para el equipo"
-									/>
-									<div className="text-xs text-slate-400 mt-1">{notas.length} caracteres</div>
-								</div>
-							</div>
-							<div className="flex flex-wrap gap-2">
-								<button
-									type="button"
-									onClick={() => {
-										setFechaForm(todayISO());
-										setHoraInicioForm("08:00");
-										setHoraFinForm("12:00");
-									}}
-									className="px-3 py-2 rounded border border-slate-700 text-slate-200 text-sm"
-								>
-									Usar horario sugerido
-								</button>
-								<button
-									type="button"
-									onClick={() => {
-										setMetaVisitasForm("40");
-										setCanalConvocatoriaForm("MIXTO");
-										setTipoJornadaForm("MIXTA");
-									}}
-									className="px-3 py-2 rounded border border-slate-700 text-slate-200 text-sm"
-								>
-									Cargar preset intensivo
-								</button>
-							</div>
-							<div className="text-xs text-slate-400">
-								La informacion operativa se guarda dentro de las notas de la jornada para consulta en el detalle.
-							</div>
-							<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-								<div>
-									<label className="block text-sm font-medium mb-1">Vista previa de ubicacion</label>
-									<input
-										readOnly
-										className="w-full border rounded px-3 py-2 bg-slate-950/70 border-slate-700 text-slate-300"
-										value={[ubicacionReferencia, sectorForm, direccionDetalladaForm].filter(Boolean).join(" | ")}
-									/>
-								</div>
-								<div>
-									<label className="block text-sm font-medium mb-1">Vista previa de notas operativas</label>
-									<textarea
-										readOnly
-										rows={3}
-										className="w-full border rounded px-3 py-2 bg-slate-950/70 border-slate-700 text-slate-300"
-										value={buildNotasOperacion()}
-									/>
-								</div>
-							</div>
-							<button
-								type="submit"
-								disabled={busy === "create"}
-								className="bg-blue-600 text-white px-4 py-2 rounded disabled:opacity-60"
-							>
-								{busy === "create" ? "Creando..." : "Crear jornada"}
-							</button>
-						</form>
-					</CardContent>
-				</Card>
-			)}
-
-			<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
-				<CardHeader>
-					<CardTitle>Filtros</CardTitle>
-					<CardDescription>Aplican a la lista de jornadas y al mapa.</CardDescription>
-				</CardHeader>
-				<CardContent>
-					<form className="grid grid-cols-1 md:grid-cols-6 gap-3" onSubmit={aplicarFiltros}>
-						<div>
-							<label className="block text-xs text-slate-400 mb-1">Desde</label>
-							<input
-								type="date"
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
-								value={desde}
-								onChange={(e) => setDesde(e.target.value)}
-							/>
+				<TabsContent value="dashboard" className="mt-6 space-y-6">
+					{error && (
+						<div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+							{error}
 						</div>
-						<div>
-							<label className="block text-xs text-slate-400 mb-1">Hasta</label>
-							<input
-								type="date"
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
-								value={hasta}
-								onChange={(e) => setHasta(e.target.value)}
-							/>
+					)}
+					{actionInfo && (
+						<div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-400">
+							{actionInfo}
 						</div>
-						<div>
-							<label className="block text-xs text-slate-400 mb-1">Parroquia</label>
-							<select
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
-								value={filtroParroquia}
-								onChange={(e) => setFiltroParroquia(e.target.value as ParroquiaCaracas | "")}
-							>
-								<option value="">Todas</option>
-								{PARROQUIAS_CARACAS.map((p) => (
-									<option key={p} value={p}>
-										{PARROQUIA_LABELS[p]}
-									</option>
-								))}
-							</select>
-						</div>
-						<div>
-							<label className="block text-xs text-slate-400 mb-1">Estado</label>
-							<select
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
-								value={filtroEstado}
-								onChange={(e) => setFiltroEstado(e.target.value as EstadoDivulgacion | "")}
-							>
-								<option value="">Todos</option>
-								<option value="ABIERTA">Abierta</option>
-								<option value="CERRADA">Cerrada</option>
-							</select>
-						</div>
-						<div className="md:col-span-2">
-							<label className="block text-xs text-slate-400 mb-1">Buscar (RIF, contribuyente, asistente, ubicación)</label>
-							<div className="flex gap-2">
-								<input
-									className="flex-1 border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
-									placeholder="J123456789, panadería..."
-									value={q}
-									onChange={(e) => setQ(e.target.value)}
+					)}
+
+					{adminStats && (
+						<>
+							<div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+								<KpiCard label="Jornadas período" value={totalJornadasPeriodo} />
+								<KpiCard label="Visitas período" value={totalVisitasPeriodo} accent="emerald" />
+								<KpiCard label="Tasa de cierre" value={tasaCierre} />
+								<KpiCard label="Parroquias activas" value={parroquiasConActividad} />
+								<KpiCard
+									label="Cumplimiento meta"
+									value={`${cumplimientoMetaPct}%`}
+									accent={cumplimientoMetaPct >= 80 ? "emerald" : cumplimientoMetaPct >= 50 ? "amber" : "rose"}
 								/>
-								<button type="submit" className="px-3 py-2 rounded bg-blue-600 text-white text-sm">
-									Aplicar
-								</button>
+								<KpiCard label="Promedio visitas/jornada" value={promedioVisitasPorJornada} />
 							</div>
-						</div>
-					</form>
-					<div className="mt-3 flex flex-wrap items-center gap-2">
-						<button
-							type="button"
-							onClick={guardarFiltros}
-							className="px-3 py-1.5 rounded bg-slate-800 text-slate-100 text-xs border border-slate-700"
-						>
-							Guardar filtros
-						</button>
-						<button
-							type="button"
-							onClick={limpiarFiltrosGuardados}
-							className="px-3 py-1.5 rounded bg-slate-900 text-slate-300 text-xs border border-slate-700"
-						>
-							Limpiar filtros y ajustes
-						</button>
-						<div className="ml-auto flex items-center gap-2">
-							<label className="text-xs text-slate-400">Meta de visitas (período)</label>
-							<input
-								type="number"
-								min={0}
-								value={metaVisitasPeriodo}
-								onChange={(e) => setMetaVisitasPeriodo(e.target.value)}
-								className="w-24 border rounded px-2 py-1 bg-slate-950 border-slate-700 text-xs"
-							/>
-						</div>
-					</div>
-				</CardContent>
-			</Card>
-
-			{canSeeMap && (
-				<div className="grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-6">
-					<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
-						<CardHeader>
-							<CardTitle>Mapa parroquial interactivo</CardTitle>
-							<CardDescription>
-								Alterna entre mapa normal y mapa de calor para detectar concentracion de actividad.
-							</CardDescription>
-						</CardHeader>
-						<CardContent>
-							<div className="mb-4 flex flex-wrap items-center gap-2">
-								<button
-									type="button"
-									onClick={() => setMapView("normal")}
-									className={`px-3 py-1.5 rounded-md text-xs border transition ${
-										mapView === "normal"
-											? "bg-blue-600 border-blue-500 text-white"
-											: "bg-slate-900 border-slate-700 text-slate-300"
-									}`}
-								>
-									Mapa normal
-								</button>
-								<button
-									type="button"
-									onClick={() => setMapView("calor")}
-									className={`px-3 py-1.5 rounded-md text-xs border transition ${
-										mapView === "calor"
-											? "bg-rose-600 border-rose-500 text-white"
-											: "bg-slate-900 border-slate-700 text-slate-300"
-									}`}
-								>
-									Mapa de calor
-								</button>
-								{mapView === "calor" && (
-									<div className="ml-auto flex items-center gap-2">
-										<label className="text-xs text-slate-400">Metrica</label>
-										<select
-											className="border rounded px-2 py-1.5 bg-slate-950 border-slate-700 text-xs"
-											value={heatMetric}
-											onChange={(e) => setHeatMetric(e.target.value as "jornadas" | "visitas" | "asistentes" | "impacto_iva")}
-										>
-											<option value="impacto_iva">Impacto IVA + contribuyentes</option>
-											<option value="visitas">Visitas</option>
-											<option value="jornadas">Jornadas</option>
-											<option value="asistentes">Asistentes</option>
-										</select>
-									</div>
-								)}
+							<div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+								<AlertItem
+									label="Jornadas abiertas sin asistentes"
+									value={jornadasAbiertasSinAsistentes}
+									tone={jornadasAbiertasSinAsistentes > 0 ? "warning" : "ok"}
+								/>
+								<AlertItem
+									label="Jornadas sin visitas registradas"
+									value={jornadasSinVisitas}
+									tone={jornadasSinVisitas > 0 ? "warning" : "ok"}
+								/>
+								<AlertItem
+									label="Parroquias sin actividad"
+									value={parroquiasSinActividad}
+									tone={parroquiasSinActividad > 0 ? "warning" : "ok"}
+								/>
 							</div>
-							<ParroquiaMapaInteractivo
-								data={mapa}
-								selected={parroquiaSeleccionada}
-								onSelect={setParroquiaSeleccionada}
-								mode={mapView === "calor" ? "heat" : "normal"}
-								heatMetric={heatMetric}
-							/>
-							{parroquiaSeleccionada && (
-								<button
-									onClick={() => setParroquiaSeleccionada(null)}
-									className="mt-3 text-xs text-amber-300 underline"
-								>
-									Limpiar selección
-								</button>
-							)}
-						</CardContent>
-					</Card>
 
-					<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
-						<CardHeader>
-							<CardTitle>
-								{parroquiaSeleccionada
-									? `Detalle: ${PARROQUIA_LABELS[parroquiaSeleccionada]}`
-									: "Resumen del período"}
-							</CardTitle>
-							<CardDescription>
-								{parroquiaSeleccionada
-									? "Indicadores de la parroquia seleccionada."
-									: `${desde || "—"} a ${hasta || "—"}`}
-							</CardDescription>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{parroquiaSeleccionada ? (
-								<>
-									<div className="grid grid-cols-2 gap-3">
-										<MiniKpi label="Jornadas en general" value={totalJornadasPeriodo} />
-										<MiniKpi label="Visitas en parroquia seleccionada" value={aggSeleccionada?.visitas ?? 0} />
-									</div>
-									<DesgloseComercial actividades={aggSeleccionada?.actividades ?? {}} />
-								</>
-							) : (
-								<>
-									<div className="grid grid-cols-2 gap-3">
-										<MiniKpi label="Jornadas en general" value={totalJornadasPeriodo} />
-										<MiniKpi label="Visitas del período" value={totalVisitasPeriodo} />
-									</div>
-									<DesgloseComercial actividades={totalActividadesPeriodo} title="Desglose comercial del período" />
-								</>
-							)}
-							<div className="pt-2 border-t border-slate-800">
-								<div className="mb-3 rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-									<div className="flex flex-wrap items-center gap-2 mb-2">
-										<div className="text-xs uppercase tracking-wider text-slate-300 font-semibold">
-											Semáforo de actividad parroquial
+							<div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+								<Card className="rounded-2xl">
+									<CardHeader className="pb-3">
+										<CardTitle>Top parroquias por métrica</CardTitle>
+										<CardDescription>
+											{heatMetric === "visitas" ? "Visitas" : heatMetric === "jornadas" ? "Jornadas" : heatMetric === "asistentes" ? "Asistentes" : "Impacto IVA"}
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<div className="h-64">
+											<ResponsiveContainer width="100%" height="100%">
+												<BarChart data={chartParroquias}>
+													<CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+													<XAxis dataKey="name" tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} interval={0} angle={-20} height={50} textAnchor="end" />
+													<YAxis tick={{ fill: "hsl(var(--muted-foreground))", fontSize: 11 }} />
+													<Tooltip
+														contentStyle={{ background: "#0f172a", border: "1px solid #334155", color: "#e2e8f0", borderRadius: "8px" }}
+														labelStyle={{ color: "#f1f5f9" }}
+													/>
+													<Bar dataKey={heatMetric} radius={[6, 6, 0, 0]} fill="#38bdf8" />
+												</BarChart>
+											</ResponsiveContainer>
 										</div>
-										<div className="ml-auto flex items-center gap-2 text-xs">
-											<label className="text-slate-400">Bajo &lt;</label>
+									</CardContent>
+								</Card>
+
+								<Card className="rounded-2xl">
+									<CardHeader className="pb-3">
+										<CardTitle>Desglose de actividades</CardTitle>
+										<CardDescription>
+											{parroquiaSeleccionada
+												? `Solo ${PARROQUIA_LABELS[parroquiaSeleccionada]}`
+												: "Todas las parroquias"}
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<div className="h-64">
+											<ResponsiveContainer width="100%" height="100%">
+												<PieChart>
+													<Pie
+														data={chartDesgloseActividades}
+														dataKey="value"
+														nameKey="name"
+														outerRadius={80}
+														innerRadius={40}
+													>
+														{chartDesgloseActividades.map((entry, index) => (
+															<Cell
+																key={`${entry.name}-${index}`}
+																fill={["#f59e0b", "#f97316", "#fb7185", "#22c55e", "#06b6d4", "#a78bfa"][index % 6]}
+															/>
+														))}
+													</Pie>
+													<Tooltip
+														contentStyle={{ background: "#0f172a", border: "1px solid #334155", borderRadius: "8px" }}
+														labelStyle={{ color: "#f1f5f9", fontWeight: 600 }}
+														itemStyle={{ color: "#e2e8f0" }}
+													/>
+												</PieChart>
+											</ResponsiveContainer>
+										</div>
+									</CardContent>
+								</Card>
+							</div>
+
+							<Card className="rounded-2xl">
+								<CardHeader className="pb-3">
+									<CardTitle>Semáforo de actividad parroquial</CardTitle>
+									<CardDescription>Top 6 parroquias por score de actividad. Ajusta umbrales abajo.</CardDescription>
+								</CardHeader>
+								<CardContent>
+									<div className="flex flex-wrap items-center gap-3 mb-3 text-xs">
+										<span className="text-muted-foreground">Umbrales:</span>
+										<label className="flex items-center gap-1 text-muted-foreground">
+											Bajo &lt;
 											<input
 												type="number"
 												min={0}
 												value={umbralBajo}
 												onChange={(e) => setUmbralBajo(e.target.value)}
-												className="w-16 border rounded px-2 py-1 bg-slate-900 border-slate-700 text-slate-200"
+												className="w-16 rounded-md border border-input bg-background px-2 py-1 text-sm"
 											/>
-											<label className="text-slate-400">Medio &lt;</label>
+										</label>
+										<label className="flex items-center gap-1 text-muted-foreground">
+											Medio &lt;
 											<input
 												type="number"
 												min={0}
 												value={umbralMedio}
 												onChange={(e) => setUmbralMedio(e.target.value)}
-												className="w-16 border rounded px-2 py-1 bg-slate-900 border-slate-700 text-slate-200"
+												className="w-16 rounded-md border border-input bg-background px-2 py-1 text-sm"
 											/>
-										</div>
+										</label>
+										<span className="text-muted-foreground ml-2">Meta período: {metaVisitasPeriodo} visitas</span>
 									</div>
-									<div className="space-y-1.5">
+									<div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
 										{semaforoParroquias.map((item) => (
-											<div key={item.parroquia} className="flex items-center justify-between text-xs">
-												<span className="text-slate-200">{item.label}</span>
+											<div
+												key={item.parroquia}
+												className={`rounded-lg border px-3 py-2 text-sm flex items-center justify-between ${
+													item.nivel === "ALTO"
+														? "border-rose-500/30 bg-rose-500/5"
+														: item.nivel === "MEDIO"
+															? "border-amber-500/30 bg-amber-500/5"
+															: "border-emerald-500/30 bg-emerald-500/5"
+												}`}
+											>
+												<span className="font-medium">{item.label}</span>
 												<span
-													className={`px-2 py-0.5 rounded font-semibold ${
+													className={`px-2 py-0.5 rounded text-xs font-semibold tabular-nums ${
 														item.nivel === "ALTO"
-															? "bg-rose-900/50 text-rose-300"
+															? "bg-rose-500/10 text-rose-400"
 															: item.nivel === "MEDIO"
-																? "bg-amber-900/50 text-amber-300"
-																: "bg-emerald-900/50 text-emerald-300"
+																? "bg-amber-500/10 text-amber-400"
+																: "bg-emerald-500/10 text-emerald-400"
 													}`}
 												>
-													{item.nivel} · {item.score}
+													{item.score}
 												</span>
 											</div>
 										))}
 									</div>
+								</CardContent>
+							</Card>
+						</>
+					)}
+
+					{canManageEquipo && (
+						<details className="group [&>summary]:cursor-pointer">
+							<summary className="text-sm font-medium text-slate-300 hover:text-slate-100 transition-colors mb-2 list-none flex items-center gap-2">
+								<span className="w-5 h-5 rounded bg-slate-800 flex items-center justify-center text-xs group-open:rotate-90 transition-transform">
+									▶
+								</span>
+								Asignar equipo a jornada activa
+							</summary>
+							<div className="mt-3">
+								<EquipoQuickAdd role={role} onChanged={() => cargar()} />
+							</div>
+						</details>
+					)}
+
+					{adminStats && (
+						<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+							<KpiCard label="Meta de visitas período" value={metaVisitasPeriodoNum} />
+							<KpiCard label="Jornadas sin visitas" value={jornadasSinVisitas} accent="rose" />
+							<KpiCard label="Abiertas sin asistentes" value={jornadasAbiertasSinAsistentes} accent="rose" />
+							<KpiCard label="Jornadas hoy" value={adminStats?.jornadasHoy ?? 0} />
+						</div>
+					)}
+				</TabsContent>
+
+				<TabsContent value="jornadas" className="mt-6 space-y-4">
+					{error && (
+						<div className="rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
+							{error}
+						</div>
+					)}
+					{actionInfo && (
+						<div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-400">
+							{actionInfo}
+						</div>
+					)}
+
+					<Card className="rounded-2xl">
+						<CardHeader className="pb-3">
+							<CardTitle>Filtros</CardTitle>
+							<CardDescription>
+								{loading
+									? "Cargando..."
+									: `${itemsFiltrados.length} mostrados · Página ${page} de ${Math.max(1, Math.ceil(total / pageSize))}`}
+							</CardDescription>
+						</CardHeader>
+						<CardContent>
+							<form className="flex flex-wrap items-end gap-2" onSubmit={aplicarFiltros}>
+								<div>
+									<label className="block text-xs text-muted-foreground mb-1">Desde</label>
+									<input
+										type="date"
+										className="w-36 rounded-md border border-input bg-background px-2 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+										value={desde}
+										onChange={(e) => setDesde(e.target.value)}
+									/>
 								</div>
-								<div className="text-xs uppercase tracking-wider text-slate-300 font-semibold mb-2">
-									Graficos de metricas por zona
+								<div>
+									<label className="block text-xs text-muted-foreground mb-1">Hasta</label>
+									<input
+										type="date"
+										className="w-36 rounded-md border border-input bg-background px-2 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+										value={hasta}
+										onChange={(e) => setHasta(e.target.value)}
+									/>
 								</div>
-								<div className="h-52">
-									<ResponsiveContainer width="100%" height="100%">
-										<BarChart data={chartParroquias}>
-											<CartesianGrid strokeDasharray="3 3" stroke="#334155" />
-											<XAxis dataKey="name" tick={{ fill: "#94a3b8", fontSize: 11 }} interval={0} angle={-15} height={45} textAnchor="end" />
-											<YAxis tick={{ fill: "#94a3b8", fontSize: 11 }} />
-											<Tooltip
-												contentStyle={{ background: "#0f172a", border: "1px solid #334155", color: "#e2e8f0" }}
-												labelStyle={{ color: "#e2e8f0" }}
-											/>
-											<Bar dataKey={heatMetric} radius={[6, 6, 0, 0]} fill="#38bdf8" />
-										</BarChart>
-									</ResponsiveContainer>
+								<div>
+									<label className="block text-xs text-muted-foreground mb-1">Parroquia</label>
+									<Select value={filtroParroquia || "ALL"} onValueChange={(v) => setFiltroParroquia(v === "ALL" ? "" : v as ParroquiaCaracas)}>
+										<SelectTrigger className="min-w-[8rem]">
+											<SelectValue placeholder="Todas" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="ALL">Todas</SelectItem>
+											{PARROQUIAS_CARACAS.map((p) => (
+												<SelectItem key={p} value={p}>
+													{PARROQUIA_LABELS[p]}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
 								</div>
-								<div className="h-52 mt-3">
-									<ResponsiveContainer width="100%" height="100%">
-										<PieChart>
-											<Pie
-												data={chartDesgloseActividades}
-												dataKey="value"
-												nameKey="name"
-												outerRadius={78}
-												innerRadius={38}
-											>
-												{chartDesgloseActividades.map((entry, index) => (
-													<Cell
-														key={`${entry.name}-${index}`}
-														fill={["#f59e0b", "#f97316", "#fb7185", "#22c55e", "#06b6d4", "#a78bfa"][index % 6]}
-													/>
-												))}
-											</Pie>
-											<Tooltip
-												contentStyle={{ background: "#0f172a", border: "1px solid #334155", color: "#e2e8f0" }}
-												labelStyle={{ color: "#e2e8f0" }}
-											/>
-										</PieChart>
-									</ResponsiveContainer>
+								<div>
+									<label className="block text-xs text-muted-foreground mb-1">Estado</label>
+									<Select value={filtroEstado || "ALL"} onValueChange={(v) => setFiltroEstado(v === "ALL" ? "" : v as EstadoDivulgacion)}>
+										<SelectTrigger>
+											<SelectValue placeholder="Todos" />
+										</SelectTrigger>
+										<SelectContent>
+											<SelectItem value="ALL">Todos</SelectItem>
+											<SelectItem value="ABIERTA">Abierta</SelectItem>
+											<SelectItem value="CERRADA">Cerrada</SelectItem>
+										</SelectContent>
+									</Select>
 								</div>
-								<div className="mt-3 rounded-lg border border-slate-800 bg-slate-950/40 p-3">
-									<div className="text-xs uppercase tracking-wider text-slate-300 font-semibold mb-2">
-										Bitácora reciente
-									</div>
-									<div className="space-y-2 max-h-44 overflow-auto pr-1">
-										{auditoriaReciente.map((row) => (
-											<div key={row.id} className="text-xs border-b border-slate-800 pb-2">
-												<div className="text-slate-200">
-													{PARROQUIA_LABELS[row.parroquia]} · {row.fecha?.slice(0, 10) ?? "—"}
-												</div>
-												<div className="text-slate-400">
-													Estado: {row.estado} · Asistentes: {row._count?.asistentes ?? 0} · Visitas:{" "}
-													{row._count?.visitas ?? 0}
-												</div>
-												<div className="text-slate-500">
-													Creado por: {row.creadoPor?.name ?? "—"}
-												</div>
-											</div>
-										))}
-										{auditoriaReciente.length === 0 && (
-											<div className="text-xs text-slate-500">Sin eventos recientes en el período.</div>
-										)}
-									</div>
+								<div className="flex-1 min-w-[10rem]">
+									<label className="block text-xs text-muted-foreground mb-1">Buscar</label>
+									<input
+										className="w-full rounded-md border border-input bg-background px-2 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+										placeholder="RIF, nombre, ubicación..."
+										value={q}
+										onChange={(e) => setQ(e.target.value)}
+									/>
+								</div>
+								<Button type="submit" size="sm">
+									Aplicar
+								</Button>
+								<Button type="button" variant="outline" size="sm" onClick={guardarFiltros}>
+									Guardar
+								</Button>
+								<Button type="button" variant="ghost" size="sm" onClick={limpiarFiltrosGuardados}>
+									Limpiar
+								</Button>
+							</form>
+							<div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+								<div className="flex items-center gap-2">
+									<span className="text-muted-foreground">Meta de visitas:</span>
+									<input
+										type="number"
+										min={0}
+										value={metaVisitasPeriodo}
+										onChange={(e) => setMetaVisitasPeriodo(e.target.value)}
+										className="w-20 rounded-md border border-input bg-background px-2 py-1 text-sm"
+									/>
+								</div>
+								<div className="flex items-center gap-1.5 ml-2">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => {
+											setDesde(todayISO());
+											setHasta(todayISO());
+											aplicarFiltros();
+										}}
+									>
+										Hoy
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										onClick={() => {
+											setDesde(firstOfMonthISO());
+											setHasta(todayISO());
+											aplicarFiltros();
+										}}
+									>
+										Este mes
+									</Button>
 								</div>
 							</div>
 						</CardContent>
 					</Card>
-				</div>
-			)}
 
-			<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
-				<CardHeader className="flex flex-row items-start justify-between gap-3">
-					<div>
-						<CardTitle>
-							{parroquiaSeleccionada
-								? `Jornadas en ${PARROQUIA_LABELS[parroquiaSeleccionada]}`
-								: "Jornadas"}
-						</CardTitle>
-						<CardDescription>
-							{loading
-								? "Cargando..."
-								: `Mostrando ${itemsFiltrados.length} (página ${page} · ${total} en el período)`}
-						</CardDescription>
-					</div>
-					<button
-						onClick={onExportExcel}
-						disabled={downloading || loading}
-						className="px-3 py-2 rounded bg-emerald-700 text-white text-sm disabled:opacity-60 whitespace-nowrap"
-					>
-						{downloading ? "Generando..." : "Exportar Excel"}
-					</button>
-					<button
-						onClick={onImprimirResumen}
-						className="px-3 py-2 rounded bg-slate-700 text-white text-sm whitespace-nowrap"
-					>
-						Imprimir resumen
-					</button>
-				</CardHeader>
-				<CardContent>
-					{error && <p className="text-red-400 text-sm mb-3">{error}</p>}
-					{actionInfo && <p className="text-emerald-300 text-sm mb-3">{actionInfo}</p>}
 					{selectedIds.length > 0 && (
-						<div className="mb-3 rounded-lg border border-slate-700 bg-slate-900/70 px-3 py-2 flex flex-wrap items-center gap-2 text-xs">
-							<span className="text-slate-200 font-medium">{selectedIds.length} seleccionadas</span>
-							<span className="text-slate-400">Abiertas: {selectedAbiertas}</span>
-							<span className="text-slate-400">Cerradas: {selectedCerradas}</span>
-							<button
-								onClick={onCerrarMasivo}
-								disabled={selectedAbiertas === 0 || busy === "bulk-close"}
-								className="ml-auto px-2 py-1 rounded bg-rose-700 text-white disabled:opacity-50"
-							>
-								{busy === "bulk-close" ? "Cerrando..." : "Cerrar masivo"}
-							</button>
-							<button
-								onClick={onReabrirMasivo}
-								disabled={selectedCerradas === 0 || busy === "bulk-reopen"}
-								className="px-2 py-1 rounded bg-emerald-700 text-white disabled:opacity-50"
-							>
-								{busy === "bulk-reopen" ? "Reabriendo..." : "Reabrir masivo"}
-							</button>
-							<button
-								onClick={() => setSelectedIds([])}
-								className="px-2 py-1 rounded bg-slate-700 text-white"
-							>
-								Limpiar
-							</button>
+						<div className="rounded-xl border bg-card px-4 py-3 flex flex-wrap items-center gap-2 text-sm">
+							<span className="font-medium">{selectedIds.length} seleccionadas</span>
+							<span className="text-muted-foreground">Abiertas: {selectedAbiertas}</span>
+							<span className="text-muted-foreground">Cerradas: {selectedCerradas}</span>
+							<div className="ml-auto flex items-center gap-2">
+								<Button
+									variant="destructive"
+									size="sm"
+									onClick={onCerrarMasivo}
+									disabled={selectedAbiertas === 0 || busy === "bulk-close"}
+								>
+									{busy === "bulk-close" ? "Cerrando..." : "Cerrar masivo"}
+								</Button>
+								<Button
+									size="sm"
+									onClick={onReabrirMasivo}
+									disabled={selectedCerradas === 0 || busy === "bulk-reopen"}
+									className="bg-emerald-700 hover:bg-emerald-600 text-white"
+								>
+									{busy === "bulk-reopen" ? "Reabriendo..." : "Reabrir masivo"}
+								</Button>
+								<Button variant="outline" size="sm" onClick={() => setSelectedIds([])}>
+									Limpiar
+								</Button>
+							</div>
 						</div>
 					)}
-					{!loading && (
-						<Table>
-							<TableHeader>
-								<TableRow>
-									<TableHead>
-										<input
-											type="checkbox"
-											checked={itemsFiltrados.length > 0 && selectedIds.length === itemsFiltrados.length}
-											onChange={(e) =>
-												setSelectedIds(e.target.checked ? itemsFiltrados.map((it) => it.id) : [])
-											}
-										/>
-									</TableHead>
-									<TableHead>Estado</TableHead>
-									<TableHead>Fecha</TableHead>
-									<TableHead>Parroquia</TableHead>
-									<TableHead>Ubicación</TableHead>
-									<TableHead>Asist./Visitas</TableHead>
-									<TableHead>Grupo</TableHead>
-									<TableHead>Creado por</TableHead>
-									<TableHead>Acciones</TableHead>
-								</TableRow>
-							</TableHeader>
-							<TableBody>
-								{itemsFiltrados.map((it) => (
-									<TableRow key={it.id}>
-										<TableCell>
-											<input
-												type="checkbox"
-												checked={selectedIds.includes(it.id)}
-												onChange={(e) =>
-													setSelectedIds((prev) =>
-														e.target.checked ? [...prev, it.id] : prev.filter((id) => id !== it.id),
-													)
-												}
-											/>
-										</TableCell>
-										<TableCell>
-											<span
-												className={`px-2 py-1 rounded text-xs ${
-													it.estado === "ABIERTA"
-														? "bg-emerald-900/40 text-emerald-300"
-														: "bg-rose-900/40 text-rose-300"
-												}`}
-											>
-												{it.estado}
-											</span>
-										</TableCell>
-										<TableCell>{it.fecha?.slice(0, 10) ?? "—"}</TableCell>
-										<TableCell>{PARROQUIA_LABELS[it.parroquia]}</TableCell>
-										<TableCell className="max-w-[14rem] truncate">{it.ubicacionReferencia ?? "—"}</TableCell>
-										<TableCell>
-											{it._count?.asistentes ?? 0} / {it._count?.visitas ?? 0}
-										</TableCell>
-										<TableCell>{it.fiscalGroup?.name ?? "—"}</TableCell>
-										<TableCell>{it.creadoPor?.name ?? "—"}</TableCell>
-										<TableCell className="space-x-2 whitespace-nowrap">
-											<button
+
+					<Card className="rounded-2xl">
+						<CardContent className="p-0">
+							{!loading && (
+								<Table>
+									<TableHeader>
+										<TableRow>
+											<TableHead className="w-10">
+												<input
+													type="checkbox"
+													checked={itemsFiltrados.length > 0 && selectedIds.length === itemsFiltrados.length}
+													onChange={(e) =>
+														setSelectedIds(e.target.checked ? itemsFiltrados.map((it) => it.id) : [])
+													}
+												/>
+											</TableHead>
+											<TableHead>Estado</TableHead>
+											<TableHead>Fecha</TableHead>
+											<TableHead>Parroquia</TableHead>
+											<TableHead>Ubicación</TableHead>
+											<TableHead>Asist./Visitas</TableHead>
+											<TableHead>Grupo</TableHead>
+											<TableHead>Creado por</TableHead>
+											<TableHead className="text-right">Acciones</TableHead>
+										</TableRow>
+									</TableHeader>
+									<TableBody>
+										{itemsFiltrados.map((it) => (
+											<TableRow
+												key={it.id}
+												className="cursor-pointer transition-colors"
 												onClick={() => navigate(`/divulgacion-presencia-fiscal/${it.id}`)}
-												className="px-2 py-1 rounded bg-slate-700 text-white text-xs"
 											>
-												Detalle
-											</button>
-											{canCreate && (
-												<button
-													onClick={() => onDuplicar(it.id)}
-													disabled={busy === `dup-${it.id}`}
-													className="px-2 py-1 rounded bg-violet-700 text-white text-xs disabled:opacity-60"
-												>
-													{busy === `dup-${it.id}` ? "..." : "Duplicar"}
-												</button>
-											)}
-											{canCloseReopen && it.estado === "ABIERTA" && (
-												<button
-													onClick={() => onCerrar(it.id)}
-													disabled={busy === it.id}
-													className="px-2 py-1 rounded bg-rose-600 text-white text-xs disabled:opacity-60"
-												>
-													{busy === it.id ? "..." : "Cerrar"}
-												</button>
-											)}
-											{canCloseReopen && it.estado === "CERRADA" && (
-												<button
-													onClick={() => onReabrir(it.id)}
-													disabled={busy === it.id}
-													className="px-2 py-1 rounded bg-emerald-700 text-white text-xs disabled:opacity-60"
-												>
-													{busy === it.id ? "..." : "Reabrir"}
-												</button>
-											)}
-										</TableCell>
-									</TableRow>
-								))}
-								{itemsFiltrados.length === 0 && (
-									<TableRow>
-										<TableCell colSpan={9} className="text-center text-slate-500 py-6">
-											No hay jornadas con los filtros actuales.
-										</TableCell>
-									</TableRow>
-								)}
-							</TableBody>
-						</Table>
-					)}
+												<TableCell onClick={(e) => e.stopPropagation()}>
+													<input
+														type="checkbox"
+														checked={selectedIds.includes(it.id)}
+														onChange={(e) =>
+															setSelectedIds((prev) =>
+																e.target.checked ? [...prev, it.id] : prev.filter((id) => id !== it.id),
+															)
+														}
+													/>
+												</TableCell>
+												<TableCell>
+													<span
+														className={`px-2 py-1 rounded text-xs font-medium ${
+															it.estado === "ABIERTA"
+																? "bg-emerald-500/10 text-emerald-400"
+																: "bg-rose-500/10 text-rose-400"
+														}`}
+													>
+														{it.estado}
+													</span>
+												</TableCell>
+												<TableCell className="text-sm tabular-nums">{it.fecha?.slice(0, 10) ?? "—"}</TableCell>
+												<TableCell className="text-sm">{PARROQUIA_LABELS[it.parroquia]}</TableCell>
+												<TableCell className="max-w-[14rem] truncate text-sm text-muted-foreground">
+													{it.ubicacionReferencia ?? "—"}
+												</TableCell>
+												<TableCell className="tabular-nums text-sm">
+													{it._count?.asistentes ?? 0} / {it._count?.visitas ?? 0}
+												</TableCell>
+												<TableCell className="text-sm">{it.fiscalGroup?.name ?? "—"}</TableCell>
+												<TableCell className="text-sm">{it.creadoPor?.name ?? "—"}</TableCell>
+												<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+													<div className="flex items-center justify-end gap-1">
+														<Button
+															variant="secondary"
+															size="sm"
+															onClick={() => navigate(`/divulgacion-presencia-fiscal/${it.id}`)}
+														>
+															Detalle
+														</Button>
+														{canCreate && (
+															<Button
+																variant="outline"
+																size="sm"
+																onClick={() => onDuplicar(it.id)}
+																disabled={busy === `dup-${it.id}`}
+															>
+																{busy === `dup-${it.id}` ? "..." : "Duplicar"}
+															</Button>
+														)}
+														{canCloseReopen && it.estado === "ABIERTA" && (
+															<Button
+																variant="destructive"
+																size="sm"
+																onClick={() => onCerrar(it.id)}
+																disabled={busy === it.id}
+															>
+																{busy === it.id ? "..." : "Cerrar"}
+															</Button>
+														)}
+														{canCloseReopen && it.estado === "CERRADA" && (
+															<Button
+																size="sm"
+																onClick={() => onReabrir(it.id)}
+																disabled={busy === it.id}
+																className="bg-emerald-700 hover:bg-emerald-600 text-white"
+															>
+																{busy === it.id ? "..." : "Reabrir"}
+															</Button>
+														)}
+													</div>
+												</TableCell>
+											</TableRow>
+										))}
+										{itemsFiltrados.length === 0 && (
+											<TableRow>
+												<TableCell colSpan={9} className="text-center text-muted-foreground py-8">
+													{loading ? "Cargando..." : "No hay jornadas con los filtros actuales."}
+												</TableCell>
+											</TableRow>
+										)}
+									</TableBody>
+								</Table>
+							)}
+							{loading && (
+								<div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
+									<div className="flex items-center gap-2">
+										<div className="w-4 h-4 rounded-full border-2 border-muted-foreground/30 border-t-foreground animate-spin" />
+										Cargando...
+									</div>
+								</div>
+							)}
+						</CardContent>
+					</Card>
 
 					{!loading && total > pageSize && !parroquiaSeleccionada && (
-						<div className="flex items-center justify-between mt-3 text-sm text-slate-300">
+						<div className="flex items-center justify-between text-sm">
 							<span>
 								Página {page} de {Math.max(1, Math.ceil(total / pageSize))}
 							</span>
 							<div className="flex gap-2">
-								<button
-									className="px-3 py-1 rounded bg-slate-800 disabled:opacity-50"
+								<Button
+									variant="outline"
+									size="sm"
 									disabled={page <= 1 || loading}
 									onClick={() => {
 										const np = Math.max(1, page - 1);
@@ -1383,9 +1114,10 @@ export default function DivulgacionPresenciaPage() {
 									}}
 								>
 									Anterior
-								</button>
-								<button
-									className="px-3 py-1 rounded bg-slate-800 disabled:opacity-50"
+								</Button>
+								<Button
+									variant="outline"
+									size="sm"
 									disabled={page * pageSize >= total || loading}
 									onClick={() => {
 										const np = page + 1;
@@ -1394,12 +1126,478 @@ export default function DivulgacionPresenciaPage() {
 									}}
 								>
 									Siguiente
-								</button>
+								</Button>
 							</div>
 						</div>
 					)}
-				</CardContent>
-			</Card>
+				</TabsContent>
+
+				<TabsContent value="mapa" className="mt-6 space-y-6">
+					{canSeeMap && (
+						<div className="grid grid-cols-1 lg:grid-cols-[1fr_22rem] gap-6">
+							<Card className="rounded-2xl">
+								<CardHeader className="pb-3">
+									<div className="flex flex-wrap items-center justify-between gap-2">
+										<div>
+											<CardTitle>Mapa parroquial interactivo</CardTitle>
+											<CardDescription>
+												Selecciona una parroquia para ver detalle.
+											</CardDescription>
+										</div>
+										<div className="flex items-center gap-2">
+											<Button
+												type="button"
+												variant={mapView === "normal" ? "default" : "outline"}
+												size="sm"
+												onClick={() => setMapView("normal")}
+											>
+												Normal
+											</Button>
+											<Button
+												type="button"
+												variant={mapView === "calor" ? "default" : "outline"}
+												size="sm"
+												onClick={() => setMapView("calor")}
+											>
+												Calor
+											</Button>
+											{mapView === "calor" && (
+												<Select value={heatMetric} onValueChange={(v) => setHeatMetric(v as "jornadas" | "visitas" | "asistentes" | "impacto_iva")}>
+													<SelectTrigger className="w-auto text-xs">
+														<SelectValue />
+													</SelectTrigger>
+													<SelectContent>
+														<SelectItem value="impacto_iva">Impacto IVA</SelectItem>
+														<SelectItem value="visitas">Visitas</SelectItem>
+														<SelectItem value="jornadas">Jornadas</SelectItem>
+														<SelectItem value="asistentes">Asistentes</SelectItem>
+													</SelectContent>
+												</Select>
+											)}
+										</div>
+									</div>
+								</CardHeader>
+								<CardContent>
+									<ParroquiaMapaInteractivo
+										data={mapa}
+										selected={parroquiaSeleccionada}
+										onSelect={setParroquiaSeleccionada}
+										mode={mapView === "calor" ? "heat" : "normal"}
+										heatMetric={heatMetric}
+									/>
+									{parroquiaSeleccionada && (
+										<button
+											onClick={() => setParroquiaSeleccionada(null)}
+											className="mt-3 text-xs text-amber-400 underline hover:text-amber-300"
+										>
+											Limpiar selección
+										</button>
+									)}
+								</CardContent>
+							</Card>
+
+							<div className="space-y-4">
+								<Card className="rounded-2xl">
+									<CardHeader className="pb-3">
+										<CardTitle>
+											{parroquiaSeleccionada
+												? PARROQUIA_LABELS[parroquiaSeleccionada]
+												: "Resumen del período"}
+										</CardTitle>
+										<CardDescription>
+											{parroquiaSeleccionada
+												? "Indicadores de la parroquia seleccionada."
+												: `${desde || "—"} a ${hasta || "—"}`}
+										</CardDescription>
+									</CardHeader>
+									<CardContent className="space-y-3">
+										{parroquiaSeleccionada ? (
+											<div className="grid grid-cols-2 gap-2">
+												<MiniKpi label="Jornadas" value={aggSeleccionada?.jornadas ?? 0} />
+												<MiniKpi label="Visitas" value={aggSeleccionada?.visitas ?? 0} />
+												<MiniKpi label="Asistentes" value={aggSeleccionada?.asistentes ?? 0} />
+												<MiniKpi label="Cerradas" value={aggSeleccionada?.cerradas ?? 0} />
+											</div>
+										) : (
+											<div className="grid grid-cols-2 gap-2">
+												<MiniKpi label="Jornadas" value={totalJornadasPeriodo} />
+												<MiniKpi label="Visitas" value={totalVisitasPeriodo} />
+												<MiniKpi label="Parroquias activas" value={parroquiasConActividad} />
+												<MiniKpi label="Prom. visitas/jornada" value={Number(promedioVisitasPorJornada)} />
+											</div>
+										)}
+										<DesgloseComercial
+											actividades={parroquiaSeleccionada ? aggSeleccionada?.actividades ?? {} : totalActividadesPeriodo}
+											title={parroquiaSeleccionada ? "Actividades en esta parroquia" : "Desglose comercial del período"}
+										/>
+									</CardContent>
+								</Card>
+
+								<Card className="rounded-2xl">
+									<CardHeader className="pb-3">
+										<CardTitle>Bitácora reciente</CardTitle>
+										<CardDescription>
+											{parroquiaSeleccionada
+												? `Últimas jornadas en ${PARROQUIA_LABELS[parroquiaSeleccionada]}`
+												: "Últimas jornadas registradas"}
+										</CardDescription>
+									</CardHeader>
+									<CardContent>
+										<div className="space-y-2 max-h-60 overflow-auto pr-1">
+											{auditoriaReciente.map((row) => (
+												<div key={row.id} className="text-xs border-b pb-2 last:border-0">
+													<div className="font-medium">
+														{PARROQUIA_LABELS[row.parroquia]} · {row.fecha?.slice(0, 10) ?? "—"}
+													</div>
+													<div className="text-muted-foreground">
+														{row.estado} · Asist: {row._count?.asistentes ?? 0} · Vis:{" "}
+														{row._count?.visitas ?? 0}
+													</div>
+													<div className="text-muted-foreground/70">Creado por: {row.creadoPor?.name ?? "—"}</div>
+												</div>
+											))}
+											{auditoriaReciente.length === 0 && (
+												<div className="text-xs text-muted-foreground">Sin eventos recientes en el período.</div>
+											)}
+										</div>
+									</CardContent>
+								</Card>
+							</div>
+						</div>
+					)}
+				</TabsContent>
+			</Tabs>
+
+			<Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+				<DialogContent className="bg-slate-900 border-slate-800 text-white max-w-3xl max-h-[90vh] overflow-y-auto custom-scrollbar p-0 gap-0">
+					<div className="h-0.5 bg-gradient-to-r from-indigo-500/60 via-indigo-400/40 to-transparent shrink-0" />
+					<div className="px-5 pt-5 pb-4 border-b border-slate-800 shrink-0">
+						<DialogHeader className="p-0">
+							<DialogTitle className="text-white text-base font-semibold flex items-center gap-2">
+								<span className="w-5 h-5 rounded-md bg-indigo-500/20 flex items-center justify-center">
+									<span className="w-2.5 h-2.5 rounded-sm bg-indigo-400" />
+								</span>
+								Nueva jornada de divulgación
+							</DialogTitle>
+							<DialogDescription className="text-slate-400 text-sm mt-1">
+								Carga operativa completa para ejecución, seguimiento comercial y control de presencia fiscal.
+							</DialogDescription>
+						</DialogHeader>
+					</div>
+
+					<form className="overflow-y-auto custom-scrollbar px-5 py-4 space-y-5" onSubmit={onCreate}>
+						<div className="rounded-xl border border-slate-700/50 p-4 space-y-3">
+							<div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-1">
+								<span className="w-1 h-3 bg-indigo-500 rounded-sm" />
+								Datos base de la jornada
+							</div>
+							<div className="grid grid-cols-2 sm:grid-cols-2 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+										Fecha
+									</Label>
+									<input
+										type="date"
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										value={fechaForm}
+										onChange={(e) => setFechaForm(e.target.value)}
+										required
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+										Inicio
+									</Label>
+									<input
+										type="time"
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										value={horaInicioForm}
+										onChange={(e) => setHoraInicioForm(e.target.value)}
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+										Fin
+									</Label>
+									<input
+										type="time"
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										value={horaFinForm}
+										onChange={(e) => setHoraFinForm(e.target.value)}
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-3-3v6m-7 4h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+										Tipo
+									</Label>
+									<Select value={tipoJornadaForm} onValueChange={setTipoJornadaForm}>
+										<SelectTrigger className="bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500/30 transition-all">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent className="bg-slate-900 border-slate-700/60 text-white">
+											<SelectItem value="DIVULGACION">Divulgación</SelectItem>
+											<SelectItem value="PRESENCIA_FISCAL">Presencia fiscal</SelectItem>
+											<SelectItem value="MIXTA">Mixta</SelectItem>
+											<SelectItem value="INSPECCION">Inspección comercial</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+										Parroquia
+									</Label>
+									<Select value={parroquiaForm} onValueChange={(v) => setParroquiaForm(v as ParroquiaCaracas)}>
+										<SelectTrigger className="bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm focus:ring-1 focus:ring-indigo-500/30 transition-all">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent className="bg-slate-900 border-slate-700/60 text-white max-h-60">
+											{PARROQUIAS_CARACAS.map((p) => (
+												<SelectItem key={p} value={p}>
+													{PARROQUIA_LABELS[p]}
+												</SelectItem>
+											))}
+										</SelectContent>
+									</Select>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+										Sector / comunidad
+									</Label>
+									<input
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										placeholder="La Pastora norte, Calle Real"
+										value={sectorForm}
+										onChange={(e) => setSectorForm(e.target.value)}
+									/>
+								</div>
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+										Punto de referencia
+									</Label>
+									<input
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										placeholder="Av. Sucre, frente a..."
+										value={ubicacionReferencia}
+										onChange={(e) => setUbicacionReferencia(e.target.value)}
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" /></svg>
+										Dirección detallada
+									</Label>
+									<input
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 placeholder:text-slate-600 focus:outline-none focus:border-indigo-500/60 focus:ring-1 focus:ring-indigo-500/30 transition-all"
+										placeholder="Cruce, local, manzana"
+										value={direccionDetalladaForm}
+										onChange={(e) => setDireccionDetalladaForm(e.target.value)}
+									/>
+								</div>
+							</div>
+						</div>
+
+						<div className="rounded-xl border border-slate-700/50 p-4 space-y-3">
+							<div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest flex items-center gap-2 mb-1">
+								<span className="w-1 h-3 bg-emerald-500 rounded-sm" />
+								Plan comercial y operativo
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" /></svg>
+										Meta de visitas
+									</Label>
+									<input
+										type="number"
+										min={1}
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+										value={metaVisitasForm}
+										onChange={(e) => setMetaVisitasForm(e.target.value)}
+									/>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" /></svg>
+										Canal de convocatoria
+									</Label>
+									<Select value={canalConvocatoriaForm} onValueChange={setCanalConvocatoriaForm}>
+										<SelectTrigger className="bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm focus:ring-1 focus:ring-emerald-500/30 transition-all">
+											<SelectValue />
+										</SelectTrigger>
+										<SelectContent className="bg-slate-900 border-slate-700/60 text-white">
+											<SelectItem value="PUERTA_A_PUERTA">Puerta a puerta</SelectItem>
+											<SelectItem value="PUNTO_FIJO">Punto fijo</SelectItem>
+											<SelectItem value="VOLANTEO">Volanteo</SelectItem>
+											<SelectItem value="REDES">Redes comunitarias</SelectItem>
+											<SelectItem value="MIXTO">Mixto</SelectItem>
+										</SelectContent>
+									</Select>
+								</div>
+							</div>
+							<div className="grid grid-cols-1 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+										Apoyo institucional
+									</Label>
+									<input
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+										placeholder="Consejo comunal, Sundde"
+										value={apoyoInstitucionalForm}
+										onChange={(e) => setApoyoInstitucionalForm(e.target.value)}
+									/>
+								</div>
+							</div>
+							<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+										Responsable operativo
+									</Label>
+									<Select value={responsableForm} onValueChange={setResponsableForm}>
+										<SelectTrigger className="bg-slate-950/40 border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm focus:ring-1 focus:ring-emerald-500/30 transition-all">
+											<SelectValue placeholder="Seleccionar coordinador..." />
+										</SelectTrigger>
+										<SelectContent className="bg-slate-900 border-slate-700/60 text-white">
+											{coordinadores.map((c) => (
+												<SelectItem key={c.id} value={c.name}>
+													{c.name}
+												</SelectItem>
+											))}
+											{coordinadores.length === 0 && (
+												<div className="px-2 py-3 text-xs text-slate-500 text-center">No hay coordinadores disponibles</div>
+											)}
+										</SelectContent>
+									</Select>
+								</div>
+								<div className="space-y-1.5">
+									<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+										<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+										Teléfono de contacto
+									</Label>
+									<input
+										className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg h-9 text-slate-200 text-sm px-3 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all"
+										placeholder="0412-0000000"
+										value={telefonoResponsableForm}
+										onChange={(e) => setTelefonoResponsableForm(e.target.value)}
+									/>
+								</div>
+							</div>
+							<div className="space-y-1.5">
+								<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+									<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+									Objetivo de la jornada
+								</Label>
+								<textarea
+									className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg text-slate-200 text-sm px-3 py-2 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all resize-y min-h-[2.25rem]"
+									rows={2}
+									value={objetivoForm}
+									onChange={(e) => setObjetivoForm(e.target.value)}
+									placeholder="Qué se busca lograr en la parroquia seleccionada"
+								/>
+							</div>
+							<div className="space-y-1.5">
+								<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+									<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z" /></svg>
+									Observaciones operativas
+								</Label>
+								<textarea
+									className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg text-slate-200 text-sm px-3 py-2 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all resize-y min-h-[2.25rem]"
+									rows={2}
+									value={observacionesOperativas}
+									onChange={(e) => setObservacionesOperativas(e.target.value)}
+									placeholder="Riesgos, requerimientos logísticos, recomendaciones"
+								/>
+							</div>
+							<div className="space-y-1.5">
+								<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-1">
+									<svg className="w-2.5 h-2.5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+									Notas adicionales
+								</Label>
+								<textarea
+									className="w-full bg-slate-950/40 border border-slate-700/60 rounded-lg text-slate-200 text-sm px-3 py-2 placeholder:text-slate-600 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 transition-all resize-y min-h-[2.25rem]"
+									rows={2}
+									value={notas}
+									onChange={(e) => setNotas(e.target.value)}
+									placeholder="Cualquier detalle extra para el equipo"
+								/>
+							</div>
+						</div>
+
+						<details className="group rounded-xl border border-slate-700/30 [&>summary]:cursor-pointer">
+							<summary className="flex items-center gap-2 px-4 py-2.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest hover:text-slate-300 transition-colors list-none">
+								<svg className="w-3 h-3 transition-transform group-open:rotate-90" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" /></svg>
+								Presets y vista previa
+							</summary>
+							<div className="px-4 pb-4 space-y-3">
+								<div className="flex flex-wrap gap-2">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="border-slate-700 text-slate-300 hover:bg-slate-800 text-[11px] h-7"
+										onClick={() => {
+											setFechaForm(todayISO());
+											setHoraInicioForm("08:00");
+											setHoraFinForm("12:00");
+										}}
+									>
+										Horario sugerido (8-12)
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="border-slate-700 text-slate-300 hover:bg-slate-800 text-[11px] h-7"
+										onClick={() => {
+											setMetaVisitasForm("40");
+											setCanalConvocatoriaForm("MIXTO");
+											setTipoJornadaForm("MIXTA");
+										}}
+									>
+										Preset intensivo
+									</Button>
+								</div>
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+									<div className="space-y-1">
+										<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Vista previa de ubicación</Label>
+										<div className="w-full bg-slate-950/20 border border-slate-700/30 rounded-lg px-3 py-2 text-slate-400 text-xs font-mono min-h-[2.25rem] break-all">
+											{[ubicacionReferencia, sectorForm, direccionDetalladaForm].filter(Boolean).join(" | ") || <span className="italic text-slate-600">Sin datos de ubicación</span>}
+										</div>
+									</div>
+									<div className="space-y-1">
+										<Label className="text-[9px] font-bold text-slate-500 uppercase tracking-widest">Vista previa de notas</Label>
+										<div className="w-full bg-slate-950/20 border border-slate-700/30 rounded-lg px-3 py-2 text-slate-400 text-xs font-mono min-h-[2.25rem] break-all whitespace-pre-wrap max-h-24 overflow-y-auto">
+											{buildNotasOperacion() || <span className="italic text-slate-600">Sin notas</span>}
+										</div>
+									</div>
+								</div>
+							</div>
+						</details>
+					</form>
+
+					<DialogFooter className="px-5 py-4 border-t border-slate-800">
+						<ModalFooter
+							onCancel={() => setDialogOpen(false)}
+							onConfirm={onCreate}
+							confirmLabel={busy === "create" ? "Creando..." : "Crear jornada"}
+							isLoading={busy === "create"}
+							confirmVariant="default"
+						/>
+					</DialogFooter>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }
@@ -1411,21 +1609,29 @@ function KpiCard({
 }: {
 	label: string;
 	value: number | string;
-	accent?: "emerald" | "rose";
+	accent?: "emerald" | "rose" | "amber";
 }) {
 	const ring =
 		accent === "emerald"
 			? "ring-emerald-500/30 from-emerald-500/10"
 			: accent === "rose"
 				? "ring-rose-500/30 from-rose-500/10"
-				: "ring-blue-500/20 from-blue-500/10";
+				: accent === "amber"
+					? "ring-amber-500/30 from-amber-500/10"
+					: "ring-blue-500/20 from-blue-500/10";
 	const valueCls =
-		accent === "emerald" ? "text-emerald-300" : accent === "rose" ? "text-rose-300" : "text-slate-100";
+		accent === "emerald"
+			? "text-emerald-300"
+			: accent === "rose"
+				? "text-rose-300"
+				: accent === "amber"
+					? "text-amber-300"
+					: "text-slate-100";
 	return (
 		<div
-			className={`rounded-2xl border border-slate-700/70 bg-gradient-to-br ${ring} to-slate-900/60 p-4 ring-1 transition-all hover:ring-2 hover:-translate-y-0.5 hover:shadow-lg card-anim`}
+			className={`rounded-2xl border bg-gradient-to-br ${ring} p-4 ring-1 transition-all hover:ring-2 hover:-translate-y-0.5`}
 		>
-			<div className="text-[11px] uppercase tracking-wider text-slate-300 font-medium">{label}</div>
+			<div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
 			<div className={`text-3xl font-bold ${valueCls} tabular-nums mt-1`}>{value}</div>
 		</div>
 	);
@@ -1433,9 +1639,9 @@ function KpiCard({
 
 function MiniKpi({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="rounded-lg border border-slate-700 bg-slate-950/60 p-3 transition-colors hover:bg-slate-900/60">
-			<div className="text-[11px] uppercase tracking-wider text-slate-300 font-medium">{label}</div>
-			<div className="text-xl font-bold text-slate-50 tabular-nums">{value}</div>
+		<div className="rounded-lg border p-3 transition-colors">
+			<div className="text-[11px] uppercase tracking-wider text-muted-foreground font-medium">{label}</div>
+			<div className="text-xl font-bold text-foreground tabular-nums">{value}</div>
 		</div>
 	);
 }
@@ -1453,14 +1659,14 @@ function AlertItem({
 		<div
 			className={`rounded-lg border p-3 ${
 				tone === "warning"
-					? "border-amber-700/50 bg-amber-950/20"
-					: "border-emerald-700/50 bg-emerald-950/20"
+					? "border-amber-500/30 bg-amber-500/5"
+					: "border-emerald-500/30 bg-emerald-500/5"
 			}`}
 		>
-			<div className="text-slate-200 text-xs">{label}</div>
+			<div className="text-sm">{label}</div>
 			<div
 				className={`text-xl font-bold mt-1 ${
-					tone === "warning" ? "text-amber-300" : "text-emerald-300"
+					tone === "warning" ? "text-amber-400" : "text-emerald-400"
 				}`}
 			>
 				{value}
@@ -1468,4 +1674,3 @@ function AlertItem({
 		</div>
 	);
 }
-

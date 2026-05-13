@@ -1,5 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/UI/button";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/UI/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/card";
 import {
 	addAsistentes,
@@ -168,7 +176,7 @@ export default function EquipoQuickAdd({
 				: { label: "SUPERVISOR", cls: "bg-blue-500/20 text-blue-300 border-blue-600/40" };
 
 	return (
-		<Card className="bg-slate-900/60 border-slate-800 rounded-2xl">
+		<Card className="rounded-2xl">
 			<CardHeader>
 				<CardTitle className="flex items-center gap-2">
 					<span>Asignar equipo a la jornada</span>
@@ -184,13 +192,13 @@ export default function EquipoQuickAdd({
 			</CardHeader>
 			<CardContent className="space-y-4">
 				{loading ? (
-					<p className="text-slate-400 text-sm">Cargando jornadas activas...</p>
+					<p className="text-muted-foreground text-sm">Cargando jornadas activas...</p>
 				) : loadErr ? (
-					<p className="text-rose-400 text-sm">{loadErr}</p>
+					<p className="text-destructive text-sm">{loadErr}</p>
 				) : jornadas.length === 0 ? (
-					<div className="rounded-xl border border-amber-600/40 bg-amber-500/10 p-4 text-sm text-amber-100">
+					<div className="rounded-xl border border-amber-500/30 bg-amber-500/5 p-4 text-sm text-amber-400">
 						<div className="font-semibold mb-1">No hay jornadas abiertas</div>
-						<div className="text-amber-200/90">
+						<div>
 							{role === "COORDINATOR" || role === "ADMIN"
 								? "Crea una nueva jornada para empezar a asignar el equipo."
 								: "El Coordinador del grupo debe abrir una jornada para que puedas asignar equipo."}
@@ -199,74 +207,64 @@ export default function EquipoQuickAdd({
 				) : (
 					<>
 						<div>
-							<label className="block text-xs font-medium mb-1 text-slate-300">
+							<label className="block text-xs font-medium mb-1">
 								Jornada (parroquia · fecha · grupo)
 							</label>
-							<select
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-								value={selectedId}
-								onChange={(e) => {
-									setSelectedId(e.target.value);
-									limpiar();
-								}}
-							>
-								{jornadas.map((j) => (
-									<option key={j.id} value={j.id}>
-										{PARROQUIA_LABELS[j.parroquia]} · {j.fecha?.slice(0, 10)}
-										{j.fiscalGroup?.name ? ` · ${j.fiscalGroup.name}` : ""}
-										{j._count ? ` · ${j._count.asistentes} asistentes` : ""}
-									</option>
-								))}
-							</select>
+							<Select value={selectedId} onValueChange={(v) => { setSelectedId(v); limpiar(); }}>
+								<SelectTrigger>
+									<SelectValue />
+								</SelectTrigger>
+								<SelectContent>
+									{jornadas.map((j) => (
+										<SelectItem key={j.id} value={j.id}>
+											{PARROQUIA_LABELS[j.parroquia]} · {j.fecha?.slice(0, 10)}
+											{j.fiscalGroup?.name ? ` · ${j.fiscalGroup.name}` : ""}
+											{j._count ? ` · ${j._count.asistentes} asistentes` : ""}
+										</SelectItem>
+									))}
+								</SelectContent>
+							</Select>
 							{selected && (
-								<div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+								<div className="mt-1 flex items-center gap-2 text-[11px] text-muted-foreground">
 									{selected.ubicacionReferencia && (
-										<span>📍 {selected.ubicacionReferencia}</span>
+										<span>{selected.ubicacionReferencia}</span>
 									)}
-									<button
+									<Button
 										type="button"
+										variant="link"
+										size="sm"
 										onClick={() => navigate(`/divulgacion-presencia-fiscal/${selected.id}`)}
-										className="ml-auto text-emerald-300 underline hover:text-emerald-200"
+										className="ml-auto"
 									>
 										Abrir detalle →
-									</button>
+									</Button>
 								</div>
 							)}
 						</div>
 
-						<div className="inline-flex rounded-lg overflow-hidden border border-slate-700 shadow-sm">
-							<button
-								onClick={() => {
-									setTipo("INTERNO_SAC");
-									limpiar();
-								}}
-								className={`px-3 py-1.5 text-sm transition-colors ${
-									tipo === "INTERNO_SAC"
-										? "bg-emerald-600 text-white"
-										: "bg-slate-900 text-slate-300 hover:bg-slate-800"
-								}`}
+						<div className="inline-flex rounded-lg overflow-hidden border">
+							<Button
+								variant={tipo === "INTERNO_SAC" ? "default" : "ghost"}
+								size="sm"
+								onClick={() => { setTipo("INTERNO_SAC"); limpiar(); }}
+								className="rounded-none"
 							>
 								Interno SAC
-							</button>
-							<button
-								onClick={() => {
-									setTipo("EXTERNO_LIBRE");
-									limpiar();
-								}}
-								className={`px-3 py-1.5 text-sm transition-colors ${
-									tipo === "EXTERNO_LIBRE"
-										? "bg-emerald-600 text-white"
-										: "bg-slate-900 text-slate-300 hover:bg-slate-800"
-								}`}
+							</Button>
+							<Button
+								variant={tipo === "EXTERNO_LIBRE" ? "default" : "ghost"}
+								size="sm"
+								onClick={() => { setTipo("EXTERNO_LIBRE"); limpiar(); }}
+								className="rounded-none"
 							>
 								Externo (campo libre)
-							</button>
+							</Button>
 						</div>
 
 						{tipo === "INTERNO_SAC" ? (
 							<div className="space-y-2">
 								<input
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Buscar fiscal/supervisor/coordinador del grupo..."
 									value={q}
 									onChange={(e) => {
@@ -275,7 +273,7 @@ export default function EquipoQuickAdd({
 									}}
 								/>
 								{opciones.length > 0 && !seleccionado && (
-									<ul className="rounded border border-slate-700 bg-slate-950 max-h-56 overflow-y-auto divide-y divide-slate-800">
+									<ul className="rounded-md border border-border bg-card max-h-56 overflow-y-auto divide-y divide-border">
 										{opciones.map((u) => (
 											<li
 												key={u.id}
@@ -284,10 +282,10 @@ export default function EquipoQuickAdd({
 													setQ(u.name);
 													setOpciones([]);
 												}}
-												className="px-3 py-2 text-sm cursor-pointer hover:bg-slate-800"
+												className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
 											>
-												<div className="text-slate-100">{u.name}</div>
-												<div className="text-xs text-slate-400">
+												<div className="text-foreground">{u.name}</div>
+												<div className="text-xs text-muted-foreground">
 													{u.role} · {u.email}
 												</div>
 											</li>
@@ -295,70 +293,68 @@ export default function EquipoQuickAdd({
 									</ul>
 								)}
 								{seleccionado && (
-									<div className="rounded bg-emerald-900/30 border border-emerald-700 px-3 py-2 text-sm text-emerald-100 flex items-center justify-between">
+									<div className="rounded-md bg-accent border px-3 py-2 text-sm flex items-center justify-between">
 										<span>
 											Seleccionado: <strong>{seleccionado.name}</strong> ({seleccionado.role})
 										</span>
-										<button
-											className="text-xs underline text-emerald-200 hover:text-white"
-											onClick={() => {
-												setSeleccionado(null);
-												setQ("");
-											}}
+										<Button
+											variant="link"
+											size="sm"
+											onClick={() => { setSeleccionado(null); setQ(""); }}
 										>
 											cambiar
-										</button>
+										</Button>
 									</div>
 								)}
 							</div>
 						) : (
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-3">
 								<div>
-									<label className="block text-xs font-medium mb-1 text-slate-300">
+									<label className="block text-xs font-medium mb-1">
 										Nombre completo *
 									</label>
 									<input
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										value={nombreLibre}
 										onChange={(e) => setNombreLibre(e.target.value)}
 									/>
 								</div>
 								<div>
-									<label className="block text-xs font-medium mb-1 text-slate-300">
+									<label className="block text-xs font-medium mb-1">
 										Documento (cédula/RIF) *
 									</label>
 									<input
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										value={documentoLibre}
 										onChange={(e) => setDocumentoLibre(e.target.value)}
 									/>
 								</div>
 								<div>
-									<label className="block text-xs font-medium mb-1 text-slate-300">
+									<label className="block text-xs font-medium mb-1">
 										Cargo / rol
 									</label>
 									<input
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										value={cargoLibre}
 										onChange={(e) => setCargoLibre(e.target.value)}
 									/>
 								</div>
 								<div>
-									<label className="block text-xs font-medium mb-1 text-slate-300">
+									<label className="block text-xs font-medium mb-1">
 										Organización
 									</label>
 									<input
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										value={organizacionLibre}
 										onChange={(e) => setOrganizacionLibre(e.target.value)}
 									/>
 								</div>
 								<div className="md:col-span-2">
-									<label className="block text-xs font-medium mb-1 text-slate-300">
+									<label className="block text-xs font-medium mb-1">
 										Teléfono
 									</label>
 									<input
-										className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										value={telefonoLibre}
 										onChange={(e) => setTelefonoLibre(e.target.value)}
 									/>
@@ -366,7 +362,7 @@ export default function EquipoQuickAdd({
 							</div>
 						)}
 
-						{err && <p className="text-rose-400 text-sm">{err}</p>}
+						{err && <p className="text-destructive text-sm">{err}</p>}
 						{okMsg && (
 							<p className="text-emerald-400 text-sm flex items-center gap-1">
 								<span>✓</span>
@@ -375,27 +371,21 @@ export default function EquipoQuickAdd({
 						)}
 
 						<div className="flex items-center gap-2">
-							<button
-								onClick={onSubmit}
-								disabled={busy}
-								className="px-4 py-2 rounded bg-emerald-600 hover:bg-emerald-500 text-white text-sm disabled:opacity-60 transition-colors shadow-md"
-							>
+							<Button onClick={onSubmit} disabled={busy}>
 								{busy ? "Agregando..." : "Agregar al equipo"}
-							</button>
-							<button
-								onClick={limpiar}
-								disabled={busy}
-								className="px-3 py-2 rounded bg-slate-700 text-slate-100 text-sm"
-							>
+							</Button>
+							<Button variant="outline" onClick={limpiar} disabled={busy}>
 								Limpiar
-							</button>
+							</Button>
 							{selected && (
-								<button
+								<Button
+									variant="link"
+									size="sm"
 									onClick={() => navigate(`/divulgacion-presencia-fiscal/${selected.id}`)}
-									className="ml-auto text-xs text-blue-300 underline hover:text-blue-200"
+									className="ml-auto"
 								>
 									Ver equipo completo →
-								</button>
+								</Button>
 							)}
 						</div>
 					</>

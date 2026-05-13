@@ -45,6 +45,22 @@ export const getOfficers = async () => {
     }
 }
 
+export const getUsersByRole = async (role: string) => {
+    try {
+        const res = await apiConnection.get(`/user/by-role/${role}`);
+        const payload = res?.data;
+
+        if (Array.isArray(payload)) return payload;
+        if (Array.isArray(payload?.data)) return payload.data;
+        if (Array.isArray(payload?.users)) return payload.users;
+
+        return [];
+    } catch (error) {
+        console.error(error)
+        return []
+    }
+}
+
 export const sendPresenceHeartbeat = async () => {
     try {
         await apiConnection.post("/user/presence");

@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { PageHeader } from "@/components/UI/v2";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/UI/card";
+import { Button } from "@/components/UI/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
 import {
 	Table,
@@ -11,6 +12,13 @@ import {
 	TableHeader,
 	TableRow,
 } from "@/components/UI/table";
+import {
+	Select,
+	SelectContent,
+	SelectItem,
+	SelectTrigger,
+	SelectValue,
+} from "@/components/UI/select";
 import { useAuth } from "@/hooks/use-auth";
 import {
 	addAsistentes,
@@ -95,6 +103,9 @@ export default function DivulgacionDetallePage() {
 	const { user } = useAuth();
 	const role = user?.role ?? "";
 	const userId = user?.id ?? "";
+
+	const [searchParams, setSearchParams] = useSearchParams();
+	const tabParam = searchParams.get("tab") || "info";
 
 	const [data, setData] = useState<Detalle | null>(null);
 	const [loading, setLoading] = useState(true);
@@ -200,12 +211,9 @@ export default function DivulgacionDetallePage() {
 		return (
 			<div className="space-y-6">
 				<PageHeader title="Error" description={error} />
-				<button
-					onClick={() => navigate("/divulgacion-presencia-fiscal")}
-					className="px-3 py-2 rounded bg-slate-700 text-white text-sm"
-				>
+				<Button variant="outline" onClick={() => navigate("/divulgacion-presencia-fiscal")}>
 					Volver
-				</button>
+				</Button>
 			</div>
 		);
 	}
@@ -221,15 +229,6 @@ export default function DivulgacionDetallePage() {
 	return (
 		<div className="space-y-6 w-full max-w-full overflow-x-hidden divulgacion-module">
 			<style>{`
-				.divulgacion-module [data-slot="card-title"] { color: #f1f5f9; }
-				.divulgacion-module [data-slot="card-description"] { color: #cbd5e1; }
-				.divulgacion-module input,
-				.divulgacion-module select,
-				.divulgacion-module textarea { color: #f1f5f9; }
-				.divulgacion-module input::placeholder,
-				.divulgacion-module textarea::placeholder { color: #64748b; }
-				.divulgacion-module label { color: #cbd5e1; }
-				.divulgacion-module .field-label { color: #94a3b8; }
 				.divulgacion-module [data-slot="card-content"],
 				.divulgacion-module [role="tabpanel"] { animation: dvFadeUp 280ms ease-out both; }
 				@keyframes dvFadeUp {
@@ -242,45 +241,50 @@ export default function DivulgacionDetallePage() {
 				description={`${data.fecha?.slice(0, 10) ?? ""} · ${data.fiscalGroup?.name ?? "Sin grupo"} · Creada por ${data.creadoPor?.name ?? "—"}`}
 				action={
 					<div className="flex items-center gap-2 flex-wrap">
-						<button
+						<Button
+							variant="outline"
+							size="sm"
 							onClick={() => navigate("/divulgacion-presencia-fiscal")}
-							className="px-3 py-2 rounded bg-slate-700 text-white text-sm"
 						>
 							Volver
-						</button>
-						<button
+						</Button>
+						<Button
+							variant="default"
+							size="sm"
 							onClick={onExportPdf}
 							disabled={busy === "pdf"}
-							className="px-3 py-2 rounded bg-blue-700 text-white text-sm disabled:opacity-60"
 						>
 							{busy === "pdf" ? "Generando..." : "Exportar PDF"}
-						</button>
+						</Button>
 						{(esAdmin || esCoordDelGrupo) && (
-							<button
+							<Button
+								variant="secondary"
+								size="sm"
 								onClick={onDuplicar}
 								disabled={busy === "duplicar"}
-								className="px-3 py-2 rounded bg-indigo-700 text-white text-sm disabled:opacity-60"
 							>
 								{busy === "duplicar" ? "Duplicando..." : "Duplicar"}
-							</button>
+							</Button>
 						)}
 						{puedeCerrar && data.estado === "ABIERTA" && (
-							<button
+							<Button
+								variant="destructive"
+								size="sm"
 								onClick={onCerrar}
 								disabled={busy === "cerrar"}
-								className="px-3 py-2 rounded bg-rose-600 text-white text-sm disabled:opacity-60"
 							>
 								{busy === "cerrar" ? "Cerrando..." : "Cerrar jornada"}
-							</button>
+							</Button>
 						)}
 						{puedeCerrar && data.estado === "CERRADA" && (
-							<button
+							<Button
+								size="sm"
 								onClick={onReabrir}
 								disabled={busy === "reabrir"}
-								className="px-3 py-2 rounded bg-emerald-700 text-white text-sm disabled:opacity-60"
+								className="bg-emerald-700 hover:bg-emerald-600 text-white"
 							>
 								{busy === "reabrir" ? "Reabriendo..." : "Reabrir jornada"}
-							</button>
+							</Button>
 						)}
 					</div>
 				}
@@ -295,33 +299,22 @@ export default function DivulgacionDetallePage() {
 				</span>
 			</div>
 
-			<Tabs defaultValue="info" className="w-full">
-				<TabsList
-					className="bg-slate-900/70 border border-slate-700 p-1 rounded-xl gap-1 h-auto"
-					style={{ height: "auto" }}
-				>
-					<TabsTrigger
-						value="info"
-						className="px-4 py-2 text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
-					>
+			<Tabs
+				value={tabParam}
+				onValueChange={(v) => setSearchParams({ tab: v }, { replace: true })}
+				className="w-full"
+			>
+				<TabsList className="bg-slate-900/60 border border-slate-800/50 p-1 rounded-xl gap-1 h-auto">
+					<TabsTrigger value="info" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
 						Información
 					</TabsTrigger>
-					<TabsTrigger
-						value="asistentes"
-						className="px-4 py-2 text-slate-300 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
-					>
+					<TabsTrigger value="asistentes" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
 						Asistentes ({data.asistentes.length})
 					</TabsTrigger>
-					<TabsTrigger
-						value="visitas"
-						className="px-4 py-2 text-slate-300 data-[state=active]:bg-amber-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
-					>
+					<TabsTrigger value="visitas" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
 						Visitas ({data.visitas.length})
 					</TabsTrigger>
-					<TabsTrigger
-						value="resumen"
-						className="px-4 py-2 text-slate-300 data-[state=active]:bg-violet-600 data-[state=active]:text-white data-[state=active]:shadow-md transition-all"
-					>
+					<TabsTrigger value="resumen" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
 						Resumen
 					</TabsTrigger>
 				</TabsList>
@@ -362,7 +355,7 @@ export default function DivulgacionDetallePage() {
 				</TabsContent>
 
 				<TabsContent value="resumen">
-					<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+					<Card className="rounded-2xl">
 						<CardHeader>
 							<CardTitle>Resumen de la jornada</CardTitle>
 							<CardDescription>Indicadores y desglose comercial.</CardDescription>
@@ -394,8 +387,8 @@ export default function DivulgacionDetallePage() {
 function EstadoBadge({ estado }: { estado: EstadoDivulgacion }) {
 	const cls =
 		estado === "ABIERTA"
-			? "bg-emerald-500/15 text-emerald-300 border-emerald-500/40"
-			: "bg-rose-500/15 text-rose-300 border-rose-500/40";
+			? "bg-emerald-500/10 text-emerald-400 border-emerald-500/25"
+			: "bg-rose-500/10 text-rose-400 border-rose-500/25";
 	return (
 		<span className={`px-2.5 py-1 rounded-full text-[11px] font-semibold uppercase tracking-wider border ${cls}`}>
 			{estado}
@@ -405,9 +398,9 @@ function EstadoBadge({ estado }: { estado: EstadoDivulgacion }) {
 
 function MiniKpi({ label, value }: { label: string; value: number }) {
 	return (
-		<div className="rounded-lg border border-slate-800 bg-slate-950/50 p-3">
-			<div className="text-[11px] uppercase tracking-wide text-slate-400">{label}</div>
-			<div className="text-lg font-semibold text-slate-100 tabular-nums">{value}</div>
+		<div className="rounded-lg border p-3">
+			<div className="text-[11px] uppercase tracking-wide text-muted-foreground">{label}</div>
+			<div className="text-lg font-semibold text-foreground tabular-nums">{value}</div>
 		</div>
 	);
 }
@@ -426,14 +419,14 @@ function PermissionHint({
 }) {
 	const cls =
 		tone === "warn"
-			? "border-amber-500/40 bg-amber-500/10"
-			: "border-slate-600 bg-slate-800/40";
+			? "border-amber-500/30 bg-amber-500/5"
+			: "border-border bg-accent/50";
 	return (
 		<div className={`flex items-start gap-3 rounded-xl border ${cls} px-4 py-3`}>
 			<div className="text-xl leading-none">{icon}</div>
 			<div>
-				<div className="text-sm font-semibold text-slate-100">{title}</div>
-				<div className="text-xs text-slate-300 mt-0.5">{descr}</div>
+				<div className="text-sm font-semibold">{title}</div>
+				<div className="text-xs text-muted-foreground mt-0.5">{descr}</div>
 			</div>
 		</div>
 	);
@@ -490,7 +483,7 @@ function InfoTab({
 					: "No tiene permisos para editar la cabecera.";
 
 	return (
-		<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+		<Card className="rounded-2xl">
 			<CardHeader>
 				<CardTitle>Información de la jornada</CardTitle>
 				<CardDescription>
@@ -523,23 +516,24 @@ function InfoTab({
 						<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 							<div>
 								<label className="block text-sm font-medium mb-1">Parroquia</label>
-								<select
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-									value={parroquia}
-									onChange={(e) => setParroquia(e.target.value as ParroquiaCaracas)}
-								>
-									{PARROQUIAS_CARACAS.map((p) => (
-										<option key={p} value={p}>
-											{PARROQUIA_LABELS[p]}
-										</option>
-									))}
-								</select>
+								<Select value={parroquia} onValueChange={(v) => setParroquia(v as ParroquiaCaracas)}>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{PARROQUIAS_CARACAS.map((p) => (
+											<SelectItem key={p} value={p}>
+												{PARROQUIA_LABELS[p]}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 							</div>
 							<div>
 								<label className="block text-sm font-medium mb-1">Fecha</label>
 								<input
 									type="date"
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									value={fecha}
 									onChange={(e) => setFecha(e.target.value)}
 								/>
@@ -548,7 +542,7 @@ function InfoTab({
 						<div>
 							<label className="block text-sm font-medium mb-1">Ubicación de referencia</label>
 							<input
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 								value={ubicacion}
 								onChange={(e) => setUbicacion(e.target.value)}
 							/>
@@ -557,40 +551,29 @@ function InfoTab({
 							<label className="block text-sm font-medium mb-1">Notas</label>
 							<textarea
 								rows={3}
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 								value={notas}
 								onChange={(e) => setNotas(e.target.value)}
 							/>
 						</div>
-						{err && <p className="text-red-400 text-sm">{err}</p>}
+						{err && <p className="text-destructive text-sm">{err}</p>}
 					</div>
 				)}
 				{canEdit && (
 					<div className="flex items-center gap-2">
 						{editing ? (
 							<>
-								<button
-									onClick={onSave}
-									disabled={busy}
-									className="px-3 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-60"
-								>
+								<Button onClick={onSave} disabled={busy}>
 									{busy ? "Guardando..." : "Guardar"}
-								</button>
-								<button
-									onClick={() => setEditing(false)}
-									disabled={busy}
-									className="px-3 py-2 rounded bg-slate-700 text-white text-sm"
-								>
+								</Button>
+								<Button variant="outline" onClick={() => setEditing(false)} disabled={busy}>
 									Cancelar
-								</button>
+								</Button>
 							</>
 						) : (
-							<button
-								onClick={() => setEditing(true)}
-								className="px-3 py-2 rounded bg-blue-600 text-white text-sm"
-							>
+							<Button onClick={() => setEditing(true)}>
 								Editar
-							</button>
+							</Button>
 						)}
 					</div>
 				)}
@@ -602,8 +585,8 @@ function InfoTab({
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
 	return (
 		<div>
-			<dt className="text-xs uppercase tracking-wide text-slate-400">{label}</dt>
-			<dd className="text-slate-200">{children}</dd>
+			<dt className="text-xs uppercase tracking-wide text-muted-foreground">{label}</dt>
+			<dd className="text-foreground">{children}</dd>
 		</div>
 	);
 }
@@ -730,7 +713,7 @@ function AsistentesTab({
 				/>
 			)}
 			{canEdit && (
-				<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+				<Card className="rounded-2xl">
 					<CardHeader>
 						<CardTitle>Agregar asistente</CardTitle>
 						<CardDescription>
@@ -738,31 +721,35 @@ function AsistentesTab({
 						</CardDescription>
 					</CardHeader>
 					<CardContent className="space-y-4">
-						<div className="inline-flex rounded-lg overflow-hidden border border-slate-700">
-							<button
+						<div className="inline-flex rounded-lg overflow-hidden border border-border">
+							<Button
+								variant={tipo === "INTERNO_SAC" ? "default" : "ghost"}
+								size="sm"
 								onClick={() => {
 									setTipo("INTERNO_SAC");
 									limpiarForm();
 								}}
-								className={`px-3 py-1.5 text-sm ${tipo === "INTERNO_SAC" ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-300"}`}
+								className="rounded-none"
 							>
 								Interno SAC
-							</button>
-							<button
+							</Button>
+							<Button
+								variant={tipo === "EXTERNO_LIBRE" ? "default" : "ghost"}
+								size="sm"
 								onClick={() => {
 									setTipo("EXTERNO_LIBRE");
 									limpiarForm();
 								}}
-								className={`px-3 py-1.5 text-sm ${tipo === "EXTERNO_LIBRE" ? "bg-blue-600 text-white" : "bg-slate-900 text-slate-300"}`}
+								className="rounded-none"
 							>
 								Externo (campo libre)
-							</button>
+							</Button>
 						</div>
 
 						{tipo === "INTERNO_SAC" ? (
 							<div className="space-y-2 max-w-xl">
 								<input
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Buscar fiscal/supervisor/coordinador del grupo..."
 									value={q}
 									onChange={(e) => {
@@ -771,7 +758,7 @@ function AsistentesTab({
 									}}
 								/>
 								{opciones.length > 0 && !seleccionado && (
-									<ul className="rounded border border-slate-700 bg-slate-950 max-h-56 overflow-y-auto divide-y divide-slate-800">
+									<ul className="rounded-md border border-border bg-card max-h-56 overflow-y-auto divide-y divide-border">
 										{opciones.map((u) => (
 											<li
 												key={u.id}
@@ -780,10 +767,10 @@ function AsistentesTab({
 													setQ(u.name);
 													setOpciones([]);
 												}}
-												className="px-3 py-2 text-sm cursor-pointer hover:bg-slate-800"
+												className="px-3 py-2 text-sm cursor-pointer hover:bg-accent"
 											>
-												<div className="text-slate-100">{u.name}</div>
-												<div className="text-xs text-slate-400">
+												<div className="text-foreground">{u.name}</div>
+												<div className="text-xs text-muted-foreground">
 													{u.role} · {u.email}
 												</div>
 											</li>
@@ -791,7 +778,7 @@ function AsistentesTab({
 									</ul>
 								)}
 								{seleccionado && (
-									<div className="rounded bg-blue-900/30 border border-blue-700 px-3 py-2 text-sm text-blue-100">
+									<div className="rounded-md bg-accent border border-border px-3 py-2 text-sm">
 										Seleccionado: <strong>{seleccionado.name}</strong> ({seleccionado.role})
 									</div>
 								)}
@@ -799,31 +786,31 @@ function AsistentesTab({
 						) : (
 							<div className="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-3xl">
 								<input
-									className="border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Nombre completo *"
 									value={nombreLibre}
 									onChange={(e) => setNombreLibre(e.target.value)}
 								/>
 								<input
-									className="border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Documento (cédula/RIF) *"
 									value={documentoLibre}
 									onChange={(e) => setDocumentoLibre(e.target.value)}
 								/>
 								<input
-									className="border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Cargo / rol"
 									value={cargoLibre}
 									onChange={(e) => setCargoLibre(e.target.value)}
 								/>
 								<input
-									className="border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+									className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 									placeholder="Organización"
 									value={organizacionLibre}
 									onChange={(e) => setOrganizacionLibre(e.target.value)}
 								/>
 								<input
-									className="border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm md:col-span-2"
+									className="rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring md:col-span-2"
 									placeholder="Teléfono"
 									value={telefonoLibre}
 									onChange={(e) => setTelefonoLibre(e.target.value)}
@@ -831,22 +818,18 @@ function AsistentesTab({
 							</div>
 						)}
 
-						{err && <p className="text-red-400 text-sm">{err}</p>}
+						{err && <p className="text-destructive text-sm">{err}</p>}
 
 						<div className="flex items-center gap-2">
-							<button
-								onClick={onAgregar}
-								disabled={busy === "add"}
-								className="px-3 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-60"
-							>
+							<Button onClick={onAgregar} disabled={busy === "add"}>
 								{busy === "add" ? "Agregando..." : "Agregar asistente"}
-							</button>
+							</Button>
 						</div>
 					</CardContent>
 				</Card>
 			)}
 
-			<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+			<Card className="rounded-2xl">
 				<CardHeader>
 					<CardTitle>Equipo / asistentes</CardTitle>
 					<CardDescription>{asistentes.length} registrados en esta jornada.</CardDescription>
@@ -860,7 +843,7 @@ function AsistentesTab({
 								<TableHead>Documento / Email</TableHead>
 								<TableHead>Cargo</TableHead>
 								<TableHead>Organización / Rol</TableHead>
-								{canEdit && <TableHead>Acción</TableHead>}
+								{canEdit && <TableHead className="w-20">Acción</TableHead>}
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -868,10 +851,10 @@ function AsistentesTab({
 								<TableRow key={a.id}>
 									<TableCell>
 										<span
-											className={`px-2 py-0.5 rounded text-[11px] ${
+											className={`px-2 py-0.5 rounded text-[11px] font-medium ${
 												a.tipo === "INTERNO_SAC"
-													? "bg-sky-900/40 text-sky-300"
-													: "bg-amber-900/40 text-amber-300"
+													? "bg-sky-500/10 text-sky-400"
+													: "bg-amber-500/10 text-amber-400"
 											}`}
 										>
 											{a.tipo === "INTERNO_SAC" ? "Interno SAC" : "Externo"}
@@ -887,20 +870,21 @@ function AsistentesTab({
 									</TableCell>
 									{canEdit && (
 										<TableCell>
-											<button
+											<Button
+												variant="destructive"
+												size="sm"
 												onClick={() => onQuitar(a.id)}
 												disabled={busy === a.id}
-												className="px-2 py-1 rounded bg-rose-600 text-white text-xs disabled:opacity-60"
 											>
 												{busy === a.id ? "..." : "Quitar"}
-											</button>
+											</Button>
 										</TableCell>
 									)}
 								</TableRow>
 							))}
 							{asistentes.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={canEdit ? 6 : 5} className="text-center text-slate-500 py-6">
+									<TableCell colSpan={canEdit ? 6 : 5} className="text-center text-muted-foreground py-6">
 										Aún no hay asistentes registrados.
 									</TableCell>
 								</TableRow>
@@ -1029,7 +1013,7 @@ function VisitasTab({
 				/>
 			)}
 			{canEdit && (
-				<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+				<Card className="rounded-2xl">
 					<CardHeader>
 						<CardTitle>Registrar contribuyente visitado</CardTitle>
 						<CardDescription>
@@ -1041,7 +1025,7 @@ function VisitasTab({
 							<div>
 								<label className="block text-sm font-medium mb-1">RIF *</label>
 								<input
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 uppercase"
+									className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring uppercase"
 									placeholder="J123456789"
 									value={rif}
 									onChange={(e) => {
@@ -1054,20 +1038,21 @@ function VisitasTab({
 							</div>
 							<div>
 								<label className="block text-sm font-medium mb-1">Tipo de actividad *</label>
-								<select
-									className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
-									value={tipoActividad}
-									onChange={(e) => setTipoActividad(e.target.value)}
-								>
-									{ACTIVIDADES_SUGERIDAS.map((a) => (
-										<option key={a} value={a}>
-											{a}
-										</option>
-									))}
-								</select>
+								<Select value={tipoActividad} onValueChange={setTipoActividad}>
+									<SelectTrigger>
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										{ACTIVIDADES_SUGERIDAS.map((a) => (
+											<SelectItem key={a} value={a}>
+												{a}
+											</SelectItem>
+										))}
+									</SelectContent>
+								</Select>
 								{tipoActividad === "Otro" && (
 									<input
-										className="mt-2 w-full border rounded px-3 py-2 bg-slate-950 border-slate-700 text-sm"
+										className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 										placeholder="Especifique tipo de actividad"
 										value={tipoActividadOtro}
 										onChange={(e) => setTipoActividadOtro(e.target.value)}
@@ -1081,7 +1066,7 @@ function VisitasTab({
 								Nombre del contribuyente {rifInfo.state === "exists" ? "(cargado del SAC)" : "(opcional)"}
 							</label>
 							<input
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 								value={nombreCapturado}
 								onChange={(e) => setNombreCapturado(e.target.value)}
 							/>
@@ -1090,7 +1075,7 @@ function VisitasTab({
 						<div>
 							<label className="block text-sm font-medium mb-1">Dirección / sector</label>
 							<input
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 								value={direccion}
 								onChange={(e) => setDireccion(e.target.value)}
 							/>
@@ -1100,26 +1085,22 @@ function VisitasTab({
 							<label className="block text-sm font-medium mb-1">Notas</label>
 							<textarea
 								rows={2}
-								className="w-full border rounded px-3 py-2 bg-slate-950 border-slate-700"
+								className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
 								value={notas}
 								onChange={(e) => setNotas(e.target.value)}
 							/>
 						</div>
 
-						{err && <p className="text-red-400 text-sm">{err}</p>}
+						{err && <p className="text-destructive text-sm">{err}</p>}
 
-						<button
-							onClick={onAgregar}
-							disabled={busy === "add"}
-							className="px-3 py-2 rounded bg-blue-600 text-white text-sm disabled:opacity-60"
-						>
+						<Button onClick={onAgregar} disabled={busy === "add"}>
 							{busy === "add" ? "Registrando..." : "Registrar visita"}
-						</button>
+						</Button>
 					</CardContent>
 				</Card>
 			)}
 
-			<Card className="bg-slate-900/50 border-slate-800 rounded-2xl">
+			<Card className="rounded-2xl">
 				<CardHeader>
 					<CardTitle>Contribuyentes visitados</CardTitle>
 					<CardDescription>{visitas.length} en esta jornada.</CardDescription>
@@ -1134,7 +1115,7 @@ function VisitasTab({
 								<TableHead>SAC</TableHead>
 								<TableHead>Dirección</TableHead>
 								<TableHead>Registró</TableHead>
-								{canEdit && <TableHead>Acción</TableHead>}
+								{canEdit && <TableHead className="w-20">Acción</TableHead>}
 							</TableRow>
 						</TableHeader>
 						<TableBody>
@@ -1145,11 +1126,11 @@ function VisitasTab({
 									<TableCell>{v.tipoActividad}</TableCell>
 									<TableCell>
 										{v.yaRegistradoEnSac ? (
-											<span className="px-2 py-0.5 rounded text-[11px] bg-emerald-900/40 text-emerald-300">
+											<span className="px-2 py-0.5 rounded text-[11px] font-medium bg-emerald-500/10 text-emerald-400">
 												Registrado
 											</span>
 										) : (
-											<span className="px-2 py-0.5 rounded text-[11px] bg-amber-900/40 text-amber-300">
+											<span className="px-2 py-0.5 rounded text-[11px] font-medium bg-amber-500/10 text-amber-400">
 												Nuevo
 											</span>
 										)}
@@ -1159,13 +1140,14 @@ function VisitasTab({
 									{canEdit && (
 										<TableCell>
 											{(isAdmin || v.creadoPor?.id === currentUserId) && (
-												<button
+												<Button
+													variant="destructive"
+													size="sm"
 													onClick={() => onQuitar(v.id)}
 													disabled={busy === v.id}
-													className="px-2 py-1 rounded bg-rose-600 text-white text-xs disabled:opacity-60"
 												>
 													{busy === v.id ? "..." : "Quitar"}
-												</button>
+												</Button>
 											)}
 										</TableCell>
 									)}
@@ -1173,7 +1155,7 @@ function VisitasTab({
 							))}
 							{visitas.length === 0 && (
 								<TableRow>
-									<TableCell colSpan={canEdit ? 7 : 6} className="text-center text-slate-500 py-6">
+									<TableCell colSpan={canEdit ? 7 : 6} className="text-center text-muted-foreground py-6">
 										Aún no hay visitas registradas.
 									</TableCell>
 								</TableRow>
@@ -1205,21 +1187,21 @@ type RifFeedbackInfo =
 function RifFeedback({ info }: { info: RifFeedbackInfo }) {
 	if (info.state === "idle") return null;
 	if (info.state === "checking") {
-		return <p className="mt-1 text-xs text-slate-400">Validando RIF...</p>;
+		return <p className="mt-1 text-xs text-muted-foreground">Validando RIF...</p>;
 	}
 	if (info.state === "error") {
-		return <p className="mt-1 text-xs text-rose-400">{info.message}</p>;
+		return <p className="mt-1 text-xs text-destructive">{info.message}</p>;
 	}
 	if (info.state === "new") {
 		return (
-			<div className="mt-1 rounded bg-amber-900/30 border border-amber-700 px-2 py-1 text-xs text-amber-100">
+			<div className="mt-1 rounded-md border border-amber-500/30 bg-amber-500/5 px-2 py-1 text-xs text-amber-400">
 				No registrado en el SAC. Se creará la visita capturando los datos manualmente.
 			</div>
 		);
 	}
 	const t = info.taxpayer;
 	return (
-		<div className="mt-1 rounded bg-emerald-900/30 border border-emerald-700 px-2 py-1 text-xs text-emerald-100">
+		<div className="mt-1 rounded-md border border-emerald-500/30 bg-emerald-500/5 px-2 py-1 text-xs text-emerald-400">
 			<div className="font-semibold">{t.name}</div>
 			<div>
 				RIF: <span className="font-mono">{t.rif}</span>

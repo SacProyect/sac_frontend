@@ -23,12 +23,12 @@ export default function DesgloseComercial({
 
 	return (
 		<div className={className}>
-			<div className="text-sm font-semibold text-slate-100 mb-3 flex items-center gap-2">
+			<div className="text-sm font-semibold mb-3 flex items-center gap-2">
 				<span className="inline-block w-1 h-4 bg-amber-400 rounded-sm" />
 				{title}
 			</div>
 			{ordenado.length === 0 ? (
-				<p className="text-xs text-slate-400 italic">{emptyText}</p>
+				<p className="text-xs text-muted-foreground italic">{emptyText}</p>
 			) : (
 				<ul className="space-y-2.5">
 					{ordenado.map(({ k, v }, i) => (
@@ -38,10 +38,10 @@ export default function DesgloseComercial({
 							style={{ animation: `dvBarIn 320ms ease-out both`, animationDelay: `${i * 35}ms` }}
 						>
 							<div className="flex items-center justify-between mb-1">
-								<span className="text-slate-100 font-medium">{k}</span>
-								<span className="text-amber-300 tabular-nums font-semibold">{v}</span>
+								<span className="font-medium">{k}</span>
+								<span className="text-amber-400 tabular-nums font-semibold">{v}</span>
 							</div>
-							<div className="h-2 rounded-full bg-slate-800 overflow-hidden">
+							<div className="h-2 rounded-full bg-muted overflow-hidden">
 								<div
 									className="h-full rounded-full bg-gradient-to-r from-amber-500 to-rose-400 transition-all"
 									style={{
