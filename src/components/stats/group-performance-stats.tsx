@@ -1,11 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { StatsDesignVariant } from "./global-perfomance";
-import { Trophy, Award, Star } from "lucide-react";
 
 export interface GroupStat {
     groupName: string;
-    totalPaidFines: number;     // Amount of fines count/assigned
-    totalPaidAmount: number;    // Amount of fines paid
+    totalPaidFines: number;
+    totalPaidAmount: number;
     totalIvaCollected: number;
     totalIslrCollected: number;
 }
@@ -13,44 +12,27 @@ export interface GroupStat {
 interface Props {
     groupStats: GroupStat[];
     designVariant?: StatsDesignVariant;
-    /** Si true, activa scroll automático continuo (modo demo) */
     autoScroll?: boolean;
 }
 
 // ─── Design Variants ────────────────────────────────────────────────────────────
 
-const DESIGN_STYLES: Record<StatsDesignVariant, {
-    panelBg: string;
-    titleBg: string;
-    subtitle: string;
-    cardBg: string;
-    cardBorder: string;
-}> = {
-    classic: {
-        panelBg: "bg-slate-950/80",
-        titleBg: "bg-slate-900/50",
-        subtitle: "text-slate-400",
-        cardBg: "bg-slate-900/40",
-        cardBorder: "border-slate-700/30",
-    },
-    contrast: {
-        panelBg: "bg-slate-950",
-        titleBorder: "border-amber-300/70",
-        titleBg: "bg-amber-950/40",
-        subtitle: "text-slate-200",
-    },
-    minimal: {
-        panelBg: "bg-slate-900/40",
-        titleBg: "transparent",
-        subtitle: "text-slate-500",
-        cardBg: "bg-white/[0.02]",
-        cardBorder: "border-white/[0.05]",
-    },
+const getContainerStyles = (variant: StatsDesignVariant) => {
+    switch (variant) {
+        case "minimal":
+            return { containerBg: "bg-slate-900/40" };
+        case "contrast":
+            return { containerBg: "bg-slate-950" };
+        case "classic":
+        default:
+            return { containerBg: "bg-slate-950/80" };
+    }
 };
 
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
-const fmtBs = (n: number) => {
+const fmt = (n: number) => {
+    if (n >= 1_000_000_000) return `${(n / 1_000_000_000).toFixed(2)}MM`;
     if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
     if (n >= 1_000) return `${(n / 1_000).toFixed(1)}K`;
     return n.toLocaleString("es-VE", { maximumFractionDigits: 0 });
@@ -59,147 +41,98 @@ const fmtBs = (n: number) => {
 const pct = (value: number, total: number) =>
     total > 0 ? Math.min(100, (value / total) * 100) : 0;
 
-// ─── Medal colors by rank ─────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
 
-const MEDAL = [
-    { ring: "ring-amber-400/60", bg: "bg-amber-400/10", text: "text-amber-300", dot: "bg-amber-400" },
-    { ring: "ring-slate-400/40", bg: "bg-slate-400/10", text: "text-slate-300", dot: "bg-slate-400" },
-    { ring: "ring-orange-600/50", bg: "bg-orange-700/10", text: "text-orange-400", dot: "bg-orange-600" },
-];
+function KpiCard({ label, value, pctLabel, color, sub }: {
+    label: string;
+    value: string;
+    pctLabel: string;
+    color: string;
+    sub?: string;
+}) {
+    return (
+        <div className="flex flex-col rounded-lg border border-slate-700/25 bg-slate-900/40 px-3 py-2 gap-0.5">
+            <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{label}</div>
+            <div className={`text-[14px] font-black tabular-nums leading-none ${color}`}>Bs. {value}</div>
+            <div className="flex items-center gap-1 text-[8px] text-slate-600 mt-0.5">
+                <span>{pctLabel}</span>
+                {sub && <span className="text-slate-700">· {sub}</span>}
+            </div>
+        </div>
+    );
+}
 
-const getMedal = (i: number) =>
-    MEDAL[i] ?? { ring: "ring-slate-700/30", bg: "bg-slate-800/40", text: "text-slate-500", dot: "bg-slate-600" };
-
-// ─── Metric pill ──────────────────────────────────────────────────────────────
-
-function MetricBar({
-    label, value, total, colorBg, colorText,
-}: {
+function MetricRow({ label, value, total, barColor, textColor }: {
     label: string;
     value: number;
     total: number;
-    colorBg: string;
-    colorText: string;
+    barColor: string;
+    textColor: string;
 }) {
-    const width = pct(value, total);
+    const width = total > 0 ? (value / total) * 100 : 0;
     return (
-        <div className="space-y-0.5">
-            <div className="flex items-center justify-between gap-2">
-                <span className={`text-[9px] font-semibold uppercase tracking-wider ${colorText}`}>{label}</span>
-                <span className={`text-[9px] font-bold tabular-nums ${colorText}`}>
-                    Bs.&nbsp;{fmtBs(value)}
-                </span>
-            </div>
-            <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-slate-800">
+        <div className="flex items-center gap-2">
+            <span className={`w-8 text-[9px] font-bold uppercase tracking-wider ${textColor}`}>{label}</span>
+            <span className={`w-20 text-right text-[10px] font-bold tabular-nums ${textColor}`}>Bs. {fmt(value)}</span>
+            <div className="flex-1 relative h-1.5 rounded-full bg-slate-800 overflow-hidden min-w-[60px]">
                 <div
-                    className={`absolute left-0 top-0 h-full rounded-full transition-all duration-700 ${colorBg}`}
-                    style={{ width: `${width}%`, minWidth: width > 0 ? "3px" : "0" }}
+                    className={`absolute left-0 top-0 h-full rounded-full transition-all duration-700 ${barColor}`}
+                    style={{ width: `${Math.max(width, width > 0 ? 2 : 0)}%` }}
                 />
             </div>
+            <span className="w-10 text-right text-[9px] font-bold tabular-nums text-slate-400">
+                {width.toFixed(1)}%
+            </span>
         </div>
     );
 }
 
-// ─── Group card ───────────────────────────────────────────────────────────────
-
-function GroupCard({
-    group, index, totals,
-}: {
+function GroupRow({ group, rank, totals }: {
     group: GroupStat;
-    index: number;
-    totals: { iva: number; islr: number; paid: number; fines: number };
+    rank: number;
+    totals: { iva: number; islr: number; multas: number; general: number };
 }) {
-    const medal = getMedal(index);
-    const score = pct(group.totalIvaCollected + group.totalIslrCollected, totals.iva + totals.islr);
+    const totalGroup = group.totalIvaCollected + group.totalIslrCollected + group.totalPaidAmount;
+    const contributionPct = totals.general > 0 ? (totalGroup / totals.general) * 100 : 0;
 
     return (
-        <div
-            className={`
-                relative overflow-hidden rounded-xl border bg-slate-900/70 p-3
-                ring-1 ${medal.ring}
-                transition-all duration-200 hover:bg-slate-800/80
-            `}
-        >
-            {/* Rank badge + group name */}
-            <div className="mb-2.5 flex items-center gap-2.5">
-                <div className={`
-                    flex h-7 w-7 shrink-0 items-center justify-center rounded-lg
-                    ring-1 ${medal.ring} ${medal.bg}
-                    text-[11px] font-black tabular-nums ${medal.text}
-                `}>
-                    {index + 1}
-                </div>
-
-                <div className="min-w-0 flex-1">
-                    <p className="truncate text-[11px] font-bold leading-tight text-white" title={group.groupName}>
-                        {group.groupName}
-                    </p>
-                    <p className="text-[9px] text-slate-500 mt-0.5">
-                        {score.toFixed(1)}% participación global
-                    </p>
-                </div>
-
-                {/* Mini score ring */}
-                <div className="relative shrink-0 h-9 w-9">
-                    <svg className="h-full w-full -rotate-90" viewBox="0 0 36 36">
-                        <circle cx="18" cy="18" r="14" fill="none" stroke="#1e293b" strokeWidth="3.5" />
-                        <circle
-                            cx="18" cy="18" r="14"
-                            fill="none"
-                            stroke={index === 0 ? "#fbbf24" : index === 1 ? "#94a3b8" : index === 2 ? "#ea580c" : "#3b82f6"}
-                            strokeWidth="3.5"
-                            strokeLinecap="round"
-                            strokeDasharray={`${(score / 100) * 87.96} 87.96`}
-                        />
-                    </svg>
-                    <span className="absolute inset-0 flex items-center justify-center text-[8px] font-black text-white tabular-nums">
-                        {score.toFixed(0)}%
-                    </span>
+        <div className="rounded-lg border border-slate-700/15 bg-slate-900/30 px-3 py-2.5 transition-colors hover:bg-slate-900/50">
+            <div className="flex items-center gap-2.5 mb-2">
+                <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-black ${
+                    rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
+                    rank === 2 ? 'bg-slate-500/20 text-slate-400' :
+                    rank === 3 ? 'bg-amber-700/20 text-amber-600' :
+                    'bg-slate-800/60 text-slate-500'
+                }`}>{rank}</span>
+                <span className="flex-1 truncate text-[12px] font-semibold text-slate-100">{group.groupName}</span>
+                <div className="flex items-center gap-1.5 shrink-0">
+                    <span className="text-[11px] font-black text-white tabular-nums">Bs. {fmt(totalGroup)}</span>
+                    <span className="text-[8px] font-bold text-slate-600 tabular-nums">{contributionPct.toFixed(1)}%</span>
                 </div>
             </div>
-
-            {/* Metrics */}
-            <div className="space-y-1.5">
-                <MetricBar
+            <div className="space-y-1 ml-7">
+                <MetricRow
                     label="IVA"
                     value={group.totalIvaCollected}
                     total={totals.iva}
-                    colorBg="bg-amber-500"
-                    colorText="text-amber-400"
+                    barColor="bg-amber-500"
+                    textColor="text-amber-400"
                 />
-                <MetricBar
+                <MetricRow
                     label="ISLR"
                     value={group.totalIslrCollected}
                     total={totals.islr}
-                    colorBg="bg-violet-500"
-                    colorText="text-violet-400"
+                    barColor="bg-violet-500"
+                    textColor="text-violet-400"
                 />
-                <MetricBar
-                    label="Pagos multas"
+                <MetricRow
+                    label="Mult"
                     value={group.totalPaidAmount}
-                    total={totals.paid}
-                    colorBg="bg-emerald-500"
-                    colorText="text-emerald-400"
+                    total={totals.multas}
+                    barColor="bg-emerald-500"
+                    textColor="text-emerald-400"
                 />
             </div>
-
-            {/* Subtle glow accent top-left */}
-            <div
-                className={`pointer-events-none absolute -left-4 -top-4 h-16 w-16 rounded-full blur-2xl opacity-20 ${medal.dot}`}
-            />
-        </div>
-    );
-}
-
-// ─── Global KPI strip ────────────────────────────────────────────────────────
-
-function KpiStrip({ label, value, color }: { label: string; value: number; color: string }) {
-    return (
-        <div className="flex flex-col items-center gap-0.5 px-2">
-            <span className={`text-[10px] font-black tabular-nums ${color}`}>
-                Bs. {fmtBs(value)}
-            </span>
-            <span className="text-[8px] uppercase tracking-wider text-slate-600 font-semibold">{label}</span>
         </div>
     );
 }
@@ -209,9 +142,32 @@ function KpiStrip({ label, value, color }: { label: string; value: number; color
 export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", autoScroll = false }: Props) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     const animRef = useRef<number | null>(null);
-    const style = DESIGN_STYLES[designVariant];
+    const { containerBg } = getContainerStyles(designVariant);
 
-    // Auto-scroll continuo en modo demo
+    // Calculate totals
+    const totalIva = groupStats.reduce((s, g) => s + g.totalIvaCollected, 0);
+    const totalIslr = groupStats.reduce((s, g) => s + g.totalIslrCollected, 0);
+    const totalMultas = groupStats.reduce((s, g) => s + g.totalPaidAmount, 0);
+    const totalFines = groupStats.reduce((s, g) => s + g.totalPaidFines, 0);
+    const totalGeneral = totalIva + totalIslr + totalMultas;
+
+    const totals = useMemo(
+        () => ({
+            iva: totalIva,
+            islr: totalIslr,
+            multas: totalMultas,
+            general: totalGeneral,
+        }),
+        [totalIva, totalIslr, totalMultas, totalGeneral]
+    );
+
+    // Sort by IVA + ISLR descending
+    const sorted = useMemo(
+        () => [...groupStats].sort((a, b) => (b.totalIvaCollected + b.totalIslrCollected) - (a.totalIvaCollected + a.totalIslrCollected)),
+        [groupStats]
+    );
+
+    // Auto-scroll with 1.5s pause at bottom, 1s at top
     useEffect(() => {
         if (!autoScroll) return;
         const el = scrollRef.current;
@@ -223,21 +179,19 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
         const step = () => {
             if (!paused && el) {
                 el.scrollTop += direction * 0.6;
-                // Cuando llega al fondo, espera 1.2s y vuelve
                 if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) {
                     paused = true;
                     setTimeout(() => {
                         direction = -1;
                         paused = false;
-                    }, 1200);
+                    }, 1500);
                 }
-                // Cuando llega al inicio, espera 0.8s y baja
                 if (el.scrollTop <= 0 && direction === -1) {
                     paused = true;
                     setTimeout(() => {
                         direction = 1;
                         paused = false;
-                    }, 800);
+                    }, 1000);
                 }
             }
             animRef.current = requestAnimationFrame(step);
@@ -249,19 +203,6 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
         };
     }, [autoScroll]);
 
-    const totalIva = groupStats.reduce((s, g) => s + g.totalIvaCollected, 0);
-    const totalIslr = groupStats.reduce((s, g) => s + g.totalIslrCollected, 0);
-    const totalPaid = groupStats.reduce((s, g) => s + g.totalPaidAmount, 0);
-    const totalFines = groupStats.reduce((s, g) => s + g.totalPaidFines, 0);
-
-    const sorted = [...groupStats].sort(
-        (a, b) =>
-            (b.totalIvaCollected + b.totalIslrCollected) -
-            (a.totalIvaCollected + a.totalIslrCollected)
-    );
-
-    const totals = { iva: totalIva, islr: totalIslr, paid: totalPaid, fines: totalFines };
-
     if (sorted.length === 0) {
         return (
             <div className="flex h-full items-center justify-center">
@@ -271,44 +212,72 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
     }
 
     return (
-        <div className={`flex h-full min-h-0 flex-col ${style.panelBg} px-2 pb-2 pt-3 sm:px-3`}>
+        <div className={`flex h-full min-h-0 flex-col ${containerBg} px-2 pb-2 pt-3 sm:px-3`}>
             {/* Header */}
-            <div className="mb-2 shrink-0">
-                <div className="mb-2 w-full max-w-md shrink-0 text-center mx-auto">
-                    <div className={`w-full rounded-md border ${style.titleBorder} ${style.titleBg}`}>
-                        <h1 className="px-2 py-1.5 text-xs font-semibold tracking-wide text-white sm:text-sm uppercase">
-                            Rendimiento por Coordinación
-                        </h1>
+            <div className="mb-2.5 shrink-0">
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-[9px] font-bold uppercase tracking-widest text-slate-600">Coordinaciones Fiscales</p>
+                        <h2 className="text-sm font-black tracking-tight text-white">Rendimiento por Coordinación</h2>
                     </div>
-                    <p className={`mt-1.5 line-clamp-2 text-[10px] leading-tight ${style.subtitle}`}>
-                        Ordenados por IVA + ISLR recaudado · {sorted.length} grupos
-                    </p>
-                </div>
-                <div className="flex items-center justify-between gap-2 flex-wrap">
-                    <div />
                     {autoScroll && (
-                        <span className="inline-flex items-center gap-1 rounded-full border border-blue-500/30 bg-blue-600/10 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wider text-blue-400">
+                        <span className="inline-flex items-center gap-1.5 rounded-full border border-blue-500/30 bg-blue-600/10 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wider text-blue-400">
                             <span className="h-1.5 w-1.5 rounded-full bg-blue-400 animate-pulse" />
                             Demo
                         </span>
                     )}
                 </div>
-
-                {/* KPI totals strip */}
-                <div className="mt-2 flex items-center justify-around rounded-lg border border-slate-800 bg-slate-900/60 py-1.5 divide-x divide-slate-800">
-                    <KpiStrip label="IVA total" value={totalIva} color="text-amber-400" />
-                    <KpiStrip label="ISLR total" value={totalIslr} color="text-violet-400" />
-                    <KpiStrip label="Pagos" value={totalPaid} color="text-emerald-400" />
-                </div>
             </div>
 
-            {/* Scrollable group cards */}
+            {/* KPI Strip - 4 columns */}
+            <div className="mb-2 grid grid-cols-4 gap-2 shrink-0">
+                <KpiCard
+                    label="IVA Recaudado"
+                    value={fmt(totalIva)}
+                    pctLabel={`${pct(totalIva, totalGeneral).toFixed(1)}% del total`}
+                    color="text-amber-400"
+                />
+                <KpiCard
+                    label="ISLR Recaudado"
+                    value={fmt(totalIslr)}
+                    pctLabel={`${pct(totalIslr, totalGeneral).toFixed(1)}% del total`}
+                    color="text-violet-400"
+                />
+                <KpiCard
+                    label="Multas Cobradas"
+                    value={fmt(totalMultas)}
+                    pctLabel={`${pct(totalMultas, totalGeneral).toFixed(1)}% del total`}
+                    color="text-emerald-400"
+                    sub={`${totalFines} ${totalFines === 1 ? "multa" : "multas"}`}
+                />
+                <KpiCard
+                    label="Recaudación Total"
+                    value={fmt(totalGeneral)}
+                    pctLabel={`100%`}
+                    color="text-white"
+                    sub={`${sorted.length} ${sorted.length === 1 ? "grupo" : "grupos"}`}
+                />
+            </div>
+
+            {/* Separator */}
+            <div className="mb-2 flex items-center gap-2 shrink-0">
+                <div className="h-px flex-1 bg-slate-800/60" />
+                <span className="text-[7px] font-bold uppercase tracking-widest text-slate-700">{sorted.length} coordinaciones</span>
+                <div className="h-px flex-1 bg-slate-800/60" />
+            </div>
+
+            {/* Scrollable Group Rows */}
             <div
                 ref={scrollRef}
-                className="custom-scrollbar min-h-0 flex-1 space-y-2 overflow-y-auto pr-0.5"
+                className="custom-scrollbar min-h-0 flex-1 space-y-1.5 overflow-y-auto pr-0.5"
             >
-                {sorted.map((group, i) => (
-                    <GroupCard key={i} group={group} index={i} totals={totals} />
+                {sorted.map((group, index) => (
+                    <GroupRow
+                        key={index}
+                        group={group}
+                        rank={index + 1}
+                        totals={totals}
+                    />
                 ))}
             </div>
         </div>

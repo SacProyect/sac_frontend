@@ -40,16 +40,22 @@ export default function StatsDemoMode({ onClose, year, groupId, pages }: StatsDe
 
     const timer = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          nextPage();
-          return 0;
+        const next = prev + step;
+        if (next >= 100) {
+          // Programar el cambio de página fuera del setter para evitar la race condition
+          setTimeout(() => {
+            setCurrentPageIndex((p) => (p + 1) % pages.length);
+            setProgress(0);
+          }, 0);
+          return 100; // Quedar en 100 hasta que el setTimeout lo resetee
         }
-        return prev + step;
+        return next;
       });
     }, interval);
 
     return () => clearInterval(timer);
-  }, [isPaused, nextPage]);
+  }, [isPaused, pages.length]);
+
 
   const toggleFullscreen = () => {
     if (!document.fullscreenElement) {
