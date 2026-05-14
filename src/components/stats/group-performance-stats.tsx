@@ -29,6 +29,22 @@ const getContainerStyles = (variant: StatsDesignVariant) => {
     }
 };
 
+// ─── Per-Group IVA Color Palette ─────────────────────────────────────────────
+// Paleta formal para presentaciones: azules corporativos, teales e índigos.
+
+const GROUP_PALETTE: { bar: string; text: string }[] = [
+    { bar: "bg-blue-500",    text: "text-blue-400"    }, // 0
+    { bar: "bg-teal-600",   text: "text-teal-400"    }, // 1
+    { bar: "bg-indigo-500", text: "text-indigo-400"  }, // 2
+    { bar: "bg-sky-500",    text: "text-sky-400"     }, // 3
+    { bar: "bg-emerald-600",text: "text-emerald-400" }, // 4
+    { bar: "bg-violet-600", text: "text-violet-400"  }, // 5
+    { bar: "bg-blue-700",   text: "text-blue-300"    }, // 6
+    { bar: "bg-cyan-600",   text: "text-cyan-400"    }, // 7
+    { bar: "bg-indigo-700", text: "text-indigo-300"  }, // 8
+    { bar: "bg-sky-700",    text: "text-sky-300"     }, // 9
+];
+
 // ─── Formatters ───────────────────────────────────────────────────────────────
 
 const fmt = (n: number) => {
@@ -62,16 +78,23 @@ function KpiCard({ label, value, pctLabel, color, sub }: {
     );
 }
 
-function MetricRow({ label, value, total, barColor, textColor }: {
+function MetricRow({ label, value, total, barColor, textColor, accentDot }: {
     label: string;
     value: number;
     total: number;
     barColor: string;
     textColor: string;
+    accentDot?: string; // optional inline dot color (hex/var) for the bar track
 }) {
     const width = total > 0 ? (value / total) * 100 : 0;
     return (
         <div className="flex items-center gap-1.5 min-w-0">
+            {accentDot && (
+                <span
+                    className="shrink-0 h-1.5 w-1.5 rounded-full"
+                    style={{ backgroundColor: accentDot }}
+                />
+            )}
             <span className={`w-7 shrink-0 text-[9px] font-bold uppercase tracking-wider ${textColor}`}>{label}</span>
             <span className={`shrink-0 text-right text-[9px] font-bold tabular-nums ${textColor} hidden sm:inline w-16`}>Bs. {fmt(value)}</span>
             <div className="flex-1 relative h-1.5 rounded-full bg-slate-800 overflow-hidden">
@@ -87,13 +110,15 @@ function MetricRow({ label, value, total, barColor, textColor }: {
     );
 }
 
-function GroupRow({ group, rank, totals }: {
+function GroupRow({ group, rank, totals, paletteIndex }: {
     group: GroupStat;
     rank: number;
     totals: { iva: number; islr: number; multas: number; general: number };
+    paletteIndex: number;
 }) {
     const totalGroup = group.totalIvaCollected + group.totalIslrCollected + group.totalPaidAmount;
     const contributionPct = totals.general > 0 ? (totalGroup / totals.general) * 100 : 0;
+    const ivaColor = GROUP_PALETTE[paletteIndex % GROUP_PALETTE.length];
 
     return (
         <div className="rounded-lg border border-slate-700/15 bg-slate-900/30 px-2.5 py-2 transition-colors hover:bg-slate-900/50 min-w-0">
@@ -104,6 +129,8 @@ function GroupRow({ group, rank, totals }: {
                     rank === 3 ? 'bg-amber-700/20 text-amber-600' :
                     'bg-slate-800/60 text-slate-500'
                 }`}>{rank}</span>
+                {/* Color swatch matching the group's IVA bar color */}
+                <span className={`shrink-0 h-2 w-2 rounded-full ${ivaColor.bar}`} />
                 <span className="flex-1 truncate text-[11px] font-semibold text-slate-100 min-w-0">{group.groupName}</span>
                 <div className="flex items-center gap-1 shrink-0">
                     <span className="text-[10px] font-black text-white tabular-nums">Bs. {fmt(totalGroup)}</span>
@@ -111,9 +138,9 @@ function GroupRow({ group, rank, totals }: {
                 </div>
             </div>
             <div className="space-y-1 ml-7 min-w-0">
-                <MetricRow label="IVA" value={group.totalIvaCollected} total={totals.iva} barColor="bg-amber-500" textColor="text-amber-400" />
-                <MetricRow label="ISLR" value={group.totalIslrCollected} total={totals.islr} barColor="bg-violet-500" textColor="text-violet-400" />
-                <MetricRow label="Mult" value={group.totalPaidAmount} total={totals.multas} barColor="bg-emerald-500" textColor="text-emerald-400" />
+                <MetricRow label="IVA"  value={group.totalIvaCollected}  total={totals.iva}    barColor={ivaColor.bar}  textColor={ivaColor.text} />
+                <MetricRow label="ISLR" value={group.totalIslrCollected} total={totals.islr}   barColor="bg-violet-500" textColor="text-violet-400" />
+                <MetricRow label="Mult" value={group.totalPaidAmount}    total={totals.multas} barColor="bg-emerald-500" textColor="text-emerald-400" />
             </div>
         </div>
     );
@@ -259,6 +286,7 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
                         group={group}
                         rank={index + 1}
                         totals={totals}
+                        paletteIndex={index}
                     />
                 ))}
             </div>

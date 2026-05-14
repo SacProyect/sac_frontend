@@ -155,6 +155,23 @@ function CustomTooltip({
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 
+// 12 tonos formales para presentación — uno por mes calendario.
+// Azules corporativos, teales, índigos y verdes sobrios.
+const MONTH_COLORS = [
+    "#3b82f6", // Ene — blue-500
+    "#0ea5e9", // Feb — sky-500
+    "#0d9488", // Mar — teal-600
+    "#059669", // Abr — emerald-600
+    "#6366f1", // May — indigo-500
+    "#7c3aed", // Jun — violet-600
+    "#2563eb", // Jul — blue-600
+    "#0891b2", // Ago — cyan-600
+    "#047857", // Sep — emerald-700
+    "#4f46e5", // Oct — indigo-600
+    "#0284c7", // Nov — sky-600
+    "#5b21b6", // Dic — violet-700
+];
+
 function buildData(
     months: MonthlyIvaStats["months"],
     currentMonthIndexVz: number,
@@ -168,10 +185,19 @@ function buildData(
             const currentValue = m.ivaCollected;
             const variation = previousValue > 0 ? ((currentValue - previousValue) / previousValue) * 100 : null;
 
-            let color = barBase;
-            if (variation !== null) {
-                if (variation > 0) color = "#10b981";
-                else if (variation < 0) color = "#ef4444";
+            // Color logic:
+            // — Growth vs prior month  → emerald
+            // — Decline vs prior month → red
+            // — No prior month (first data) → unique per-month hue from MONTH_COLORS
+            let color: string;
+            if (variation === null) {
+                color = monthIndex !== null ? MONTH_COLORS[monthIndex] : barBase;
+            } else if (variation > 0) {
+                color = "#10b981";
+            } else if (variation < 0) {
+                color = "#ef4444";
+            } else {
+                color = barBase;
             }
 
             return {

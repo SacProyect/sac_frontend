@@ -465,9 +465,14 @@ export const getGlobalTaxpayerPerformance = async (year?: number, groupId?: stri
 	}
 }
 
-export const getGroupPerformance = async (year?: number, groupId?: string) => {
+export const getGroupPerformance = async (year?: number, groupId?: string, month?: number) => {
 	try {
-		const requestUrl = `reports/group-performance${buildStatsQuery(year, groupId)}`;
+		const params = new URLSearchParams();
+		if (year != null) params.set("date", String(year));
+		if (groupId) params.set("groupId", groupId);
+		if (month != null) params.set("month", String(month));
+		const query = params.toString();
+		const requestUrl = `reports/group-performance${query ? `?${query}` : ""}`;
 		const response = await apiConnection.get(requestUrl);
 		return response.data;
 	} catch (e) {
@@ -610,4 +615,19 @@ export const downloadInternalAuditCsv = async (params: InternalAuditQueryParams)
 	a.click();
 	a.remove();
 	window.URL.revokeObjectURL(url);
+};
+
+export const getMonthlyCollection = async (year?: number, groupId?: string, month?: number) => {
+	try {
+		const params = new URLSearchParams();
+		if (year) params.set('date', String(year));
+		if (groupId) params.set('groupId', groupId);
+		if (month) params.set('month', String(month));
+		const requestUrl = `reports/monthly-collection${params.toString() ? '?' + params.toString() : ''}`;
+		const response = await apiConnection.get(requestUrl);
+		return response.data;
+	} catch (e) {
+		console.error(e);
+		throw new Error("No se pudo obtener la recaudación mensual");
+	}
 };

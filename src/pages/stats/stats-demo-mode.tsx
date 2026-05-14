@@ -109,111 +109,92 @@ export default function StatsDemoMode({ onClose, year, groupId, pages }: StatsDe
       </div>
 
       {/* Progress Bar */}
-      <div className="absolute top-0 left-0 right-0 h-1 bg-slate-900 z-50">
-        <div 
+      <div className="absolute top-0 left-0 right-0 h-0.5 sm:h-1 bg-slate-900 z-50">
+        <div
           className="h-full bg-gradient-to-r from-blue-600 via-indigo-500 to-emerald-500 transition-all duration-100 ease-linear"
           style={{ width: `${progress}%` }}
         />
       </div>
 
-      {/* Header */}
-      <div className="relative z-10 flex items-center justify-between px-8 py-6 bg-gradient-to-b from-slate-950/80 to-transparent">
-        <div className="flex items-center gap-6">
-          <div className="flex flex-col">
-            <h1 className="text-3xl font-black tracking-tight text-white flex items-center gap-3">
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400">
-                SAC
-              </span>
-              <span className="text-slate-500 font-light">|</span>
-              <span className="animate-in fade-in slide-in-from-left-4 duration-500">
-                {currentPage.title}
-              </span>
-            </h1>
-            <p className="text-xs font-bold text-slate-500 uppercase tracking-[0.3em] mt-1">
-              Visualización de Estadísticas · Período {year}
-            </p>
-          </div>
+      {/* Header — compacto en mobile */}
+      <div className="relative z-10 flex items-center justify-between px-3 py-2 sm:px-8 sm:py-5 bg-gradient-to-b from-slate-950/90 to-transparent shrink-0">
+        {/* Title */}
+        <div className="flex flex-col min-w-0 flex-1 mr-2">
+          <h1 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-white flex items-center gap-2 min-w-0">
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 shrink-0">
+              SAC
+            </span>
+            <span className="text-slate-600 font-light shrink-0">|</span>
+            <span className="truncate animate-in fade-in slide-in-from-left-4 duration-500">
+              {currentPage.title}
+            </span>
+          </h1>
+          <p className="hidden sm:block text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-0.5">
+            Visualización de Estadísticas · Período {year}
+          </p>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-2xl p-1 gap-1">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={prevPage}
-              className="h-10 w-10 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl"
-            >
-              <ChevronLeft className="h-5 w-5" />
+        {/* Controls */}
+        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
+          {/* Prev / Play / Next */}
+          <div className="flex items-center bg-slate-900/50 backdrop-blur-xl border border-slate-800 rounded-xl sm:rounded-2xl p-0.5 sm:p-1 gap-0.5 sm:gap-1">
+            <Button variant="ghost" size="icon" onClick={prevPage}
+              className="h-7 w-7 sm:h-10 sm:w-10 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-lg sm:rounded-xl">
+              <ChevronLeft className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsPaused(!isPaused)}
-              className="h-10 w-10 text-white bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/20 transition-all rounded-xl"
-            >
-              {isPaused ? <Play className="h-5 w-5 fill-current" /> : <Pause className="h-5 w-5 fill-current" />}
+            <Button variant="ghost" size="icon" onClick={() => setIsPaused(!isPaused)}
+              className="h-7 w-7 sm:h-10 sm:w-10 text-white bg-blue-600/20 hover:bg-blue-600/40 border border-blue-500/20 transition-all rounded-lg sm:rounded-xl">
+              {isPaused ? <Play className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current" /> : <Pause className="h-3.5 w-3.5 sm:h-5 sm:w-5 fill-current" />}
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={nextPage}
-              className="h-10 w-10 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl"
-            >
-              <ChevronRight className="h-5 w-5" />
+            <Button variant="ghost" size="icon" onClick={nextPage}
+              className="h-7 w-7 sm:h-10 sm:w-10 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-lg sm:rounded-xl">
+              <ChevronRight className="h-3.5 w-3.5 sm:h-5 sm:w-5" />
             </Button>
           </div>
 
-          <div className="w-px h-8 bg-slate-800 mx-2" />
-
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={toggleFullscreen}
-            className="h-12 w-12 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-2xl border border-slate-800/50"
-          >
-            {isFullscreen ? <Minimize2 className="h-5 w-5" /> : <Maximize2 className="h-5 w-5" />}
+          {/* Fullscreen — oculto en xs */}
+          <Button variant="ghost" size="icon" onClick={toggleFullscreen}
+            className="hidden sm:flex h-9 w-9 sm:h-12 sm:w-12 text-slate-400 hover:text-white hover:bg-slate-800 transition-all rounded-xl sm:rounded-2xl border border-slate-800/50">
+            {isFullscreen ? <Minimize2 className="h-4 w-4 sm:h-5 sm:w-5" /> : <Maximize2 className="h-4 w-4 sm:h-5 sm:w-5" />}
           </Button>
 
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleClose}
-            className="h-12 w-12 bg-red-950/20 text-red-400 hover:bg-red-900 hover:text-white border border-red-900/30 transition-all rounded-2xl"
-          >
-            <X className="h-6 w-6" />
+          {/* Close */}
+          <Button variant="ghost" size="icon" onClick={handleClose}
+            className="h-7 w-7 sm:h-12 sm:w-12 bg-red-950/20 text-red-400 hover:bg-red-900 hover:text-white border border-red-900/30 transition-all rounded-lg sm:rounded-2xl">
+            <X className="h-3.5 w-3.5 sm:h-6 sm:w-6" />
           </Button>
         </div>
       </div>
 
       {/* Content Area */}
-      <div className="relative flex-1 min-h-0 w-full px-12 pb-12 flex flex-col items-center justify-center">
-        <div 
+      <div className="relative flex-1 min-h-0 w-full px-2 pb-2 sm:px-8 sm:pb-8 lg:px-12 lg:pb-12 flex flex-col items-center justify-center">
+        <div
           key={currentPage.id}
-          className="w-full h-full max-w-[1400px] animate-in fade-in zoom-in-95 duration-700 ease-out bg-slate-900/40 rounded-3xl border border-slate-800/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/50"
+          className="w-full h-full max-w-[1400px] animate-in fade-in zoom-in-95 duration-700 ease-out bg-slate-900/40 rounded-xl sm:rounded-3xl border border-slate-800/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/50"
         >
           {currentPage.component}
         </div>
       </div>
 
-      {/* Footer / Page Indicator */}
-      <div className="relative z-10 px-8 py-4 flex items-center justify-between border-t border-slate-900 bg-slate-950/50 backdrop-blur-md">
-        <div className="flex gap-2">
+      {/* Footer */}
+      <div className="relative z-10 px-3 py-2 sm:px-8 sm:py-4 flex items-center justify-between border-t border-slate-900 bg-slate-950/50 backdrop-blur-md shrink-0">
+        <div className="flex gap-1.5 sm:gap-2">
           {pages.map((_, i) => (
-            <div 
+            <div
               key={i}
               className={cn(
-                "h-1.5 rounded-full transition-all duration-500",
-                i === currentPageIndex ? "w-12 bg-blue-500" : "w-2 bg-slate-800"
+                "h-1 sm:h-1.5 rounded-full transition-all duration-500",
+                i === currentPageIndex ? "w-8 sm:w-12 bg-blue-500" : "w-1.5 sm:w-2 bg-slate-800"
               )}
             />
           ))}
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">
-            Slide {currentPageIndex + 1} de {pages.length}
+        <div className="flex items-center gap-2 sm:gap-3">
+          <span className="text-[9px] sm:text-[10px] font-black text-slate-600 uppercase tracking-widest">
+            {currentPageIndex + 1}/{pages.length}
           </span>
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-tight">
+          <span className="text-[9px] sm:text-[10px] font-bold text-emerald-500 uppercase tracking-tight">
             En Vivo
           </span>
         </div>
@@ -221,3 +202,4 @@ export default function StatsDemoMode({ onClose, year, groupId, pages }: StatsDe
     </div>
   );
 }
+

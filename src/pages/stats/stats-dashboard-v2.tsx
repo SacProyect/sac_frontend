@@ -186,7 +186,7 @@ function StatsPage1Charts({
         </TabsContent>
 
         <TabsContent value="iva-grupo" className="mt-0 flex-1 h-full overflow-hidden">
-          <IvaByGroupChart year={year} groupId={groupId} data={groupStats} designVariant={designVariant} />
+          <IvaByGroupChart year={year} groupId={groupId} designVariant={designVariant} />
         </TabsContent>
       </Tabs>
     </div>
