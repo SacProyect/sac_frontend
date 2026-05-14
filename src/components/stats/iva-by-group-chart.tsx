@@ -488,7 +488,7 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
                 {autoHover && activeGroup && (
                     <div
                         key={activeGroup.group_name}
-                        className="mb-2 flex items-center gap-3 rounded-lg border border-slate-700/40 bg-slate-900/60 px-3 py-2 text-[11px] shrink-0"
+                        className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1 rounded-lg border border-slate-700/40 bg-slate-900/60 px-3 py-2 text-[11px] shrink-0"
                         style={{ animation: 'fadeSlideIn 0.3s ease' }}
                     >
                         <RankBadge rank={activeGroup.rank} />
@@ -496,7 +496,7 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
                             className="h-2 w-2 rounded-full shrink-0"
                             style={{ backgroundColor: activeBarColor }}
                         />
-                        <span className="font-bold text-white flex-1 truncate">{activeGroup.group_name}</span>
+                        <span className="font-bold text-white flex-1 truncate min-w-[80px]">{activeGroup.group_name}</span>
                         <span className="font-black tabular-nums" style={{ color: activeBarColor }}>
                             Bs. {formatFullNumber(activeGroup.totalIva)}
                         </span>
@@ -515,7 +515,7 @@ export const IvaByGroupChart = ({ year, groupId, data, designVariant = "classic"
                 {/* ─── Gráfico mejorado ─── */}
                 <div className="mt-2 flex-1 min-h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={chartData} barSize={28} margin={{ top: 12, right: 5, left: -20, bottom: 35 }}>
+                        <BarChart data={chartData} barSize={28} margin={{ top: 12, right: 5, left: -20, bottom: 40 }}>
                             <defs>
                                 {Object.entries(GRADIENTS).map(([key, stops]) => (
                                     <linearGradient key={key} id={`gradient-${key}`} x1="0" y1="0" x2="0" y2="1">

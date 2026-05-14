@@ -51,12 +51,12 @@ function KpiCard({ label, value, pctLabel, color, sub }: {
     sub?: string;
 }) {
     return (
-        <div className="flex flex-col rounded-lg border border-slate-700/25 bg-slate-900/40 px-3 py-2 gap-0.5">
-            <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest">{label}</div>
-            <div className={`text-[14px] font-black tabular-nums leading-none ${color}`}>Bs. {value}</div>
-            <div className="flex items-center gap-1 text-[8px] text-slate-600 mt-0.5">
-                <span>{pctLabel}</span>
-                {sub && <span className="text-slate-700">· {sub}</span>}
+        <div className="flex flex-col rounded-lg border border-slate-700/25 bg-slate-900/40 px-2.5 py-2 gap-0.5 min-w-0">
+            <div className="text-[8px] font-bold text-slate-600 uppercase tracking-widest truncate">{label}</div>
+            <div className={`text-[13px] font-black tabular-nums leading-none truncate ${color}`}>Bs. {value}</div>
+            <div className="flex items-center gap-1 text-[8px] text-slate-600 mt-0.5 min-w-0">
+                <span className="truncate">{pctLabel}</span>
+                {sub && <span className="text-slate-700 shrink-0">· {sub}</span>}
             </div>
         </div>
     );
@@ -71,17 +71,17 @@ function MetricRow({ label, value, total, barColor, textColor }: {
 }) {
     const width = total > 0 ? (value / total) * 100 : 0;
     return (
-        <div className="flex items-center gap-2">
-            <span className={`w-8 text-[9px] font-bold uppercase tracking-wider ${textColor}`}>{label}</span>
-            <span className={`w-20 text-right text-[10px] font-bold tabular-nums ${textColor}`}>Bs. {fmt(value)}</span>
-            <div className="flex-1 relative h-1.5 rounded-full bg-slate-800 overflow-hidden min-w-[60px]">
+        <div className="flex items-center gap-1.5 min-w-0">
+            <span className={`w-7 shrink-0 text-[9px] font-bold uppercase tracking-wider ${textColor}`}>{label}</span>
+            <span className={`shrink-0 text-right text-[9px] font-bold tabular-nums ${textColor} hidden sm:inline w-16`}>Bs. {fmt(value)}</span>
+            <div className="flex-1 relative h-1.5 rounded-full bg-slate-800 overflow-hidden">
                 <div
                     className={`absolute left-0 top-0 h-full rounded-full transition-all duration-700 ${barColor}`}
                     style={{ width: `${Math.max(width, width > 0 ? 2 : 0)}%` }}
                 />
             </div>
-            <span className="w-10 text-right text-[9px] font-bold tabular-nums text-slate-400">
-                {width.toFixed(1)}%
+            <span className="shrink-0 w-8 text-right text-[9px] font-bold tabular-nums text-slate-400">
+                {width.toFixed(0)}%
             </span>
         </div>
     );
@@ -96,42 +96,24 @@ function GroupRow({ group, rank, totals }: {
     const contributionPct = totals.general > 0 ? (totalGroup / totals.general) * 100 : 0;
 
     return (
-        <div className="rounded-lg border border-slate-700/15 bg-slate-900/30 px-3 py-2.5 transition-colors hover:bg-slate-900/50">
-            <div className="flex items-center gap-2.5 mb-2">
+        <div className="rounded-lg border border-slate-700/15 bg-slate-900/30 px-2.5 py-2 transition-colors hover:bg-slate-900/50 min-w-0">
+            <div className="flex items-center gap-2 mb-1.5 min-w-0">
                 <span className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded text-[10px] font-black ${
                     rank === 1 ? 'bg-yellow-500/20 text-yellow-400' :
                     rank === 2 ? 'bg-slate-500/20 text-slate-400' :
                     rank === 3 ? 'bg-amber-700/20 text-amber-600' :
                     'bg-slate-800/60 text-slate-500'
                 }`}>{rank}</span>
-                <span className="flex-1 truncate text-[12px] font-semibold text-slate-100">{group.groupName}</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                    <span className="text-[11px] font-black text-white tabular-nums">Bs. {fmt(totalGroup)}</span>
-                    <span className="text-[8px] font-bold text-slate-600 tabular-nums">{contributionPct.toFixed(1)}%</span>
+                <span className="flex-1 truncate text-[11px] font-semibold text-slate-100 min-w-0">{group.groupName}</span>
+                <div className="flex items-center gap-1 shrink-0">
+                    <span className="text-[10px] font-black text-white tabular-nums">Bs. {fmt(totalGroup)}</span>
+                    <span className="hidden sm:inline text-[8px] font-bold text-slate-600 tabular-nums">{contributionPct.toFixed(1)}%</span>
                 </div>
             </div>
-            <div className="space-y-1 ml-7">
-                <MetricRow
-                    label="IVA"
-                    value={group.totalIvaCollected}
-                    total={totals.iva}
-                    barColor="bg-amber-500"
-                    textColor="text-amber-400"
-                />
-                <MetricRow
-                    label="ISLR"
-                    value={group.totalIslrCollected}
-                    total={totals.islr}
-                    barColor="bg-violet-500"
-                    textColor="text-violet-400"
-                />
-                <MetricRow
-                    label="Mult"
-                    value={group.totalPaidAmount}
-                    total={totals.multas}
-                    barColor="bg-emerald-500"
-                    textColor="text-emerald-400"
-                />
+            <div className="space-y-1 ml-7 min-w-0">
+                <MetricRow label="IVA" value={group.totalIvaCollected} total={totals.iva} barColor="bg-amber-500" textColor="text-amber-400" />
+                <MetricRow label="ISLR" value={group.totalIslrCollected} total={totals.islr} barColor="bg-violet-500" textColor="text-violet-400" />
+                <MetricRow label="Mult" value={group.totalPaidAmount} total={totals.multas} barColor="bg-emerald-500" textColor="text-emerald-400" />
             </div>
         </div>
     );
@@ -229,8 +211,8 @@ export const GroupPerformanceStats = ({ groupStats, designVariant = "classic", a
                 </div>
             </div>
 
-            {/* KPI Strip - 4 columns */}
-            <div className="mb-2 grid grid-cols-4 gap-2 shrink-0">
+            {/* KPI Strip - 2 cols mobile / 4 cols sm+ */}
+            <div className="mb-2 grid grid-cols-2 sm:grid-cols-4 gap-1.5 shrink-0">
                 <KpiCard
                     label="IVA Recaudado"
                     value={fmt(totalIva)}

@@ -252,24 +252,44 @@ export const PageTwoStats: React.FC<Props> = ({
                 )}
             </div>
 
-            {/* KPIs: franja horizontal con valores jerarquizados */}
-            <div className="mb-2 flex items-center gap-2 rounded-md bg-slate-900/40 border border-slate-700/30 px-3 py-1.5 text-[10px] shrink-0">
-                <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Acumulado</span>
-                <span className="text-sm font-black tabular-nums" style={{ color: barBase }}>Bs. {formatCompact(totalCollected)}</span>
-                <span className="text-slate-700 mx-0.5">/</span>
-                <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Promedio</span>
-                <span className="font-bold tabular-nums text-slate-300">Bs. {formatCompact(avgMonthly)}</span>
-                <span className="text-slate-700 mx-0.5">/</span>
-                <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Pico</span>
-                <span className="font-bold tabular-nums text-amber-400">
-                    {bestMonth ? `${bestMonth.label} — Bs. ${formatCompact(bestMonth.value)}` : "—"}
-                </span>
-                <span className="ml-auto text-[8px] font-bold text-slate-700 tabular-nums">{data.length} meses</span>
+            {/* KPIs: grid 2x2 en mobile, franja en sm+ */}
+            <div className="mb-2 shrink-0">
+                {/* Mobile: 2x2 grid */}
+                <div className="grid grid-cols-2 gap-1.5 sm:hidden">
+                    <div className="rounded-md bg-slate-900/40 border border-slate-700/30 px-2.5 py-1.5">
+                        <span className="block text-[8px] font-bold uppercase tracking-wider text-slate-600">Acumulado</span>
+                        <span className="text-sm font-black tabular-nums" style={{ color: barBase }}>Bs. {formatCompact(totalCollected)}</span>
+                    </div>
+                    <div className="rounded-md bg-slate-900/40 border border-slate-700/30 px-2.5 py-1.5">
+                        <span className="block text-[8px] font-bold uppercase tracking-wider text-slate-600">Promedio</span>
+                        <span className="text-sm font-black tabular-nums text-slate-300">Bs. {formatCompact(avgMonthly)}</span>
+                    </div>
+                    <div className="col-span-2 rounded-md bg-slate-900/40 border border-slate-700/30 px-2.5 py-1.5">
+                        <span className="block text-[8px] font-bold uppercase tracking-wider text-slate-600">Pico</span>
+                        <span className="font-bold tabular-nums text-amber-400 text-xs">
+                            {bestMonth ? `${bestMonth.label} — Bs. ${formatCompact(bestMonth.value)}` : "—"}
+                        </span>
+                    </div>
+                </div>
+                {/* sm+: franja horizontal */}
+                <div className="hidden sm:flex items-center gap-2 rounded-md bg-slate-900/40 border border-slate-700/30 px-3 py-1.5 text-[10px]">
+                    <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Acumulado</span>
+                    <span className="text-sm font-black tabular-nums" style={{ color: barBase }}>Bs. {formatCompact(totalCollected)}</span>
+                    <span className="text-slate-700 mx-0.5">/</span>
+                    <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Promedio</span>
+                    <span className="font-bold tabular-nums text-slate-300">Bs. {formatCompact(avgMonthly)}</span>
+                    <span className="text-slate-700 mx-0.5">/</span>
+                    <span className="text-slate-600 font-bold uppercase tracking-wider text-[8px]">Pico</span>
+                    <span className="font-bold tabular-nums text-amber-400">
+                        {bestMonth ? `${bestMonth.label} — Bs. ${formatCompact(bestMonth.value)}` : "—"}
+                    </span>
+                    <span className="ml-auto text-[8px] font-bold text-slate-700 tabular-nums">{data.length} meses</span>
+                </div>
             </div>
 
             {/* Auto-hover: Single compact line */}
             {autoHover && hoveredIndex !== null && data[hoveredIndex] && (
-                <div className="mb-1.5 flex items-center gap-3 rounded bg-slate-900/60 px-2.5 py-1 text-[10px] shrink-0 animate-in fade-in slide-in-from-top-1 duration-200">
+                <div className="mb-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 rounded bg-slate-900/60 px-2.5 py-1.5 text-[10px] shrink-0 animate-in fade-in slide-in-from-top-1 duration-200">
                     <span className="font-bold text-white text-xs">{data[hoveredIndex].label}</span>
                     <span className="font-black tabular-nums" style={{ color: data[hoveredIndex].color }}>
                         Bs. {formatCurrency(data[hoveredIndex].value)}
@@ -284,7 +304,7 @@ export const PageTwoStats: React.FC<Props> = ({
                     ) : (
                         <span className="text-slate-500">Primer registro</span>
                     )}
-                    <span className="text-slate-600 ml-auto">
+                    <span className="text-slate-600 hidden sm:inline">
                         vs {data[hoveredIndex].previousValue > 0 ? `Bs. ${formatCompact(data[hoveredIndex].previousValue)}` : "N/A"}
                     </span>
                 </div>

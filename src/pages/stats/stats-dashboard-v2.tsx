@@ -418,11 +418,11 @@ export default function StatsDashboardV2() {
               onSubmit={(e) => e.preventDefault()}
             >
               <Users className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-              <label htmlFor="coordination-select" className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
+              <label htmlFor="coordination-select" className="hidden sm:inline text-[10px] font-bold text-slate-500 uppercase tracking-wider mr-1 shrink-0">
                 Coordinación
               </label>
               <Select value={coordinationId || '__all__'} onValueChange={(v) => setCoordinationParam(v === '__all__' ? '' : v)}>
-                <SelectTrigger id="coordination-select" className="h-7 min-w-[140px] max-w-[220px] bg-slate-950/50 border-slate-700 text-xs font-semibold text-emerald-400/95 hover:text-emerald-300 transition-colors rounded-lg">
+                <SelectTrigger id="coordination-select" className="h-7 min-w-[120px] sm:min-w-[140px] max-w-[200px] bg-slate-950/50 border-slate-700 text-xs font-semibold text-emerald-400/95 hover:text-emerald-300 transition-colors rounded-lg">
                   <SelectValue placeholder="Todas" />
                 </SelectTrigger>
                 <SelectContent className="bg-slate-900 border-slate-700 text-slate-300 max-h-[280px]">
@@ -449,7 +449,7 @@ export default function StatsDashboardV2() {
                 title="Atajo: Ctrl+Shift+D (o Ctrl+Alt+D)"
               >
                 <Monitor className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
-                Modo DEMO
+                <span className="hidden sm:inline">Modo DEMO</span>
               </Button>
             )}
             
@@ -460,7 +460,7 @@ export default function StatsDashboardV2() {
               onClick={() => window.location.reload()}
             >
               <Activity className="w-3.5 h-3.5" />
-              Actualizar
+              <span className="hidden sm:inline">Actualizar</span>
             </Button>
           </div>
         </div>
