@@ -24,25 +24,35 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
 } from "@/components/UI/dialog";
 import { getAuditoria } from "@/components/utils/api/auditoria-functions";
 import type { AuditoriaRow } from "@/types/auditoria";
 import toast from "react-hot-toast";
-import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Search,
+  Filter,
+  User,
+  Database,
+  History,
+  X,
+  FileText
+} from "lucide-react";
 
 const ENTIDADES = [
-  { value: "ALL", label: "Todas" },
+  { value: "ALL", label: "Todas las entidades" },
   { value: "Contribuyente", label: "Contribuyente" },
   { value: "Declaracion_IVA", label: "Declaración IVA" },
   { value: "Declaracion_ISLR", label: "Declaración ISLR" },
 ];
 
 const ACCIONES = [
-  { value: "ALL", label: "Todas" },
+  { value: "ALL", label: "Todas las acciones" },
   { value: "EDITAR_CONTRIBUYENTE", label: "Editar contribuyente" },
-  { value: "BORRAR_CONTRIBUYENTE", label: "Borrar contribuyente (lógico)" },
+  { value: "BORRAR_CONTRIBUYENTE", label: "Borrar contribuyente" },
   { value: "EDITAR_IVA", label: "Editar IVA" },
   { value: "BORRAR_DECLARACION_IVA", label: "Borrar declaración IVA" },
   { value: "EDITAR_ISLR", label: "Editar ISLR" },
@@ -106,6 +116,16 @@ function formatFieldValue(key: string, value: unknown): string {
   return String(value);
 }
 
+function ActionBadge({ action }: { action: string }) {
+  if (action.includes("BORRAR")) {
+    return <span className="inline-flex items-center rounded bg-rose-500/10 px-2 py-0.5 text-[11px] font-medium text-rose-400 ring-1 ring-inset ring-rose-500/20">{action.replace(/_/g, " ")}</span>;
+  }
+  if (action.includes("EDITAR")) {
+    return <span className="inline-flex items-center rounded bg-indigo-500/10 px-2 py-0.5 text-[11px] font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20">{action.replace(/_/g, " ")}</span>;
+  }
+  return <span className="inline-flex items-center rounded bg-slate-500/10 px-2 py-0.5 text-[11px] font-medium text-slate-400 ring-1 ring-inset ring-slate-500/20">{action.replace(/_/g, " ")}</span>;
+}
+
 export default function AuditTrailPageV2() {
   const { user } = useAuth();
   const [rows, setRows] = useState<AuditoriaRow[]>([]);
@@ -115,14 +135,13 @@ export default function AuditTrailPageV2() {
   const [total, setTotal] = useState(0);
   const limit = 25;
 
-  /** Filtros de selects (recarga al cambiar) */
   const [entidad, setEntidad] = useState("ALL");
   const [accion, setAccion] = useState("ALL");
-  /** Filtros de texto/fecha: solo al pulsar «Aplicar filtros» */
   const [actorId, setActorId] = useState("");
   const [entidadId, setEntidadId] = useState("");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+
   const [appliedActorId, setAppliedActorId] = useState("");
   const [appliedEntidadId, setAppliedEntidadId] = useState("");
   const [appliedDateFrom, setAppliedDateFrom] = useState("");
@@ -130,6 +149,7 @@ export default function AuditTrailPageV2() {
 
   const [detailOpen, setDetailOpen] = useState(false);
   const [detailRow, setDetailRow] = useState<AuditoriaRow | null>(null);
+
   const diffRows = useMemo(() => {
     if (!detailRow) return [];
     const oldValues = asRecord(detailRow.valores_anteriores);
@@ -175,16 +195,13 @@ export default function AuditTrailPageV2() {
     } catch (e: unknown) {
       let msg: string | undefined;
       if (e && typeof e === "object" && "response" in e) {
-        const data = (e as { response?: { data?: { error?: unknown } } }).response
-          ?.data;
+        const data = (e as { response?: { data?: { error?: unknown } } }).response?.data;
         if (data && typeof data === "object" && "error" in data) {
           const err = (data as { error?: unknown }).error;
           msg = typeof err === "string" ? err : undefined;
         }
       }
-      toast.error(
-        typeof msg === "string" ? msg : "No se pudo cargar la auditoría.",
-      );
+      toast.error(typeof msg === "string" ? msg : "No se pudo cargar la auditoría.");
       setRows([]);
       setTotal(0);
       setTotalPages(0);
@@ -218,285 +235,331 @@ export default function AuditTrailPageV2() {
     return <Navigate to="/admin" replace />;
   }
 
+  const handleApplyFilters = () => {
+    setAppliedActorId(actorId.trim());
+    setAppliedEntidadId(entidadId.trim());
+    setAppliedDateFrom(dateFrom);
+    setAppliedDateTo(dateTo);
+    setPage(1);
+  };
+
+  const handleClearFilters = () => {
+    setEntidad("ALL");
+    setAccion("ALL");
+    setActorId("");
+    setEntidadId("");
+    setDateFrom("");
+    setDateTo("");
+    setAppliedActorId("");
+    setAppliedEntidadId("");
+    setAppliedDateFrom("");
+    setAppliedDateTo("");
+    setPage(1);
+  };
+
   return (
     <div className="space-y-6 w-full max-w-full">
       <PageHeader
-        title="Auditoría y trazabilidad"
-        description="Registro de cambios sensibles (contribuyentes, IVA, ISLR). Solo lectura."
+        title="Trazabilidad y Auditoría"
+        description="Explora el historial de cambios del sistema. Búsqueda por fiscal, tipo y fechas."
       />
 
-      <Card className="bg-slate-800/80 border-slate-700 p-4 sm:p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          <div>
-            <Label className="text-slate-400 text-xs">Entidad</Label>
-            <Select
-              value={entidad}
-              onValueChange={(v) => {
-                setEntidad(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="bg-slate-900 border-slate-600 text-white mt-1">
-                <SelectValue placeholder="Seleccionar" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600">
-                {ENTIDADES.map((o) => (
-                  <SelectItem key={o.value || "all"} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-slate-400 text-xs">Acción</Label>
-            <Select
-              value={accion}
-              onValueChange={(v) => {
-                setAccion(v);
-                setPage(1);
-              }}
-            >
-              <SelectTrigger className="bg-slate-900 border-slate-600 text-white mt-1">
-                <SelectValue placeholder="Seleccionar" />
-              </SelectTrigger>
-              <SelectContent className="bg-slate-700 border-slate-600 max-h-64">
-                {ACCIONES.map((o) => (
-                  <SelectItem key={o.value || "all-a"} value={o.value}>
-                    {o.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label className="text-slate-400 text-xs">ID del registro (entidad)</Label>
-            <Input
-              value={entidadId}
-              onChange={(e) => setEntidadId(e.target.value)}
-              placeholder="UUID"
-              className="bg-slate-900 border-slate-600 text-white mt-1"
-            />
-          </div>
-          <div>
-            <Label className="text-slate-400 text-xs">Usuario actor (ID)</Label>
-            <Input
-              value={actorId}
-              onChange={(e) => setActorId(e.target.value)}
-              placeholder="UUID del fiscal / usuario"
-              className="bg-slate-900 border-slate-600 text-white mt-1"
-            />
-          </div>
-          <div>
-            <Label className="text-slate-400 text-xs">Desde</Label>
-            <Input
-              type="date"
-              value={dateFrom}
-              onChange={(e) => setDateFrom(e.target.value)}
-              className="bg-slate-900 border-slate-600 text-white mt-1"
-            />
-          </div>
-          <div>
-            <Label className="text-slate-400 text-xs">Hasta</Label>
-            <Input
-              type="date"
-              value={dateTo}
-              onChange={(e) => setDateTo(e.target.value)}
-              className="bg-slate-900 border-slate-600 text-white mt-1"
-            />
-          </div>
-        </div>
-        <div className="flex flex-wrap gap-2 mt-4">
-          <Button
-            type="button"
-            variant="secondary"
-            onClick={() => {
-              setAppliedActorId(actorId.trim());
-              setAppliedEntidadId(entidadId.trim());
-              setAppliedDateFrom(dateFrom);
-              setAppliedDateTo(dateTo);
-              setPage(1);
-            }}
-            disabled={loading}
-            className="bg-indigo-600 hover:bg-indigo-700 text-white"
-          >
-            {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : null}
-            Aplicar filtros
-          </Button>
-          <Button
-            type="button"
-            variant="outline"
-            className="border-slate-600 text-black"
-            onClick={() => {
-              setEntidad("ALL");
-              setAccion("ALL");
-              setActorId("");
-              setEntidadId("");
-              setDateFrom("");
-              setDateTo("");
-              setAppliedActorId("");
-              setAppliedEntidadId("");
-              setAppliedDateFrom("");
-              setAppliedDateTo("");
-              setPage(1);
-            }}
-          >
-            Limpiar
-          </Button>
-        </div>
-        <p className="text-xs text-slate-500 mt-3">
-          {user.role === "COORDINATOR"
-            ? "Como coordinador solo ves acciones de los fiscales de tu grupo (y las tuyas)."
-            : "Como administrador ves el historial completo del sistema."}{" "}
-          Total: {total} registro(s).
-        </p>
-      </Card>
+      <div className="flex flex-col xl:flex-row gap-6 items-start">
+        {/* Filtros avanzados */}
+        <div className="w-full xl:w-1/4 space-y-4 xl:sticky xl:top-6">
+          <Card className="bg-slate-900 border-slate-800 shadow-xl flex flex-col overflow-hidden">
+            <div className="flex items-center justify-between border-b border-slate-800 px-5 py-4 bg-slate-900/50">
+              <h3 className="text-sm font-medium text-slate-200 flex items-center gap-2">
+                <Filter className="h-4 w-4 text-slate-400" />
+                Filtros de Búsqueda
+              </h3>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-7 px-2 text-xs text-slate-400 hover:text-slate-300 hover:bg-slate-800"
+                onClick={handleClearFilters}
+              >
+                Limpiar
+              </Button>
+            </div>
 
-      <Card className="bg-slate-800/80 border-slate-700 overflow-hidden">
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow className="border-slate-700 hover:bg-slate-800/50">
-                <TableHead className="text-slate-300">Fecha</TableHead>
-                <TableHead className="text-slate-300">Actor</TableHead>
-                <TableHead className="text-slate-300">Rol</TableHead>
-                <TableHead className="text-slate-300">Acción</TableHead>
-                <TableHead className="text-slate-300">Entidad</TableHead>
-                <TableHead className="text-slate-300">ID registro</TableHead>
-                <TableHead className="text-slate-300 w-[100px]">Detalle</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {loading ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-400 py-12">
-                    <Loader2 className="h-8 w-8 animate-spin mx-auto inline" />
-                  </TableCell>
-                </TableRow>
-              ) : rows.length === 0 ? (
-                <TableRow>
-                  <TableCell colSpan={7} className="text-center text-slate-500 py-12">
-                    No hay registros con los filtros actuales.
-                  </TableCell>
-                </TableRow>
-              ) : (
-                rows.map((r) => (
-                  <TableRow key={r.id} className="border-slate-700">
-                    <TableCell className="text-slate-200 whitespace-nowrap text-sm">
-                      {new Date(r.fecha).toLocaleString("es-VE")}
-                    </TableCell>
-                    <TableCell className="text-slate-200 text-sm max-w-[180px] truncate">
-                      {r.user?.name ?? r.usuario_id}
-                    </TableCell>
-                    <TableCell className="text-slate-400 text-xs">
-                      {r.user?.role ?? "—"}
-                    </TableCell>
-                    <TableCell className="text-slate-300 text-xs font-mono">
-                      {r.accion}
-                    </TableCell>
-                    <TableCell className="text-slate-300 text-xs">{r.entidad}</TableCell>
-                    <TableCell className="text-slate-400 text-xs font-mono max-w-[120px] truncate">
-                      {r.entidad_id}
-                    </TableCell>
-                    <TableCell>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="text-indigo-400 hover:text-indigo-300"
-                        onClick={() => {
-                          setDetailRow(r);
-                          setDetailOpen(true);
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </div>
-
-        <div className="flex items-center justify-between gap-4 p-4 border-t border-slate-700">
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={page <= 1 || loading}
-            onClick={() => setPage((p) => Math.max(1, p - 1))}
-            className="border-slate-600 text-slate-200"
-          >
-            <ChevronLeft className="h-4 w-4 shrink-0" />
-            Anterior
-          </Button>
-          <span className="text-sm text-slate-400">
-            Página {page}
-            {totalPages > 0 ? ` de ${totalPages}` : ""}
-            {totalPages === 0 && !loading ? " (sin datos)" : ""}
-          </span>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            disabled={
-              loading || totalPages === 0 || page >= totalPages
-            }
-            onClick={() => setPage((p) => p + 1)}
-            className="border-slate-600 text-slate-200"
-          >
-            Siguiente
-            <ChevronRight className="h-4 w-4 shrink-0" />
-          </Button>
-        </div>
-      </Card>
-
-      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="bg-slate-900 border-slate-700 text-white max-w-2xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>Detalle de auditoría</DialogTitle>
-          </DialogHeader>
-          {detailRow && (
-            <div className="space-y-4 text-sm">
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <div>
-                  <span className="text-slate-500">Acción</span>
-                  <p className="font-mono text-xs">{detailRow.accion}</p>
-                </div>
-                <div>
-                  <span className="text-slate-500">Entidad</span>
-                  <p>{detailRow.entidad}</p>
+            <div className="p-5 space-y-5">
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400 font-medium">Nombre de Fiscal o Usuario</Label>
+                <div className="relative">
+                  <User className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                  <Input
+                    value={actorId}
+                    onChange={(e) => setActorId(e.target.value)}
+                    placeholder="Ej. Juan Pérez"
+                    className="pl-9 bg-slate-950/50 border-slate-800 h-9 text-sm focus-visible:ring-indigo-500 text-slate-200"
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
+                  />
                 </div>
               </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400 font-medium">Tipo de Entidad</Label>
+                <Select value={entidad} onValueChange={(v) => { setEntidad(v); setPage(1); }}>
+                  <SelectTrigger className="bg-slate-950/50 border-slate-800 h-9 text-sm text-slate-200">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {ENTIDADES.map((o) => (
+                      <SelectItem key={o.value || "all"} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400 font-medium">Tipo de Acción</Label>
+                <Select value={accion} onValueChange={(v) => { setAccion(v); setPage(1); }}>
+                  <SelectTrigger className="bg-slate-950/50 border-slate-800 h-9 text-sm text-slate-200">
+                    <SelectValue placeholder="Seleccionar" />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-800 border-slate-700">
+                    {ACCIONES.map((o) => (
+                      <SelectItem key={o.value || "all-a"} value={o.value}>{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="text-xs text-slate-400 font-medium">ID del Registro</Label>
+                <div className="relative">
+                  <FileText className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-500" />
+                  <Input
+                    value={entidadId}
+                    onChange={(e) => setEntidadId(e.target.value)}
+                    placeholder="UUID"
+                    className="pl-9 bg-slate-950/50 border-slate-800 h-9 text-sm focus-visible:ring-indigo-500 text-slate-200"
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyFilters()}
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400 font-medium">Desde</Label>
+                  <Input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    className="bg-slate-950/50 border-slate-800 h-9 text-xs text-slate-300"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-slate-400 font-medium">Hasta</Label>
+                  <Input
+                    type="date"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    className="bg-slate-950/50 border-slate-800 h-9 text-xs text-slate-300"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-slate-800 bg-slate-900/50 mt-auto">
+              <Button
+                type="button"
+                onClick={handleApplyFilters}
+                disabled={loading}
+                className="w-full bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-500/20 h-10 transition-all"
+              >
+                {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Search className="h-4 w-4 mr-2" />}
+                Buscar Registros
+              </Button>
+            </div>
+          </Card>
+        </div>
+
+        {/* Tabla principal */}
+        <div className="w-full xl:w-3/4 space-y-4">
+          <Card className="bg-slate-900 border-slate-800 shadow-xl overflow-hidden">
+            <div className="flex items-center justify-between p-4 border-b border-slate-800 bg-slate-900/30">
+              <div className="flex items-center gap-2">
+                <Database className="h-4 w-4 text-indigo-400" />
+                <h3 className="text-sm font-medium text-slate-200">Resultados</h3>
+                <span className="ml-3 inline-flex items-center rounded-full bg-slate-800 px-2 py-0.5 text-[10px] font-medium text-slate-400 ring-1 ring-inset ring-slate-700">
+                  {total} registros
+                </span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto min-h-[400px]">
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-slate-800 bg-slate-950/40 hover:bg-slate-950/40">
+                    <TableHead className="text-slate-400 text-xs font-medium uppercase tracking-wider">Fecha</TableHead>
+                    <TableHead className="text-slate-400 text-xs font-medium uppercase tracking-wider">Actor</TableHead>
+                    <TableHead className="text-slate-400 text-xs font-medium uppercase tracking-wider">Entidad</TableHead>
+                    <TableHead className="text-slate-400 text-xs font-medium uppercase tracking-wider">Acción</TableHead>
+                    <TableHead className="text-slate-400 text-xs font-medium uppercase tracking-wider">Detalle</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loading ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-[300px] text-center">
+                        <Loader2 className="h-6 w-6 animate-spin text-indigo-400 mx-auto" />
+                      </TableCell>
+                    </TableRow>
+                  ) : rows.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={5} className="h-[300px] text-center text-slate-500 text-sm">
+                        No hay registros que coincidan con la búsqueda.
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    rows.map((r) => (
+                      <TableRow key={r.id} className="border-slate-800 hover:bg-slate-800/30 transition-colors">
+                        <TableCell className="text-slate-300 text-xs whitespace-nowrap">
+                          {new Date(r.fecha).toLocaleString("es-VE", {
+                            day: "2-digit", month: "short", year: "numeric",
+                            hour: "2-digit", minute: "2-digit"
+                          })}
+                        </TableCell>
+                        <TableCell className="max-w-[180px] truncate">
+                          <div className="text-slate-200 text-sm font-medium">{r.user?.name ?? "Desconocido"}</div>
+                          <div className="text-slate-500 text-[10px] uppercase tracking-wider mt-0.5">{r.user?.role ?? "Sin Rol"}</div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-slate-300 text-sm">{r.entidad.replace(/_/g, " ")}</div>
+                          <div className="text-slate-500 text-[10px] font-mono mt-0.5 truncate max-w-[140px]">{r.entidad_id}</div>
+                        </TableCell>
+                        <TableCell>
+                          <ActionBadge action={r.accion} />
+                        </TableCell>
+                        <TableCell>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-indigo-300 hover:bg-indigo-500/10 rounded-full"
+                            onClick={() => {
+                              setDetailRow(r);
+                              setDetailOpen(true);
+                            }}
+                          >
+                            <span className="sr-only">Ver detalle</span>
+                            <Search className="h-4 w-4" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </div>
+
+            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-800 bg-slate-900/30">
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={page <= 1 || loading}
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Anterior
+              </Button>
+              <span className="text-xs text-slate-500 font-medium">
+                Página {page} de {totalPages || 1}
+              </span>
+              <Button
+                variant="outline"
+                size="sm"
+                disabled={loading || totalPages === 0 || page >= totalPages}
+                onClick={() => setPage((p) => p + 1)}
+                className="border-slate-700 bg-slate-900 text-slate-300 hover:bg-slate-800 hover:text-white"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            </div>
+          </Card>
+        </div>
+      </div>
+
+      <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
+        <DialogContent className="bg-slate-900 border-slate-800 shadow-2xl text-slate-200 max-w-3xl p-0 overflow-hidden rounded-xl">
+          <div className="flex items-center justify-between p-5 border-b border-slate-800 bg-slate-900">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-500/10 border border-indigo-500/20">
+                <History className="h-5 w-5 text-indigo-400" />
+              </div>
               <div>
-                <div className="rounded-lg border border-slate-800 overflow-hidden">
-                  <div className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] bg-slate-950/70 px-3 py-2 text-[11px] uppercase tracking-wide text-slate-400 border-b border-slate-800">
-                    <span>Campo</span>
-                    <span>Antes</span>
-                    <span>Ahora</span>
+                <DialogTitle className="text-lg font-semibold text-slate-100">
+                  Detalle de Auditoría
+                </DialogTitle>
+                <p className="text-xs text-slate-400 mt-0.5">Revisión de cambios del registro</p>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8 text-slate-400 hover:text-white hover:bg-slate-800 rounded-full"
+              onClick={() => setDetailOpen(false)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+
+          {detailRow && (
+            <div className="max-h-[70vh] overflow-y-auto">
+              <div className="p-5 grid grid-cols-2 md:grid-cols-4 gap-4 bg-slate-950/30">
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Fecha</div>
+                  <div className="text-sm font-medium text-slate-300">
+                    {new Date(detailRow.fecha).toLocaleString("es-VE")}
                   </div>
-                  <div className="max-h-[360px] overflow-y-auto">
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Actor</div>
+                  <div className="text-sm font-medium text-slate-300">
+                    {detailRow.user?.name ?? "Desconocido"}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Entidad</div>
+                  <div className="text-sm font-medium text-slate-300">{detailRow.entidad}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase tracking-wider text-slate-500 mb-1">Acción</div>
+                  <div><ActionBadge action={detailRow.accion} /></div>
+                </div>
+              </div>
+
+              <div className="p-5">
+                <h4 className="text-xs font-medium text-slate-400 uppercase tracking-wider mb-3">
+                  Campos Modificados
+                </h4>
+                <div className="rounded-lg border border-slate-800 overflow-hidden bg-slate-950/50">
+                  <div className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] bg-slate-900 px-4 py-2.5 text-[11px] uppercase tracking-wider text-slate-500 border-b border-slate-800 font-medium">
+                    <span>Campo</span>
+                    <span>Valor Anterior</span>
+                    <span>Nuevo Valor</span>
+                  </div>
+                  <div>
                     {diffRows.length === 0 ? (
-                      <div className="px-3 py-4 text-xs text-slate-400">No hay cambios detectados en los campos comparables.</div>
+                      <div className="px-4 py-6 text-sm text-center text-slate-500">
+                        No se detectaron cambios en los campos o la acción no modificó datos.
+                      </div>
                     ) : (
                       diffRows.map((row) => (
                         <div
                           key={row.key}
-                          className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] gap-3 px-3 py-2 border-b border-slate-800/80 last:border-b-0 bg-amber-500/5"
+                          className="grid grid-cols-[minmax(140px,1.2fr)_1fr_1fr] gap-4 px-4 py-3 border-b border-slate-800/50 last:border-b-0 hover:bg-slate-900/50 transition-colors"
                         >
-                          <div className="text-slate-300 text-xs font-medium">
+                          <div className="text-slate-300 text-xs font-medium pt-0.5">
                             {row.label}
-                            <span className="ml-2 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-amber-300">
-                              Cambió
-                            </span>
                           </div>
-                          <div className="text-xs break-all text-rose-300">
+                          <div className="text-xs break-all text-rose-300/90 font-mono bg-rose-500/5 p-2 rounded border border-rose-500/10">
                             {row.beforeText}
                           </div>
-                          <div className="text-xs break-all text-emerald-300">
+                          <div className="text-xs break-all text-emerald-300/90 font-mono bg-emerald-500/5 p-2 rounded border border-emerald-500/10">
                             {row.afterText}
                           </div>
                         </div>
