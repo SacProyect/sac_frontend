@@ -6,7 +6,7 @@ import { Button } from '@/components/UI/button';
 import { Input } from '@/components/UI/input';
 import {
   Select,
-  SelectContent,  
+  SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
@@ -33,8 +33,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/UI/dialog';
-import { Button as DialogButton } from '@/components/UI/button';
-import { MoreVertical, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X, Building2, Plus, FileText, Scale } from 'lucide-react';
+import {
+  MoreVertical,
+  ChevronDown,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+  X,
+  Building2,
+  Plus,
+  FileText,
+  Scale,
+} from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
 import { contract_type } from '@/types/taxpayer';
@@ -229,18 +241,16 @@ export default function AdminPageV2() {
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                   <span
-                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      item.tipo === 'Especial'
-                        ? 'bg-purple-900 text-purple-200'
-                        : 'bg-blue-900 text-blue-200'
-                    }`}
+                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${item.tipo === 'Especial'
+                      ? 'bg-purple-900 text-purple-200'
+                      : 'bg-blue-900 text-blue-200'
+                      }`}
                   >
                     {item.tipo}
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${
-                      isExpanded ? 'rotate-180' : ''
-                    }`}
+                    className={`h-4 w-4 text-slate-400 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                      }`}
                   />
                 </div>
               </div>
@@ -293,97 +303,96 @@ export default function AdminPageV2() {
   const DesktopTable = () => (
     <div className="rounded-lg border border-slate-700 overflow-x-auto">
       <div className="min-w-[700px]">
-      <Table>
-        <TableHeader>
-          <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
-            <TableHead className="text-slate-300 font-semibold">Nro Providencia</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Procedimiento</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Razón Social</TableHead>
-            <TableHead className="text-slate-300 font-semibold">RIF</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Tipo</TableHead>
-            <TableHead className="text-slate-300 font-semibold hidden lg:table-cell">
-              Dirección
-            </TableHead>
-            <TableHead className="text-slate-300 font-semibold hidden md:table-cell">Fecha</TableHead>
-            <TableHead className="text-slate-300 font-semibold hidden lg:table-cell">Parroquia</TableHead>
-            <TableHead className="text-slate-300 font-semibold hidden xl:table-cell">Fiscal</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-right">Acciones</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {loading ? (
-            Array.from({ length: 10 }).map((_, i) => (
-              <TableRow key={i} className="border-slate-700">
-                <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-14 bg-slate-700" /></TableCell>
-                <TableCell><Skeleton className="h-5 min-w-[120px] bg-slate-700" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
-                <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
-                <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 min-w-[80px] bg-slate-700" /></TableCell>
-                <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20 bg-slate-700" /></TableCell>
-                <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
-                <TableCell className="hidden xl:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
-                <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded bg-slate-700" /></TableCell>
-              </TableRow>
-            ))
-          ) : tableData.length === 0 ? (
-            <TableRow>
-              <TableCell colSpan={10} className="text-center text-slate-400 py-8">
-                No se encontraron contribuyentes
-              </TableCell>
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
+              <TableHead className="text-slate-300 font-semibold">Nro Providencia</TableHead>
+              <TableHead className="text-slate-300 font-semibold">Procedimiento</TableHead>
+              <TableHead className="text-slate-300 font-semibold">Razón Social</TableHead>
+              <TableHead className="text-slate-300 font-semibold">RIF</TableHead>
+              <TableHead className="text-slate-300 font-semibold">Tipo</TableHead>
+              <TableHead className="text-slate-300 font-semibold hidden lg:table-cell">
+                Dirección
+              </TableHead>
+              <TableHead className="text-slate-300 font-semibold hidden md:table-cell">Fecha</TableHead>
+              <TableHead className="text-slate-300 font-semibold hidden lg:table-cell">Parroquia</TableHead>
+              <TableHead className="text-slate-300 font-semibold hidden xl:table-cell">Fiscal</TableHead>
+              <TableHead className="text-slate-300 font-semibold text-right">Acciones</TableHead>
             </TableRow>
-          ) : (
-            tableData.map((item) => (
-              <TableRow
-                key={item.id}
-                className="border-slate-700 hover:bg-slate-800 transition-all duration-200 h-14"
-              >
-                <TableCell className="font-mono text-xs text-slate-300 whitespace-nowrap">
-                  {item.nroProvidencia}
+          </TableHeader>
+          <TableBody>
+            {loading ? (
+              Array.from({ length: 10 }).map((_, i) => (
+                <TableRow key={i} className="border-slate-700">
+                  <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-14 bg-slate-700" /></TableCell>
+                  <TableCell><Skeleton className="h-5 min-w-[120px] bg-slate-700" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                  <TableCell><Skeleton className="h-5 w-16 bg-slate-700" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 min-w-[80px] bg-slate-700" /></TableCell>
+                  <TableCell className="hidden md:table-cell"><Skeleton className="h-5 w-20 bg-slate-700" /></TableCell>
+                  <TableCell className="hidden lg:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                  <TableCell className="hidden xl:table-cell"><Skeleton className="h-5 w-24 bg-slate-700" /></TableCell>
+                  <TableCell className="text-right"><Skeleton className="h-8 w-8 ml-auto rounded bg-slate-700" /></TableCell>
+                </TableRow>
+              ))
+            ) : tableData.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={10} className="text-center text-slate-400 py-8">
+                  No se encontraron contribuyentes
                 </TableCell>
-                <TableCell className="text-xs text-slate-400 whitespace-nowrap">{item.procedimiento}</TableCell>
-                <TableCell className="text-sm text-slate-200 font-medium max-w-[160px]">
-                  <span className="block truncate" title={item.razonSocial}>{item.razonSocial}</span>
-                </TableCell>
-                <TableCell className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.rif}</TableCell>
-                <TableCell>
-                  <span
-                    className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                      item.tipo === 'Especial'
+              </TableRow>
+            ) : (
+              tableData.map((item) => (
+                <TableRow
+                  key={item.id}
+                  className="border-slate-700 hover:bg-slate-800 transition-all duration-200 h-14"
+                >
+                  <TableCell className="font-mono text-xs text-slate-300 whitespace-nowrap">
+                    {item.nroProvidencia}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 whitespace-nowrap">{item.procedimiento}</TableCell>
+                  <TableCell className="text-sm text-slate-200 font-medium max-w-[160px]">
+                    <span className="block truncate" title={item.razonSocial}>{item.razonSocial}</span>
+                  </TableCell>
+                  <TableCell className="font-mono text-xs text-slate-400 whitespace-nowrap">{item.rif}</TableCell>
+                  <TableCell>
+                    <span
+                      className={`inline-block px-2 py-1 rounded text-xs font-medium ${item.tipo === 'Especial'
                         ? 'bg-purple-900 text-purple-200'
                         : 'bg-blue-900 text-blue-200'
-                    }`}
-                  >
-                    {item.tipo}
-                  </span>
-                </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden lg:table-cell max-w-[140px]">
-                  <span className="block truncate" title={item.direccion}>{item.direccion}</span>
-                </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden md:table-cell">
-                  {item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A'}
-                </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden lg:table-cell whitespace-nowrap">
-                  <span className="block truncate max-w-[100px]" title={item.parroquia}>{item.parroquia}</span>
-                </TableCell>
-                <TableCell className="text-xs text-slate-400 hidden xl:table-cell">
-                  {item.fiscal}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleView(item.originalData)}
-                    className="h-8 px-3 text-xs font-semibold text-indigo-400 hover:text-white hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 rounded-lg transition-all"
-                  >
-                    Ver Detalle
-                  </Button>
-                </TableCell>
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+                        }`}
+                    >
+                      {item.tipo}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 hidden lg:table-cell max-w-[140px]">
+                    <span className="block truncate" title={item.direccion}>{item.direccion}</span>
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 hidden md:table-cell">
+                    {item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A'}
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 hidden lg:table-cell whitespace-nowrap">
+                    <span className="block truncate max-w-[100px]" title={item.parroquia}>{item.parroquia}</span>
+                  </TableCell>
+                  <TableCell className="text-xs text-slate-400 hidden xl:table-cell">
+                    {item.fiscal}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => handleView(item.originalData)}
+                      className="h-8 px-3 text-xs font-semibold text-indigo-400 hover:text-white hover:bg-indigo-600 border border-indigo-500/30 hover:border-indigo-500 rounded-lg transition-all"
+                    >
+                      Ver Detalle
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
     </div>
   );
@@ -400,7 +409,7 @@ export default function AdminPageV2() {
           <h1 className="text-3xl font-bold text-white tracking-tight">Administración</h1>
           <p className="text-slate-400 mt-1">Gestión integral de contribuyentes y providencias</p>
         </div>
-        
+
         {/* Acciones Rápidas (Ahora en el Top-Right) */}
         <div className="flex flex-wrap items-center gap-2.5">
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
@@ -492,9 +501,8 @@ export default function AdminPageV2() {
                           }}
                           className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-slate-700/80 active:bg-slate-700 transition-colors text-left border-b border-slate-700/50 last:border-0"
                         >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${
-                            item.tipo === 'Especial' ? 'bg-purple-900/60 text-purple-300' : 'bg-blue-900/60 text-blue-300'
-                          }`}>
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 text-xs font-bold ${item.tipo === 'Especial' ? 'bg-purple-900/60 text-purple-300' : 'bg-blue-900/60 text-blue-300'
+                            }`}>
                             {item.tipo === 'Especial' ? 'E' : 'O'}
                           </div>
                           <div className="flex-1 min-w-0">
@@ -634,7 +642,7 @@ export default function AdminPageV2() {
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <DialogButton
+            <Button
               variant="outline"
               onClick={() => {
                 setDeleteConfirmOpen(false);
@@ -643,14 +651,14 @@ export default function AdminPageV2() {
               className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
             >
               Cancelar
-            </DialogButton>
-            <DialogButton
+            </Button>
+            <Button
               variant="destructive"
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 text-white"
             >
               Eliminar
-            </DialogButton>
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -678,13 +686,13 @@ export default function AdminPageV2() {
       <AddAvisoModalV2
         isOpen={isAddAvisoOpen}
         onClose={() => setIsAddAvisoOpen(false)}
-        onSuccess={() => {}}
+        onSuccess={() => { }}
       />
 
       <AddMultaModalV2
         isOpen={isAddMultaOpen}
         onClose={() => setIsAddMultaOpen(false)}
-        onSuccess={() => {}}
+        onSuccess={() => { }}
       />
     </div>
   );

@@ -23,6 +23,7 @@ interface Observation {
 
 interface ObservationsPanelProps {
   taxpayerId: string | undefined;
+  initialObservations?: Observation[];
 }
 
 /* ─── Helpers ────────────────────────────────────────────────── */
@@ -36,11 +37,11 @@ function ticketNumber(index: number) {
 }
 
 /* ─── Component ──────────────────────────────────────────────── */
-export function ObservationsPanel({ taxpayerId }: ObservationsPanelProps) {
+export function ObservationsPanel({ taxpayerId, initialObservations }: ObservationsPanelProps) {
   const { user } = useAuth();
 
-  const [observations, setObservations] = useState<Observation[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [observations, setObservations] = useState<Observation[]>(initialObservations ?? []);
+  const [loading, setLoading] = useState(!(initialObservations && initialObservations.length >= 0));
   const [submitting, setSubmitting] = useState(false);
 
   /* create form */
@@ -63,6 +64,11 @@ export function ObservationsPanel({ taxpayerId }: ObservationsPanelProps) {
   /* ── Fetch ──────────────────────────────────────────────────── */
   useEffect(() => {
     if (!taxpayerId) return;
+    if (initialObservations) {
+      setObservations(initialObservations);
+      setLoading(false);
+      return;
+    }
 
     (async () => {
       try {
@@ -75,7 +81,7 @@ export function ObservationsPanel({ taxpayerId }: ObservationsPanelProps) {
         setLoading(false);
       }
     })();
-  }, [taxpayerId]);
+  }, [taxpayerId, initialObservations]);
 
   /* ── Create ─────────────────────────────────────────────────── */
   const handleCreate = async () => {

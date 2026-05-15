@@ -1,23 +1,19 @@
 import { ProtectedRoute } from '@/components/Navigation/protected-route';
+import { AdminOnly } from '@/components/Navigation/admin-only';
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
-import { AuthLayout } from '@/hooks/use-auth';
-import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory } from '@/components/utils/api/report-functions';
+import { AuthLayout, useAuth } from '@/hooks/use-auth';
+import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory, getTaxpayerDashboard } from '@/components/utils/api/report-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayoutV2 from '@/main-layout-v2';
 import { lazy, Suspense, type ComponentType } from 'react';
-// import ContributionsPage from '@/pages/Contributions/Contributions-Page-V2';
 import { IVAReports } from '@/types/iva-reports';
-// import ReportModal from '@/components/reports/ReportModal';
-// import ReportModalGroups from '@/components/reports/ReportModalGroups';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
-// import FiscalReviewPage from '@/pages/fiscal-review/FiscalReviewPage';
-// import { PresentationProvider } from '@/components/context/PresentationContext';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
 // const ComitmentPage = lazy(() => import('@/pages/Events/ComitmentPage'));
@@ -55,6 +51,8 @@ import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 // const ErrorsReportV2 = lazy(() => import("@/pages/errors/errors-report-v2"));
 // const LoginPageV2 = lazy(() => import("@/pages/Auth/login-page-v2"));
 
+const VisitsMonitorPage = lazy(() => import("@/pages/Visits/visits-monitor-page"));
+
 /**
  * Helper para lazy loading con retry automático
  * Maneja errores transitorios de red y carga de chunks
@@ -67,23 +65,23 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
         const loadComponent = (attempt: number): Promise<{ default: T }> => {
             return factory().catch((error: Error) => {
                 // Si es error de chunk dinámico fallido y tenemos reintentos
-                const isChunkError = 
+                const isChunkError =
                     error.message?.includes('Failed to fetch dynamically imported module') ||
                     error.message?.includes('Failed to load module script') ||
                     error.message?.includes('error loading dynamically imported module') ||
                     error.message?.includes('Loading chunk');
-                
+
                 if (isChunkError && attempt < retries) {
                     console.warn(`Error cargando módulo, intento ${attempt + 1} de ${retries}. Recargando...`);
                     // Pequeña espera antes de reintentar
                     return new Promise(resolve => setTimeout(resolve, 300 * attempt))
                         .then(() => loadComponent(attempt + 1));
                 }
-                
+
                 throw error;
             });
         };
-        
+
         return loadComponent(1);
     });
 }
@@ -109,8 +107,12 @@ const IndexIvaV2 = lazyWithRetry(() => import("@/pages/index-iva/index-iva-v2"))
 const ErrorsReportV2 = lazyWithRetry(() => import("@/pages/errors/errors-report-v2"));
 const GroupReportPageV2 = lazyWithRetry(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazyWithRetry(() => import("@/pages/reports/taxpayer-report-page"));
+const GestionPersonalPageV2 = lazyWithRetry(() => import("@/pages/gestion-personal/gestion-personal-page-v2"));
 const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
 const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
+const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
+const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-presencia-page"));
+const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
 
 type LoaderData = {
     events: Event[],
@@ -119,6 +121,7 @@ type LoaderData = {
     taxSummary: IVAReports[],
     islrReports: ISLRReports[],
     taxpayerData: any;
+    observations: any[];
 }
 
 export interface Fines {
@@ -132,6 +135,25 @@ export interface Fines {
     total_amount: number
 }
 
+
+function GestionPersonalRoute() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role !== "ADMIN") {
+        return <Navigate to="/admin" replace />;
+    }
+    return (
+        <Suspense
+            fallback={
+                <div className="absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-lg items-center text-center justify-center z-50 bg-background text-foreground">
+                    Cargando Gestión de personal...
+                </div>
+            }
+        >
+            <GestionPersonalPageV2 />
+        </Suspense>
+    );
+}
 
 export const router = createBrowserRouter([
     {
@@ -164,6 +186,28 @@ export const router = createBrowserRouter([
                         element: <Suspense fallback={<GlobalLoader message="Cargando auditoría..." />}><AuditTrailPageV2 /></Suspense>,
                     },
                     {
+                        path: "auditoria-interna",
+                        element: isInternalAuditFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando auditoría interna..." />}>
+                                <InternalAuditPageV2 />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "visits-monitor",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={
+                                    <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                        Cargando Monitoreo de Visitas...
+                                    </div>
+                                }>
+                                    <VisitsMonitorPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
+                    },
+                    {
                         path: "settings",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Ajustes..." />}><SettingsPageV2 /></Suspense>,
                     },
@@ -188,6 +232,42 @@ export const router = createBrowserRouter([
                     {
                         path: "fiscal-review",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Revisión Fiscal..." />}><FiscalReviewPageV2 /></Suspense>,
+                    },
+                    {
+                        path: "fiscalizacion",
+                        element: <Navigate to="/gestion-personal" replace />,
+                    },
+                    {
+                        path: "gestion-personal",
+                        element: <GestionPersonalRoute />,
+                    },
+                    {
+                        path: "divulgacion-presencia-fiscal",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Divulgación y Presencia Fiscal..." />}>
+                                    <DivulgacionPresenciaPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
+                    },
+                    {
+                        path: "divulgacion-presencia-fiscal/:id",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando jornada..." />}>
+                                    <DivulgacionDetallePage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
+                    },
+                    {
+                        path: "divulgacion/fiscal",
+                        element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
+                    },
+                    {
+                        path: "divulgacion/coordinador",
+                        element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
                     },
                     {
                         path: "observations/:taxpayerId",
@@ -387,7 +467,35 @@ export const router = createBrowserRouter([
                         loader: async ({ params }: LoaderFunctionArgs): Promise<LoaderData> => {
                             try {
                                 const taxpayerId = params.taxpayer;
-                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null };
+                                if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null, observations: [] };
+
+                                if (isTaxpayerDashboardFeatureEnabled) {
+                                    const dashboard = await getTaxpayerDashboard(taxpayerId);
+                                    const events = Array.isArray(dashboard?.events) ? (dashboard.events as Event[]) : [];
+                                    events.forEach((event) => (event.id = `${event.id}`));
+
+                                    const taxSummaryPayload = dashboard?.taxSummary as { data?: IVAReports[] } | IVAReports[] | undefined;
+                                    const taxSummary = Array.isArray(taxSummaryPayload)
+                                        ? taxSummaryPayload
+                                        : Array.isArray(taxSummaryPayload?.data)
+                                            ? taxSummaryPayload.data
+                                            : [];
+
+                                    const islrPayload = dashboard?.islrReports as { data?: ISLRReports[] } | ISLRReports[] | undefined;
+                                    const islrReports = Array.isArray(islrPayload)
+                                        ? islrPayload
+                                        : Array.isArray(islrPayload?.data)
+                                            ? islrPayload.data
+                                            : [];
+
+                                    const fines = (dashboard?.fineHistory ?? []) as Fines[];
+                                    const payments = (dashboard?.paymentHistory ?? []) as Payment[];
+                                    const taxpayerData = dashboard?.taxpayerData ?? null;
+                                    const observations = Array.isArray(dashboard?.observations) ? dashboard.observations : [];
+
+                                    return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations };
+                                }
+
                                 const taxpayerData = await getTaxpayerData(taxpayerId);
                                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                                 events.forEach((event) => (event.id = `${event.id}`));
@@ -397,10 +505,10 @@ export const router = createBrowserRouter([
                                 const taxSummary = (await getTaxHistory(taxpayerId)).data;
                                 const islrReports = (await getIslrReports(taxpayerId)).data
 
-                                return { events, fines, payments, taxSummary, islrReports, taxpayerData };
+                                return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations: [] };
                             } catch (error) {
                                 console.error(error);
-                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null };
+                                return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null, observations: [] };
                             }
                         },
                     },

@@ -18,6 +18,28 @@ interface TaxpayerData {
 	officerId: string,
 }
 
+export type TaxpayerCheckResponse =
+	| {
+		exists: true;
+		kind: "EXISTENTE";
+		message: string;
+		taxpayer: {
+			id: string;
+			rif: string;
+			name: string;
+			estatus: "Especial" | "Ordinario";
+			contract_type: "SPECIAL" | "ORDINARY";
+			process: string;
+			emition_date: string;
+		};
+	}
+	| {
+		exists: false;
+		kind: "NUEVO_REGISTRO";
+		message: string;
+		rif: string;
+	};
+
 interface UpdateObservationPayload {
 	description: string;
 }
@@ -33,6 +55,18 @@ const generateIdempotencyKey = () => {
 	}
 	return `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 };
+
+/**
+ * Normaliza el campo `name` de un contribuyente (o array) a mayúsculas.
+ * Afecta solo el campo name; el resto de los datos queda intacto.
+ */
+function normalizeUppercase<T extends { name?: string }>(data: T): T {
+	if (!data || typeof data !== 'object') return data;
+	return { ...data, name: data.name ? data.name.toUpperCase() : data.name };
+}
+function normalizeUppercaseArray<T extends { name?: string }>(arr: T[]): T[] {
+	return Array.isArray(arr) ? arr.map(normalizeUppercase) : arr;
+}
 
 export const updateTaxpayer = async (id: string, data: any) => {
 	try {
@@ -149,6 +183,11 @@ export const getTaxpayers = async (
 		const response = await (await apiConnection.get(requestURL, {
 			params,
 		})).data;
+
+		// Normalizar nombres a mayúsculas
+		if (response?.data && Array.isArray(response.data)) {
+			response.data = normalizeUppercaseArray(response.data);
+		}
 
 		return response;
 	} catch (e) {
@@ -602,8 +641,9 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 		if (taxpayerId) {
 			requestURL = `/taxpayer/data/${taxpayerId}`
 		}
-		const response = await (await apiConnection.get(requestURL)).data
-		return response
+		const data = await (await apiConnection.get(requestURL)).data
+		// Normalizar nombre a mayúsculas
+		return normalizeUppercase(data)
 
 	} catch (e) {
 		console.error(e);
@@ -611,12 +651,50 @@ export const getTaxpayerData = async (taxpayerId: string) => {
 	}
 }
 
-export const uploadRepairReport = async (taxpayerId: string, file: File) => {
+export const checkTaxpayerByRif = async (rif: string): Promise<TaxpayerCheckResponse> => {
+	try {
+		const response = await apiConnection.get(`/taxpayer/check/${encodeURIComponent(rif)}`);
+		return response.data as TaxpayerCheckResponse;
+	} catch (e: any) {
+		const backendMessage =
+			e?.response?.data?.error ||
+			e?.response?.data?.message ||
+			e?.message ||
+			"No se pudo validar el RIF.";
+		throw new Error(String(backendMessage));
+	}
+}
+
+/** Metadatos opcionales alineados a la plantilla «ACTAS DE REPARO» (fechas en ISO yyyy-mm-dd). */
+export type RepairReportUploadMeta = {
+	fechaEntrega?: string;
+	/** UUID de usuario fiscal (rol FISCAL) enlazado al acta. */
+	fiscalActuanteUserId?: string;
+	/** UUID de usuario supervisor (rol SUPERVISOR) enlazado al acta. */
+	supervisorUserId?: string;
+	fiscalActuante?: string;
+	supervisorNombre?: string;
+	impuestoTipo?: string;
+	numeroExpediente?: string;
+	ejercicioFiscalPeriodo?: string;
+	numeroReparo?: string;
+	fechaNotificado?: string;
+	montoIslr?: string;
+	montoIva?: string;
+	montoAceptacionPago?: string;
+	montoTotal?: string;
+};
+
+export const uploadRepairReport = async (taxpayerId: string, file: File, meta?: RepairReportUploadMeta) => {
 	try {
 		const formData = new FormData();
 		formData.append("repairReport", file);
+		if (meta) {
+			for (const [key, val] of Object.entries(meta)) {
+				if (val !== undefined && val !== "") formData.append(key, val);
+			}
+		}
 
-		// Ajusta la URL y método según tu backend
 		const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
 			headers: {
 				"Content-Type": "multipart/form-data"

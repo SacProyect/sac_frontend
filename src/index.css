@@ -109,3 +109,8 @@
 .invisible-scrollbar::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(180deg, rgba(129, 140, 248, 0.92), rgba(96, 165, 250, 0.88));
 }
+
+@keyframes fadeSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react';
 import { getTaxpayersCompliance } from '@/components/utils/api/report-functions';
 import { decimalToNumber } from '@/components/utils/number.utils';
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts';
-import { ShieldCheck, AlertCircle, XCircle, TrendingDown, TrendingUp, Download, AlertTriangle, Building2, BarChart3 } from 'lucide-react';
+import { ShieldCheck, AlertCircle, XCircle, Download, Building2, BarChart3 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/UI/tabs';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -33,7 +34,7 @@ const fmtBs = (val?: unknown) => {
 const normalize = (arr: any[]): TaxpayerItem[] =>
   arr.map((t) => ({
     id: t.id ?? t.taxpayerId ?? '',
-    name: t.name ?? t.businessName ?? t.razonSocial ?? '',
+    name: (t.name ?? t.businessName ?? t.razonSocial ?? '').toUpperCase(),
     rif: t.rif ?? t.taxpayerRif ?? '',
     compliance: Number(t.compliance ?? t.complianceScore ?? t.cumplimiento ?? t.complianceRate ?? 0),
     collectedIva: t.collectedIva ?? t.iva ?? t.totalIVA ?? 0,
@@ -158,7 +159,6 @@ function TierPanel({
       {/* Header with gradient band */}
       <div className={cn('bg-gradient-to-r px-3 py-2.5 shrink-0 border-b border-slate-700/60', c.headerBg)}>
         <div className="flex items-center gap-2">
-          {/* Accent dot */}
           <div className={cn('w-1.5 h-1.5 rounded-full shrink-0', c.accentBar)} />
           <span className={cn('shrink-0', c.icon)}>{icon}</span>
           <h3 className="font-bold text-white text-xs tracking-tight flex-1">
@@ -209,12 +209,11 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
   const pctLow  = total ? ((low / total) * 100).toFixed(0) : '0';
 
   const data = [
-    { name: 'Alto',  fullName: 'Alto Cumplimiento',  value: high   || 0,              color: '#22c55e', pct: pctHigh },
-    { name: 'Medio', fullName: 'Medio Cumplimiento', value: medium || 0,              color: '#eab308', pct: pctMed  },
-    { name: 'Bajo',  fullName: 'Bajo Cumplimiento',  value: low    || 0,              color: '#ef4444', pct: pctLow  },
+    { name: 'Alto',  fullName: 'Alto Cumplimiento',  value: high   || 0, color: '#22c55e', pct: pctHigh },
+    { name: 'Medio', fullName: 'Medio Cumplimiento', value: medium || 0, color: '#eab308', pct: pctMed  },
+    { name: 'Bajo',  fullName: 'Bajo Cumplimiento',  value: low    || 0, color: '#ef4444', pct: pctLow  },
   ];
 
-  // Custom label rendered on each segment
   const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, pct: pctVal }: any) => {
     const RADIAN = Math.PI / 180;
     const radius = innerRadius + (outerRadius - innerRadius) * 0.55;
@@ -251,7 +250,7 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
         </div>
       </div>
 
-      {/* Donut chart — takes all remaining space */}
+      {/* Donut chart */}
       <div className="flex-1 relative min-h-[180px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
@@ -276,7 +275,7 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
         </ResponsiveContainer>
       </div>
 
-      {/* Legend — horizontal, single row */}
+      {/* Legend */}
       <div className="flex items-center justify-center gap-4 px-3 py-2 shrink-0 border-t border-slate-700/60 flex-wrap">
         {data.map((d) => (
           <div key={d.name} className="flex items-center gap-1.5">
@@ -288,7 +287,7 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
         ))}
       </div>
 
-      {/* KPI tiles — simple, no icons */}
+      {/* KPI tiles */}
       <div className="grid grid-cols-3 gap-2 px-3 pb-3 shrink-0">
         <div className="rounded-lg border border-emerald-700/50 bg-slate-900/60 py-3 text-center">
           <p className="text-emerald-400 font-black text-2xl leading-none tabular-nums">{high}</p>
@@ -309,15 +308,16 @@ function DistributionPanel({ high, medium, low }: { high: number; medium: number
 
 // ─── Main Export ──────────────────────────────────────────────────────────────
 
-export default function StatsPage3Cumplimiento({ year }: { year: number }) {
+export default function StatsPage3Cumplimiento({ year, groupId }: { year: number; groupId?: string }) {
   const [data, setData] = useState<ComplianceData>({ high: [], medium: [], low: [] });
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('alto');
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       try {
-        const res = await getTaxpayersCompliance(year);
+        const res = await getTaxpayersCompliance(year, groupId);
         const raw = (res as any)?.data ?? res ?? {};
         setData({
           high:   normalize(raw.alto ?? raw.high ?? raw.highCompliance ?? []),
@@ -331,55 +331,116 @@ export default function StatsPage3Cumplimiento({ year }: { year: number }) {
       }
     };
     load();
-  }, [year]);
+  }, [year, groupId]);
+
+  const { high, medium, low } = data;
+
+  const BADGE = 'ml-1.5 inline-flex items-center justify-center rounded-full px-1.5 py-0.5 text-[9px] font-black tabular-nums min-w-[18px]';
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-4 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
-        {[1, 2, 3, 4].map(i => (
-          <div key={i} className="rounded-xl bg-slate-800/60 animate-pulse border border-slate-700/60 min-h-[300px] md:min-h-0" />
-        ))}
+      <div className="flex flex-col h-full overflow-hidden rounded-lg border border-slate-700/70 bg-slate-950/35">
+        <div className="shrink-0 border-b border-slate-700/50 px-2 py-2 sm:px-3">
+          <div className="flex gap-1 h-10 bg-slate-900/70 rounded-lg border border-slate-700 p-1 animate-pulse" />
+        </div>
+        <div className="flex-1 p-4 space-y-3">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="rounded-xl bg-slate-800/60 animate-pulse border border-slate-700/60 h-24" />
+          ))}
+        </div>
       </div>
     );
   }
 
-  const { high, medium, low } = data;
-
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 md:grid-rows-2 gap-3 p-3 h-full overflow-y-auto md:overflow-hidden custom-scrollbar">
-      <div className="min-h-[400px] md:min-h-0">
-        <TierPanel
-          title="Cumplimiento Alto"
-          count={high.length}
-          color="green"
-          items={high}
-          icon={<ShieldCheck className="w-3.5 h-3.5" />}
-          emptyMsg="No hay contribuyentes con cumplimiento alto"
-        />
-      </div>
-      <div className="min-h-[400px] md:min-h-0">
-        <TierPanel
-          title="Cumplimiento Medio"
-          count={medium.length}
-          color="yellow"
-          items={medium}
-          icon={<AlertCircle className="w-3.5 h-3.5" />}
-          emptyMsg="No hay contribuyentes con cumplimiento medio"
-        />
-      </div>
-      <div className="min-h-[400px] md:min-h-0">
-        <TierPanel
-          title="Cumplimiento Bajo"
-          count={low.length}
-          color="red"
-          items={low}
-          icon={<XCircle className="w-3.5 h-3.5" />}
-          emptyMsg="No hay contribuyentes con cumplimiento bajo"
-        />
-      </div>
-      <div className="min-h-[400px] md:min-h-0">
-        <DistributionPanel high={high.length} medium={medium.length} low={low.length} />
-      </div>
+    <div className="flex flex-col h-full overflow-hidden rounded-lg border border-slate-700/70 bg-slate-950/35">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="flex flex-col h-full overflow-hidden">
+
+        {/* ── Barra de tabs ── */}
+        <div className="shrink-0 border-b border-slate-700/50 px-2 py-2 sm:px-3">
+          <TabsList className="h-auto w-full justify-start gap-1 overflow-x-auto rounded-lg border border-slate-700 bg-slate-900/70 p-1">
+            <TabsTrigger
+              value="alto"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-emerald-600 data-[state=active]:text-white data-[state=active]:shadow-none gap-1"
+            >
+              <ShieldCheck className="w-3 h-3" />
+              Alto
+              <span className={cn(BADGE, 'bg-emerald-900/60 text-emerald-300')}>
+                {high.length}
+              </span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="medio"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-amber-500 data-[state=active]:text-black data-[state=active]:shadow-none gap-1"
+            >
+              <AlertCircle className="w-3 h-3" />
+              Medio
+              <span className={cn(BADGE, 'bg-amber-900/60 text-amber-300')}>
+                {medium.length}
+              </span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="bajo"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:shadow-none gap-1"
+            >
+              <XCircle className="w-3 h-3" />
+              Bajo
+              <span className={cn(BADGE, 'bg-red-900/60 text-red-300')}>
+                {low.length}
+              </span>
+            </TabsTrigger>
+
+            <TabsTrigger
+              value="distribucion"
+              className="h-8 rounded-md px-3 text-xs font-semibold text-slate-300 data-[state=active]:bg-blue-600 data-[state=active]:text-white data-[state=active]:shadow-none gap-1"
+            >
+              <BarChart3 className="w-3 h-3" />
+              Distribución
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        {/* ── Contenido de cada tab ── */}
+        <TabsContent value="alto" className="mt-0 flex-1 min-h-0 overflow-hidden">
+          <TierPanel
+            title="Cumplimiento Alto"
+            count={high.length}
+            color="green"
+            items={high}
+            icon={<ShieldCheck className="w-3.5 h-3.5" />}
+            emptyMsg="No hay contribuyentes con cumplimiento alto"
+          />
+        </TabsContent>
+
+        <TabsContent value="medio" className="mt-0 flex-1 min-h-0 overflow-hidden">
+          <TierPanel
+            title="Cumplimiento Medio"
+            count={medium.length}
+            color="yellow"
+            items={medium}
+            icon={<AlertCircle className="w-3.5 h-3.5" />}
+            emptyMsg="No hay contribuyentes con cumplimiento medio"
+          />
+        </TabsContent>
+
+        <TabsContent value="bajo" className="mt-0 flex-1 min-h-0 overflow-hidden">
+          <TierPanel
+            title="Cumplimiento Bajo"
+            count={low.length}
+            color="red"
+            items={low}
+            icon={<XCircle className="w-3.5 h-3.5" />}
+            emptyMsg="No hay contribuyentes con cumplimiento bajo"
+          />
+        </TabsContent>
+
+        <TabsContent value="distribucion" className="mt-0 flex-1 min-h-0 overflow-hidden">
+          <DistributionPanel high={high.length} medium={medium.length} low={low.length} />
+        </TabsContent>
+
+      </Tabs>
     </div>
   );
 }

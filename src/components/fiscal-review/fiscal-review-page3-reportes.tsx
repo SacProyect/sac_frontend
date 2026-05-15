@@ -1,14 +1,16 @@
 import { FiscalInfoExtended } from '@/types/fiscal-stats';
 import { Card } from '@/components/UI/card';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/UI/button';
 import { CheckCircle2, AlertTriangle, XCircle, Clock, Download } from 'lucide-react';
 import toast from 'react-hot-toast';
 
 interface FiscalReviewPage3Props {
   fiscalInfo: FiscalInfoExtended;
+  tvSpotlightIndex?: number;
 }
 
-export function FiscalReviewPage3Reportes({ fiscalInfo }: FiscalReviewPage3Props) {
+export function FiscalReviewPage3Reportes({ fiscalInfo, tvSpotlightIndex }: FiscalReviewPage3Props) {
   
   const handleDownload = (reportName: string) => {
     toast.success(`Descargando reporte de ${reportName}...`);
@@ -40,8 +42,14 @@ export function FiscalReviewPage3Reportes({ fiscalInfo }: FiscalReviewPage3Props
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 animate-in fade-in duration-300">
-      {reports.map((report) => (
-        <Card key={report.id} className="bg-slate-800 border-slate-700 p-6 flex items-center justify-between transition-colors hover:bg-slate-700/50 hover:border-slate-600">
+      {reports.map((report, idx) => (
+        <Card
+          key={report.id}
+          className={cn(
+            'bg-slate-800 border-slate-700 p-6 flex items-center justify-between transition-colors duration-700 hover:bg-slate-700/50 hover:border-slate-600',
+            tvSpotlightIndex === idx && 'ring-2 ring-blue-400/90 shadow-xl shadow-blue-500/25 z-[1] scale-[1.02]'
+          )}
+        >
           <div className="flex items-center gap-3">
             {report.icon}
             <h3 className="text-white font-medium">{report.name}</h3>

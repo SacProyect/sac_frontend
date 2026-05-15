@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react'
-import { GroupData } from './contribution-types';
+import { GroupData, Type } from './contribution-types';
+import { coerceMoney, normalizeEventType } from './normalize-contributions-response';
 import { 
   ArrowUpDown, 
   ChevronUp, 
@@ -90,6 +91,9 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
     const processedData = useMemo(() => {
         if (!selectedGroupData || !selectedGroupData.members) return [];
 
+        const procedureMatches = (process: unknown) =>
+            String(process ?? '').toUpperCase() === typeClicked;
+
         return selectedGroupData.members
             .filter((member) => {
                 if (!selectedSupervisorId) return true;
@@ -97,24 +101,41 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
             }).map((member) => {
                 const taxpayers = member.taxpayer || [];
                 const filteredTaxpayers = taxpayers.filter(
-                    (taxpayer) => !typeClicked || taxpayer.process === typeClicked
+                    (taxpayer) => procedureMatches(taxpayer.process)
                 );
 
-                const totalWarnings = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "WARNING").length ?? 0), 0);
-                const totalFines = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "FINE").length ?? 0), 0);
-                const totalCompromises = filteredTaxpayers.reduce((sum, t) => sum + (t.event?.filter(e => e.type === "PAYMENT_COMPROMISE").length ?? 0), 0);
+                const events = (t: (typeof taxpayers)[number]) => t.event ?? [];
+
+                const totalWarnings = filteredTaxpayers.reduce(
+                    (sum, t) => sum + events(t).filter((e) => normalizeEventType(e.type) === Type.Warning).length,
+                    0,
+                );
+                const totalFines = filteredTaxpayers.reduce(
+                    (sum, t) => sum + events(t).filter((e) => normalizeEventType(e.type) === Type.Fine).length,
+                    0,
+                );
+                const totalCompromises = filteredTaxpayers.reduce(
+                    (sum, t) =>
+                        sum + events(t).filter((e) => normalizeEventType(e.type) === Type.PaymentCompromise).length,
+                    0,
+                );
                 const totalTaxpayers = filteredTaxpayers.length;
 
                 const totalIVA = filteredTaxpayers.reduce((sum, t) => {
-                    return sum + (t.IVAReports?.reduce((s, r) => s + Number(r.paid || 0), 0) || 0);
+                    return sum + (t.IVAReports?.reduce((s, r) => s + coerceMoney(r.paid), 0) || 0);
                 }, 0);
 
                 const totalISLR = filteredTaxpayers.reduce((sum, t) => {
-                    return sum + (t.ISLRReports?.reduce((s, r) => s + Number(r.paid || 0), 0) || 0);
+                    return sum + (t.ISLRReports?.reduce((s, r) => s + coerceMoney(r.paid), 0) || 0);
                 }, 0);
 
                 const totalCollectedFines = filteredTaxpayers.reduce((acc, t) => {
-                    return acc + (t.event.filter(e => e.type === "FINE").reduce((s, r) => s + Number(r.amount || 0), 0) || 0);
+                    return (
+                        acc +
+                        events(t)
+                            .filter((e) => normalizeEventType(e.type) === Type.Fine)
+                            .reduce((s, r) => s + coerceMoney(r.amount), 0)
+                    );
                 }, 0);
 
                 return {
@@ -127,8 +148,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
                     totalISLR,
                     totalIVA: parseFloat(totalIVA.toFixed(2)),
                 };
-            })
-            .filter((member) => member.totalTaxpayers > 0);
+            });
     }, [selectedGroupData, typeClicked, selectedSupervisorId]);
 
     // Filter by search query
@@ -207,7 +227,7 @@ function ContributionsStatistics({ groupData, selectedGroup, pdfMode = false, se
     }
 
     return (
-        <section className='space-y-6 animate-in slide-in-from-bottom-2 duration-500'>
+        <section className='space-y-6'>
             {/* Header & Controls */}
             <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-2">
                 <div className="space-y-1">

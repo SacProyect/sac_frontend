@@ -68,6 +68,7 @@ export default function TaxpayerDetailV2() {
     taxSummary: initialTaxSummary, 
     islrReports: initialIslrReports,
     taxpayerData
+    , observations
   } = useLoaderData() as { 
     events: Event[]; 
     fines: Fines; 
@@ -75,6 +76,7 @@ export default function TaxpayerDetailV2() {
     taxSummary: IVAReports[]; 
     islrReports: ISLRReports[];
     taxpayerData: any;
+    observations: any[];
   };
 
   const [events, setEvents] = useState<Event[]>(initialEvents);
@@ -235,7 +237,12 @@ export default function TaxpayerDetailV2() {
         description="Información completa y gestión de eventos"
       />
 
-      <IndividualStats events={events} IVAReports={taxSummary} />
+      <IndividualStats
+        events={events}
+        IVAReports={taxSummary}
+        taxpayerData={taxpayerData}
+        observations={observations}
+      />
 
       <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Acciones Rápidas</h3>

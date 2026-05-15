@@ -63,7 +63,7 @@ export default function LoginV2() {
   }, [user, navigate, from]);
 
   return (
-    <div className="min-h-screen bg-slate-950 flex">
+    <div className="min-h-screen bg-background text-foreground flex">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 flex-col items-center justify-center p-12">
         <div className="text-center max-w-md">

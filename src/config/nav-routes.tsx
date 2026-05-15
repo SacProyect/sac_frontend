@@ -4,12 +4,16 @@ import {
     CheckCircle,
     FileBarChart,
     BarChart3,
+    ScanEye,
     Settings2,
     FileText,
     ClipboardList,
     Wallet,
+    UserCog,
     Bell,
     Shield,
+    Telescope,
+    Megaphone,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -24,13 +28,22 @@ export const auditTrailNavItem: NavItem = {
     icon: <Shield className="w-4 h-4" />,
 };
 
+/** Solo ADMIN y COORDINATOR — panel operativo detallado (no confundir con `/auditoria`). */
+export const internalAuditNavItem: NavItem = {
+    href: '/auditoria-interna',
+    label: 'Auditoría interna',
+    icon: <Telescope className="w-4 h-4" />,
+};
+
+export const visitsRoute: NavItem = { href: '/visits-monitor', label: 'Visitas', icon: <ScanEye className="w-4 h-4" /> };
+
 export const sharedRoutes: NavItem[] = [
-    { href: '/admin',        label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/census',       label: 'Tabla Censo',    icon: <Users className="w-4 h-4" /> },
-    { href: '/fiscal-review',label: 'Revisión Fiscal',icon: <CheckCircle className="w-4 h-4" /> },
-    { href: '/gen-reports',  label: 'Reportes',       icon: <FileBarChart className="w-4 h-4" /> },
-    { href: '/stats',        label: 'Estadísticas',   icon: <BarChart3 className="w-4 h-4" /> },
-    { href: '/notifications',label: 'Notificaciones', icon: <Bell className="w-4 h-4" /> },
+    { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
+    { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },
+    { href: '/fiscal-review', label: 'Revisión Fiscal', icon: <CheckCircle className="w-4 h-4" /> },
+    { href: '/gen-reports', label: 'Reportes', icon: <FileBarChart className="w-4 h-4" /> },
+    { href: '/stats', label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
+    { href: '/notifications', label: 'Notificaciones', icon: <Bell className="w-4 h-4" /> },
 ];
 
 /** Ruta de ajustes — siempre visible para todos los roles, siempre al final. */
@@ -42,7 +55,7 @@ export const settingsRoute: NavItem = { href: '/settings', label: 'Ajustes', ico
  */
 export const routeBlocks = {
     ivaIslr: [
-        { href: '/iva',  label: 'Reporte IVA',  icon: <FileText className="w-4 h-4" /> },
+        { href: '/iva', label: 'Reporte IVA', icon: <FileText className="w-4 h-4" /> },
         { href: '/islr', label: 'Reporte ISLR', icon: <FileText className="w-4 h-4" /> },
     ] as NavItem[],
 
@@ -52,6 +65,16 @@ export const routeBlocks = {
 
     contributions: [
         { href: '/contributions', label: 'Contribuciones', icon: <Wallet className="w-4 h-4" /> },
+    ] as NavItem[],
+
+    /** Solo ADMIN (vision global) y COORDINATOR (su grupo) — alineado con API fiscal-operaciones. */
+    gestionPersonal: [
+        { href: '/gestion-personal', label: 'Gestión de personal', icon: <UserCog className="w-4 h-4" /> },
+    ] as NavItem[],
+
+    /** Solo ADMIN — módulo Divulgación y Presencia Fiscal. */
+    divulgacion: [
+        { href: '/divulgacion-presencia-fiscal', label: 'Divulgación y Presencia Fiscal', icon: <Megaphone className="w-4 h-4" /> },
     ] as NavItem[],
 
     /** Genera la ruta de estadísticas personalizada con el ID del usuario */
@@ -74,5 +97,4 @@ export const RESTRICTED_USER_IDS: ReadonlySet<string> = new Set([
 export const RESTRICTED_ROUTES: ReadonlySet<string> = new Set([
     '/fine', '/iva', '/islr', '/census',
     '/show-census', '/taxpayer', '/index-iva', '/warning',
-    '/auditoria',
 ]);

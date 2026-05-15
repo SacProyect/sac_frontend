@@ -8,7 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 #env
-.env
+.env*
 
 #media
 public/images/*
@@ -31,6 +31,7 @@ dist-ssr
 
 .vercel
 *.md
+!DOCUMENTACION_FEATURE_FLAGS.md
 plans/
 docs/
 .env

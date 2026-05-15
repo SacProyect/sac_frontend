@@ -1,58 +1,48 @@
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useMemo,
-  useState,
-  type ReactNode,
-} from 'react';
+import { createContext, useCallback, useContext, useMemo, type ReactNode } from 'react';
 
-export type PresentationContextValue = {
+interface PresentationValue {
   autoScrollEnabled: boolean;
-  currentTableId: string | null;
+  currentTableId: string;
   registerTable: (id: string) => void;
   goToNextTableOrPage: () => void;
   setUserInteraction: () => void;
   tableQueue: string[];
-};
-
-const noop = () => {};
-
-const PresentationContext = createContext<PresentationContextValue>({
-  autoScrollEnabled: false,
-  currentTableId: null,
-  registerTable: noop,
-  goToNextTableOrPage: noop,
-  setUserInteraction: noop,
-  tableQueue: [],
-});
-
-export function PresentationProvider({ children }: { children: ReactNode }) {
-  const [tableQueue, setTableQueue] = useState<string[]>([]);
-
-  const registerTable = useCallback((id: string) => {
-    setTableQueue((q) => (q.includes(id) ? q : [...q, id]));
-  }, []);
-
-  const value = useMemo<PresentationContextValue>(
-    () => ({
-      autoScrollEnabled: false,
-      currentTableId: null,
-      registerTable,
-      goToNextTableOrPage: noop,
-      setUserInteraction: noop,
-      tableQueue,
-    }),
-    [registerTable, tableQueue],
-  );
-
-  return (
-    <PresentationContext.Provider value={value}>
-      {children}
-    </PresentationContext.Provider>
-  );
 }
 
-export function usePresentation(): PresentationContextValue {
-  return useContext(PresentationContext);
+const PresentationContext = createContext<PresentationValue | null>(null);
+
+/** Contexto opcional para modo presentación / auto-scroll (tablas). Stub hasta activar la feature. */
+export function PresentationProvider({ children }: { children: ReactNode }) {
+  const registerTable = useCallback((_id: string) => { }, []);
+  const goToNextTableOrPage = useCallback(() => { }, []);
+  const setUserInteraction = useCallback(() => { }, []);
+
+  const value = useMemo<PresentationValue>(
+    () => ({
+      autoScrollEnabled: false,
+      currentTableId: '',
+      registerTable,
+      goToNextTableOrPage,
+      setUserInteraction,
+      tableQueue: [],
+    }),
+    [registerTable, goToNextTableOrPage, setUserInteraction]
+  );
+
+  return <PresentationContext.Provider value={value}>{children}</PresentationContext.Provider>;
+}
+
+export function usePresentation(): PresentationValue {
+  const ctx = useContext(PresentationContext);
+  if (!ctx) {
+    return {
+      autoScrollEnabled: false,
+      currentTableId: '',
+      registerTable: () => { },
+      goToNextTableOrPage: () => { },
+      setUserInteraction: () => { },
+      tableQueue: [],
+    };
+  }
+  return ctx;
 }

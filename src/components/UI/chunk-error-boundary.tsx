@@ -32,8 +32,9 @@ export class ChunkErrorBoundary extends Component<Props, State> {
             error.message?.includes('error loading dynamically imported module') ||
             error.message?.includes('Loading chunk') ||
             error.message?.includes('Loading CSS chunk') ||
+            // Errores de red relacionados con archivos .js
             (Boolean(error.message?.includes('Failed to fetch')) &&
-                Boolean(error.stack?.includes('.js'))),
+                Boolean(error.stack?.includes('.js')))
         );
 
         return { hasError: true, isChunkError };

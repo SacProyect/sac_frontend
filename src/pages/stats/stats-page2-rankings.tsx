@@ -123,7 +123,7 @@ function SupervisorAccordion({ grp, expanded, onToggle }: {
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export default function StatsPage2Rankings({ year }: { year: number }) {
+export default function StatsPage2Rankings({ year, groupId }: { year: number; groupId?: string }) {
   const [supervisors, setSupervisors] = useState<SupervisorGroup[]>([]);
   const [topByGroup, setTopByGroup] = useState<TopFiscalByGroup[]>([]);
   const [topFiscals, setTopFiscals] = useState<TopFiscal[]>([]);
@@ -135,9 +135,9 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
       setLoading(true);
       try {
         const [supRes, topGroupRes, topFRes] = await Promise.allSettled([
-          getBestSupervisors(year),
-          getTopFiveByGroup(year),
-          getTopFiscals(year),
+          getBestSupervisors(year, groupId),
+          getTopFiveByGroup(year, groupId),
+          getTopFiscals(year, groupId),
         ]);
         if (supRes.status === 'fulfilled') {
           const raw = (supRes.value as any)?.data ?? supRes.value;
@@ -194,7 +194,7 @@ export default function StatsPage2Rankings({ year }: { year: number }) {
       }
     };
     load();
-  }, [year]);
+  }, [year, groupId]);
 
   if (loading) {
     return (
