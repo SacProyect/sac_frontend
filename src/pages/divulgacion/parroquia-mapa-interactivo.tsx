@@ -138,10 +138,11 @@ const PARROQUIAS_GRANDES = new Set<ParroquiaCaracas>([
 
 type ParroquiaMapaInteractivoProps = {
 	data: MapaParroquiaAgregado[];
+	financialData?: any[];
 	selected: ParroquiaCaracas | null;
 	onSelect: (p: ParroquiaCaracas | null) => void;
 	mode?: "normal" | "heat";
-	heatMetric?: "jornadas" | "visitas" | "asistentes" | "impacto_iva";
+	heatMetric?: "jornadas" | "visitas" | "asistentes" | "impacto_iva" | "impacto_iva_real" | "recaudacion_real";
 	className?: string;
 };
 
@@ -180,6 +181,7 @@ function ZoomTracker({ onZoom }: { onZoom: (z: number) => void }) {
 
 export default function ParroquiaMapaInteractivo({
 	data,
+	financialData = [],
 	selected,
 	onSelect,
 	mode = "normal",
@@ -189,10 +191,16 @@ export default function ParroquiaMapaInteractivo({
 	const [zoom, setZoom] = useState<number>(12);
 
 	const dataByParroquia = useMemo(() => {
-		const m = new Map<ParroquiaCaracas, MapaParroquiaAgregado>();
+		const m = new Map<ParroquiaCaracas, any>();
 		for (const p of data) m.set(p.parroquia, p);
 		return m;
 	}, [data]);
+
+	const financialByParroquia = useMemo(() => {
+		const m = new Map<string, any>();
+		for (const f of financialData) m.set(f.parishId, f);
+		return m;
+	}, [financialData]);
 
 	const getIvaCount = (agg?: MapaParroquiaAgregado) => {
 		if (!agg?.actividades) return 0;
@@ -208,6 +216,7 @@ export default function ParroquiaMapaInteractivo({
 	}, [data]);
 	const maxHeatMetric = useMemo(() => {
 		let m = 0;
+		// Datos operativos
 		for (const p of data) {
 			const val =
 				heatMetric === "asistentes"
@@ -219,19 +228,34 @@ export default function ParroquiaMapaInteractivo({
 							: p.visitas;
 			if (val > m) m = val;
 		}
+		// Datos financieros
+		if (heatMetric === "impacto_iva_real" || heatMetric === "recaudacion_real") {
+			for (const f of financialData) {
+				const val = heatMetric === "impacto_iva_real" ? f.totalIvaPaid : f.totalPaymentAmount;
+				if (val > m) m = val;
+			}
+		}
 		return m;
-	}, [data, heatMetric]);
+	}, [data, financialData, heatMetric]);
 
 	const intensityFor = (p: ParroquiaCaracas): number => {
 		if (mode === "heat") {
-			const value =
-				heatMetric === "asistentes"
+			let value = 0;
+			if (heatMetric === "impacto_iva_real") {
+				const f = financialData.find(x => x.parishName.toUpperCase() === p.replace(/_/g, " "));
+				value = f?.totalIvaPaid ?? 0;
+			} else if (heatMetric === "recaudacion_real") {
+				const f = financialData.find(x => x.parishName.toUpperCase() === p.replace(/_/g, " "));
+				value = f?.totalPaymentAmount ?? 0;
+			} else {
+				value = heatMetric === "asistentes"
 					? (dataByParroquia.get(p)?.asistentes ?? 0)
 					: heatMetric === "jornadas"
 						? (dataByParroquia.get(p)?.jornadas ?? 0)
 						: heatMetric === "impacto_iva"
 							? (dataByParroquia.get(p)?.visitas ?? 0) + getIvaCount(dataByParroquia.get(p)) * 2
 						: (dataByParroquia.get(p)?.visitas ?? 0);
+			}
 			if (value === 0) return 0;
 			if (maxHeatMetric <= 0) return 0.5;
 			return Math.min(1, value / maxHeatMetric);
@@ -281,6 +305,9 @@ export default function ParroquiaMapaInteractivo({
 					<span>Cerradas:</span><span style="text-align:right;font-weight:600">${agg?.cerradas ?? 0}</span>
 					<span>Asistentes:</span><span style="text-align:right;font-weight:600">${agg?.asistentes ?? 0}</span>
 					<span>Visitas:</span><span style="text-align:right;font-weight:600">${agg?.visitas ?? 0}</span>
+					<span style="grid-column: 1/3; height: 1px; background: #e2e8f0; margin: 4px 0"></span>
+					<span>Recaudación:</span><span style="text-align:right;font-weight:600;color:#15803d">$${(financialByParroquia.get(agg?.parish_id)?.totalPaymentAmount ?? 0).toLocaleString()}</span>
+					<span>IVA Pagado:</span><span style="text-align:right;font-weight:600;color:#15803d">$${(financialByParroquia.get(agg?.parish_id)?.totalIvaPaid ?? 0).toLocaleString()}</span>
 				</div>
 				${!agg
 				? '<div style="font-size:10px;font-style:italic;color:#64748b;margin-top:4px">Sin actividad en el período.</div>'

@@ -29,10 +29,12 @@ import {
 	listDivulgaciones,
 	PARROQUIAS_CARACAS,
 	reopenDivulgacion,
+	getMapaFinanciero,
 	type EstadoDivulgacion,
 	type MapaParroquiaAgregado,
 	type MisStats,
 	type ParroquiaCaracas,
+	type ParishFinancialStats,
 } from "@/components/utils/api/divulgacion-functions";
 import ParroquiaMapaInteractivo, { PARROQUIA_LABELS } from "./parroquia-mapa-interactivo";
 import DesgloseComercial from "./desglose-comercial";
@@ -84,6 +86,7 @@ export default function DivulgacionPresenciaPage() {
 	const [items, setItems] = useState<DivulgacionRow[]>([]);
 	const [misStats, setMisStats] = useState<MisStats | null>(null);
 	const [mapa, setMapa] = useState<MapaParroquiaAgregado[]>([]);
+	const [mapaFinanciero, setMapaFinanciero] = useState<ParishFinancialStats[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [actionInfo, setActionInfo] = useState("");
@@ -127,7 +130,7 @@ export default function DivulgacionPresenciaPage() {
 
 	const [parroquiaSeleccionada, setParroquiaSeleccionada] = useState<ParroquiaCaracas | null>(null);
 	const [mapView, setMapView] = useState<"normal" | "calor">("normal");
-	const [heatMetric, setHeatMetric] = useState<"jornadas" | "visitas" | "asistentes" | "impacto_iva">("impacto_iva");
+	const [heatMetric, setHeatMetric] = useState<"jornadas" | "visitas" | "asistentes" | "impacto_iva" | "impacto_iva_real" | "recaudacion_real">("impacto_iva");
 
 	const buildQuery = () => ({
 		desde: desde || undefined,
@@ -146,17 +149,21 @@ export default function DivulgacionPresenciaPage() {
 				page: overridePage ?? page,
 				pageSize,
 			};
-			const [lista, stats, m] = await Promise.all([
+			const [lista, stats, m, mf] = await Promise.all([
 				listDivulgaciones(params),
 				getMisStats(),
 				canSeeMap
 					? getMapaAgregado({ desde: desde || undefined, hasta: hasta || undefined })
+					: Promise.resolve(null),
+				canSeeMap
+					? getMapaFinanciero({ desde: desde || undefined, hasta: hasta || undefined })
 					: Promise.resolve(null),
 			]);
 			setItems(Array.isArray(lista?.items) ? lista.items : []);
 			setTotal(typeof lista?.total === "number" ? lista.total : 0);
 			setMisStats(stats ?? null);
 			setMapa(Array.isArray(m?.parroquias) ? m.parroquias : []);
+			setMapaFinanciero(Array.isArray(mf?.parroquias) ? mf.parroquias : []);
 		} catch (e: any) {
 			setError(e?.message ?? "No se pudieron cargar las jornadas.");
 		} finally {
@@ -1162,12 +1169,14 @@ export default function DivulgacionPresenciaPage() {
 												Calor
 											</Button>
 											{mapView === "calor" && (
-												<Select value={heatMetric} onValueChange={(v) => setHeatMetric(v as "jornadas" | "visitas" | "asistentes" | "impacto_iva")}>
+												<Select value={heatMetric} onValueChange={(v) => setHeatMetric(v as any)}>
 													<SelectTrigger className="w-auto text-xs">
 														<SelectValue />
 													</SelectTrigger>
 													<SelectContent>
-														<SelectItem value="impacto_iva">Impacto IVA</SelectItem>
+														<SelectItem value="impacto_iva_real">Impacto IVA (Real)</SelectItem>
+														<SelectItem value="recaudacion_real">Recaudación (Real)</SelectItem>
+														<SelectItem value="impacto_iva">Impacto IVA (Actividades)</SelectItem>
 														<SelectItem value="visitas">Visitas</SelectItem>
 														<SelectItem value="jornadas">Jornadas</SelectItem>
 														<SelectItem value="asistentes">Asistentes</SelectItem>
@@ -1180,6 +1189,7 @@ export default function DivulgacionPresenciaPage() {
 								<CardContent>
 									<ParroquiaMapaInteractivo
 										data={mapa}
+										financialData={mapaFinanciero}
 										selected={parroquiaSeleccionada}
 										onSelect={setParroquiaSeleccionada}
 										mode={mapView === "calor" ? "heat" : "normal"}

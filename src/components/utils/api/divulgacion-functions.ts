@@ -74,6 +74,22 @@ export type ListDivulgacionesQuery = {
 	pageSize?: number;
 };
 
+export type ParishFinancialStats = {
+	parishId: string;
+	parishName: string;
+	totalPayments: number;
+	totalPaymentAmount: number;
+	totalIvaReports: number;
+	totalIvaPaid: number;
+};
+
+export type MapaFinancieroResponse = {
+	success: boolean;
+	desde: string;
+	hasta: string;
+	parroquias: ParishFinancialStats[];
+};
+
 export async function createDivulgacion(payload: CreateDivulgacionPayload) {
 	const response = await apiConnection.post(`${BASE}/jornadas`, payload);
 	return response.data;
@@ -184,12 +200,16 @@ export type MapaResponse = {
 	parroquias: MapaParroquiaAgregado[];
 };
 
-export async function getMapaAgregado(query?: {
+export async function getMapaAgregado(query?: { desde?: string; hasta?: string }) {
+	const response = await apiConnection.get(`${BASE}/mapa`, { params: query });
+	return response.data;
+}
+
+export async function getMapaFinanciero(query?: {
 	desde?: string;
 	hasta?: string;
-	fiscalGroupId?: string;
-}): Promise<MapaResponse> {
-	const response = await apiConnection.get(`${BASE}/mapa`, { params: query });
+}): Promise<MapaFinancieroResponse> {
+	const response = await apiConnection.get(`${BASE}/mapa/financiero`, { params: query });
 	return response.data;
 }
 
