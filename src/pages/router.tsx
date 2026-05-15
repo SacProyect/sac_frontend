@@ -139,7 +139,7 @@ export interface Fines {
 function GestionPersonalRoute() {
     const { user } = useAuth();
     if (!user) return <Navigate to="/login" replace />;
-    if (user.role !== "ADMIN" && user.role !== "COORDINATOR") {
+    if (user.role !== "ADMIN") {
         return <Navigate to="/admin" replace />;
     }
     return (
@@ -195,13 +195,17 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "visits-monitor",
-                        element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
-                                Cargando Monitoreo de Visitas...
-                            </div>
-                        }>
-                            <VisitsMonitorPage />
-                        </Suspense>,
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={
+                                    <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                        Cargando Monitoreo de Visitas...
+                                    </div>
+                                }>
+                                    <VisitsMonitorPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ),
                     },
                     {
                         path: "settings",

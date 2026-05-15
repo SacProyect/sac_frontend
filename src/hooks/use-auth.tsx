@@ -15,6 +15,8 @@ interface AuthContextType {
     token: string | null;
     logout: () => void;
     refreshUser: () => Promise<void>;
+    devRoleOverride: string | null;
+    setDevRoleOverride: (role: "ADMIN" | "COORDINATOR" | "SUPERVISOR" | "FISCAL" | null) => void;
 }
 
 
@@ -116,17 +118,25 @@ export function getDevFakeRole(): DevRole {
 }
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [storedUser, setStoredUser] = useLocalStorage("user", null);
-    const [storedToken, setStoredToken] = useLocalStorage("authToken", null);
+    const [storedUser, setStoredUser] = useLocalStorage<User | null>("user", null);
+    const [storedToken, setStoredToken] = useLocalStorage<string | null>("authToken", null);
 
-    // En DEV_MODE, derivamos el user del sessionStorage (por pestaña) — esto permite
-    // tener distintas ventanas con roles distintos al mismo tiempo.
+    const [devRoleOverride, setDevRoleOverride] = useLocalStorage<DevRole | null>("dev-role-override", null);
+
+    // En DEV_MODE, derivamos el user del sessionStorage (por pestaña)
     const devUser = useMemo<User | null>(() => {
         if (!DEV_MODE) return null;
         return buildFakeUser(readDevRole());
     }, []);
 
-    const user = DEV_MODE ? devUser : storedUser;
+    const user = useMemo(() => {
+        const baseUser = DEV_MODE ? devUser : storedUser;
+        if (import.meta.env.DEV && devRoleOverride && baseUser) {
+            return { ...baseUser, role: devRoleOverride };
+        }
+        return baseUser;
+    }, [DEV_MODE, devUser, storedUser, devRoleOverride]);
+
     const token = DEV_MODE ? "dev-fake-token" : storedToken;
 
     const setUser = useCallback((newUser: User | null) => {
@@ -189,8 +199,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             token,
             logout,
             refreshUser,
+            devRoleOverride,
+            setDevRoleOverride: (role: DevRole | null) => setDevRoleOverride(role),
         }),
-        [user, token, login, logout, refreshUser, setUser]
+        [user, token, login, logout, refreshUser, setUser, devRoleOverride, setDevRoleOverride]
     );
 
     return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
@@ -212,7 +224,7 @@ export const AuthLayout = () => {
     return (
         <AuthProvider>
             {outlet}
-            <DevRoleSwitcher />
+            {import.meta.env.DEV && <DevRoleSwitcher />}
         </AuthProvider>
     );
 };
