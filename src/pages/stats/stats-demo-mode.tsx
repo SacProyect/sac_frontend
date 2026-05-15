@@ -2,6 +2,8 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Play, Pause, X, ChevronRight, ChevronLeft, Maximize2, Minimize2 } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { cn } from '@/lib/utils';
+import { VisitsQueuePanel } from '@/components/visits/visits-queue-panel';
+import { isVisitNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 interface StatsDemoModeProps {
   onClose: () => void;
@@ -167,13 +169,21 @@ export default function StatsDemoMode({ onClose, year, groupId, pages }: StatsDe
       </div>
 
       {/* Content Area */}
-      <div className="relative flex-1 min-h-0 w-full px-2 pb-2 sm:px-8 sm:pb-8 lg:px-12 lg:pb-12 flex flex-col items-center justify-center">
-        <div
-          key={currentPage.id}
-          className="w-full h-full max-w-[1400px] animate-in fade-in zoom-in-95 duration-700 ease-out bg-slate-900/40 rounded-xl sm:rounded-3xl border border-slate-800/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/50"
-        >
-          {currentPage.component}
+      <div className="relative flex-1 min-h-0 w-full flex flex-row overflow-hidden">
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col items-center justify-center px-2 pb-2 sm:px-8 sm:pb-8 lg:px-12 lg:pb-12 min-w-0">
+          <div
+            key={currentPage.id}
+            className="w-full h-full max-w-[1400px] animate-in fade-in zoom-in-95 duration-700 ease-out bg-slate-900/40 rounded-xl sm:rounded-3xl border border-slate-800/50 backdrop-blur-sm overflow-hidden shadow-2xl shadow-black/50"
+          >
+            {currentPage.component}
+          </div>
         </div>
+
+        {/* Right Panel: Visit Queue */}
+        {isVisitNotificationsFeatureEnabled && (
+          <VisitsQueuePanel />
+        )}
       </div>
 
       {/* Footer */}

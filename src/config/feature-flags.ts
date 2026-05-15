@@ -35,3 +35,8 @@ export const isThemeToggleEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_THEME_TOGGLE_ENABLED,
   true
 );
+
+export const isVisitNotificationsFeatureEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_VISIT_NOTIFICATIONS_ENABLED,
+  true
+);
