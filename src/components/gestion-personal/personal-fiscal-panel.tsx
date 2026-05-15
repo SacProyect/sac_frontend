@@ -304,18 +304,18 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                 </Card>
             )}
 
-            <Card className="border-border bg-card text-card-foreground shadow-sm">
-                <CardHeader className="pb-3">
-                    <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                        <CalendarRange className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+            <Card className="border-border/60 bg-card text-card-foreground shadow-none">
+                <CardHeader className="pb-3 border-b border-border/40 bg-muted/10">
+                    <CardTitle className="text-sm font-semibold uppercase tracking-wide text-foreground flex items-center gap-2">
+                        <CalendarRange className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
                         {isAdmin && alcance === "global"
-                            ? "Resumen institucional — VDF, reparos y visitas"
-                            : "Panel fiscal — VDF, reparos, contribuyentes y visitas"}
+                            ? "Libro Mayor: Resumen Institucional"
+                            : "Libro Mayor: Panel de Fiscal"}
                     </CardTitle>
-                    <CardDescription className="text-muted-foreground">
+                    <CardDescription className="text-xs text-muted-foreground">
                         {isAdmin && alcance === "global"
-                            ? "Vista de mando: totales de todos los fiscales activos en el periodo. Las visitas se agregan por fiscal (API externa); use la tarjeta de visitas para el listado del periodo."
-                            : "Compare un fiscal concreto: periodos de día a año (trimestres Q1–Q4). Use la búsqueda para localizar por nombre o CI."}
+                            ? "Totales consolidados del equipo activo. Las visitas se agregan por fiscal (API externa)."
+                            : "Comparativa por fiscal: desde resumen diario hasta anual. Localice por nombre o CI."}
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col gap-4">
@@ -459,9 +459,9 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                         {loading ? (
                             <>
                                 {[1, 2, 3, 4, 5].map((i) => (
-                                    <Card key={i} className="border-border bg-muted/30">
-                                        <CardHeader className="pb-2">
-                                            <Skeleton className="h-4 w-24" />
+                                    <Card key={i} className="border-border/60 bg-muted/10 shadow-none">
+                                        <CardHeader className="p-4 pb-3">
+                                            <Skeleton className="h-3 w-24" />
                                             <Skeleton className="h-8 w-16 mt-2" />
                                         </CardHeader>
                                     </Card>
@@ -469,73 +469,69 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                             </>
                         ) : (
                             <>
-                                <Card className="border-border bg-muted/30 dark:bg-slate-950/50">
-                                    <CardHeader className="pb-2">
-                                        <CardDescription className="text-muted-foreground flex items-center gap-1.5">
-                                            <FileText className="h-3.5 w-3.5" /> VDF registrados
+                                <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
+                                    <CardHeader className="p-4 pb-3">
+                                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                            <FileText className="h-3.5 w-3.5 text-indigo-500" /> VDF Registrados
                                         </CardDescription>
-                                        <CardTitle className="text-3xl text-foreground tabular-nums">
+                                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                             {stats?.operativos.vdf ?? "—"}
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
-                                <Card className="border-border bg-muted/30 dark:bg-slate-950/50">
-                                    <CardHeader className="pb-2">
-                                        <CardDescription className="text-muted-foreground flex items-center gap-1.5">
-                                            <ScrollText className="h-3.5 w-3.5" /> Actas de reparo
+                                <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
+                                    <CardHeader className="p-4 pb-3">
+                                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                            <ScrollText className="h-3.5 w-3.5 text-indigo-500" /> Actas de Reparo
                                         </CardDescription>
-                                        <CardTitle className="text-3xl text-foreground tabular-nums">
+                                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                             {stats?.operativos.actasReparo ?? "—"}
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
-                                <Card className="border-border bg-muted/30 dark:bg-slate-950/50">
-                                    <CardHeader className="pb-2">
-                                        <CardDescription className="text-muted-foreground flex items-center gap-1.5">
-                                            <Building2 className="h-3.5 w-3.5" /> Ordinarios (únicos)
+                                <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
+                                    <CardHeader className="p-4 pb-3">
+                                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                            <Building2 className="h-3.5 w-3.5 text-indigo-500" /> Ord. Únicos
                                         </CardDescription>
-                                        <CardTitle className="text-3xl text-foreground tabular-nums">
+                                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                             {stats?.contribuyentesAtendidos.ordinarios ?? "—"}
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
-                                <Card className="border-border bg-muted/30 dark:bg-slate-950/50">
-                                    <CardHeader className="pb-2">
-                                        <CardDescription className="text-muted-foreground flex items-center gap-1.5">
-                                            <Landmark className="h-3.5 w-3.5" /> Especiales (únicos)
+                                <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
+                                    <CardHeader className="p-4 pb-3">
+                                        <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                            <Landmark className="h-3.5 w-3.5 text-indigo-500" /> Esp. Únicos
                                         </CardDescription>
-                                        <CardTitle className="text-3xl text-foreground tabular-nums">
+                                        <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                             {stats?.contribuyentesAtendidos.especiales ?? "—"}
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
                                 <button
                                     type="button"
-                                    className="text-left rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:pointer-events-none"
+                                    className="text-left focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:pointer-events-none"
                                     onClick={() => void openVisitsModal()}
                                     disabled={!(isAdmin && alcance === "global") && !fiscalId}
                                 >
-                                    <Card className="border-border bg-muted/30 dark:bg-slate-950/50 hover:border-indigo-500/50 dark:hover:border-indigo-700/60 transition-colors h-full cursor-pointer">
-                                        <CardHeader className="pb-2">
-                                            <CardDescription className="text-muted-foreground flex items-center gap-1.5">
-                                                <Footprints className="h-3.5 w-3.5" />
-                                                {visitasEsVistaInstitucional
-                                                    ? "Visitas generales (clic: listado)"
-                                                    : "Visitas del fiscal (clic: listado)"}
+                                    <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm hover:border-indigo-500/50 dark:hover:border-indigo-700/60 transition-colors h-full cursor-pointer">
+                                        <CardHeader className="p-4 pb-3">
+                                            <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
+                                                <Footprints className="h-3.5 w-3.5 text-indigo-500" />
+                                                {visitasEsVistaInstitucional ? "Visitas Generales" : "Visitas del Fiscal"}
                                             </CardDescription>
-                                            <CardTitle className="text-3xl text-foreground tabular-nums">
+                                            <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                                 {stats?.visitas.total ?? "—"}
                                             </CardTitle>
                                             {stats && isResumenGlobalStats(stats) && stats.visitas.fiscalesSinConteoVisitas > 0 && (
-                                                <p className="text-[10px] text-amber-500/90 pt-1">
-                                                    Sin conteo desde API en {stats.visitas.fiscalesSinConteoVisitas} fiscal
-                                                    (es); el total puede quedar bajo.
+                                                <p className="text-[10px] text-amber-600 dark:text-amber-500 pt-2 font-medium">
+                                                    Sin conteo en {stats.visitas.fiscalesSinConteoVisitas} fiscal(es).
                                                 </p>
                                             )}
                                             {!stats?.visitas.servicioExternoConfigurado && (
-                                                <p className="text-[10px] text-amber-500/90 pt-1">
-                                                    Servicio visitas no configurado en API; use el modal para intentar
-                                                    carga directa.
+                                                <p className="text-[10px] text-amber-600 dark:text-amber-500 pt-2 font-medium">
+                                                    API visitas no configurada. Clic para forzar.
                                                 </p>
                                             )}
                                         </CardHeader>

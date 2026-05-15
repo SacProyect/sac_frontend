@@ -4,76 +4,75 @@ import { CasosPorFiscalSection } from "@/components/gestion-personal/casos-por-f
 import { PersonalPermisosVacacionesPanel } from "@/components/gestion-personal/personal-permisos-vacaciones-panel";
 import { ReparosActasSection } from "@/components/gestion-personal/reparos-actas-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
-import { BarChart3, CalendarRange, ScrollText, Table2 } from "lucide-react";
+import { CalendarRange, ScrollText, Table2 } from "lucide-react";
 
 /**
  * Módulo «Gestión de personal»: métricas, casos por fiscal, permisos/vacaciones (tabla + tarjetas)
- * y actas de reparo — todo en un solo lugar para admin y coordinador.
+ * y actas de reparo — rediseñado como un Centro de Mando (Command Center).
  */
 export default function GestionPersonalPageV2() {
     const [casosYear, setCasosYear] = useState(() => new Date().getFullYear());
 
     return (
-        <div className="space-y-5 max-w-[1680px] mx-auto pb-8">
+        <div className="space-y-6 max-w-[1680px] mx-auto pb-8">
             <header className="space-y-1 min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
-                    SAC Fiscal · Recursos humanos de campo
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
+                    SAC Fiscal · Operaciones de Campo
                 </p>
-                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Gestión de personal</h1>
+                <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground">Centro de Mando: Personal</h1>
                 <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
-                    Métricas y visitas, casos por fiscal, permisos y actas de reparo. Use las pestañas para cambiar de
-                    vista.
+                    Vista global del cuadrante, carga de expedientes y estado del equipo. Las métricas principales 
+                    se mantienen visibles mientras explora el detalle de casos y novedades.
                 </p>
             </header>
 
-            <Tabs defaultValue="permisos" className="w-full">
-                <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/80 border border-border rounded-lg w-full justify-start">
-                    <TabsTrigger
-                        value="metricas"
-                        className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                        <BarChart3 className="h-4 w-4" />
-                        Métricas y visitas
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="casos"
-                        className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                        <Table2 className="h-4 w-4" />
-                        Casos por fiscal
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="permisos"
-                        className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                        <CalendarRange className="h-4 w-4" />
-                        Permisos y vacaciones
-                    </TabsTrigger>
-                    <TabsTrigger
-                        value="actas"
-                        className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-                    >
-                        <ScrollText className="h-4 w-4" />
-                        Actas de reparo
-                    </TabsTrigger>
-                </TabsList>
+            {/* Panel de métricas (Ledger) persistente en la parte superior - Oculto temporalmente */}
+            {/* 
+            <section className="animate-in fade-in slide-in-from-bottom-2 duration-500">
+                <PersonalFiscalPanel hideCasosReportCard />
+            </section>
+            */}
 
-                <TabsContent value="metricas" className="mt-4 focus-visible:outline-none">
-                    <PersonalFiscalPanel hideCasosReportCard />
-                </TabsContent>
+            {/* Detalle profundo en pestañas secundarias */}
+            <section className="pt-2">
+                <Tabs defaultValue="casos" className="w-full">
+                    <TabsList className="flex flex-wrap h-auto gap-1 p-1 bg-muted/30 border border-border/60 rounded-lg w-full justify-start">
+                        <TabsTrigger
+                            value="casos"
+                            className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border-border/60 border border-transparent"
+                        >
+                            <Table2 className="h-4 w-4" />
+                            Control de Expedientes
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="permisos"
+                            className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border-border/60 border border-transparent"
+                        >
+                            <CalendarRange className="h-4 w-4" />
+                            Cuadrante y Novedades
+                        </TabsTrigger>
+                        <TabsTrigger
+                            value="actas"
+                            className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border-border/60 border border-transparent"
+                        >
+                            <ScrollText className="h-4 w-4" />
+                            Actas de Reparo
+                        </TabsTrigger>
+                    </TabsList>
 
-                <TabsContent value="casos" className="mt-4 focus-visible:outline-none">
-                    <CasosPorFiscalSection year={casosYear} onYearChange={setCasosYear} />
-                </TabsContent>
+                    <TabsContent value="casos" className="mt-6 focus-visible:outline-none">
+                        <CasosPorFiscalSection year={casosYear} onYearChange={setCasosYear} />
+                    </TabsContent>
 
-                <TabsContent value="permisos" className="mt-4 focus-visible:outline-none">
-                    <PersonalPermisosVacacionesPanel />
-                </TabsContent>
+                    <TabsContent value="permisos" className="mt-6 focus-visible:outline-none">
+                        <PersonalPermisosVacacionesPanel />
+                    </TabsContent>
 
-                <TabsContent value="actas" className="mt-4 focus-visible:outline-none">
-                    <ReparosActasSection />
-                </TabsContent>
-            </Tabs>
+                    <TabsContent value="actas" className="mt-6 focus-visible:outline-none">
+                        <ReparosActasSection />
+                    </TabsContent>
+                </Tabs>
+            </section>
         </div>
     );
 }

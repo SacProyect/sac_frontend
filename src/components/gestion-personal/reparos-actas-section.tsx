@@ -695,11 +695,11 @@ export function ReparosActasSection() {
 
     return (
         <div className="space-y-4">
-            <Card className="border-border bg-card shadow-sm">
-                <CardHeader className="pb-2">
-                    <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                        <FileUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-                        Cargar acta de reparo (PDF)
+            <Card className="border-border/60 bg-card shadow-none">
+                <CardHeader className="pb-4 border-b border-border/40">
+                    <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+                        <FileUp className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                        Cargar Acta de Reparo
                     </CardTitle>
                     <CardDescription className="text-muted-foreground max-w-3xl">
                         Busque al contribuyente por nombre, RIF, n.º de providencia, parroquia, dirección, fiscal asignado
@@ -877,12 +877,12 @@ export function ReparosActasSection() {
                 </CardContent>
             </Card>
 
-            <Card className="border-border bg-card shadow-sm">
-                <CardHeader className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between pb-2">
+            <Card className="border-border/60 bg-card shadow-none mt-6">
+                <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between pb-4 border-b border-border/40">
                     <div>
-                        <CardTitle className="text-lg text-foreground flex items-center gap-2">
-                            <ScrollText className="h-5 w-5 text-muted-foreground" />
-                            Actas registradas
+                        <CardTitle className="text-lg font-semibold text-foreground flex items-center gap-2">
+                            <ScrollText className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                            Registro de Actas
                         </CardTitle>
                         <CardDescription>
                             Alcance según su rol. Busque por nombre, RIF o UUID. Descargue el Excel con el mismo formato
@@ -935,21 +935,21 @@ export function ReparosActasSection() {
                     </div>
                 </CardHeader>
                 <CardContent>
-                    <div className="rounded-md border border-border overflow-x-auto max-h-[min(65vh,560px)] overflow-y-auto">
+                    <div className="rounded-sm border border-border/60 overflow-x-auto max-h-[min(65vh,560px)] overflow-y-auto bg-card">
                         <Table>
-                            <TableHeader className="sticky top-0 z-10 bg-muted/95 backdrop-blur-sm">
-                                <TableRow className="border-border hover:bg-transparent">
-                                    <TableHead className="text-foreground whitespace-nowrap">Contribuyente</TableHead>
-                                    <TableHead className="whitespace-nowrap">RIF</TableHead>
-                                    <TableHead className="whitespace-nowrap">N.º exp.</TableHead>
-                                    <TableHead className="whitespace-nowrap">N.º reparo</TableHead>
-                                    <TableHead className="whitespace-nowrap">Impuesto</TableHead>
-                                    <TableHead className="whitespace-nowrap">Total</TableHead>
-                                    <TableHead className="whitespace-nowrap">Fiscal (acta)</TableHead>
-                                    <TableHead className="whitespace-nowrap">Fiscal SAC</TableHead>
-                                    <TableHead>Operativo</TableHead>
-                                    <TableHead className="text-right">PDF</TableHead>
-                                    <TableHead className="text-right min-w-[200px]">Acciones</TableHead>
+                            <TableHeader className="sticky top-0 z-10 bg-muted/10 backdrop-blur-sm">
+                                <TableRow className="border-border/60 hover:bg-transparent">
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Contribuyente</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">RIF</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">N.º exp.</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">N.º reparo</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Impuesto</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Total</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Fiscal (acta)</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap">Fiscal SAC</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Operativo</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right">PDF</TableHead>
+                                    <TableHead className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-right min-w-[200px]">Acciones</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>

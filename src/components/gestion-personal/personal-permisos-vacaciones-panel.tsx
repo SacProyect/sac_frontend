@@ -54,6 +54,20 @@ function formatShortDate(iso: string) {
  * Vista «Permisos, vacaciones y reposo» con rango de fechas, tarjetas por estatus y tabla
  * (misma UX que tenía el módulo Fiscalización).
  */
+
+function EstatusBadge({ estatus }: { estatus: TipoEstatusPersonal | string }) {
+    if (estatus === "PERMISO") {
+        return <Badge variant="outline" className="text-amber-700 dark:text-amber-400 border-amber-600/40 bg-amber-500/10 uppercase tracking-widest text-[10px] whitespace-nowrap">Permiso</Badge>;
+    }
+    if (estatus === "VACACIONES") {
+        return <Badge variant="outline" className="text-indigo-700 dark:text-indigo-400 border-indigo-600/40 bg-indigo-500/10 uppercase tracking-widest text-[10px] whitespace-nowrap">Vacaciones</Badge>;
+    }
+    if (estatus === "REPOSO") {
+        return <Badge variant="outline" className="text-rose-700 dark:text-rose-400 border-rose-600/40 bg-rose-500/10 uppercase tracking-widest text-[10px] whitespace-nowrap">Reposo</Badge>;
+    }
+    return <Badge variant="outline" className="uppercase tracking-widest text-[10px] whitespace-nowrap">{ESTATUS_LABELS[estatus as TipoEstatusPersonal] ?? estatus}</Badge>;
+}
+
 export function PersonalPermisosVacacionesPanel() {
     const { user } = useAuth();
     const defaults = useMemo(() => monthRangeStrings(), []);
@@ -92,13 +106,13 @@ export function PersonalPermisosVacacionesPanel() {
 
     return (
         <>
-            <Card className="border-border bg-card text-card-foreground shadow-sm">
-                <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <Card className="border-border/60 bg-card text-card-foreground shadow-none">
+                <CardHeader className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between border-b border-border/40 pb-4">
                     <div>
-                        <CardTitle className="text-lg text-foreground">Permisos, vacaciones y reposo</CardTitle>
+                        <CardTitle className="text-lg font-semibold text-foreground">Cuadrante y Novedades</CardTitle>
                         <CardDescription className="text-muted-foreground">
-                            Visualice las ventanas registradas en el rango y agregue nuevas incidencias (coordinador o
-                            administrador).
+                            Visualice permisos, vacaciones y reposos en el rango. Los administradores pueden
+                            registrar nuevas incidencias.
                         </CardDescription>
                     </div>
                     <div className="flex flex-wrap gap-2">
@@ -148,34 +162,29 @@ export function PersonalPermisosVacacionesPanel() {
 
                     <div className="grid gap-3 sm:grid-cols-3">
                         {ESTATUS_LIST.map((st) => (
-                            <Card key={st} className="border-border bg-muted/30 dark:bg-slate-950/50">
-                                <CardHeader className="py-3 pb-2">
-                                    <CardDescription className="text-muted-foreground text-xs">
+                            <Card key={st} className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
+                                <CardHeader className="p-4 pb-3">
+                                    <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
                                         {ESTATUS_LABELS[st]}
                                     </CardDescription>
-                                    <CardTitle className="text-2xl text-foreground tabular-nums">
+                                    <CardTitle className="text-3xl font-bold tracking-tight text-foreground tabular-nums">
                                         {personalResumenEnRango[st] ?? 0}
                                     </CardTitle>
                                 </CardHeader>
-                                <CardContent className="pt-0 pb-3">
-                                    <Badge variant="secondary" className="text-xs">
-                                        En el rango de fechas
-                                    </Badge>
-                                </CardContent>
                             </Card>
                         ))}
                     </div>
 
-                    <div className="rounded-md border border-border overflow-x-auto">
+                    <div className="rounded-sm border border-border/60 overflow-x-auto bg-card">
                         <Table>
-                            <TableHeader>
-                                <TableRow className="border-border hover:bg-transparent">
-                                    <TableHead className="text-muted-foreground">Funcionario</TableHead>
-                                    <TableHead className="text-muted-foreground">Estatus</TableHead>
-                                    <TableHead className="text-muted-foreground">Inicio</TableHead>
-                                    <TableHead className="text-muted-foreground">Fin</TableHead>
-                                    <TableHead className="text-muted-foreground">Coordinador</TableHead>
-                                    <TableHead className="text-muted-foreground">Motivo</TableHead>
+                            <TableHeader className="bg-muted/10">
+                                <TableRow className="border-border/60 hover:bg-transparent">
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Funcionario</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Estatus</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Inicio</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Fin</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Coordinador</TableHead>
+                                    <TableHead className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Motivo</TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -193,23 +202,23 @@ export function PersonalPermisosVacacionesPanel() {
                                     </TableRow>
                                 ) : (
                                     personalRows.map((row) => (
-                                        <TableRow key={row.id} className="border-border">
-                                            <TableCell className="text-foreground">
+                                        <TableRow key={row.id} className="border-border/60 hover:bg-muted/10 transition-colors">
+                                            <TableCell className="font-semibold text-foreground whitespace-nowrap">
                                                 {row.usuario?.name ?? row.usuarioId}
                                             </TableCell>
-                                            <TableCell className="text-foreground">
-                                                {ESTATUS_LABELS[row.estatus] ?? row.estatus}
+                                            <TableCell>
+                                                <EstatusBadge estatus={row.estatus} />
                                             </TableCell>
-                                            <TableCell className="text-foreground whitespace-nowrap">
+                                            <TableCell className="text-muted-foreground font-mono text-xs whitespace-nowrap">
                                                 {formatShortDate(row.fechaInicio)}
                                             </TableCell>
-                                            <TableCell className="text-foreground whitespace-nowrap">
+                                            <TableCell className="text-muted-foreground font-mono text-xs whitespace-nowrap">
                                                 {formatShortDate(row.fechaFin)}
                                             </TableCell>
-                                            <TableCell className="text-foreground">
+                                            <TableCell className="text-muted-foreground text-xs whitespace-nowrap">
                                                 {row.coordinador?.name ?? row.coordinadorId}
                                             </TableCell>
-                                            <TableCell className="text-muted-foreground max-w-[200px] truncate">
+                                            <TableCell className="text-muted-foreground text-xs max-w-[250px] truncate" title={row.motivo ?? ""}>
                                                 {row.motivo ?? "—"}
                                             </TableCell>
                                         </TableRow>

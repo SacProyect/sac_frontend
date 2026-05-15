@@ -24,49 +24,59 @@ import toast from "react-hot-toast";
 type VistaCasos = "tarjetas" | "tabla";
 
 function CasoFiscalTarjeta({ r }: { r: CasosPorFiscalRow }) {
+    // Calcular porcentajes para la mini-barra de progreso (basada en totales VDF + AF si es posible, o solo VDF)
+    const totalExp = r.totalCulminados + r.totalEnProceso + (r.vdfAnulados || 0);
+    const pctCulm = totalExp > 0 ? (r.totalCulminados / totalExp) * 100 : 0;
+    const pctProc = totalExp > 0 ? (r.totalEnProceso / totalExp) * 100 : 0;
+
     return (
-        <Card className="border-border bg-card shadow-sm h-full flex flex-col">
-            <CardHeader className="pb-2 pt-4">
-                <CardTitle className="text-base font-semibold text-foreground leading-tight">{r.funcionario}</CardTitle>
-                <CardDescription className="font-mono text-xs">CI {r.cedula}</CardDescription>
-            </CardHeader>
-            <CardContent className="pt-0 pb-4 flex-1 flex flex-col gap-3 text-sm">
-                <div className="grid grid-cols-2 gap-x-3 gap-y-2">
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">N° casos</p>
-                        <p className="font-semibold tabular-nums text-foreground">{r.nroCasos}</p>
+        <div className="flex flex-col md:flex-row md:items-center gap-4 p-4 border border-border/60 bg-card rounded-md shadow-sm transition-colors hover:bg-muted/10">
+            <div className="min-w-[200px] flex-shrink-0">
+                <h3 className="text-sm font-bold text-foreground">{r.funcionario}</h3>
+                <div className="text-[10px] font-mono text-muted-foreground mt-0.5">
+                    CI {r.cedula} <span className="mx-1.5 opacity-50">•</span> {r.coordinacion ?? "Sin Coord."}
+                </div>
+            </div>
+
+            <div className="flex-1 grid grid-cols-2 sm:grid-cols-6 gap-4 md:gap-6 items-center">
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Casos</span>
+                    <span className="text-lg font-bold tabular-nums">{r.nroCasos}</span>
+                </div>
+                
+                <div className="flex flex-col col-span-2 hidden sm:flex">
+                    <div className="flex justify-between items-baseline mb-1.5">
+                        <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Progreso Global</span>
+                        <span className="text-[10px] font-mono text-emerald-600 dark:text-emerald-500 font-medium">{r.totalCulminados} CULM</span>
                     </div>
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">VDF total</p>
-                        <p className="font-semibold tabular-nums text-foreground">{r.vdfTotal}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">AF total</p>
-                        <p className="font-semibold tabular-nums text-foreground">{r.afTotal}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Σ culminados</p>
-                        <p className="font-semibold tabular-nums text-emerald-700 dark:text-emerald-400">{r.totalCulminados}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Σ en proceso</p>
-                        <p className="font-semibold tabular-nums text-amber-700 dark:text-amber-400">{r.totalEnProceso}</p>
-                    </div>
-                    <div>
-                        <p className="text-[10px] uppercase tracking-wide text-muted-foreground">VDF anul.</p>
-                        <p className="font-semibold tabular-nums text-muted-foreground">{r.vdfAnulados}</p>
+                    <div className="h-1.5 w-full bg-muted overflow-hidden flex rounded-full">
+                        <div className="bg-emerald-500 h-full" style={{ width: `${pctCulm}%` }} />
+                        <div className="bg-amber-400 h-full" style={{ width: `${pctProc}%` }} />
                     </div>
                 </div>
-                <div className="text-xs text-muted-foreground border-t border-border pt-2 mt-auto">
-                    <span className="text-foreground/80">Coord.:</span> {r.coordinacion ?? "—"}
+
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">VDF / AF</span>
+                    <span className="text-base font-semibold tabular-nums text-foreground">{r.vdfTotal} <span className="text-muted-foreground font-normal text-sm">/</span> {r.afTotal}</span>
                 </div>
-                {r.observaciones ? (
-                    <p className="text-xs text-muted-foreground line-clamp-2" title={r.observaciones}>
-                        {r.observaciones}
-                    </p>
-                ) : null}
-            </CardContent>
-        </Card>
+                
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Σ Culm.</span>
+                    <span className="text-lg font-bold tabular-nums text-emerald-600 dark:text-emerald-500">{r.totalCulminados}</span>
+                </div>
+                
+                <div className="flex flex-col">
+                    <span className="text-[10px] uppercase tracking-widest text-muted-foreground font-semibold">Σ Proc.</span>
+                    <span className="text-lg font-bold tabular-nums text-amber-600 dark:text-amber-500">{r.totalEnProceso}</span>
+                </div>
+            </div>
+
+            {r.observaciones && (
+                <div className="md:w-[180px] flex-shrink-0 text-xs text-muted-foreground md:border-l border-border/60 md:pl-4 pt-3 md:pt-0 border-t md:border-t-0 mt-3 md:mt-0">
+                    <span className="line-clamp-2" title={r.observaciones}>{r.observaciones}</span>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -246,7 +256,7 @@ export function CasosPorFiscalSection({ year, onYearChange }: Props) {
                             No hay filas que coincidan con la búsqueda o aún no hay datos para el año.
                         </p>
                     ) : (
-                        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        <div className="flex flex-col gap-2">
                             {filasFiltradas.map((r) => (
                                 <CasoFiscalTarjeta key={r.fiscalId} r={r} />
                             ))}
