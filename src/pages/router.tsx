@@ -469,23 +469,33 @@ export const router = createBrowserRouter([
                                 const taxpayerId = params.taxpayer;
                                 if (!taxpayerId) return { events: [], fines: [], payments: [], taxSummary: [], islrReports: [], taxpayerData: null, observations: [] };
 
+                                let dashboard: TaxpayerDashboardResponse | null = null;
                                 if (isTaxpayerDashboardFeatureEnabled) {
-                                    const dashboard = await getTaxpayerDashboard(taxpayerId);
+                                    try {
+                                        dashboard = await getTaxpayerDashboard(taxpayerId);
+                                    } catch (dashboardError) {
+                                        console.warn("Dashboard endpoint failed, falling back to individual endpoints:", dashboardError);
+                                    }
+                                }
+
+                                if (dashboard) {
                                     const events = Array.isArray(dashboard?.events) ? (dashboard.events as Event[]) : [];
                                     events.forEach((event) => (event.id = `${event.id}`));
 
-                                    const taxSummaryPayload = dashboard?.taxSummary as { data?: IVAReports[] } | IVAReports[] | undefined;
-                                    const taxSummary = Array.isArray(taxSummaryPayload)
-                                        ? taxSummaryPayload
-                                        : Array.isArray(taxSummaryPayload?.data)
-                                            ? taxSummaryPayload.data
+                                    const taxSummaryPayload = (dashboard as any)?.taxSummary ?? (dashboard as any)?.IVAReports ?? (dashboard as any)?.taxpayerData?.IVAReports;
+                                    const taxSummaryNormalized = taxSummaryPayload as { data?: IVAReports[] } | IVAReports[] | undefined;
+                                    const taxSummary = Array.isArray(taxSummaryNormalized)
+                                        ? taxSummaryNormalized
+                                        : Array.isArray(taxSummaryNormalized?.data)
+                                            ? taxSummaryNormalized.data
                                             : [];
 
-                                    const islrPayload = dashboard?.islrReports as { data?: ISLRReports[] } | ISLRReports[] | undefined;
-                                    const islrReports = Array.isArray(islrPayload)
-                                        ? islrPayload
-                                        : Array.isArray(islrPayload?.data)
-                                            ? islrPayload.data
+                                    const islrPayload = (dashboard as any)?.islrReports ?? (dashboard as any)?.ISLRReports ?? (dashboard as any)?.taxpayerData?.ISLRReports;
+                                    const islrNormalized = islrPayload as { data?: ISLRReports[] } | ISLRReports[] | undefined;
+                                    const islrReports = Array.isArray(islrNormalized)
+                                        ? islrNormalized
+                                        : Array.isArray(islrNormalized?.data)
+                                            ? islrNormalized.data
                                             : [];
 
                                     const fines = (dashboard?.fineHistory ?? []) as Fines[];
@@ -496,14 +506,31 @@ export const router = createBrowserRouter([
                                     return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations };
                                 }
 
+                                // Fallback: individual endpoints
+                                // NOTE: Always call getTaxHistory/getIslrReports directly — taxpayerData.IVAReports
+                                // may be incomplete due to SQL optimization bug on the backend
                                 const taxpayerData = await getTaxpayerData(taxpayerId);
                                 const events: Event[] = await getTaxpayerEvents(taxpayerId);
                                 events.forEach((event) => (event.id = `${event.id}`));
 
                                 const fines = await getFineHistory(taxpayerId);
                                 const payments = await getPaymentHistory(taxpayerId);
-                                const taxSummary = (await getTaxHistory(taxpayerId)).data;
-                                const islrReports = (await getIslrReports(taxpayerId)).data
+
+                                const taxSummaryResult = await getTaxHistory(taxpayerId);
+                                const taxSummaryPayload = taxSummaryResult?.data ?? (taxpayerData as any)?.IVAReports;
+                                const taxSummary = Array.isArray(taxSummaryPayload)
+                                    ? taxSummaryPayload
+                                    : Array.isArray((taxSummaryPayload as any)?.data)
+                                        ? (taxSummaryPayload as any).data
+                                        : [];
+
+                                const islrResult = await getIslrReports(taxpayerId);
+                                const islrPayload = islrResult?.data ?? (taxpayerData as any)?.ISLRReports;
+                                const islrReports = Array.isArray(islrPayload)
+                                    ? islrPayload
+                                    : Array.isArray((islrPayload as any)?.data)
+                                        ? (islrPayload as any).data
+                                        : [];
 
                                 return { events, fines, payments, taxSummary, islrReports, taxpayerData, observations: [] };
                             } catch (error) {
