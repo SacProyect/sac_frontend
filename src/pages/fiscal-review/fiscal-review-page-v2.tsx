@@ -173,43 +173,47 @@ export function FiscalDetailsView({
         {page === 4 && <FiscalReviewPage4Declaraciones fiscalId={fiscalId} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
        </div>
 
-       {/* Pagination */}
-       <div className="flex justify-center mt-6">
-         <div className="bg-slate-900 border border-slate-700 rounded-lg p-2 flex items-center justify-center gap-1 shadow-lg">
-           <Button 
-             variant="ghost" 
-             size="sm" 
-             onClick={() => setPage(p => Math.max(1, p - 1))}
-             disabled={page === 1}
-             className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-50 mx-1"
-           >
-             <ChevronLeft className="h-4 w-4 mr-1" />
-             Anterior
-           </Button>
-           
-           {[1, 2, 3, 4].map(p => (
-             <Button
-               key={p}
-               size="sm"
-               onClick={() => setPage(p)}
-               className={`w-10 transition-colors ${page === p ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md' : 'bg-transparent text-slate-300 hover:bg-slate-800'}`}
-             >
-               {p}
-             </Button>
-           ))}
-           
-           <Button 
-             variant="ghost" 
-             size="sm" 
+        {/* Pagination */}
+        <div className="flex justify-center mt-6">
+          <div className="bg-slate-900/80 border border-slate-700/80 rounded-lg p-1.5 sm:p-2 flex items-center justify-center gap-0.5 sm:gap-1 shadow-lg backdrop-blur-sm">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setPage(p => Math.max(1, p - 1))}
+              disabled={page === 1}
+              className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-50 px-1.5 sm:px-3"
+            >
+              <ChevronLeft className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Anterior</span>
+            </Button>
+            
+            {[1, 2, 3, 4].map(p => (
+              <Button
+                key={p}
+                size="sm"
+                onClick={() => setPage(p)}
+                className={`min-w-[32px] sm:min-w-[40px] h-8 sm:h-9 text-xs sm:text-sm transition-all ${
+                  page === p 
+                    ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md scale-105 sm:scale-100' 
+                    : 'bg-transparent text-slate-300 hover:bg-slate-800'
+                }`}
+              >
+                {p}
+              </Button>
+            ))}
+            
+            <Button 
+              variant="ghost" 
+              size="sm" 
               onClick={() => setPage(p => Math.min(4, p + 1))}
               disabled={page === 4}
-             className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-50 mx-1"
-           >
-             Siguiente
-             <ChevronRight className="h-4 w-4 ml-1" />
-           </Button>
-         </div>
-       </div>
+              className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-50 px-1.5 sm:px-3"
+            >
+              <span className="hidden sm:inline">Siguiente</span>
+              <ChevronRight className="h-4 w-4 sm:ml-1" />
+            </Button>
+          </div>
+        </div>
     </div>
   );
 }
