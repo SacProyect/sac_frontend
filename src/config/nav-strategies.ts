@@ -1,6 +1,6 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute } from '@/config/nav-routes';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem } from '@/config/nav-routes';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
 
 /**
@@ -16,6 +16,7 @@ type NavStrategy = (user: User) => NavItem[];
  */
 const adminStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    documentosNavItem,
     visitsRoute,
     ...routeBlocks.gestionPersonal,
     auditTrailNavItem,
@@ -32,6 +33,7 @@ const adminStrategy: NavStrategy = () => [
  */
 const coordinatorStrategy: NavStrategy = () => [
     ...sharedRoutes,
+    documentosNavItem,
     auditTrailNavItem,
     internalAuditNavItem,
     ...routeBlocks.ivaIslr,

@@ -46,6 +46,12 @@ export const sharedRoutes: NavItem[] = [
     { href: '/notifications', label: 'Notificaciones', icon: <Bell className="w-4 h-4" /> },
 ];
 
+export const documentosNavItem: NavItem = {
+    href: '/documentos',
+    label: 'Documentos',
+    icon: <FileText className="w-4 h-4" />,
+};
+
 /** Ruta de ajustes — siempre visible para todos los roles, siempre al final. */
 export const settingsRoute: NavItem = { href: '/settings', label: 'Ajustes', icon: <Settings2 className="w-4 h-4" /> };
 

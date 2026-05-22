@@ -10,6 +10,7 @@ export interface User {
     /** Presente en algunos endpoints / perfil. */
     email?: string;
     role: string;
+    isJefaDivision?: boolean;
     personId: string;
     password?: string;
     status?: boolean;

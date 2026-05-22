@@ -1,5 +1,17 @@
 import { ProtectedRoute } from '@/components/Navigation/protected-route';
 import { AdminOnly } from '@/components/Navigation/admin-only';
+
+/**
+ * Permite el render solo a usuarios ADMIN o COORDINATOR.
+ * Redirige al dashboard si no tiene permiso.
+ */
+const AdminOrCoordinatorOnly = ({ children }: { children: React.ReactNode }) => {
+	const { user } = useAuth();
+	if (!user) return <Navigate to="/login" replace />;
+	if (user.role !== "ADMIN" && user.role !== "COORDINATOR") return <Navigate to="/" replace />;
+	return <>{children}</>;
+};
+
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout, useAuth } from '@/hooks/use-auth';
@@ -113,6 +125,8 @@ const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-p
 const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
 const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-presencia-page"));
 const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
+const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
+const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
 
 type LoaderData = {
     events: Event[],
@@ -265,12 +279,32 @@ export const router = createBrowserRouter([
                         path: "divulgacion/fiscal",
                         element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
                     },
-                    {
-                        path: "divulgacion/coordinador",
-                        element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
-                    },
-                    {
-                        path: "observations/:taxpayerId",
+					{
+						path: "divulgacion/coordinador",
+						element: <Navigate to="/divulgacion-presencia-fiscal" replace />,
+					},
+					{
+						path: "documentos",
+						element: (
+							<AdminOrCoordinatorOnly>
+								<Suspense fallback={<GlobalLoader message="Cargando Documentos..." />}>
+									<DocumentosPage />
+								</Suspense>
+							</AdminOrCoordinatorOnly>
+						),
+					},
+					{
+						path: "documentos/subir",
+						element: (
+							<AdminOrCoordinatorOnly>
+								<Suspense fallback={<GlobalLoader message="Cargando..." />}>
+									<SubirDocumentoPage />
+								</Suspense>
+							</AdminOrCoordinatorOnly>
+						),
+					},
+					{
+						path: "observations/:taxpayerId",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Observaciones..." />}><ObservationsPageV2 /></Suspense>,
                     },
                     {
