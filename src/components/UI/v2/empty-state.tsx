@@ -1,26 +1,15 @@
-import { Inbox } from 'lucide-react';
-
 interface EmptyStateProps {
-  title?: string;
-  message?: string;
-  className?: string;
+  title: string;
+  message: string;
+  icon?: React.ReactNode;
 }
 
-/**
- * EmptyState - Estado vacío reutilizable para V2
- */
-export function EmptyState({
-  title = 'No hay datos disponibles',
-  message,
-  className = '',
-}: EmptyStateProps) {
+export function EmptyState({ title, message, icon }: EmptyStateProps) {
   return (
-    <div className={`flex items-center justify-center min-h-[400px] ${className}`}>
-      <div className="text-center">
-        <Inbox className="h-12 w-12 text-slate-500 mx-auto mb-4" />
-        <p className="text-slate-400 text-lg mb-2">{title}</p>
-        {message && <p className="text-slate-500 text-sm">{message}</p>}
-      </div>
+    <div className="flex flex-col items-center justify-center py-16 text-slate-500">
+      {icon && <div className="mb-4">{icon}</div>}
+      <p className="text-slate-400 font-semibold mb-1">{title}</p>
+      <p className="text-sm text-slate-500">{message}</p>
     </div>
   );
 }

@@ -8,9 +8,10 @@ import { useNavigate } from "react-router-dom";
 interface Props {
     onClose: () => void;
     groups: { id: string; name: string }[];
+    year: number;
 }
 
-const CompleteReportModal: React.FC<Props> = ({ onClose, groups }) => {
+const CompleteReportModal: React.FC<Props> = ({ onClose, groups, year }) => {
     const [selectedGroupId, setSelectedGroupId] = useState<string | undefined>("");
     const [startDate, setStartDate] = useState<string>("");
     const [endDate, setEndDate] = useState<string>("");

@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
@@ -9,6 +9,8 @@ import toast from 'react-hot-toast';
 
 export default function GroupReportPageV2() {
   const { id } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const year = Number(searchParams.get('year')) || new Date().getFullYear();
   const [groupData, setGroupData] = useState<GroupRecordsApiResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -17,7 +19,7 @@ export default function GroupReportPageV2() {
       if (!id) return;
       setIsLoading(true);
       try {
-        const data = await getGroupRecords({ id, year: new Date().getFullYear() });
+        const data = await getGroupRecords({ id, year });
         setGroupData(data);
       } catch (error) {
         console.error("Error fetching group report:", error);
@@ -27,7 +29,7 @@ export default function GroupReportPageV2() {
       }
     };
     fetchGroupData();
-  }, [id]);
+  }, [id, year]);
 
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-500">

@@ -30,6 +30,7 @@ function GenerateReport() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const listRef = useRef<HTMLDivElement>(null);
     const hideFpTaxpayers = user?.role !== "FISCAL";
+    const [year, setYear] = useState(new Date().getFullYear());
 
     const { taxpayersForEvents: firstPageTaxpayers, totalPages } = useCachedTaxpayersForEvents(50);
     const firstPageFiltered = useMemo(
@@ -47,6 +48,14 @@ function GenerateReport() {
         () => [...displayedFirst, ...displayedExtra],
         [displayedFirst, displayedExtra]
     );
+
+    const taxpayerArrayFilteredByYear = useMemo(() => {
+        return taxpayerArray.filter(t => {
+            if (!t.emition_date) return false;
+            const taxYear = new Date(t.emition_date).getFullYear();
+            return !isNaN(taxYear) && taxYear === year;
+        });
+    }, [taxpayerArray, year]);
     useEffect(() => {
         if (!user) {
             navigate("/login");
@@ -229,6 +238,20 @@ function GenerateReport() {
                                     </button>
                                 </div>
                             </div>
+
+                            {/* Year filter */}
+                            <div className="flex items-center gap-2 mt-3">
+                                <label className="text-xs font-bold text-slate-400 uppercase tracking-wider">Año:</label>
+                                <select
+                                    value={year}
+                                    onChange={(e) => setYear(Number(e.target.value))}
+                                    className="h-8 min-w-[90px] rounded-md border border-slate-600 bg-slate-700 px-2 text-xs text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                >
+                                    {[2024, 2025, 2026].map((y) => (
+                                        <option key={y} value={y}>{y}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         <div 
@@ -245,12 +268,12 @@ function GenerateReport() {
                                 <div className='w-[120px] flex justify-end'><p>Acción</p></div>
                             </div>
 
-                            {taxpayerArray.filter(t => t.id && t.rif).length === 0 ? (
+                            {taxpayerArrayFilteredByYear.filter(t => t.id && t.rif).length === 0 ? (
                                 <div className="flex items-center justify-center h-full text-slate-500 text-sm italic">
                                     No se encontraron contribuyentes
                                 </div>
                             ) : (
-                                taxpayerArray.filter(t => t.id && t.rif).map(taxpayer => (
+                                taxpayerArrayFilteredByYear.filter(t => t.id && t.rif).map(taxpayer => (
                                     <div
                                         key={taxpayer.id}
                                         className='flex flex-col w-full px-6 py-4 border-b border-slate-800/50 lg:flex-row hover:bg-white/5 transition-colors group'
@@ -305,7 +328,7 @@ function GenerateReport() {
                                                 </div>
                                                 <button
                                                     className='w-10 h-10 flex items-center justify-center bg-indigo-500/10 text-indigo-400 rounded-full hover:bg-indigo-500 hover:text-white transition-all shadow-lg shadow-black/20'
-                                                    onClick={() => navigate(`/getGroupReport/${group.id}`)}
+                                                    onClick={() => navigate(`/getGroupReport/${group.id}?year=${year}`)}
                                                 >
                                                     <IoDocumentTextOutline size={18} />
                                                 </button>
@@ -320,7 +343,7 @@ function GenerateReport() {
 
                 {showCompleteReport && (
                     <CompleteReportModal
-                        groups={groupData}
+                        groups={groupData} year={year}
                         onClose={() => setShowCompleteReport(false)}
                     />
                 )}

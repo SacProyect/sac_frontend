@@ -21,6 +21,7 @@ import { useFiscalStats } from '@/hooks/use-fiscal-stats';
 import { FiscalReviewPage1Resumen } from '@/components/fiscal-review/fiscal-review-page1-resumen';
 import { FiscalReviewPage2Cumplimiento } from '@/components/fiscal-review/fiscal-review-page2-cumplimiento';
 import { FiscalReviewPage3Reportes } from '@/components/fiscal-review/fiscal-review-page3-reportes';
+import { FiscalReviewPage4Declaraciones } from '@/components/fiscal-review/fiscal-review-page4-declaraciones';
 import {
   FiscalKpiBreakdownDialog,
   type FiscalKpiBreakdownRow,
@@ -46,7 +47,7 @@ export function FiscalDetailsView({
   const { tvSpotlightIndex } = useTvIdleRotation({
     page,
     setPage,
-    totalPages: 3,
+    totalPages: 4,
   });
   const {
     loading,
@@ -169,6 +170,7 @@ export function FiscalDetailsView({
           />
         )}
         {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} tvSpotlightIndex={tvSpotlightIndex} />}
+        {page === 4 && <FiscalReviewPage4Declaraciones fiscalId={fiscalId} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
        </div>
 
        {/* Pagination */}
@@ -185,7 +187,7 @@ export function FiscalDetailsView({
              Anterior
            </Button>
            
-           {[1, 2, 3].map(p => (
+           {[1, 2, 3, 4].map(p => (
              <Button
                key={p}
                size="sm"
@@ -199,8 +201,8 @@ export function FiscalDetailsView({
            <Button 
              variant="ghost" 
              size="sm" 
-             onClick={() => setPage(p => Math.min(3, p + 1))}
-             disabled={page === 3}
+              onClick={() => setPage(p => Math.min(4, p + 1))}
+              disabled={page === 4}
              className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-50 mx-1"
            >
              Siguiente

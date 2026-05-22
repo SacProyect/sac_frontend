@@ -243,13 +243,16 @@ export const getFiscalsForReview = async (year?: number, page: number = 1, limit
 
 
 // This api is specific to retrieve the taxpayers related to the user that needs to create some reports
-export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50, search?: string) => {
+export const getTaxpayerForEvents = async (page: number = 1, limit: number = 50, search?: string, year?: number) => {
 	try {
 		let requestURL = "taxpayer/get-taxpayers-for-events"
 
 		const params: Record<string, number | string> = { page, limit };
 		if (search !== undefined && search.trim() !== "") {
 			params.search = search;
+		}
+		if (year !== undefined) {
+			params.year = year;
 		}
 
 		const response = await apiConnection.get(requestURL, {
@@ -793,4 +796,18 @@ export const getIndexIva = async () => {
 		console.error(e);
 		throw new Error("No se pudieron obtener los índices de IVA actual.");
 	}
+}
+
+export const getFiscalDeclarationStatus = async (fiscalId: string, year?: number) => {
+    try {
+        const params: Record<string, string | number> = {};
+        if (year !== undefined) {
+            params.year = year;
+        }
+        const response = await apiConnection.get(`/taxpayer/fiscal-declaration-status/${fiscalId}`, { params });
+        return response.data;
+    } catch (e: any) {
+        console.error(e);
+        throw new Error(e.response?.data?.error || "No se pudo obtener el estado de declaraciones.");
+    }
 }

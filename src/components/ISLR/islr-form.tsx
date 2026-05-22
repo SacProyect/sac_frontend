@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller, useController } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
 import { 
@@ -31,6 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 import toast from 'react-hot-toast';
 import { createISLR, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
+import { getTaxpayerData } from '@/components/utils/api/report-functions';
 import { useCachedTaxpayersForEvents } from '@/hooks/useCachedData';
 import Decimal from 'decimal.js';
 
@@ -210,6 +211,7 @@ function IslrForm() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const [isPopoverOpen, setIsPopoverOpen] = useState(false);
     const [resetKey, setResetKey] = useState(0);
+    const [loadingTaxpayerFromUrl, setLoadingTaxpayerFromUrl] = useState(false);
 
     const listRef = useRef<HTMLDivElement>(null);
 
@@ -234,6 +236,41 @@ function IslrForm() {
     });
 
     const watchValues = watch();
+    const [searchParams] = useSearchParams();
+
+    // Auto-select taxpayer from URL query param ?taxpayerId= (fetches directly from DB)
+    useEffect(() => {
+      const taxpayerIdFromUrl = searchParams.get('taxpayerId');
+      if (!taxpayerIdFromUrl) return;
+
+      const fetchTaxpayer = async () => {
+        setLoadingTaxpayerFromUrl(true);
+        try {
+          const taxpayer = await getTaxpayerData(taxpayerIdFromUrl);
+          
+          // Validate ownership
+          if (
+            taxpayer.user?.id && 
+            taxpayer.user.id !== user?.id && 
+            user?.role !== 'ADMIN' && 
+            user?.role !== 'COORDINATOR'
+          ) {
+            toast.error('Este contribuyente no está asignado a ti. No puedes cargarle ISLR.');
+            return;
+          }
+          
+          setSelectedTaxpayer(taxpayer);
+          setValue('taxpayerId', taxpayer.id);
+        } catch (e) {
+          // Silently ignore if taxpayer not found
+          console.warn('Contribuyente no encontrado por taxpayerId:', taxpayerIdFromUrl);
+        } finally {
+          setLoadingTaxpayerFromUrl(false);
+        }
+      };
+
+      fetchTaxpayer();
+    }, [searchParams, user, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Unified list of taxpayers
     const isSearching = searchDebounce.trim() !== '';
@@ -443,7 +480,15 @@ function IslrForm() {
                                                         !field.value && "text-slate-500"
                                                     )}
                                                 >
-                                                    {field.value && selectedTaxpayer
+                                                    {loadingTaxpayerFromUrl ? (
+                                                        <span className="flex items-center gap-2">
+                                                            <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
+                                                            </svg>
+                                                            Cargando...
+                                                        </span>
+                                                    ) : field.value && selectedTaxpayer
                                                         ? `${selectedTaxpayer.name} | ${selectedTaxpayer.rif}`
                                                         : "Seleccionar contribuyente..."}
                                                     <ArrowRight className="ml-2 h-4 w-4 shrink-0 opacity-50 rotate-90" />
