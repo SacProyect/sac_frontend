@@ -106,6 +106,7 @@ function IvaForm() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const currentYear = new Date().getUTCFullYear();
     const listRef = useRef<HTMLDivElement>(null);
+    const monthFromUrlRef = useRef(false);
     const [dateParts, setDateParts] = useState<{ year: string; day: string; month: string }>({
         year: String(currentYear),
         day: "1",
@@ -323,6 +324,23 @@ function IvaForm() {
 
                 setSelectedTaxpayer(taxpayer);
                 setValue('taxpayerId', taxpayer.id);
+
+                // Pre-select month/year from URL params if provided
+                const monthFromUrl = searchParams.get('month');
+                const yearFromUrl = searchParams.get('year');
+                if (monthFromUrl) {
+                    const m = parseInt(monthFromUrl, 10);
+                    const y = yearFromUrl ? parseInt(yearFromUrl, 10) : currentYear;
+                    if (m >= 1 && m <= 12) {
+                        monthFromUrlRef.current = true;
+                        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                        setNextMonthLabel(`${monthNames[m-1]} ${y}`);
+                        setPeriodYear(y);
+                        setPeriodMonth(m);
+                        setDateParts({ year: String(y), month: String(m), day: "1" });
+                        setValue('date', isoDateUtcNoon(y, m));
+                    }
+                }
             } catch (e) {
                 // Silently ignore if taxpayer not found
                 console.warn('Contribuyente no encontrado por taxpayerId:', taxpayerIdFromUrl);
@@ -360,6 +378,13 @@ function IvaForm() {
         if (!selectedTaxpayer) {
             setNextMonthLabel("");
             setValue('date', '');
+            return;
+        }
+
+        // If month was provided from URL, skip auto-calculation
+        if (monthFromUrlRef.current) {
+            monthFromUrlRef.current = false;
+            setLoadingMonthInfo(false);
             return;
         }
 
