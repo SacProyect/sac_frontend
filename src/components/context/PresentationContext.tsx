@@ -13,9 +13,9 @@ const PresentationContext = createContext<PresentationValue | null>(null);
 
 /** Contexto opcional para modo presentación / auto-scroll (tablas). Stub hasta activar la feature. */
 export function PresentationProvider({ children }: { children: ReactNode }) {
-  const registerTable = useCallback((_id: string) => {}, []);
-  const goToNextTableOrPage = useCallback(() => {}, []);
-  const setUserInteraction = useCallback(() => {}, []);
+  const registerTable = useCallback((_id: string) => { }, []);
+  const goToNextTableOrPage = useCallback(() => { }, []);
+  const setUserInteraction = useCallback(() => { }, []);
 
   const value = useMemo<PresentationValue>(
     () => ({
@@ -38,9 +38,9 @@ export function usePresentation(): PresentationValue {
     return {
       autoScrollEnabled: false,
       currentTableId: '',
-      registerTable: () => {},
-      goToNextTableOrPage: () => {},
-      setUserInteraction: () => {},
+      registerTable: () => { },
+      goToNextTableOrPage: () => { },
+      setUserInteraction: () => { },
       tableQueue: [],
     };
   }
