@@ -300,12 +300,12 @@ export default function SubirDocumentoPage() {
 									</SelectTrigger>
 									<SelectContent>
 										<SelectItem value="private">Solo yo (Privado)</SelectItem>
-										<SelectItem value="jefa">Jefa / Administración (Compartido especial)</SelectItem>
+										<SelectItem value="jefa">Jefe de division y administracion</SelectItem>
 									</SelectContent>
 								</Select>
 								<p className="text-xs text-muted-foreground">
 									{sendToJefa
-										? "Se subirá como SHARED + jefaOnly para que la Jefa y admins lo vean en sus vistas"
+										? "Se compartira con el jefe de division"
 										: "Solo visible para ti (scope PRIVATE)"}
 								</p>
 							</div>

@@ -403,6 +403,10 @@ export default function DocumentosPage() {
 																		</Badge>
 																	))}
 																</div>
+															) : doc.scope === "SHARED" ? (
+																<Badge variant="outline" className="text-[10px] px-1.5 py-0">
+																	Administración
+																</Badge>
 															) : (
 																<span className="text-muted-foreground/60">—</span>
 															)}
@@ -538,6 +542,10 @@ export default function DocumentosPage() {
 												</Badge>
 											))}
 										</div>
+									) : selectedDoc.scope === "SHARED" ? (
+										<Badge variant="outline" className="text-xs">
+											Administración
+										</Badge>
 									) : (
 										<p className="text-sm text-muted-foreground/60">No compartido</p>
 									)}
