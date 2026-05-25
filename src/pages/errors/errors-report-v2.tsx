@@ -118,6 +118,7 @@ export default function ErrorsReportV2() {
       <PageHeader
         title="Reportar Error"
         description="Notifica errores o problemas encontrados en el sistema"
+        backTo="/admin"
       />
 
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">

@@ -5,6 +5,7 @@ import { ProfileTabV2 } from '@/components/settings/profile-tab-v2';
 import { SecurityTabV2 } from '@/components/settings/security-tab-v2';
 import { NotificationsTabV2 } from '@/components/settings/notifications-tab-v2';
 import { isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { BackButton } from '@/components/UI/v2';
 
 /**
  * SettingsPageV2 - Página de Ajustes con diseño Shadcn UI v2.0
@@ -19,6 +20,7 @@ export default function SettingsPageV2() {
 
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
+      <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
       <div>
         <h1 className="text-3xl font-bold text-white">Ajustes</h1>
         <p className="text-slate-400 mt-2">Administra tu perfil, seguridad y preferencias</p>

@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Users, Monitor, Activity, Filter, CalendarDays } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { LoadingState } from '@/components/UI/v2';
+import { LoadingState, BackButton } from '@/components/UI/v2';
 import { useAuth } from '@/hooks/use-auth';
 import { useDemoMode } from '@/hooks/use-demo-mode';
 
@@ -368,6 +368,7 @@ export default function StatsDashboardV2() {
     <div
       className="mx-auto -mt-2 flex h-[calc(100dvh-3.5rem)] w-full min-w-0 max-w-6xl flex-col overflow-hidden rounded-xl border border-slate-700/80 bg-slate-900 shadow-2xl shadow-black/40 md:-mt-3"
     >
+      <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
       {isDemoModeActive && isAdmin && (
         <StatsDemoMode 
           year={year} 

@@ -210,10 +210,7 @@ export default function DivulgacionDetallePage() {
 	if (error) {
 		return (
 			<div className="space-y-6">
-				<PageHeader title="Error" description={error} />
-				<Button variant="outline" onClick={() => navigate("/divulgacion-presencia-fiscal")}>
-					Volver
-				</Button>
+				<PageHeader title="Error" description={error} backTo="/divulgacion-presencia-fiscal" />
 			</div>
 		);
 	}
@@ -239,15 +236,9 @@ export default function DivulgacionDetallePage() {
 			<PageHeader
 				title={`Jornada — ${PARROQUIA_LABELS[data.parroquia]}`}
 				description={`${data.fecha?.slice(0, 10) ?? ""} · ${data.fiscalGroup?.name ?? "Sin grupo"} · Creada por ${data.creadoPor?.name ?? "—"}`}
+				backTo="/divulgacion-presencia-fiscal"
 				action={
 					<div className="flex items-center gap-2 flex-wrap">
-						<Button
-							variant="outline"
-							size="sm"
-							onClick={() => navigate("/divulgacion-presencia-fiscal")}
-						>
-							Volver
-						</Button>
 						<Button
 							variant="default"
 							size="sm"

@@ -1,11 +1,13 @@
 import { useParams, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
-import GroupReportStatistics from '@/components/reports/group-report-statistics';
+import { GroupKpiCards } from '@/components/reports/group-kpi-cards';
+import { GroupCharts } from '@/components/reports/group-charts';
+import { GroupFiscalTable } from '@/components/reports/group-fiscal-table';
 import { getGroupRecords } from '@/components/utils/api/report-functions';
 import { GroupRecordsApiResponse } from '@/types/group-records';
 import toast from 'react-hot-toast';
+import { Loader2 } from 'lucide-react';
 
 export default function GroupReportPageV2() {
   const { id } = useParams<{ id: string }>();
@@ -34,29 +36,31 @@ export default function GroupReportPageV2() {
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-500">
       <PageHeader
-        title="Estadísticas de Grupo"
-        description="Visualizando información de fiscalización para este grupo."
+        title={groupData ? groupData.groupName : "Estadísticas de Grupo"}
+        description={groupData
+          ? `Año ${year} · ${groupData.records.length} registros de fiscalización`
+          : "Visualizando información de fiscalización para este grupo."
+        }
+        backTo="/gen-reports"
       />
-      
-      <div className="grid grid-cols-1 gap-6">
-        <Card className="bg-slate-900/50 border-slate-800 p-4 sm:p-6 transition-all duration-300 hover:border-slate-700/50 shadow-2xl shadow-black/20 rounded-2xl overflow-hidden backdrop-blur-sm">
-          {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-slate-500">
-                <svg className="w-8 h-8 mb-4 text-indigo-500 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
-                </svg>
-                <p className="text-sm font-medium">Cargando estadísticas del grupo...</p>
-            </div>
-          ) : (
-            <GroupReportStatistics 
-                groupData={groupData} 
-                selectedGroup={id || ""} 
-                pdfMode={false} 
-            />
-          )}
-        </Card>
-      </div>
+
+      {isLoading ? (
+        <div className="flex flex-col items-center justify-center py-32 text-slate-500">
+          <Loader2 className="w-8 h-8 mb-4 text-indigo-500 animate-spin" />
+          <p className="text-sm font-medium">Cargando estadísticas del grupo...</p>
+        </div>
+      ) : !groupData ? (
+        <div className="flex flex-col items-center justify-center py-32 text-slate-500">
+          <p className="text-lg font-medium">No se pudieron cargar los datos</p>
+          <p className="text-sm mt-2">Intente de nuevo más tarde</p>
+        </div>
+      ) : (
+        <div className="space-y-6">
+          <GroupKpiCards data={groupData} />
+          <GroupCharts data={groupData} />
+          <GroupFiscalTable data={groupData} />
+        </div>
+      )}
     </div>
   );
 }

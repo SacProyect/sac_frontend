@@ -14,6 +14,7 @@ export default function PaymentPageV2() {
       <PageHeader
         title="Registrar Pago"
         description="Registra un nuevo pago para un contribuyente"
+        backTo={`/taxpayer/${taxpayerId}`}
       />
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <EventForm title="Pago" type="payment" taxpayerId={taxpayerId || ""} />

@@ -3,6 +3,7 @@ import { Check, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/UI/button";
 import { Card } from "@/components/UI/card";
 import { Badge } from "@/components/UI/badge";
+import { BackButton } from "@/components/UI/v2";
 import { useNotifications } from "@/hooks/use-notifications";
 import { NotificationStatus, SocketConnectionStatus } from "@/types/notifications";
 import toast from "react-hot-toast";
@@ -78,6 +79,7 @@ export default function NotificationsPageV1() {
 
   return (
     <div className="space-y-6">
+      <BackButton to="/admin" hideLabelOnMobile className="mb-4" />
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
           <h1 className="text-3xl font-bold text-white">Centro de Notificaciones</h1>

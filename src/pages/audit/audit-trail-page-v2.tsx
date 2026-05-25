@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/UI/v2";
 import { Card } from "@/components/UI/card";
@@ -30,7 +30,7 @@ import {
 import { getAuditoria } from "@/components/utils/api/auditoria-functions";
 import type { AuditoriaRow } from "@/types/auditoria";
 import toast from "react-hot-toast";
-import { ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, ChevronLeft, ChevronRight, Eye, Loader2 } from "lucide-react";
 
 const ENTIDADES = [
   { value: "ALL", label: "Todas" },
@@ -108,6 +108,7 @@ function formatFieldValue(key: string, value: unknown): string {
 
 export default function AuditTrailPageV2() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<AuditoriaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -223,6 +224,10 @@ export default function AuditTrailPageV2() {
       <PageHeader
         title="Auditoría y trazabilidad"
         description="Registro de cambios sensibles (contribuyentes, IVA, ISLR). Solo lectura."
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
 
       <Card className="bg-slate-800/80 border-slate-700 p-4 sm:p-6">

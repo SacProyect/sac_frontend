@@ -49,6 +49,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { ArrowLeft } from "lucide-react";
 
 const FILTERS_STORAGE_KEY = "divulgacion-presencia-filtros-v1";
 
@@ -569,13 +570,22 @@ export default function DivulgacionPresenciaPage() {
 			<PageHeader
 				title="Divulgación y Presencia Fiscal"
 				description="Jornadas por parroquia. Coordinador agrega asistentes; Fiscal registra contribuyentes visitados; Admin abre/cierra."
+				// action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+				// 	<ArrowLeft className="h-4 w-4" />
+				// 	Volver
+				// </Button>}
 				action={
 					<div className="flex items-center gap-2">
+						<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+							<ArrowLeft className="h-4 w-4" />
+							Volver
+						</Button>
 						{canCreate && (
 							<Button onClick={() => setDialogOpen(true)}>
 								Nueva jornada
 							</Button>
 						)}
+						
 						<Button
 							variant="secondary"
 							onClick={onExportExcel}

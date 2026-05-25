@@ -8,7 +8,7 @@ import { Card } from '@/components/UI/card';
 import { Input } from '@/components/UI/input';
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
-import { Search, TrendingUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { Search, TrendingUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Eye, Users, UserIcon, ArrowLeft } from 'lucide-react';
 import { EmptyState, LoadingState, PageHeader } from '@/components/UI/v2';
 import { TableSkeleton } from '@/components/UI/TableSkeleton';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
@@ -27,7 +27,6 @@ import {
   type FiscalKpiBreakdownRow,
 } from '@/components/fiscal-review/fiscal-kpi-breakdown-dialog';
 import type { FiscalKpiBreakdownCategory } from '@/components/utils/api/report-functions';
-
 /**
  * Vista de detalles de un fiscal específico (3 páginas)
  */
@@ -40,6 +39,7 @@ export function FiscalDetailsView({
   onBack: () => void;
   initialYear: number;
 }) {
+  const navigate = useNavigate();
   const [page, setPage] = useState(1);
   const [selectedYear, setSelectedYear] = useState(initialYear);
   const [kpiBreakdown, setKpiBreakdown] = useState<FiscalKpiBreakdownCategory | null>(null);
@@ -77,11 +77,11 @@ export function FiscalDetailsView({
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-300">
        <div className="flex justify-between items-center mb-2">
-         <PageHeader
-           title="Exploración de Fiscal"
-           description="Métricas y estadísticas detalladas para el fiscal seleccionado"
-         />
-         <Button variant="outline" onClick={onBack} className="border-slate-600 text-slate-300 bg-transparent hover:bg-slate-700">
+          <PageHeader
+            title="Exploración de Fiscal"
+            description="Métricas y estadísticas detalladas para el fiscal seleccionado"
+          />
+         <Button variant="outline" onClick={onBack} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
            <ChevronLeft className="h-4 w-4 mr-2" />
            Volver a la lista
          </Button>
@@ -95,7 +95,7 @@ export function FiscalDetailsView({
            </Avatar>
            <div>
              <h2 className="text-2xl font-bold text-white">{fiscalInfo.fiscalName || fiscalInfo.name || fiscalInfo.nombre}</h2>
-             <p className="text-blue-400 text-sm mt-1 font-medium">ID: {fiscalInfo.id || fiscalInfo.fiscalId}</p>
+             <p className="text-blue-400 text-sm mt-1 font-medium">Rol: {fiscalInfo.role}</p>
            </div>
          </div>
          <div className="flex gap-4 sm:gap-6 lg:gap-8 text-center pt-4 md:pt-0">
@@ -147,31 +147,72 @@ export function FiscalDetailsView({
          fallbackTaxpayers={fiscalTaxpayers as FiscalKpiBreakdownRow[]}
        />
 
-       {/* Render current page */}
-       <div className="min-h-[400px]">
-        {page === 1 && (
-          <FiscalReviewPage1Resumen
-            fiscalInfo={fiscalInfo}
-            performance={fiscalPerformance}
-            selectedYear={selectedYear}
-            setSelectedYear={setSelectedYear}
-            fiscalTaxpayers={fiscalTaxpayers}
-            fiscalMonthlyCollect={fiscalMonthlyCollect}
-            fiscalComplianceByProcess={fiscalComplianceByProcess}
-            tvSpotlightIndex={tvSpotlightIndex}
-          />
-        )}
-        {page === 2 && (
-          <FiscalReviewPage2Cumplimiento
-            fiscalInfo={fiscalInfo}
-            fiscalTaxpayerCompliance={fiscalTaxpayerCompliance}
-            fiscalCollectAnalisis={fiscalCollectAnalisis}
-            tvSpotlightIndex={tvSpotlightIndex}
-          />
-        )}
-        {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} tvSpotlightIndex={tvSpotlightIndex} />}
-        {page === 4 && <FiscalReviewPage4Declaraciones fiscalId={fiscalId} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
-       </div>
+        {/* Page navigation arrows (top) — especially useful on mobile */}
+        <div className="flex items-center justify-between gap-2 mb-2 sm:mb-3">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPage(p => Math.max(1, p - 1))}
+            disabled={page === 1}
+            className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 px-2 sm:px-3 h-8 sm:h-9"
+          >
+            <ChevronLeft className="h-4 w-4 sm:mr-1" />
+            <span className="hidden sm:inline text-xs">Anterior</span>
+          </Button>
+
+          <div className="flex items-center gap-1.5">
+            {[1, 2, 3, 4].map(p => (
+              <button
+                key={p}
+                onClick={() => setPage(p)}
+                className={`text-[10px] sm:text-xs font-semibold px-2 sm:px-3 py-1 rounded-full transition-all ${
+                  page === p
+                    ? 'bg-blue-600/20 text-blue-300 border border-blue-500/40'
+                    : 'text-slate-500 hover:text-slate-300 border border-transparent'
+                }`}
+              >
+                {p === 1 ? 'Resumen' : p === 2 ? 'Cumplimiento' : p === 3 ? 'Reportes' : 'Declaraciones'}
+              </button>
+            ))}
+          </div>
+
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setPage(p => Math.min(4, p + 1))}
+            disabled={page === 4}
+            className="text-slate-300 hover:text-white hover:bg-slate-800 disabled:opacity-30 px-2 sm:px-3 h-8 sm:h-9"
+          >
+            <span className="hidden sm:inline text-xs">Siguiente</span>
+            <ChevronRight className="h-4 w-4 sm:ml-1" />
+          </Button>
+        </div>
+
+        {/* Render current page */}
+        <div className="min-h-[400px]">
+         {page === 1 && (
+           <FiscalReviewPage1Resumen
+             fiscalInfo={fiscalInfo}
+             performance={fiscalPerformance}
+             selectedYear={selectedYear}
+             setSelectedYear={setSelectedYear}
+             fiscalTaxpayers={fiscalTaxpayers}
+             fiscalMonthlyCollect={fiscalMonthlyCollect}
+             fiscalComplianceByProcess={fiscalComplianceByProcess}
+             tvSpotlightIndex={tvSpotlightIndex}
+           />
+         )}
+         {page === 2 && (
+           <FiscalReviewPage2Cumplimiento
+             fiscalInfo={fiscalInfo}
+             fiscalTaxpayerCompliance={fiscalTaxpayerCompliance}
+             fiscalCollectAnalisis={fiscalCollectAnalisis}
+             tvSpotlightIndex={tvSpotlightIndex}
+           />
+         )}
+         {page === 3 && <FiscalReviewPage3Reportes fiscalInfo={fiscalInfo} tvSpotlightIndex={tvSpotlightIndex} />}
+         {page === 4 && <FiscalReviewPage4Declaraciones fiscalId={fiscalId} selectedYear={selectedYear} setSelectedYear={setSelectedYear} />}
+        </div>
 
         {/* Pagination */}
         <div className="flex justify-center mt-6">
@@ -217,6 +258,31 @@ export function FiscalDetailsView({
     </div>
   );
 }
+
+// ── Helper utilities ──────────────────────────────────────
+const getInitials = (name: string) =>
+  name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+const roleAvatarColor = (role: string) =>
+  role === 'FISCAL'
+    ? 'bg-blue-600 text-blue-100'
+    : role === 'SUPERVISOR'
+    ? 'bg-purple-600 text-purple-100'
+    : 'bg-slate-600 text-slate-200';
+
+const roleBorderClass = (role: string) =>
+  role === 'FISCAL'
+    ? 'border-l-blue-500/40'
+    : role === 'SUPERVISOR'
+    ? 'border-l-purple-500/40'
+    : 'border-l-transparent';
+
+const roleBadgeClass = (role: string) =>
+  role === 'FISCAL'
+    ? 'bg-blue-900/50 text-blue-200 border-blue-800'
+    : role === 'SUPERVISOR'
+    ? 'bg-purple-900/50 text-purple-200 border-purple-800'
+    : 'bg-slate-700 text-slate-300 border-slate-600';
 
 /**
  * FiscalReviewPageV2 - Revisión de Fiscales con Orquestador de 3 Páginas
@@ -303,6 +369,10 @@ export default function FiscalReviewPageV2() {
       <PageHeader
         title="Revisión de Fiscales"
         description="Consulta y análisis de desempeño de la plantilla fiscal"
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
 
       {/* Filtros */}
@@ -363,7 +433,7 @@ export default function FiscalReviewPageV2() {
                 <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total}</span> fiscales</>
               ) : '0 resultados'}
             </p>
-            <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
+            <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700/50 backdrop-blur-sm shadow-sm">
               <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1 || loading}
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Primera página">
                 <ChevronsLeft className="w-4 h-4" />
@@ -372,8 +442,10 @@ export default function FiscalReviewPageV2() {
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Anterior">
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <div className="px-3 min-w-[110px] text-center">
-                <span className="text-xs font-bold text-slate-300">Pág. {currentPage} / {totalPages}</span>
+              <div className="px-3 min-w-[120px] text-center">
+                <span className="text-xs font-bold text-blue-300 bg-blue-900/30 px-3 py-1 rounded-full">
+                  Pág. {currentPage} / {totalPages}
+                </span>
               </div>
               <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages || loading}
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-700 rounded-lg disabled:opacity-20 transition-all" title="Siguiente">
@@ -386,63 +458,157 @@ export default function FiscalReviewPageV2() {
             </div>
           </div>
 
-          <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[600px]">
-                <thead>
-                  <tr className="border-b border-slate-700 bg-slate-800/50">
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Cédula</th>
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Nombre</th>
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Grupo</th>
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden md:table-cell">Coordinador</th>
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden lg:table-cell">Supervisor</th>
-                    <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Rol</th>
-                    <th className="text-right p-3 md:p-4 text-slate-300 font-semibold text-sm">Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {displayFiscals
-                    .filter((t) => t.id && t.personId)
-                    .map((fiscal) => (
-                      <tr key={fiscal.id} className="border-b border-slate-700 hover:bg-slate-700/50 transition-all duration-200">
-                        <td className="p-3 md:p-4 text-slate-200 text-sm">
-                          {fiscal.personId ? Number(fiscal.personId).toLocaleString() : 'N/A'}
-                        </td>
-                        <td className="p-3 md:p-4 text-slate-200 font-medium text-sm">{fiscal.name ?? 'N/A'}</td>
-                        <td className="p-3 md:p-4 text-slate-400 text-sm">{fiscal.group?.name ?? 'N/A'}</td>
-                        <td className="p-3 md:p-4 text-slate-400 text-sm hidden md:table-cell">{fiscal.group?.coordinator?.name ?? 'N/A'}</td>
-                        <td className="p-3 md:p-4 text-slate-400 text-sm hidden lg:table-cell">
-                          {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
-                            ? fiscal.supervisor.name
-                            : fiscal.role === 'SUPERVISOR'
-                            ? fiscal.name
-                            : 'N/A'}
-                        </td>
-                        <td className="p-3 md:p-4">
-                          <Badge className={fiscal.role === 'FISCAL'
-                            ? 'bg-blue-900/50 text-blue-200 border-blue-800'
-                            : fiscal.role === 'SUPERVISOR'
-                            ? 'bg-purple-900/50 text-purple-200 border-purple-800'
-                            : 'bg-slate-700 text-slate-300 border-slate-600'
-                          }>
+          {/* Mobile: Card layout — hidden on md+, shown on small screens */}
+          <div className="block md:hidden space-y-3">
+            {displayFiscals
+              .filter((t) => t.id && t.personId)
+              .map((fiscal) => {
+                const initials = getInitials(fiscal.name ?? '');
+                return (
+                  <div
+                    key={fiscal.id}
+                    onClick={() => setSelectedFiscalId(fiscal.id)}
+                    className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-3 hover:bg-slate-700/50 transition-all duration-200 cursor-pointer active:scale-[0.98]"
+                  >
+                    <div className="flex items-start gap-3">
+                      {/* Avatar / initials circle — colored by role */}
+                      <Avatar className="h-10 w-10 shrink-0 mt-0.5">
+                        <AvatarFallback className={`text-xs font-bold ${roleAvatarColor(fiscal.role)}`}>
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        {/* Top: Name + Cédula */}
+                        <div className="min-w-0">
+                          <p className="text-slate-200 font-medium text-sm truncate">{fiscal.name ?? 'N/A'}</p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            <UserIcon className="h-3 w-3 inline mr-1" />
+                            {fiscal.personId ? Number(fiscal.personId).toLocaleString() : 'N/A'}
+                          </p>
+                        </div>
+                        {/* Middle: Grupo + Coordinator / Supervisor */}
+                        <div className="mt-2 space-y-0.5">
+                          <p className="text-xs text-slate-400 flex items-center gap-1">
+                            <Users className="h-3 w-3 shrink-0" />
+                            {fiscal.group?.name ?? 'N/A'}
+                          </p>
+                          {fiscal.group?.coordinator?.name && (
+                            <p className="text-[11px] text-slate-500 pl-4">
+                              Coordinador: {fiscal.group.coordinator.name}
+                            </p>
+                          )}
+                          {fiscal.role === 'FISCAL' && fiscal.supervisor?.name && (
+                            <p className="text-[11px] text-slate-500 pl-4">
+                              Supervisor: {fiscal.supervisor.name}
+                            </p>
+                          )}
+                        </div>
+                        {/* Bottom: Rol badge + full-width action button */}
+                        <div className="mt-3 flex items-center justify-between gap-2">
+                          <Badge className={roleBadgeClass(fiscal.role)}>
                             {fiscal.role}
                           </Badge>
-                        </td>
-                        <td className="p-3 md:p-4 text-right">
                           <Button
-                            onClick={() => setSelectedFiscalId(fiscal.id)}
-                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm transition-all shadow-md hover:shadow-lg px-2 md:px-4"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedFiscalId(fiscal.id);
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white text-xs h-8 px-3 transition-all"
                           >
-                            <TrendingUp className="h-4 w-4 md:mr-2" />
-                            <span className="hidden md:inline">Ver Estadísticas</span>
+                            <Eye className="h-3.5 w-3.5 sm:mr-1.5" />
+                            <span className="hidden sm:inline">Estadísticas</span>
                           </Button>
-                        </td>
-                      </tr>
-                    ))}
-              </tbody>
-            </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
           </div>
-        </Card>
+
+          {/* Desktop: Table — hidden on small screens, shown on md+ */}
+          <div className="hidden md:block">
+            <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+              <div className="overflow-x-auto">
+                <table className="w-full min-w-[600px]">
+                  <thead className="sticky top-0 z-10">
+                    <tr className="border-b border-slate-700 bg-slate-800/95 backdrop-blur-sm">
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Cédula</th>
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Nombre</th>
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Grupo</th>
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden md:table-cell">Coordinador</th>
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm hidden lg:table-cell">Supervisor</th>
+                      <th className="text-left p-3 md:p-4 text-slate-300 font-semibold text-sm">Rol</th>
+                      <th className="text-right p-3 md:p-4 text-slate-300 font-semibold text-sm">Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {displayFiscals
+                      .filter((t) => t.id && t.personId)
+                      .map((fiscal) => (
+                        <tr
+                          key={fiscal.id}
+                          className={`border-b border-slate-700 hover:shadow-sm transition-all duration-200 border-l-2 ${roleBorderClass(fiscal.role)} hover:bg-slate-700/50`}
+                        >
+                          {/* Cédula — with User icon */}
+                          <td className="p-3 md:p-4 text-slate-200 text-sm font-mono tabular-nums">
+                            <UserIcon className="h-3.5 w-3.5 text-slate-500 inline mr-1.5" />
+                            {fiscal.personId ? Number(fiscal.personId).toLocaleString() : 'N/A'}
+                          </td>
+                          {/* Nombre — with avatar + subtext */}
+                          <td className="p-3 md:p-4">
+                            <div className="flex items-center gap-2.5">
+                              <Avatar className="h-7 w-7 shrink-0">
+                                <AvatarFallback className={`text-[10px] font-bold ${roleAvatarColor(fiscal.role)}`}>
+                                  {getInitials(fiscal.name ?? '')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div>
+                                <p className="text-slate-200 font-medium text-sm">{fiscal.name ?? 'N/A'}</p>
+                                <p className="text-[10px] text-slate-500">ID: {fiscal.id?.slice(0, 8) ?? ''}</p>
+                              </div>
+                            </div>
+                          </td>
+                          {/* Grupo — with Users icon */}
+                          <td className="p-3 md:p-4 text-slate-400 text-sm">
+                            <Users className="h-3.5 w-3.5 text-slate-500 inline mr-1.5" />
+                            {fiscal.group?.name ?? 'N/A'}
+                          </td>
+                          {/* Coordinador */}
+                          <td className="p-3 md:p-4 text-slate-400 text-sm hidden md:table-cell">
+                            {fiscal.group?.coordinator?.name ?? 'N/A'}
+                          </td>
+                          {/* Supervisor */}
+                          <td className="p-3 md:p-4 text-slate-400 text-sm hidden lg:table-cell">
+                            {fiscal.role === 'FISCAL' && fiscal.supervisor?.name
+                              ? fiscal.supervisor.name
+                              : fiscal.role === 'SUPERVISOR'
+                              ? fiscal.name
+                              : 'N/A'}
+                          </td>
+                          {/* Rol badge */}
+                          <td className="p-3 md:p-4">
+                            <Badge className={roleBadgeClass(fiscal.role)}>
+                              {fiscal.role}
+                            </Badge>
+                          </td>
+                          {/* Acción — with Eye icon + hover scale */}
+                          <td className="p-3 md:p-4 text-right">
+                            <Button
+                              onClick={() => setSelectedFiscalId(fiscal.id)}
+                              className="bg-blue-600 hover:bg-blue-700 text-white text-xs md:text-sm transition-all shadow-md hover:shadow-lg px-2 md:px-4 hover:scale-105"
+                            >
+                              <Eye className="h-4 w-4 md:mr-2" />
+                              <span className="hidden md:inline">Ver Estadísticas</span>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+              </div>
+            </Card>
+          </div>
         </>
       )}
     </div>

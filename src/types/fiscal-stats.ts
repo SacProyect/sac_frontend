@@ -6,6 +6,7 @@ import { FiscalInfo } from './reports';
  */
 export interface FiscalInfoExtended extends Partial<FiscalInfo> {
   // Campos base de FiscalInfo
+  role?: string;
   fiscalName?: string;
   fiscalId?: string;
   totalTaxpayers?: number;

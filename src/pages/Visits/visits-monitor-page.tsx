@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/UI/card";
 import { Input } from "@/components/UI/input";
 import { Badge } from "@/components/UI/badge";
+import { BackButton } from '@/components/UI/v2';
 import {
   Select,
   SelectContent,
@@ -113,6 +114,7 @@ export default function VisitsMonitorPage() {
 
   return (
     <div className="space-y-6 text-slate-100">
+      <BackButton to="/admin" hideLabelOnMobile className="mb-4" />
       <Dialog open={Boolean(selectedImage)} onOpenChange={(open) => !open && setSelectedImage(null)}>
         <DialogContent className="max-w-[95vw] sm:max-w-3xl border-slate-700 bg-slate-950 p-3 sm:p-4">
           <DialogHeader>

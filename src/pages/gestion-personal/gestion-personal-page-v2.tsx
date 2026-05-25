@@ -4,6 +4,7 @@ import { CasosPorFiscalSection } from "@/components/gestion-personal/casos-por-f
 import { PersonalPermisosVacacionesPanel } from "@/components/gestion-personal/personal-permisos-vacaciones-panel";
 import { ReparosActasSection } from "@/components/gestion-personal/reparos-actas-section";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
+import { BackButton } from "@/components/UI/v2";
 import { BarChart3, CalendarRange, ScrollText, Table2 } from "lucide-react";
 
 /**
@@ -15,6 +16,7 @@ export default function GestionPersonalPageV2() {
 
     return (
         <div className="space-y-5 max-w-[1680px] mx-auto pb-8">
+            <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
             <header className="space-y-1 min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
                     SAC Fiscal · Recursos humanos de campo
