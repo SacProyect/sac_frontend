@@ -120,18 +120,18 @@ export default function CensusTablePageV2() {
       {/* Filtros */}
       <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <div className="flex items-center gap-2">
-          <Search className="h-4 w-4 text-slate-400" />
+          <Search className="h-4 w-4 text-slate-400 shrink-0" />
           <Input
             placeholder="Buscar por número, nombre, RIF, proceso..."
             value={searchValue}
             onChange={(e) => setSearchValue(e.target.value)}
-            className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500"
+            className="bg-slate-700 border-slate-600 text-white placeholder:text-slate-500 flex-1"
           />
         </div>
       </Card>
 
       {/* Estadísticas */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Total Censados</p>
           <p className="text-2xl font-bold text-white mt-2">{filteredData.length}</p>
@@ -150,92 +150,155 @@ export default function CensusTablePageV2() {
         </Card>
       </div>
 
-      {/* Tabla */}
+      {/* Tabla / Lista responsiva (sin scroll horizontal) */}
       {filteredData.length === 0 ? (
         <EmptyState title="No hay contribuyentes censados" message="Intenta ajustar los filtros de búsqueda" />
       ) : (
-        <Card className="bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
-                  <TableHead className="text-slate-300 font-semibold">Número</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Proceso</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Nombre</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">RIF</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Tipo</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Dirección</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Fecha Emisión</TableHead>
-                  <TableHead className="text-slate-300 font-semibold">Fiscal</TableHead>
-                  {user?.role === 'ADMIN' && (
-                    <TableHead className="text-slate-300 font-semibold">Acciones</TableHead>
-                  )}
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.map((item) => (
-                  <TableRow
-                    key={item.id}
-                    className="border-slate-700 hover:bg-slate-800 transition-all duration-200"
-                  >
-                    <TableCell className="text-slate-200">{item.number}</TableCell>
-                    <TableCell className="text-slate-200">{item.process || 'N/A'}</TableCell>
-                    <TableCell className="text-slate-200 font-medium">{item.name}</TableCell>
-                    <TableCell className="text-slate-200 font-mono">{item.rif}</TableCell>
-                    <TableCell>
-                      <Badge
-                        className={
-                          item.type === 'SPECIAL'
-                            ? 'bg-purple-900 text-purple-200'
-                            : 'bg-blue-900 text-blue-200'
-                        }
-                      >
-                        {item.type === 'SPECIAL' ? 'Especial' : 'Ordinario'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-slate-400 text-sm">
-                      {item.address || 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-slate-200 text-sm">
-                      {item.emition_date
-                        ? new Date(item.emition_date).toLocaleDateString()
-                        : 'N/A'}
-                    </TableCell>
-                    <TableCell className="text-slate-200">
-                      {item.fiscal?.name || 'N/A'}
-                    </TableCell>
+        <>
+          {/* Vista Desktop (md y superior) - Tabla completa */}
+          <Card className="hidden md:block bg-slate-800 border-slate-700 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+            <div className="overflow-x-auto">
+              <Table className="min-w-full divide-y divide-slate-700">
+                <TableHeader>
+                  <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Número</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Proceso</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Nombre</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">RIF</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Tipo</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Dirección</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Fecha Emisión</TableHead>
+                    <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Fiscal</TableHead>
                     {user?.role === 'ADMIN' && (
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 text-slate-400 hover:text-white"
-                            >
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
-                            <DropdownMenuItem
-                              onClick={() => {
-                                setTaxpayerToDelete(item);
-                                setDeleteConfirmOpen(true);
-                              }}
-                              className="text-red-400 focus:bg-slate-700 focus:text-red-300 cursor-pointer transition-colors"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Eliminar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                      <TableHead className="text-slate-300 font-semibold text-xs sm:text-sm">Acciones</TableHead>
                     )}
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {filteredData.map((item) => (
+                    <TableRow
+                      key={item.id}
+                      className="border-slate-700 hover:bg-slate-800 transition-all duration-200"
+                    >
+                      <TableCell className="text-slate-200 text-xs sm:text-sm">{item.number}</TableCell>
+                      <TableCell className="text-slate-200 text-xs sm:text-sm">{item.process || 'N/A'}</TableCell>
+                      <TableCell className="text-slate-200 font-medium text-xs sm:text-sm">{item.name}</TableCell>
+                      <TableCell className="text-slate-200 font-mono text-xs sm:text-sm">{item.rif}</TableCell>
+                      <TableCell>
+                        <Badge
+                          className={
+                            item.type === 'SPECIAL'
+                              ? 'bg-purple-900 text-purple-200 text-xs'
+                              : 'bg-blue-900 text-blue-200 text-xs'
+                          }
+                        >
+                          {item.type === 'SPECIAL' ? 'Especial' : 'Ordinario'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-slate-400 text-xs sm:text-sm">
+                        {item.address || 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-slate-200 text-xs sm:text-sm">
+                        {item.emition_date
+                          ? new Date(item.emition_date).toLocaleDateString()
+                          : 'N/A'}
+                      </TableCell>
+                      <TableCell className="text-slate-200 text-xs sm:text-sm">
+                        {item.fiscal?.name || 'N/A'}
+                      </TableCell>
+                      {user?.role === 'ADMIN' && (
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-slate-400 hover:text-white"
+                              >
+                                <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="bg-slate-800 border-slate-700">
+                              <DropdownMenuItem
+                                onClick={() => {
+                                  setTaxpayerToDelete(item);
+                                  setDeleteConfirmOpen(true);
+                                }}
+                                className="text-red-400 focus:bg-slate-700 focus:text-red-300 cursor-pointer transition-colors"
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Eliminar
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      )}
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </Card>
+
+          {/* Vista Móvil (debajo de md) - Tarjetas verticales (sin scroll horizontal) */}
+          <div className="md:hidden space-y-3">
+            {filteredData.map((item) => (
+              <Card
+                key={item.id}
+                className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-xs text-slate-400">#{item.number}</span>
+                      <span className="text-sm font-semibold text-white truncate">{item.name}</span>
+                    </div>
+                    <div className="mt-1 font-mono text-xs text-slate-300">{item.rif}</div>
+                  </div>
+
+                  <Badge
+                    className={
+                      item.type === 'SPECIAL'
+                        ? 'bg-purple-900 text-purple-200 text-xs shrink-0'
+                        : 'bg-blue-900 text-blue-200 text-xs shrink-0'
+                    }
+                  >
+                    {item.type === 'SPECIAL' ? 'Especial' : 'Ordinario'}
+                  </Badge>
+                </div>
+
+                <div className="mt-3 space-y-1 text-sm">
+                  {item.process && (
+                    <div className="flex justify-between text-slate-400">
+                      <span className="text-slate-500">Proceso</span>
+                      <span className="text-slate-200 text-right">{item.process}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-slate-400">
+                    <span className="text-slate-500">Fiscal</span>
+                    <span className="text-slate-200 text-right">{item.fiscal?.name || 'N/A'}</span>
+                  </div>
+                </div>
+
+                {user?.role === 'ADMIN' && (
+                  <div className="mt-4 flex justify-end">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 px-3 text-red-400 hover:text-red-300 hover:bg-red-950/40"
+                      onClick={() => {
+                        setTaxpayerToDelete(item);
+                        setDeleteConfirmOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1.5" />
+                      Eliminar
+                    </Button>
+                  </div>
+                )}
+              </Card>
+            ))}
           </div>
-        </Card>
+        </>
       )}
 
       {/* Modal de confirmación */}
