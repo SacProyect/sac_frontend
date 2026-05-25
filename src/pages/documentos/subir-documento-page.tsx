@@ -66,7 +66,6 @@ export default function SubirDocumentoPage() {
 	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
 	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 	const [loadingGroups, setLoadingGroups] = useState(false);
-	const [sendToJefa, setSendToJefa] = useState(false);
 
 	useEffect(() => {
 		if (isAdmin) {
@@ -78,7 +77,6 @@ export default function SubirDocumentoPage() {
 		} else {
 			setScope("PRIVATE");
 			setSelectedGroups([]);
-			setSendToJefa(false);
 		}
 	}, [isAdmin]);
 
@@ -130,8 +128,9 @@ export default function SubirDocumentoPage() {
 
 		try {
 			setUploading(true);
-			const jefaFlag = !isAdmin ? sendToJefa : false;
-			await uploadDocument(file, name.trim(), scope, selectedGroups, jefaFlag);
+			// For coordinators: always private (simple upload, no sharing/jefa special for now)
+			const effectiveScope: DocumentScope = isAdmin ? scope : "PRIVATE";
+			await uploadDocument(file, name.trim(), effectiveScope, selectedGroups, false);
 			toast.success("Documento subido exitosamente");
 			navigate("/documentos");
 		} catch (e: any) {
@@ -145,7 +144,7 @@ export default function SubirDocumentoPage() {
 		<div className="space-y-6 w-full max-w-2xl mx-auto">
 			<PageHeader
 				title="Subir documento"
-				description="Selecciona un archivo y configura su visibilidad"
+				description={isAdmin ? "Selecciona un archivo y configura su visibilidad" : "Sube un documento (privado - solo lo verás tú)"}
 				action={
 					<Button variant="outline" onClick={() => navigate("/documentos")}>
 						<ArrowLeft className="w-4 h-4 mr-2" />
@@ -227,7 +226,7 @@ export default function SubirDocumentoPage() {
 							/>
 						</div>
 
-						{isAdmin ? (
+						{isAdmin && (
 							<>
 								<div className="space-y-2">
 									<Label htmlFor="scope">Visibilidad</Label>
@@ -284,19 +283,6 @@ export default function SubirDocumentoPage() {
 									</div>
 								)}
 							</>
-						) : (
-							<div className="space-y-2">
-								<Label htmlFor="visibility">Visibilidad</Label>
-								<Select value={sendToJefa ? "jefa" : "private"} onValueChange={(v) => setSendToJefa(v === "jefa")}>
-									<SelectTrigger id="visibility">
-										<SelectValue />
-									</SelectTrigger>
-									<SelectContent>
-										<SelectItem value="private">Privado — Solo visible para ti</SelectItem>
-										<SelectItem value="jefa">Enviar a Jefa — Visible para ti y la Jefa de División</SelectItem>
-									</SelectContent>
-								</Select>
-							</div>
 						)}
 					</CardContent>
 				</Card>
