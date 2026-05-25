@@ -66,6 +66,7 @@ export default function SubirDocumentoPage() {
 	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
 	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
 	const [loadingGroups, setLoadingGroups] = useState(false);
+	const [sendToJefa, setSendToJefa] = useState(false);
 
 	useEffect(() => {
 		if (isAdmin) {
@@ -75,8 +76,8 @@ export default function SubirDocumentoPage() {
 				.catch(() => {})
 				.finally(() => setLoadingGroups(false));
 		} else {
-			setScope("PRIVATE");
 			setSelectedGroups([]);
+			// Do not force scope here - the visibility selector controls it for coordinators
 		}
 	}, [isAdmin]);
 
@@ -128,9 +129,9 @@ export default function SubirDocumentoPage() {
 
 		try {
 			setUploading(true);
-			// For coordinators: always private (simple upload, no sharing/jefa special for now)
-			const effectiveScope: DocumentScope = isAdmin ? scope : "PRIVATE";
-			await uploadDocument(file, name.trim(), effectiveScope, selectedGroups, false);
+			const jefaFlag = !isAdmin ? sendToJefa : false;
+			// When coordinator chooses "Jefa/Administración", scope is already "SHARED" from the selector
+			await uploadDocument(file, name.trim(), scope, selectedGroups, jefaFlag);
 			toast.success("Documento subido exitosamente");
 			navigate("/documentos");
 		} catch (e: any) {
@@ -144,7 +145,7 @@ export default function SubirDocumentoPage() {
 		<div className="space-y-6 w-full max-w-2xl mx-auto">
 			<PageHeader
 				title="Subir documento"
-				description={isAdmin ? "Selecciona un archivo y configura su visibilidad" : "Sube un documento (privado - solo lo verás tú)"}
+				description={isAdmin ? "Selecciona un archivo y configura su visibilidad" : "Sube un documento. Elige si es solo para ti o para Jefa/Administración."}
 				action={
 					<Button variant="outline" onClick={() => navigate("/documentos")}>
 						<ArrowLeft className="w-4 h-4 mr-2" />
@@ -226,7 +227,7 @@ export default function SubirDocumentoPage() {
 							/>
 						</div>
 
-						{isAdmin && (
+						{isAdmin ? (
 							<>
 								<div className="space-y-2">
 									<Label htmlFor="scope">Visibilidad</Label>
@@ -283,6 +284,31 @@ export default function SubirDocumentoPage() {
 									</div>
 								)}
 							</>
+						) : (
+							<div className="space-y-2">
+								<Label htmlFor="visibility">Enviar a</Label>
+								<Select 
+									value={sendToJefa ? "jefa" : "private"} 
+									onValueChange={(v) => {
+										const isJefa = v === "jefa";
+										setSendToJefa(isJefa);
+										setScope(isJefa ? "SHARED" : "PRIVATE");
+									}}
+								>
+									<SelectTrigger id="visibility">
+										<SelectValue />
+									</SelectTrigger>
+									<SelectContent>
+										<SelectItem value="private">Solo yo (Privado)</SelectItem>
+										<SelectItem value="jefa">Jefa / Administración (Compartido especial)</SelectItem>
+									</SelectContent>
+								</Select>
+								<p className="text-xs text-muted-foreground">
+									{sendToJefa
+										? "Se subirá como SHARED + jefaOnly para que la Jefa y admins lo vean en sus vistas"
+										: "Solo visible para ti (scope PRIVATE)"}
+								</p>
+							</div>
 						)}
 					</CardContent>
 				</Card>
