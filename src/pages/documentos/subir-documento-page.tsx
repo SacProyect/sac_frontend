@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/UI/v2";
 import { Button } from "@/components/UI/button";
@@ -6,16 +6,15 @@ import { Input } from "@/components/UI/input";
 import { Card, CardContent } from "@/components/UI/card";
 import { Label } from "@/components/UI/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/UI/select";
-import { Skeleton } from "@/components/UI/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { uploadDocument, listFiscalGroups } from "@/components/utils/api/documentos-functions";
-import type { DocumentScope, FiscalGroupInfo } from "@/types/documents";
+import { uploadDocument } from "@/components/utils/api/documentos-functions";
+import type { DocumentScope } from "@/types/documents";
 import { ArrowLeft, Upload, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SCOPE_OPTIONS: { value: DocumentScope; label: string; description: string }[] = [
 	{ value: "PRIVATE", label: "Privado", description: "Solo visible para ti" },
-	{ value: "SHARED", label: "Compartido", description: "Visible para las coordinaciones seleccionadas" },
+	{ value: "SHARED", label: "Compartido", description: "Visible para administradores (y coordinaciones si se comparte después)" },
 ];
 
 const ALLOWED_MIME_TYPES = [
@@ -63,23 +62,7 @@ export default function SubirDocumentoPage() {
 	const [dragOver, setDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
-	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-	const [loadingGroups, setLoadingGroups] = useState(false);
 	const [sendToJefa, setSendToJefa] = useState(false);
-
-	useEffect(() => {
-		if (isAdmin) {
-			setLoadingGroups(true);
-			listFiscalGroups()
-				.then((res) => setFiscalGroups(res.data ?? []))
-				.catch(() => {})
-				.finally(() => setLoadingGroups(false));
-		} else {
-			setSelectedGroups([]);
-			// Do not force scope here - the visibility selector controls it for coordinators
-		}
-	}, [isAdmin]);
 
 	const handleFileChange = (selectedFile: File | null) => {
 		if (!selectedFile) return;
@@ -104,14 +87,6 @@ export default function SubirDocumentoPage() {
 		handleFileChange(droppedFile);
 	};
 
-	const toggleGroup = (groupId: string) => {
-		setSelectedGroups((prev) =>
-			prev.includes(groupId)
-				? prev.filter((id) => id !== groupId)
-				: [...prev, groupId],
-		);
-	};
-
 	const handleSubmit = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (!file) {
@@ -122,16 +97,13 @@ export default function SubirDocumentoPage() {
 			toast.error("Ingresa un nombre para el documento");
 			return;
 		}
-		if (isAdmin && scope === "SHARED" && selectedGroups.length === 0) {
-			toast.error("Selecciona al menos una coordinación para compartir");
-			return;
-		}
+		// Simplified: SHARED no longer requires selecting groups (just sets SHARED for now)
 
 		try {
 			setUploading(true);
 			const jefaFlag = !isAdmin ? sendToJefa : false;
 			// When coordinator chooses "Jefa/Administración", scope is already "SHARED" from the selector
-			await uploadDocument(file, name.trim(), scope, selectedGroups, jefaFlag);
+			await uploadDocument(file, name.trim(), scope, [], jefaFlag);
 			toast.success("Documento subido exitosamente");
 			navigate("/documentos");
 		} catch (e: any) {
@@ -244,45 +216,6 @@ export default function SubirDocumentoPage() {
 										</SelectContent>
 									</Select>
 								</div>
-
-								{scope === "SHARED" && (
-									<div className="space-y-2 pt-2 border-t border-border">
-										<Label>Compartir con coordinaciones</Label>
-										{loadingGroups ? (
-											<div className="space-y-2">
-												<Skeleton className="h-10 w-full" />
-												<Skeleton className="h-10 w-full" />
-											</div>
-										) : fiscalGroups.length === 0 ? (
-											<p className="text-sm text-muted-foreground">No hay coordinaciones disponibles</p>
-										) : (
-											<div className="space-y-2 max-h-48 overflow-y-auto">
-												{fiscalGroups.map((fg) => (
-													<label
-														key={fg.id}
-														className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all
-                          ${selectedGroups.includes(fg.id) ? "border-indigo-500 bg-indigo-500/10" : "border-border hover:border-muted-foreground/30"}`}
-													>
-														<input
-															type="checkbox"
-															className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-															checked={selectedGroups.includes(fg.id)}
-															onChange={() => toggleGroup(fg.id)}
-														/>
-														<div>
-															<p className="text-sm font-medium">{fg.name}</p>
-														</div>
-													</label>
-												))}
-											</div>
-										)}
-										{selectedGroups.length > 0 && (
-											<p className="text-xs text-muted-foreground">
-												{selectedGroups.length} coordinación(es) seleccionada(s)
-											</p>
-										)}
-									</div>
-								)}
 							</>
 						) : (
 							<div className="space-y-2">
