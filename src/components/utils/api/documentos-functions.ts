@@ -40,11 +40,15 @@ export async function uploadDocument(
   name: string,
   scope: DocumentScope,
   fiscalGroupIds?: string[],
+  jefaOnly?: boolean,
 ): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
   formData.append("scope", scope);
+  if (jefaOnly) {
+    formData.append("jefaOnly", "true");
+  }
   if (fiscalGroupIds?.length) {
     fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
   }
