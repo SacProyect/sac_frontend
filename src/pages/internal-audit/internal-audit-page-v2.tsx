@@ -146,6 +146,7 @@ export default function InternalAuditPageV2() {
         <PageHeader
           title="Auditoría interna"
           description="No se pudo obtener el panel. Comprueba permisos o reintenta."
+          backTo="/admin"
         />
         <Button onClick={() => void load()}>Reintentar</Button>
       </div>
@@ -174,6 +175,7 @@ export default function InternalAuditPageV2() {
           <PageHeader
             title="Auditoría interna"
             description="Centro de monitoreo para medir adopción operativa, inactividad y riesgo tributario por fiscal. Filtros de ventana y año de cartera trabajan en conjunto para seguimiento y decisiones."
+            backTo="/admin"
           />
         </div>
         <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-3">

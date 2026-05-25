@@ -5,7 +5,9 @@ import ContributionsFilter from "@/components/contributions/contributions-filter
 import ContributionsStatistics from "@/components/contributions/contributions-statistics";
 
 import { GroupData } from "@/components/contributions/contribution-types"; 
-
+import { Button } from '@/components/UI/button';
+import { ArrowLeft } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import {
   normalizeContributionsGroups,
   normalizeFiscalGroupMembersResponse,
@@ -22,7 +24,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import toast from "react-hot-toast";
 
-import { useNavigate } from "react-router-dom";
+
 
 /**
 
@@ -32,7 +34,7 @@ import { useNavigate } from "react-router-dom";
 
 export default function ContributionsPageV2() {
   const { user } = useAuth();
-
+  
   const navigate = useNavigate();
 
   const [groupData, setGroupData] = useState<GroupData[]>([]);
@@ -211,6 +213,10 @@ export default function ContributionsPageV2() {
       <PageHeader
         title="Contribuciones"
         description="Seguimiento detallado de recaudación por fiscal y coordinación"
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
 
       <div className="space-y-10">

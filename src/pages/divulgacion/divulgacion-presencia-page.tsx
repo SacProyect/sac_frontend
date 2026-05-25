@@ -51,6 +51,7 @@ import {
 	XAxis,
 	YAxis,
 } from "recharts";
+import { ArrowLeft } from "lucide-react";
 
 const FILTERS_STORAGE_KEY = "divulgacion-presencia-filtros-v1";
 
@@ -508,17 +509,26 @@ export default function DivulgacionPresenciaPage() {
 	};
 	const adminStats = misStats && misStats.scope !== "FISCAL" ? misStats : null;
 	const chartParroquias = useMemo(() => {
+		const financialByParish = new Map<string, ParishFinancialStats>();
+		for (const fp of mapaFinanciero) {
+			financialByParish.set(fp.parishId, fp);
+		}
 		return mapa
-			.map((p) => ({
-				name: PARROQUIA_LABELS[p.parroquia],
-				jornadas: p.jornadas,
-				visitas: p.visitas,
-				asistentes: p.asistentes,
-				impacto_iva: p.visitas + getIvaCount(p.actividades) * 2,
-			}))
+			.map((p) => {
+				const fin = financialByParish.get(p.parroquia);
+				return {
+					name: PARROQUIA_LABELS[p.parroquia],
+					jornadas: p.jornadas,
+					visitas: p.visitas,
+					asistentes: p.asistentes,
+					impacto_iva: p.visitas + getIvaCount(p.actividades) * 2,
+					impacto_iva_real: fin?.totalIvaPaid ?? 0,
+					recaudacion_real: fin?.totalPaymentAmount ?? 0,
+				};
+			})
 			.sort((a, b) => b[heatMetric] - a[heatMetric])
 			.slice(0, 8);
-	}, [mapa, heatMetric]);
+	}, [mapa, heatMetric, mapaFinanciero]);
 
 	const chartDesgloseActividades = useMemo(() => {
 		const origen = parroquiaSeleccionada ? aggSeleccionada?.actividades ?? {} : totalActividadesPeriodo;
@@ -576,13 +586,22 @@ export default function DivulgacionPresenciaPage() {
 			<PageHeader
 				title="Divulgación y Presencia Fiscal"
 				description="Jornadas por parroquia. Coordinador agrega asistentes; Fiscal registra contribuyentes visitados; Admin abre/cierra."
+				// action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+				// 	<ArrowLeft className="h-4 w-4" />
+				// 	Volver
+				// </Button>}
 				action={
 					<div className="flex items-center gap-2">
+						<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+							<ArrowLeft className="h-4 w-4" />
+							Volver
+						</Button>
 						{canCreate && (
 							<Button onClick={() => setDialogOpen(true)}>
 								Nueva jornada
 							</Button>
 						)}
+						
 						<Button
 							variant="secondary"
 							onClick={onExportExcel}

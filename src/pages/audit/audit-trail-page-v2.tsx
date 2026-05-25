@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/use-auth";
 import { PageHeader } from "@/components/UI/v2";
 import { Card } from "@/components/UI/card";
@@ -41,6 +41,7 @@ import {
   X,
   FileText
 } from "lucide-react";
+import { ArrowLeft, Eye, } from "lucide-react";
 
 const ENTIDADES = [
   { value: "ALL", label: "Todas las entidades" },
@@ -128,6 +129,7 @@ function ActionBadge({ action }: { action: string }) {
 
 export default function AuditTrailPageV2() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [rows, setRows] = useState<AuditoriaRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -260,8 +262,12 @@ export default function AuditTrailPageV2() {
   return (
     <div className="space-y-6 w-full max-w-full">
       <PageHeader
-        title="Trazabilidad y Auditoría"
-        description="Explora el historial de cambios del sistema. Búsqueda por fiscal, tipo y fechas."
+        title="Auditoría y trazabilidad"
+        description="Registro de cambios sensibles (contribuyentes, IVA, ISLR). Solo lectura."
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
 
       <div className="flex flex-col xl:flex-row gap-6 items-start">

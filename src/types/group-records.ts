@@ -3,7 +3,7 @@ export interface GroupRecordFiscal {
     name: string;
 }
 
-export type GroupRecordProcess = "FP" | "AF" | "VDF";
+export type GroupRecordProcess = "FP" | "AF" | "VDF" | "NA";
 
 export interface GroupRecord {
     id: string;

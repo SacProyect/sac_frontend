@@ -423,6 +423,7 @@ export default function FiscalizacionPageV2() {
             <PageHeader
                 title="Gestión de personal y operativos"
                 description="Panel por fiscal (VDF, reparos, visitas, contribuyentes), resumen global, operativos de campo y permisos/vacaciones/reposo. Admin ve todo; coordinador, su grupo."
+                backTo="/admin"
             />
 
             <Tabs value={mainTab} onValueChange={setMainTab} className="w-full">

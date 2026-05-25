@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card } from '@/components/UI/card';
 import { Badge } from '@/components/UI/badge';
-import { Button } from '@/components/UI/button';
 import { PageHeader } from '@/components/UI/v2';
 import {
-  ChevronLeft,
   AlertTriangle,
   CheckCircle,
   Clock,
@@ -331,10 +329,6 @@ export default function TaxpayerReportPage() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 text-slate-400">
         <AlertTriangle className="w-10 h-10 text-yellow-500" />
         <p>No se encontró información para este contribuyente.</p>
-        <Button variant="outline" onClick={() => navigate('/gen-reports')}
-          className="border-slate-600 text-slate-300 bg-transparent hover:bg-slate-700">
-          <ChevronLeft className="w-4 h-4 mr-2" /> Volver
-        </Button>
       </div>
     );
   }
@@ -358,13 +352,7 @@ export default function TaxpayerReportPage() {
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-300">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
-        <PageHeader title="Reporte del Contribuyente" description={taxpayer.name} />
-        <Button variant="outline" onClick={() => navigate('/gen-reports')}
-          className="border-slate-600 text-slate-300 bg-transparent hover:bg-slate-700 shrink-0">
-          <ChevronLeft className="w-4 h-4 mr-2" /> Volver
-        </Button>
-      </div>
+      <PageHeader title="Reporte del Contribuyente" description={taxpayer.name} backTo="/gen-reports" />
 
       {/* Info Card */}
       <Card className="bg-slate-800 border-slate-700 p-5">

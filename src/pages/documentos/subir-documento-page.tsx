@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PageHeader } from "@/components/UI/v2";
 import { Button } from "@/components/UI/button";
@@ -6,22 +6,18 @@ import { Input } from "@/components/UI/input";
 import { Card, CardContent } from "@/components/UI/card";
 import { Label } from "@/components/UI/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/UI/select";
+import { Skeleton } from "@/components/UI/skeleton";
 import { useAuth } from "@/hooks/use-auth";
-import { uploadDocument } from "@/components/utils/api/documentos-functions";
-import type { DocumentScope } from "@/types/documents";
+import { uploadDocument, listFiscalGroups } from "@/components/utils/api/documentos-functions";
+import type { DocumentScope, FiscalGroupInfo } from "@/types/documents";
 import { ArrowLeft, Upload, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SCOPE_OPTIONS: { value: DocumentScope; label: string; description: string }[] = [
 	{ value: "PRIVATE", label: "Privado", description: "Solo visible para ti" },
-	{ value: "MANAGEMENT", label: "Gestión", description: "Visible para el equipo administrativo" },
-	{ value: "SENT_TO_BOSS", label: "Enviar a jefa", description: "Se notificará a la jefa de división" },
+	{ value: "SHARED", label: "Compartido", description: "Visible para las coordinaciones seleccionadas" },
 ];
 
-/**
- * MIME types permitidos para subida.
- * Aceptamos PDF, Word, Excel, imágenes y texto plano.
- */
 const ALLOWED_MIME_TYPES = [
 	"application/pdf",
 	"application/msword",
@@ -39,7 +35,6 @@ const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
 function getMimeTypeAcceptString(): string {
 	return ALLOWED_MIME_TYPES
 		.map((mime) => {
-			// Mapeo inverso a extensiones para el atributo `accept`
 			if (mime.includes("pdf")) return ".pdf";
 			if (mime.includes("msword")) return ".doc";
 			if (mime.includes("officedocument.wordprocessingml")) return ".docx";
@@ -67,10 +62,23 @@ export default function SubirDocumentoPage() {
 	const [dragOver, setDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
-	/**
-	 * Valida y asigna el archivo seleccionado.
-	 * Controla: tipo MIME permitido, tamaño máximo.
-	 */
+	// Estado para coordinaciones
+	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
+	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+	const [loadingGroups, setLoadingGroups] = useState(false);
+
+	// Cargar coordinaciones al montar
+	useEffect(() => {
+		if (role === "ADMIN") {
+			setLoadingGroups(true);
+			listFiscalGroups()
+				.then((res) => setFiscalGroups(res.data ?? []))
+				.catch(() => {})
+				.finally(() => setLoadingGroups(false));
+		}
+		// COORDINATOR: listFiscalGroups devuelve solo su grupo
+	}, [role]);
+
 	const handleFileChange = (selectedFile: File | null) => {
 		if (!selectedFile) return;
 		if (!ALLOWED_MIME_TYPES.includes(selectedFile.type)) {
@@ -83,7 +91,6 @@ export default function SubirDocumentoPage() {
 		}
 		setFile(selectedFile);
 		if (!name) {
-			// Auto-llenar nombre sin extensión
 			setName(selectedFile.name.replace(/\.[^.]+$/, ""));
 		}
 	};
@@ -93,6 +100,14 @@ export default function SubirDocumentoPage() {
 		setDragOver(false);
 		const droppedFile = e.dataTransfer.files[0];
 		handleFileChange(droppedFile);
+	};
+
+	const toggleGroup = (groupId: string) => {
+		setSelectedGroups((prev) =>
+			prev.includes(groupId)
+				? prev.filter((id) => id !== groupId)
+				: [...prev, groupId],
+		);
 	};
 
 	const handleSubmit = async (e: React.FormEvent) => {
@@ -105,10 +120,14 @@ export default function SubirDocumentoPage() {
 			toast.error("Ingresa un nombre para el documento");
 			return;
 		}
+		if (scope === "SHARED" && selectedGroups.length === 0) {
+			toast.error("Selecciona al menos una coordinación para compartir");
+			return;
+		}
 
 		try {
 			setUploading(true);
-			await uploadDocument(file, name.trim(), scope);
+			await uploadDocument(file, name.trim(), scope, selectedGroups);
 			toast.success("Documento subido exitosamente");
 			navigate("/documentos");
 		} catch (e: any) {
@@ -117,12 +136,6 @@ export default function SubirDocumentoPage() {
 			setUploading(false);
 		}
 	};
-
-	// Filtrar opciones de scope según rol
-	const scopeOptions = SCOPE_OPTIONS.filter((opt) => {
-		if (opt.value === "MANAGEMENT" && role !== "ADMIN") return false;
-		return true;
-	});
 
 	return (
 		<div className="space-y-6 w-full max-w-2xl mx-auto">
@@ -196,7 +209,7 @@ export default function SubirDocumentoPage() {
 					</CardContent>
 				</Card>
 
-				{/* Nombre del documento + Visibilidad */}
+				{/* Nombre del documento */}
 				<Card className="rounded-2xl">
 					<CardContent className="p-6 space-y-4">
 						<div className="space-y-2">
@@ -217,7 +230,7 @@ export default function SubirDocumentoPage() {
 									<SelectValue />
 								</SelectTrigger>
 								<SelectContent>
-									{scopeOptions.map((opt) => (
+									{SCOPE_OPTIONS.map((opt) => (
 										<SelectItem key={opt.value} value={opt.value}>
 											{opt.label} — {opt.description}
 										</SelectItem>
@@ -225,6 +238,46 @@ export default function SubirDocumentoPage() {
 								</SelectContent>
 							</Select>
 						</div>
+
+						{/* Selector de coordinaciones (solo si scope = SHARED) */}
+						{scope === "SHARED" && (
+							<div className="space-y-2 pt-2 border-t border-border">
+								<Label>Compartir con coordinaciones</Label>
+								{loadingGroups ? (
+									<div className="space-y-2">
+										<Skeleton className="h-10 w-full" />
+										<Skeleton className="h-10 w-full" />
+									</div>
+								) : fiscalGroups.length === 0 ? (
+									<p className="text-sm text-muted-foreground">No hay coordinaciones disponibles</p>
+								) : (
+									<div className="space-y-2 max-h-48 overflow-y-auto">
+										{fiscalGroups.map((fg) => (
+											<label
+												key={fg.id}
+												className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all
+                          ${selectedGroups.includes(fg.id) ? "border-indigo-500 bg-indigo-500/10" : "border-border hover:border-muted-foreground/30"}`}
+											>
+												<input
+													type="checkbox"
+													className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+													checked={selectedGroups.includes(fg.id)}
+													onChange={() => toggleGroup(fg.id)}
+												/>
+												<div>
+													<p className="text-sm font-medium">{fg.name}</p>
+												</div>
+											</label>
+										))}
+									</div>
+								)}
+								{selectedGroups.length > 0 && (
+									<p className="text-xs text-muted-foreground">
+										{selectedGroups.length} coordinación(es) seleccionada(s)
+									</p>
+								)}
+							</div>
+						)}
 					</CardContent>
 				</Card>
 

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '@/hooks/use-auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { Taxpayer } from '@/types/taxpayer';
 import { 
@@ -34,6 +34,7 @@ import toast from 'react-hot-toast';
 import { createIVA, getTaxpayerForEvents } from '@/components/utils/api/taxpayer-functions';
 import { useCachedTaxpayersForEvents, invalidateCache } from '@/hooks/useCachedData';
 import { getTaxpayerIvaLastDeclared, getTaxpayerIvaReports } from '@/components/utils/api/taxpayer-functions';
+import { getTaxpayerData } from '@/components/utils/api/report-functions';
 import Decimal from 'decimal.js';
 import type { IVAReports } from '@/types/iva-reports';
 
@@ -87,6 +88,7 @@ function IvaForm() {
     const { taxpayersForEvents: firstPageTaxpayers, totalPages, loading: loadingFirstPage } = useCachedTaxpayersForEvents(50);
     
     const [selectedTaxpayer, setSelectedTaxpayer] = useState<Taxpayer | null>(null);
+    const [loadingTaxpayerFromUrl, setLoadingTaxpayerFromUrl] = useState(false);
     const [loadingMonthInfo, setLoadingMonthInfo] = useState(false);
     const [nextMonthLabel, setNextMonthLabel] = useState("");
     const [periodYear, setPeriodYear] = useState(() => new Date().getUTCFullYear());
@@ -104,6 +106,7 @@ function IvaForm() {
     const [isLoadingMore, setIsLoadingMore] = useState(false);
     const currentYear = new Date().getUTCFullYear();
     const listRef = useRef<HTMLDivElement>(null);
+    const monthFromUrlRef = useRef(false);
     const [dateParts, setDateParts] = useState<{ year: string; day: string; month: string }>({
         year: String(currentYear),
         day: "1",
@@ -131,6 +134,7 @@ function IvaForm() {
     });
 
     const watchValues = watch();
+    const [searchParams] = useSearchParams();
 
     // Unified list of taxpayers
     const isSearching = searchDebounce.trim() !== '';
@@ -297,6 +301,57 @@ function IvaForm() {
         if (!user) navigate("/login");
     }, [user, navigate]);
 
+    // Auto-select taxpayer from URL query param ?taxpayerId= (fetches directly from DB)
+    useEffect(() => {
+        const taxpayerIdFromUrl = searchParams.get('taxpayerId');
+        if (!taxpayerIdFromUrl) return;
+
+        const fetchTaxpayer = async () => {
+            setLoadingTaxpayerFromUrl(true);
+            try {
+                const taxpayer = await getTaxpayerData(taxpayerIdFromUrl);
+
+                // Validate ownership
+                if (
+                    taxpayer.user?.id &&
+                    taxpayer.user.id !== user?.id &&
+                    user?.role !== 'ADMIN' &&
+                    user?.role !== 'COORDINATOR'
+                ) {
+                    toast.error('Este contribuyente no está asignado a ti. No puedes cargarle IVA.');
+                    return;
+                }
+
+                setSelectedTaxpayer(taxpayer);
+                setValue('taxpayerId', taxpayer.id);
+
+                // Pre-select month/year from URL params if provided
+                const monthFromUrl = searchParams.get('month');
+                const yearFromUrl = searchParams.get('year');
+                if (monthFromUrl) {
+                    const m = parseInt(monthFromUrl, 10);
+                    const y = yearFromUrl ? parseInt(yearFromUrl, 10) : currentYear;
+                    if (m >= 1 && m <= 12) {
+                        monthFromUrlRef.current = true;
+                        const monthNames = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+                        setNextMonthLabel(`${monthNames[m-1]} ${y}`);
+                        setPeriodYear(y);
+                        setPeriodMonth(m);
+                        setDateParts({ year: String(y), month: String(m), day: "1" });
+                        setValue('date', isoDateUtcNoon(y, m));
+                    }
+                }
+            } catch (e) {
+                // Silently ignore if taxpayer not found
+                console.warn('Contribuyente no encontrado por taxpayerId:', taxpayerIdFromUrl);
+            } finally {
+                setLoadingTaxpayerFromUrl(false);
+            }
+        };
+
+        fetchTaxpayer();
+    }, [searchParams, user, setValue]); // eslint-disable-line react-hooks/exhaustive-deps
+
     useEffect(() => {
         if (!selectedTaxpayer) return;
         const year = Number(dateParts.year);
@@ -323,6 +378,13 @@ function IvaForm() {
         if (!selectedTaxpayer) {
             setNextMonthLabel("");
             setValue('date', '');
+            return;
+        }
+
+        // If month was provided from URL, skip auto-calculation
+        if (monthFromUrlRef.current) {
+            monthFromUrlRef.current = false;
+            setLoadingMonthInfo(false);
             return;
         }
 
@@ -523,9 +585,19 @@ function IvaForm() {
                                                 <div className="flex items-center gap-3 truncate">
                                                   <Building2 className={cn("h-4 w-4 shrink-0 transition-colors", field.value ? "text-indigo-400" : "text-slate-500")} />
                                                   <span className="truncate">
-                                                    {field.value && selectedTaxpayer
-                                                      ? `${selectedTaxpayer.name}`
-                                                      : "Seleccionar contribuyente..."}
+                                                    {loadingTaxpayerFromUrl ? (
+                                                      <span className="flex items-center gap-2">
+                                                        <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                                                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                                                        </svg>
+                                                        Cargando...
+                                                      </span>
+                                                    ) : field.value && selectedTaxpayer ? (
+                                                      `${selectedTaxpayer.name}`
+                                                    ) : (
+                                                      "Seleccionar contribuyente..."
+                                                    )}
                                                   </span>
                                                 </div>
                                                 <ChevronDown className="h-4 w-4 shrink-0 opacity-50 transition-transform duration-200 group-data-[state=open]:rotate-180" />

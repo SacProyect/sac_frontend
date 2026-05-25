@@ -1,14 +1,16 @@
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
 import GenerateReport from '@/components/reports/generate-report';
+import { Button } from '@/components/UI/button';
+import { ArrowLeft } from 'lucide-react';
 
 /**
  * ReportsPageV2 - Página de Generación de Reportes con diseño Shadcn UI v2.0
  */
 export default function ReportsPageV2() {
   const { taxpayer } = useParams<{ taxpayer?: string }>();
-
+  const navigate = useNavigate();
   return (
     <div className="space-y-6 w-full max-w-full overflow-x-hidden animate-in fade-in duration-500">
       <PageHeader
@@ -17,6 +19,10 @@ export default function ReportsPageV2() {
           ? "Visualizando información específica del contribuyente seleccionado" 
           : "Busca contribuyentes y genera reportes consolidados por grupo o individuales"
         }
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
       
       <div className="grid grid-cols-1 gap-6">

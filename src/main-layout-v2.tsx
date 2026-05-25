@@ -15,6 +15,7 @@ import { NotificationBell } from "@/components/Navigation/notification-bell";
 import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
 import { useDemoMode } from '@/hooks/use-demo-mode';
 import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
+import DevFiscalGroupSwitcher from "@/components/dev/debug-fiscal-group-switcher";
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -264,6 +265,7 @@ const MainLayoutV2 = () => {
                                     </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
+                            <DevFiscalGroupSwitcher />
                         </div>
                     </div>
                 </div>

@@ -1,5 +1,13 @@
 import { apiConnection } from "./api-connection";
-import type { DocumentItem, DocumentScope, DocumentTab, ListDocumentsResponse, DocumentDetailResponse, DownloadResponse } from "@/types/documents";
+import type {
+  DocumentItem,
+  DocumentScope,
+  DocumentTab,
+  ListDocumentsResponse,
+  DocumentDetailResponse,
+  DownloadResponse,
+  FiscalGroupListResponse,
+} from "@/types/documents";
 
 const BASE = "/documentos";
 
@@ -27,11 +35,19 @@ export async function listDocuments(query: ListDocumentsQuery = {}): Promise<Lis
   return response.data;
 }
 
-export async function uploadDocument(file: File, name: string, scope: DocumentScope): Promise<{ success: boolean; data: DocumentItem }> {
+export async function uploadDocument(
+  file: File,
+  name: string,
+  scope: DocumentScope,
+  fiscalGroupIds?: string[],
+): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
   formData.append("scope", scope);
+  if (fiscalGroupIds?.length) {
+    fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
+  }
 
   const response = await apiConnection.post(BASE, formData, {
     headers: { "Content-Type": "multipart/form-data" },
@@ -59,6 +75,21 @@ export async function changeDocumentScope(id: string, scope: DocumentScope): Pro
   return response.data;
 }
 
+export async function shareDocumentWith(id: string, fiscalGroupIds: string[]): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.post(`${BASE}/${id}/share`, { fiscalGroupIds });
+  return response.data;
+}
+
+export async function unshareDocumentFrom(id: string, fiscalGroupId: string): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.delete(`${BASE}/${id}/share/${fiscalGroupId}`);
+  return response.data;
+}
+
+export async function listFiscalGroups(): Promise<FiscalGroupListResponse> {
+  const response = await apiConnection.get(`${BASE}/groups`);
+  return response.data;
+}
+
 // Helper para formatear tamaño de archivo
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -72,8 +103,7 @@ export function formatFileSize(bytes: number): string {
 export function getScopeLabel(scope: DocumentScope): string {
   const labels: Record<DocumentScope, string> = {
     PRIVATE: "Privado",
-    MANAGEMENT: "Gestión",
-    SENT_TO_BOSS: "Enviado a jefe de división",
+    SHARED: "Compartido",
   };
   return labels[scope];
 }

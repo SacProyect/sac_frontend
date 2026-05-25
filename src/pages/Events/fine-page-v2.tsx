@@ -1,5 +1,5 @@
 import { useParams, Navigate, useLoaderData } from 'react-router-dom';
-import { PageHeader } from '@/components/UI/v2';
+import { PageHeader, BackButton } from '@/components/UI/v2';
 import EventForm from '@/components/Events/event-form';
 import { useAuth } from '@/hooks/use-auth';
 import { AlertTriangle, Building2, Hash } from 'lucide-react';
@@ -19,6 +19,8 @@ export default function FinePageV2() {
 
   return (
     <div className="space-y-5 sm:space-y-7 w-full max-w-full overflow-x-hidden">
+
+      <BackButton to={`/taxpayer/${taxpayerId}`} hideLabelOnMobile />
 
       {/* Header */}
       <div className="flex items-start gap-4">

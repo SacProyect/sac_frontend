@@ -25,6 +25,16 @@ apiConnection.interceptors.request.use(
 			config.headers.Authorization = `Bearer ${token}`;
 		}
 
+		if (import.meta.env.DEV) {
+			const debugGroupId = localStorage.getItem("debugFiscalGroupId");
+			if (debugGroupId) {
+				config.params = {
+					...config.params,
+					debugGroupId,
+				};
+			}
+		}
+
 		return config;
 	},
 	(error: AxiosError): Promise<AxiosError> => {

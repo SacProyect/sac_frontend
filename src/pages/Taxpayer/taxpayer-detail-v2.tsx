@@ -235,6 +235,7 @@ export default function TaxpayerDetailV2() {
       <PageHeader
         title="Detalle del Contribuyente"
         description="Información completa y gestión de eventos"
+        backTo="/census"
       />
 
       <IndividualStats

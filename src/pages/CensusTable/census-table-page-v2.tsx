@@ -28,17 +28,18 @@ import {
 } from '@/components/UI/dialog';
 import { Button } from '@/components/UI/button';
 import { Badge } from '@/components/UI/badge';
-import { MoreHorizontal, Search, Trash2 } from 'lucide-react';
+import { ArrowLeft, MoreHorizontal, Search, Trash2 } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 import { useDebounce } from '@/hooks/use-debounce';
 import { LoadingState, EmptyState, PageHeader } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
-
+import { useNavigate } from 'react-router-dom';
 /**
  * CensusTablePageV2 - Tabla de Contribuyentes Censados con diseño Shadcn UI v2.0
  */
 export default function CensusTablePageV2() {
   const { user } = useAuth();
+  const navigate = useNavigate();
   const [taxpayersCensus, setTaxpayersCensus] = useState<TaxpayerCensus[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchValue, setSearchValue] = useState('');
@@ -110,6 +111,10 @@ export default function CensusTablePageV2() {
       <PageHeader
         title="Tabla Censo"
         description="Gestión de contribuyentes censados"
+        action={<Button variant="outline" onClick={() => navigate('/admin')} className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent">
+          <ArrowLeft className="h-4 w-4" />
+          Volver
+        </Button>}
       />
 
       {/* Filtros */}

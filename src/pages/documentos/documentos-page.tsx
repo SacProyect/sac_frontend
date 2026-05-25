@@ -15,26 +15,27 @@ import {
 	deleteDocument,
 	downloadDocument,
 	changeDocumentScope,
+	shareDocumentWith,
+	unshareDocumentFrom,
+	listFiscalGroups,
 	formatFileSize,
 	getScopeLabel,
 	getFileIcon,
 	type ListDocumentsQuery,
 } from "@/components/utils/api/documentos-functions";
-import type { DocumentItem, DocumentScope, DocumentTab } from "@/types/documents";
-import type { User } from "@/types/user";
-import { Trash2, Download, Upload, Search, FileText, ArrowUpDown } from "lucide-react";
+import type { DocumentItem, DocumentScope, DocumentTab, FiscalGroupInfo } from "@/types/documents";
+import { Trash2, Download, Upload, Search, FileText, Share2, X } from "lucide-react";
 import toast from "react-hot-toast";
 
-const TAB_LABELS: Record<DocumentTab, string> = {
+const TAB_LABELS: Record<string, string> = {
 	mine: "Mis documentos",
-	management: "Documentos de gestión",
-	sentToBoss: "Enviados a jefe de división",
-} as const;
+	shared: "Compartidos con mi coordinación",
+	all: "Todos los compartidos",
+};
 
-const SCOPE_BADGE_CLASSES: Record<DocumentScope, string> = {
+const SCOPE_BADGE_CLASSES: Record<string, string> = {
 	PRIVATE: "bg-slate-500/10 text-slate-400 border-slate-500/20",
-	MANAGEMENT: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
-	SENT_TO_BOSS: "bg-amber-500/10 text-amber-400 border-amber-500/20",
+	SHARED: "bg-indigo-500/10 text-indigo-400 border-indigo-500/20",
 };
 
 export default function DocumentosPage() {
@@ -48,17 +49,14 @@ export default function DocumentosPage() {
 	// Determinar tabs según rol
 	const tabs = useMemo(() => {
 		if (role === "ADMIN") {
-			return ["mine", "management", "sentToBoss"] as DocumentTab[];
+			return ["mine", "shared", "all"] as DocumentTab[];
 		}
-		// COORDINATOR and others: only mine and sentToBoss
-		return ["mine", "sentToBoss"] as DocumentTab[];
+		// COORDINATOR: solo mine y shared (su coordinación)
+		return ["mine", "shared"] as DocumentTab[];
 	}, [role]);
 
 	// Asegurar que el tab actual sea válido
 	const currentTab = tabs.includes(tabParam) ? tabParam : (tabs[0] ?? "mine");
-
-	// Determinar si el usuario actual es la jefa de división
-	const isJefa = (user as User)?.isJefaDivision ?? false;
 
 	// Estados
 	const [items, setItems] = useState<DocumentItem[]>([]);
@@ -78,8 +76,11 @@ export default function DocumentosPage() {
 	const [detailOpen, setDetailOpen] = useState(false);
 	const [busy, setBusy] = useState<string | null>(null);
 
-	// Modal de confirmación para cambio de visibilidad
-	const [confirmScope, setConfirmScope] = useState<{ docId: string; scope: DocumentScope; label: string } | null>(null);
+	// Modal de compartir
+	const [shareOpen, setShareOpen] = useState(false);
+	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
+	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
+	const [loadingGroups, setLoadingGroups] = useState(false);
 
 	const fetchDocuments = useCallback(
 		async (overrideTab?: DocumentTab) => {
@@ -107,7 +108,7 @@ export default function DocumentosPage() {
 		[currentTab, page, pageSize, q, desde, hasta],
 	);
 
-	// Resetear página y limpiar datos al cambiar de tab (evita flash de datos viejos)
+	// Resetear página y limpiar datos al cambiar de tab
 	useEffect(() => {
 		setPage(1);
 		setItems([]);
@@ -162,11 +163,59 @@ export default function DocumentosPage() {
 			setBusy(`scope-${id}`);
 			await changeDocumentScope(id, scope);
 			toast.success("Visibilidad actualizada");
-			setConfirmScope(null);
 			setDetailOpen(false);
 			fetchDocuments();
 		} catch (e: any) {
 			toast.error(e?.message ?? "No se pudo actualizar.");
+		} finally {
+			setBusy(null);
+		}
+	};
+
+	// Abrir modal de compartir
+	const openShareModal = async (doc: DocumentItem) => {
+		setSelectedDoc(doc);
+		setSelectedGroups(doc.sharedWith?.map((s) => s.fiscalGroup.id) ?? []);
+		setShareOpen(true);
+		if (fiscalGroups.length === 0) {
+			setLoadingGroups(true);
+			try {
+				const result = await listFiscalGroups();
+				setFiscalGroups(result.data ?? []);
+			} catch (e: any) {
+				toast.error("No se pudieron cargar las coordinaciones");
+			} finally {
+				setLoadingGroups(false);
+			}
+		}
+	};
+
+	// Guardar cambios de compartición
+	const handleSaveShare = async () => {
+		if (!selectedDoc) return;
+		try {
+			setBusy(`share-${selectedDoc.id}`);
+
+			const currentIds = selectedDoc.sharedWith?.map((s) => s.fiscalGroup.id) ?? [];
+
+			// Grupos a agregar
+			const toAdd = selectedGroups.filter((id) => !currentIds.includes(id));
+			if (toAdd.length > 0) {
+				await shareDocumentWith(selectedDoc.id, toAdd);
+			}
+
+			// Grupos a quitar
+			const toRemove = currentIds.filter((id) => !selectedGroups.includes(id));
+			for (const gId of toRemove) {
+				await unshareDocumentFrom(selectedDoc.id, gId);
+			}
+
+			toast.success("Compartido actualizado");
+			setShareOpen(false);
+			setDetailOpen(false);
+			fetchDocuments();
+		} catch (e: any) {
+			toast.error(e?.message ?? "Error al actualizar compartición");
 		} finally {
 			setBusy(null);
 		}
@@ -180,15 +229,6 @@ export default function DocumentosPage() {
 		if (mime.includes("text")) return "TXT";
 		return "FILE";
 	};
-
-	// Scopes disponibles para cambiar en el modal (filtrados por rol)
-	const availableScopes = useMemo(() => {
-		const all: DocumentScope[] = ["PRIVATE", "MANAGEMENT", "SENT_TO_BOSS"];
-		return all.filter((s) => {
-			if (s === "MANAGEMENT" && role !== "ADMIN") return false;
-			return s !== selectedDoc?.scope;
-		});
-	}, [role, selectedDoc?.scope]);
 
 	const totalPages = Math.max(1, Math.ceil(total / pageSize));
 
@@ -228,12 +268,7 @@ export default function DocumentosPage() {
 							value={tab}
 							className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg whitespace-nowrap"
 						>
-							{tab === "sentToBoss" && isJefa ? "Recibidos" : TAB_LABELS[tab]}
-							{tab === "sentToBoss" && isJefa && (
-								<span className="ml-1.5 text-[10px] font-semibold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded-full">
-									tú
-								</span>
-							)}
+							{TAB_LABELS[tab]}
 						</TabsTrigger>
 					))}
 				</TabsList>
@@ -305,7 +340,6 @@ export default function DocumentosPage() {
 								</div>
 							) : (
 								<>
-									{/* Scroll horizontal en mobile */}
 									<div className="overflow-x-auto">
 										<Table>
 											<TableHeader>
@@ -316,7 +350,7 @@ export default function DocumentosPage() {
 													<TableHead className="min-w-[5rem]">Tamaño</TableHead>
 													<TableHead className="min-w-[6rem]">Fecha</TableHead>
 													<TableHead className="min-w-[8rem]">Remitente</TableHead>
-													<TableHead className="min-w-[8rem]">Coordinación</TableHead>
+													<TableHead className="min-w-[10rem]">Compartido con</TableHead>
 													<TableHead className="text-right min-w-[6rem]">Acciones</TableHead>
 												</TableRow>
 											</TableHeader>
@@ -361,7 +395,17 @@ export default function DocumentosPage() {
 														</TableCell>
 														<TableCell className="text-sm">{doc.uploadedBy?.name ?? doc.owner?.name ?? "—"}</TableCell>
 														<TableCell className="text-sm">
-															{doc.uploadedBy?.group?.name ?? doc.owner?.group?.name ?? "—"}
+															{doc.sharedWith && doc.sharedWith.length > 0 ? (
+																<div className="flex flex-wrap gap-1">
+																	{doc.sharedWith.map((sw) => (
+																		<Badge key={sw.fiscalGroup.id} variant="outline" className="text-[10px] px-1.5 py-0">
+																			{sw.fiscalGroup.name}
+																		</Badge>
+																	))}
+																</div>
+															) : (
+																<span className="text-muted-foreground/60">—</span>
+															)}
 														</TableCell>
 														<TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
 															<div className="flex items-center justify-end gap-1">
@@ -373,6 +417,16 @@ export default function DocumentosPage() {
 																>
 																	<Download className="h-4 w-4" />
 																</Button>
+																{doc.ownerId === user?.id && doc.scope === "SHARED" && (
+																	<Button
+																		variant="ghost"
+																		size="icon"
+																		onClick={() => openShareModal(doc)}
+																		title="Compartir con coordinaciones"
+																	>
+																		<Share2 className="h-4 w-4" />
+																	</Button>
+																)}
 																{doc.ownerId === user?.id && (
 																	<Button
 																		variant="ghost"
@@ -474,29 +528,50 @@ export default function DocumentosPage() {
 									<p className="text-muted-foreground text-xs">Coordinación</p>
 									<p className="font-medium">{selectedDoc.uploadedBy?.group?.name ?? selectedDoc.owner?.group?.name ?? "—"}</p>
 								</div>
+								<div className="col-span-2">
+									<p className="text-muted-foreground text-xs mb-1">Compartido con</p>
+									{selectedDoc.sharedWith && selectedDoc.sharedWith.length > 0 ? (
+										<div className="flex flex-wrap gap-1">
+											{selectedDoc.sharedWith.map((sw) => (
+												<Badge key={sw.fiscalGroup.id} variant="outline" className="text-xs">
+													{sw.fiscalGroup.name}
+												</Badge>
+											))}
+										</div>
+									) : (
+										<p className="text-sm text-muted-foreground/60">No compartido</p>
+									)}
+								</div>
 							</div>
 
 							{/* Cambiar scope (solo owner) */}
-							{selectedDoc.ownerId === user?.id && availableScopes.length > 0 && (
-								<div className="pt-4 border-t border-border">
-									<p className="text-xs text-muted-foreground mb-2">Cambiar visibilidad:</p>
+							{selectedDoc.ownerId === user?.id && (
+								<div className="pt-4 border-t border-border space-y-2">
+									<p className="text-xs text-muted-foreground">Cambiar visibilidad:</p>
 									<div className="flex flex-wrap gap-2">
-										{availableScopes.map((scope) => (
+										{selectedDoc.scope === "SHARED" ? (
 											<Button
-												key={scope}
+												variant="outline"
+												size="sm"
+												onClick={() => handleChangeScope(selectedDoc.id, "PRIVATE")}
+												disabled={busy === `scope-${selectedDoc.id}`}
+											>
+												Hacer Privado
+											</Button>
+										) : (
+											<Button
 												variant="outline"
 												size="sm"
 												onClick={() => {
-													const label = scope === "SENT_TO_BOSS" ? "Enviado a jefe de división"
-														: scope === "MANAGEMENT" ? "Gestión"
-														: "Privado";
-													setConfirmScope({ docId: selectedDoc.id, scope, label });
+													setDetailOpen(false);
+													openShareModal(selectedDoc);
 												}}
 												disabled={busy === `scope-${selectedDoc.id}`}
 											>
-												{getScopeLabel(scope)}
+												<Share2 className="w-3 h-3 mr-1" />
+												Compartir con coordinaciones
 											</Button>
-										))}
+										)}
 									</div>
 								</div>
 							)}
@@ -525,29 +600,62 @@ export default function DocumentosPage() {
 				</DialogContent>
 			</Dialog>
 
-			{/* Modal de confirmación para cambio de visibilidad */}
-			<Dialog open={confirmScope !== null} onOpenChange={(open) => !open && setConfirmScope(null)}>
-				<DialogContent className="sm:max-w-sm">
+			{/* Modal de compartir con coordinaciones */}
+			<Dialog open={shareOpen} onOpenChange={setShareOpen}>
+				<DialogContent className="sm:max-w-md">
 					<DialogHeader>
-						<DialogTitle>Cambiar visibilidad</DialogTitle>
+						<DialogTitle>Compartir documento</DialogTitle>
 						<DialogDescription>
-							¿Estás seguro de cambiar la visibilidad de este documento a <strong>"{confirmScope?.label}"</strong>?
+							Selecciona las coordinaciones con las que quieres compartir este documento
 						</DialogDescription>
 					</DialogHeader>
+
+					<div className="space-y-3 max-h-60 overflow-y-auto">
+						{loadingGroups ? (
+							<div className="space-y-2">
+								<Skeleton className="h-10 w-full" />
+								<Skeleton className="h-10 w-full" />
+								<Skeleton className="h-10 w-full" />
+							</div>
+						) : fiscalGroups.length === 0 ? (
+							<p className="text-sm text-muted-foreground">No hay coordinaciones disponibles</p>
+						) : (
+							fiscalGroups.map((fg) => (
+								<label
+									key={fg.id}
+									className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all
+                    ${selectedGroups.includes(fg.id) ? "border-indigo-500 bg-indigo-500/10" : "border-border hover:border-muted-foreground/30"}`}
+								>
+									<input
+										type="checkbox"
+										className="w-4 h-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+										checked={selectedGroups.includes(fg.id)}
+										onChange={(e) => {
+											if (e.target.checked) {
+												setSelectedGroups([...selectedGroups, fg.id]);
+											} else {
+												setSelectedGroups(selectedGroups.filter((id) => id !== fg.id));
+											}
+										}}
+									/>
+									<div>
+										<p className="text-sm font-medium">{fg.name}</p>
+									</div>
+								</label>
+							))
+						)}
+					</div>
+
 					<DialogFooter className="gap-2 mt-4">
-						<Button
-							variant="outline"
-							onClick={() => setConfirmScope(null)}
-							disabled={busy !== null}
-						>
+						<Button variant="outline" onClick={() => setShareOpen(false)} disabled={busy !== null}>
 							Cancelar
 						</Button>
 						<Button
 							variant="default"
-							onClick={() => confirmScope && handleChangeScope(confirmScope.docId, confirmScope.scope)}
+							onClick={handleSaveShare}
 							disabled={busy !== null}
 						>
-							{busy ? "Cambiando..." : "Confirmar"}
+							{busy ? "Guardando..." : "Guardar"}
 						</Button>
 					</DialogFooter>
 				</DialogContent>

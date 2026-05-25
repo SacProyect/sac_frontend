@@ -157,6 +157,7 @@ export default function ObservationsPageV2() {
       <PageHeader
         title="Gestión de Observaciones"
         description="Registra y gestiona observaciones para este contribuyente"
+        backTo={`/taxpayer/${taxpayerId}`}
       />
 
       {/* Formulario de nueva observación */}

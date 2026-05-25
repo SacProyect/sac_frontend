@@ -14,6 +14,7 @@ export default function ComitmentPageV2() {
       <PageHeader
         title="Agregar Compromiso de Pago"
         description="Registra un nuevo compromiso de pago para un contribuyente"
+        backTo={`/taxpayer/${taxpayerId}`}
       />
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <EventForm title="Compromiso de pago" type="payment_compromise" taxpayerId={taxpayerId || ""} />

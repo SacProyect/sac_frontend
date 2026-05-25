@@ -1,11 +1,22 @@
-export type DocumentScope = "PRIVATE" | "MANAGEMENT" | "SENT_TO_BOSS";
+export type DocumentScope = "PRIVATE" | "SHARED";
 
-export type DocumentTab = "mine" | "management" | "sentToBoss";
+export type DocumentTab = "mine" | "shared" | "all";
 
 export interface UserInfo {
   id: string;
   name: string;
   group?: { id: string; name: string } | null;
+}
+
+export interface FiscalGroupInfo {
+  id: string;
+  name: string;
+  coordinatorId?: string;
+}
+
+export interface SharedWithInfo {
+  fiscalGroup: FiscalGroupInfo;
+  createdAt: string;
 }
 
 export interface DocumentItem {
@@ -17,12 +28,11 @@ export interface DocumentItem {
   scope: DocumentScope;
   ownerId: string;
   uploadedById: string;
-  recipientId: string | null;
   createdAt: string;
   updatedAt: string;
   owner?: UserInfo | null;
   uploadedBy?: UserInfo | null;
-  recipient?: UserInfo | null;
+  sharedWith?: SharedWithInfo[];
 }
 
 export interface ListDocumentsResponse {
@@ -41,4 +51,9 @@ export interface DocumentDetailResponse {
 export interface DownloadResponse {
   success: boolean;
   data: { url: string };
+}
+
+export interface FiscalGroupListResponse {
+  success: boolean;
+  data: FiscalGroupInfo[];
 }

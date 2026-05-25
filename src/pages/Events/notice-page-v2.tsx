@@ -25,6 +25,7 @@ export default function NoticePageV2() {
       <PageHeader
         title="Agregar Aviso"
         description="Registra un nuevo aviso para un contribuyente"
+        backTo={`/taxpayer/${taxpayerId}`}
       />
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <EventForm title="Aviso" type="warning" taxpayerId={taxpayerId || ""} />

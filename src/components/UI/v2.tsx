@@ -89,23 +89,7 @@ export function PageHeader({ title, description, action }: PageHeaderProps & { a
   );
 }
 
-interface BackButtonProps {
-  to: string;
-}
-
-export function BackButton({ to }: BackButtonProps) {
-  const navigate = useNavigate();
-  return (
-    <Button
-      variant="outline"
-      onClick={() => navigate(to)}
-      className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
-    >
-      <ArrowLeft className="h-4 w-4 mr-2" />
-      Volver
-    </Button>
-  );
-}
+export { BackButton, type BackButtonProps } from '@/components/UI/v2/back-button';
 
 interface YearSelectorProps {
   value: number;
