@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/UI/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/UI/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
 import { Badge } from "@/components/UI/badge";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/UI/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/UI/dialog";
 import { Skeleton } from "@/components/UI/skeleton";
 import {
@@ -15,10 +16,9 @@ import {
   deleteDocument,
   downloadDocument,
   changeDocumentScope,
-  shareDocumentWith,
-  unshareDocumentFrom,
   listFiscalGroups,
   listAdminUnits,
+  listDocumentCategories,
   shareDocumentWithPrincipal,
   revokeDocumentAccess,
   formatFileSize,
@@ -31,7 +31,8 @@ import type {
   DocumentScope, 
   DocumentTab, 
   FiscalGroupInfo, 
-  AdminUnitInfo 
+  AdminUnitInfo,
+  DocumentCategoryInfo 
 } from "@/types/documents";
 import { 
   Trash2, 
@@ -43,7 +44,11 @@ import {
   X, 
   Users, 
   Building2, 
-  ShieldCheck 
+  ShieldCheck,
+  Tag,
+  Lock,
+  Info,
+  Filter
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -85,10 +90,15 @@ export default function DocumentosPage() {
 
   // Filtros
   const [q, setQ] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("all");
   const [desde, setDesde] = useState("");
   const [hasta, setHasta] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 20;
+
+  // Master Data
+  const [categories, setCategories] = useState<DocumentCategoryInfo[]>([]);
+  const [loadingCats, setLoadingCats] = useState(false);
 
   // Modal de detalle
   const [selectedDoc, setSelectedDoc] = useState<DocumentItem | null>(null);
@@ -116,6 +126,7 @@ export default function DocumentosPage() {
           pageSize,
         };
         if (q.trim()) query.q = q.trim();
+        if (categoryId !== "all") query.categoryId = categoryId;
         if (desde) query.desde = desde;
         if (hasta) query.hasta = hasta;
 
@@ -128,12 +139,21 @@ export default function DocumentosPage() {
         setLoading(false);
       }
     },
-    [currentTab, page, pageSize, q, desde, hasta],
+    [currentTab, page, pageSize, q, categoryId, desde, hasta],
   );
 
   useEffect(() => {
     fetchDocuments();
   }, [fetchDocuments]);
+
+  // Cargar categorías una sola vez
+  useEffect(() => {
+    setLoadingCats(true);
+    listDocumentCategories()
+      .then(res => setCategories(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingCats(false));
+  }, []);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -143,6 +163,7 @@ export default function DocumentosPage() {
 
   const clearFilters = () => {
     setQ("");
+    setCategoryId("all");
     setDesde("");
     setHasta("");
     setPage(1);
@@ -225,7 +246,7 @@ export default function DocumentosPage() {
     try {
       setBusy(`share-${selectedDoc.id}`);
 
-      // 1. Manejar Coordinaciones (Legacy + New)
+      // Manejar Coordinaciones
       const currentGroupIds = new Set(selectedDoc.sharedWith?.map((s) => s.fiscalGroup.id) ?? []);
       selectedDoc.accessRecords?.filter(r => r.principalType === "FISCAL_GROUP").forEach(r => currentGroupIds.add(r.principalId));
       
@@ -239,7 +260,7 @@ export default function DocumentosPage() {
         await revokeDocumentAccess(selectedDoc.id, "FISCAL_GROUP", id);
       }
 
-      // 2. Manejar Unidades Administrativas
+      // Manejar Unidades Administrativas
       const currentUnitIds = selectedDoc.accessRecords?.filter(r => r.principalType === "ADMIN_UNIT").map(r => r.principalId) ?? [];
       const unitsToAdd = selectedUnits.filter(id => !currentUnitIds.includes(id));
       const unitsToRemove = currentUnitIds.filter(id => !selectedUnits.includes(id));
@@ -289,219 +310,227 @@ export default function DocumentosPage() {
         }
       />
 
-      <Tabs 
-        value={currentTab} 
-        onValueChange={(v) => setSearchParams({ tab: v })}
-        className="space-y-4"
-      >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <TabsList className="bg-muted/50 p-1 rounded-xl w-fit">
-            {tabs.map((t) => (
-              <TabsTrigger 
-                key={t} 
-                value={t} 
-                className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
-              >
-                {TAB_LABELS[t]}
-              </TabsTrigger>
-            ))}
-          </TabsList>
+      <div className="grid grid-cols-1 gap-4">
+        {/* Barra superior: Tabs + Búsqueda + Filtros */}
+        <Card className="rounded-2xl border-none shadow-sm bg-card/50 backdrop-blur-sm">
+          <CardContent className="p-4 flex flex-col lg:flex-row gap-4 justify-between">
+            <Tabs 
+              value={currentTab} 
+              onValueChange={(v) => setSearchParams({ tab: v })}
+              className="w-fit"
+            >
+              <TabsList className="bg-muted/50 p-1 rounded-xl">
+                {tabs.map((t) => (
+                  <TabsTrigger 
+                    key={t} 
+                    value={t} 
+                    className="rounded-lg px-4 py-2 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  >
+                    {TAB_LABELS[t]}
+                  </TabsTrigger>
+                ))}
+              </TabsList>
+            </Tabs>
 
-          <form onSubmit={handleSearch} className="flex gap-2">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar por nombre..."
-                value={q}
-                onChange={(e) => setQ(e.target.value)}
-                className="pl-9 bg-muted/30 border-none rounded-xl w-full md:w-64"
-              />
-            </div>
-            <Button type="submit" variant="secondary" className="rounded-xl">
-              Buscar
-            </Button>
-            {(q || desde || hasta) && (
-              <Button type="button" variant="ghost" onClick={clearFilters} className="rounded-xl">
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </form>
-        </div>
+            <form onSubmit={handleSearch} className="flex flex-wrap gap-2 items-center">
+              <div className="relative min-w-[200px] flex-1">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre..."
+                  value={q}
+                  onChange={(e) => setQ(e.target.value)}
+                  className="pl-9 bg-muted/30 border-none rounded-xl"
+                />
+              </div>
 
-        <TabsContent value={currentTab} className="mt-0">
-          <Card className="rounded-2xl border-none shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
-            <CardContent className="p-0">
-              {loading && items.length === 0 ? (
-                <div className="p-8 space-y-4">
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                  <Skeleton className="h-12 w-full rounded-xl" />
-                </div>
-              ) : items.length === 0 ? (
-                <div className="p-20 text-center space-y-3">
-                  <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <FileText className="w-8 h-8 text-muted-foreground/30" />
-                  </div>
-                  <h3 className="text-lg font-medium text-muted-foreground">No se encontraron documentos</h3>
-                  <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto">
-                    {q ? "Prueba con otros términos de búsqueda." : "Los documentos compartidos aparecerán aquí."}
-                  </p>
-                </div>
-              ) : (
-                <>
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader className="bg-muted/30">
-                        <TableRow className="hover:bg-transparent border-none">
-                          <TableHead className="py-4">Nombre</TableHead>
-                          <TableHead>Tipo</TableHead>
-                          <TableHead>Visibilidad</TableHead>
-                          <TableHead>Tamaño</TableHead>
-                          <TableHead>Fecha</TableHead>
-                          <TableHead>Propietario</TableHead>
-                          <TableHead>Compartido</TableHead>
-                          <TableHead className="text-right">Acciones</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {items.map((doc) => (
-                          <TableRow 
-                            key={doc.id} 
-                            className="cursor-pointer hover:bg-muted/20 border-border/40 transition-colors"
-                            onClick={() => {
-                              setSelectedDoc(doc);
-                              setDetailOpen(true);
-                            }}
-                          >
-                            <TableCell className="py-4">
-                              <div className="flex items-center gap-3">
-                                <span className="text-lg shrink-0">{getFileIcon(doc.mimeType)}</span>
-                                <div className="min-w-0">
-                                  <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
-                                  <p className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">{doc.originalName}</p>
-                                </div>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="secondary" className="text-[10px] font-mono px-1.5 py-0 bg-muted/50">
-                                {getMimeLabel(doc.mimeType)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex items-center gap-1.5">
-                                <Badge variant="outline" className={`${SCOPE_BADGE_CLASSES[doc.scope]} text-[10px] px-2`}>
-                                  {getScopeLabel(doc.scope)}
-                                </Badge>
-                                {doc.jefaOnly && (
-                                  <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" title="Jefa Only" />
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground tabular-nums">
-                              {formatFileSize(doc.fileSize)}
-                            </TableCell>
-                            <TableCell className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
-                              {new Date(doc.createdAt).toLocaleDateString()}
-                            </TableCell>
-                            <TableCell className="text-xs font-medium truncate max-w-[120px]">
-                              {doc.owner?.name ?? "—"}
-                            </TableCell>
-                            <TableCell>
-                              <div className="flex flex-wrap gap-1 max-w-[150px]">
-                                {doc.sharedWith?.slice(0, 2).map((sw) => (
-                                  <Badge key={sw.fiscalGroup.id} variant="outline" className="text-[9px] px-1 py-0 border-emerald-500/20 text-emerald-400">
-                                    {sw.fiscalGroup.name}
-                                  </Badge>
-                                ))}
-                                {doc.accessRecords?.filter(r => r.principalType === "ADMIN_UNIT").slice(0, 1).map((r) => (
-                                  <Badge key={r.id} variant="outline" className="text-[9px] px-1 py-0 border-indigo-500/20 text-indigo-400">
-                                    UA
-                                  </Badge>
-                                ))}
-                                {(doc.sharedWith?.length || 0) + (doc.accessRecords?.length || 0) > 2 && (
-                                  <span className="text-[9px] text-muted-foreground">...</span>
-                                )}
-                                {!doc.sharedWith?.length && !doc.accessRecords?.length && (
-                                  <span className="text-[9px] text-muted-foreground/50">—</span>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
-                              <div className="flex items-center justify-end gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="icon" 
-                                  className="h-8 w-8 rounded-lg"
-                                  onClick={() => handleDownload(doc.id)}
-                                >
-                                  <Download className="h-4 w-4 text-muted-foreground hover:text-foreground" />
-                                </Button>
-                                {doc.ownerId === user?.id && (
-                                  <>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-8 w-8 rounded-lg"
-                                      onClick={() => openShareModal(doc)}
-                                    >
-                                      <Share2 className="h-4 w-4 text-muted-foreground hover:text-indigo-400" />
-                                    </Button>
-                                    <Button 
-                                      variant="ghost" 
-                                      size="icon" 
-                                      className="h-8 w-8 rounded-lg hover:bg-rose-500/10"
-                                      onClick={() => handleDelete(doc.id)}
-                                      disabled={busy === doc.id}
-                                    >
-                                      <Trash2 className="h-4 w-4 text-rose-400/70 hover:text-rose-400" />
-                                    </Button>
-                                  </>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </div>
-
-                  {total > pageSize && (
-                    <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 text-xs border-t border-border/40 bg-muted/10">
-                      <span className="text-muted-foreground">
-                        Página {page} de {totalPages} · {total} documentos
-                      </span>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page <= 1}
-                          onClick={() => setPage((p) => Math.max(1, p - 1))}
-                          className="h-8 rounded-lg"
-                        >
-                          Anterior
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={page * pageSize >= total}
-                          onClick={() => setPage((p) => p + 1)}
-                          className="h-8 rounded-lg"
-                        >
-                          Siguiente
-                        </Button>
-                      </div>
+              <div className="w-[180px]">
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger className="bg-muted/30 border-none rounded-xl">
+                    <div className="flex items-center gap-2 truncate">
+                      <Filter className="w-3 h-3 text-muted-foreground" />
+                      <SelectValue placeholder="Categoría" />
                     </div>
-                  )}
-                </>
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="all">Todas las categorías</SelectItem>
+                    {categories.map(c => (
+                      <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button type="submit" variant="secondary" className="rounded-xl">
+                Buscar
+              </Button>
+              {(q || categoryId !== "all" || desde || hasta) && (
+                <Button type="button" variant="ghost" onClick={clearFilters} className="rounded-xl" title="Limpiar filtros">
+                  <X className="w-4 h-4" />
+                </Button>
               )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </form>
+          </CardContent>
+        </Card>
+
+        {/* Tabla de Resultados */}
+        <Card className="rounded-2xl border-none shadow-sm bg-card/50 backdrop-blur-sm overflow-hidden">
+          <CardContent className="p-0">
+            {loading && items.length === 0 ? (
+              <div className="p-8 space-y-4">
+                <Skeleton className="h-12 w-full rounded-xl" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+                <Skeleton className="h-12 w-full rounded-xl" />
+              </div>
+            ) : items.length === 0 ? (
+              <div className="p-20 text-center space-y-3">
+                <div className="w-16 h-16 bg-muted/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FileText className="w-8 h-8 text-muted-foreground/30" />
+                </div>
+                <h3 className="text-lg font-medium text-muted-foreground">No se encontraron documentos</h3>
+                <p className="text-sm text-muted-foreground/60 max-w-xs mx-auto">
+                  {q ? "Prueba con otros términos de búsqueda." : "Los documentos compartidos aparecerán aquí."}
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader className="bg-muted/30">
+                      <TableRow className="hover:bg-transparent border-none">
+                        <TableHead className="py-4">Nombre</TableHead>
+                        <TableHead>Categoría</TableHead>
+                        <TableHead>Visibilidad</TableHead>
+                        <TableHead>Tamaño</TableHead>
+                        <TableHead>Fecha</TableHead>
+                        <TableHead>Propietario</TableHead>
+                        <TableHead className="text-right">Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {items.map((doc) => (
+                        <TableRow 
+                          key={doc.id} 
+                          className="cursor-pointer hover:bg-muted/20 border-border/40 transition-colors"
+                          onClick={() => {
+                            setSelectedDoc(doc);
+                            setDetailOpen(true);
+                          }}
+                        >
+                          <TableCell className="py-4">
+                            <div className="flex items-center gap-3">
+                              <span className="text-lg shrink-0">{getFileIcon(doc.mimeType)}</span>
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2">
+                                  <p className="text-sm font-medium truncate max-w-[200px]">{doc.name}</p>
+                                  {doc.isSensitive && <Lock className="w-3 h-3 text-rose-400" title="Contenido Sensible" />}
+                                </div>
+                                <p className="text-[10px] text-muted-foreground truncate max-w-[200px] font-mono">{doc.originalName}</p>
+                              </div>
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            {doc.category ? (
+                              <Badge variant="outline" className="text-[10px] border-indigo-500/20 text-indigo-300 bg-indigo-500/5">
+                                {doc.category.name}
+                              </Badge>
+                            ) : (
+                              <span className="text-[10px] text-muted-foreground/40 italic">Sin categoría</span>
+                            )}
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-1.5">
+                              <Badge variant="outline" className={`${SCOPE_BADGE_CLASSES[doc.scope]} text-[10px] px-2`}>
+                                {getScopeLabel(doc.scope)}
+                              </Badge>
+                              {doc.jefaOnly && (
+                                <ShieldCheck className="w-3.5 h-3.5 text-indigo-400" title="Jefa Only" />
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground tabular-nums">
+                            {formatFileSize(doc.fileSize)}
+                          </TableCell>
+                          <TableCell className="text-xs text-muted-foreground whitespace-nowrap tabular-nums">
+                            {new Date(doc.createdAt).toLocaleDateString()}
+                          </TableCell>
+                          <TableCell className="text-xs font-medium truncate max-w-[120px]">
+                            {doc.owner?.name ?? "—"}
+                          </TableCell>
+                          <TableCell className="text-right" onClick={(e) => e.stopPropagation()}>
+                            <div className="flex items-center justify-end gap-1">
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-lg"
+                                onClick={() => handleDownload(doc.id)}
+                              >
+                                <Download className="h-4 w-4 text-muted-foreground hover:text-foreground" />
+                              </Button>
+                              {doc.ownerId === user?.id && (
+                                <>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-lg"
+                                    onClick={() => openShareModal(doc)}
+                                  >
+                                    <Share2 className="h-4 w-4 text-muted-foreground hover:text-indigo-400" />
+                                  </Button>
+                                  <Button 
+                                    variant="ghost" 
+                                    size="icon" 
+                                    className="h-8 w-8 rounded-lg hover:bg-rose-500/10"
+                                    onClick={() => handleDelete(doc.id)}
+                                    disabled={busy === doc.id}
+                                  >
+                                    <Trash2 className="h-4 w-4 text-rose-400/70 hover:text-rose-400" />
+                                  </Button>
+                                </>
+                              )}
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {total > pageSize && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-6 py-4 text-xs border-t border-border/40 bg-muted/10">
+                    <span className="text-muted-foreground">
+                      Página {page} de {totalPages} · {total} documentos
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page <= 1}
+                        onClick={() => setPage((p) => Math.max(1, p - 1))}
+                        className="h-8 rounded-lg"
+                      >
+                        Anterior
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        disabled={page * pageSize >= total}
+                        onClick={() => setPage((p) => p + 1)}
+                        className="h-8 rounded-lg"
+                      >
+                        Siguiente
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Modal de Detalle */}
       <Dialog open={detailOpen} onOpenChange={setDetailOpen}>
-        <DialogContent className="sm:max-w-lg rounded-2xl border-none shadow-2xl">
+        <DialogContent className="sm:max-w-lg rounded-2xl border-none shadow-2xl overflow-hidden">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <span className="text-2xl">{selectedDoc ? getFileIcon(selectedDoc.mimeType) : ""}</span>
@@ -514,53 +543,73 @@ export default function DocumentosPage() {
 
           {selectedDoc && (
             <div className="space-y-6 pt-2">
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-4 gap-x-2">
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-5 gap-x-2">
                 <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Tipo</p>
-                  <p className="text-sm font-medium">{getMimeLabel(selectedDoc.mimeType)}</p>
-                </div>
-                <div className="space-y-0.5">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Tamaño</p>
-                  <p className="text-sm font-medium tabular-nums">{formatFileSize(selectedDoc.fileSize)}</p>
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1">
+                    <Tag className="w-2.5 h-2.5" /> Categoría
+                  </p>
+                  <p className="text-xs font-semibold text-indigo-300">
+                    {selectedDoc.category?.name ?? "Sin categoría"}
+                  </p>
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Visibilidad</p>
-                  <Badge variant="outline" className={`${SCOPE_BADGE_CLASSES[selectedDoc.scope]} text-[10px] py-0`}>
+                  <Badge variant="outline" className={`${SCOPE_BADGE_CLASSES[selectedDoc.scope]} text-[9px] py-0`}>
                     {getScopeLabel(selectedDoc.scope)}
                   </Badge>
                 </div>
                 <div className="space-y-0.5">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Tamaño</p>
+                  <p className="text-xs font-medium tabular-nums">{formatFileSize(selectedDoc.fileSize)}</p>
+                </div>
+                <div className="space-y-0.5">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Fecha</p>
-                  <p className="text-sm font-medium tabular-nums">{new Date(selectedDoc.createdAt).toLocaleDateString()}</p>
+                  <p className="text-xs font-medium tabular-nums">{new Date(selectedDoc.createdAt).toLocaleDateString()}</p>
                 </div>
                 <div className="space-y-0.5">
                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Propietario</p>
-                  <p className="text-sm font-medium truncate">{selectedDoc.owner?.name ?? "—"}</p>
+                  <p className="text-xs font-medium truncate">{selectedDoc.owner?.name ?? "—"}</p>
                 </div>
-                {selectedDoc.jefaOnly && (
-                  <div className="space-y-0.5">
-                    <p className="text-[10px] uppercase tracking-wider text-indigo-400 font-bold">Seguridad</p>
-                    <div className="flex items-center gap-1 text-indigo-300 text-xs font-medium">
-                      <ShieldCheck className="w-3 h-3" />
-                      <span>Jefa Only</span>
-                    </div>
+                <div className="space-y-1">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold">Seguridad</p>
+                  <div className="flex flex-wrap gap-1">
+                    {selectedDoc.jefaOnly && (
+                      <Badge className="bg-indigo-500/10 text-indigo-400 border-none text-[8px] h-4">JEFA</Badge>
+                    )}
+                    {selectedDoc.isSensitive && (
+                      <Badge className="bg-rose-500/10 text-rose-400 border-none text-[8px] h-4">SENSIBLE</Badge>
+                    )}
+                    {!selectedDoc.jefaOnly && !selectedDoc.isSensitive && (
+                      <span className="text-xs text-muted-foreground/30">—</span>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
+
+              {selectedDoc.description && (
+                <div className="space-y-1.5 p-3 rounded-xl bg-muted/20 border border-border/20">
+                   <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold flex items-center gap-1">
+                    <Info className="w-2.5 h-2.5" /> Descripción
+                  </p>
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {selectedDoc.description}
+                  </p>
+                </div>
+              )}
 
               <div className="space-y-2 p-4 rounded-xl bg-muted/30 border border-border/40">
                 <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-bold mb-2">Compartido con</p>
                 <div className="flex flex-wrap gap-1.5">
                   {selectedDoc.sharedWith?.map((sw) => (
-                    <Badge key={sw.fiscalGroup.id} variant="secondary" className="text-[10px] border-emerald-500/10 bg-emerald-500/5 text-emerald-400">
-                      <Users className="w-2.5 h-2.5 mr-1" />
+                    <Badge key={sw.fiscalGroup.id} variant="secondary" className="text-[9px] border-emerald-500/10 bg-emerald-500/5 text-emerald-400 py-0">
+                      <Users className="w-2 h-2 mr-1" />
                       {sw.fiscalGroup.name}
                     </Badge>
                   ))}
                   {selectedDoc.accessRecords?.filter(r => r.principalType === "ADMIN_UNIT").map((r) => (
-                    <Badge key={r.id} variant="secondary" className="text-[10px] border-indigo-500/10 bg-indigo-500/5 text-indigo-400">
-                      <Building2 className="w-2.5 h-2.5 mr-1" />
-                      UA: {r.principalId.split('-')[0]}
+                    <Badge key={r.id} variant="secondary" className="text-[9px] border-indigo-500/10 bg-indigo-500/5 text-indigo-400 py-0">
+                      <Building2 className="w-2 h-2 mr-1" />
+                      Unidad Administrativa
                     </Badge>
                   ))}
                   {!selectedDoc.sharedWith?.length && !selectedDoc.accessRecords?.length && (
@@ -578,7 +627,7 @@ export default function DocumentosPage() {
                       <Button
                         variant="outline"
                         size="sm"
-                        className="rounded-lg text-xs"
+                        className="rounded-lg text-[10px] h-7"
                         onClick={() => handleChangeScope(selectedDoc.id, "PRIVATE")}
                         disabled={busy === `scope-${selectedDoc.id}`}
                       >
@@ -588,7 +637,7 @@ export default function DocumentosPage() {
                       <Button
                         variant="secondary"
                         size="sm"
-                        className="rounded-lg text-xs bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20"
+                        className="rounded-lg text-[10px] h-7 bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20"
                         onClick={() => {
                           setDetailOpen(false);
                           openShareModal(selectedDoc);
@@ -607,7 +656,7 @@ export default function DocumentosPage() {
           <DialogFooter className="gap-2 sm:justify-between border-t border-border/40 pt-4 mt-2">
             <Button
               variant="default"
-              className="rounded-xl flex-1 sm:flex-none"
+              className="rounded-xl flex-1 sm:flex-none shadow-lg shadow-indigo-500/20"
               onClick={() => selectedDoc && handleDownload(selectedDoc.id)}
             >
               <Download className="w-4 h-4 mr-2" />
@@ -632,8 +681,8 @@ export default function DocumentosPage() {
       <Dialog open={shareOpen} onOpenChange={setShareOpen}>
         <DialogContent className="sm:max-w-xl rounded-2xl border-none shadow-2xl">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Share2 className="w-5 h-5 text-indigo-400" />
+            <DialogTitle className="flex items-center gap-2 text-indigo-400">
+              <Share2 className="w-5 h-5" />
               Compartir documento
             </DialogTitle>
             <DialogDescription>
@@ -646,7 +695,7 @@ export default function DocumentosPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-emerald-400">
                 <Users className="w-4 h-4" />
-                <h4 className="text-xs font-bold uppercase tracking-wider">Coordinaciones</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider">Coordinaciones</h4>
               </div>
               
               <div className="space-y-1.5 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
@@ -681,7 +730,7 @@ export default function DocumentosPage() {
             <div className="space-y-3">
               <div className="flex items-center gap-2 text-indigo-400">
                 <Building2 className="w-4 h-4" />
-                <h4 className="text-xs font-bold uppercase tracking-wider">U. Administrativas</h4>
+                <h4 className="text-[10px] font-bold uppercase tracking-wider">U. Administrativas</h4>
               </div>
               
               <div className="space-y-1.5 max-h-60 overflow-y-auto pr-2 custom-scrollbar">
@@ -714,11 +763,11 @@ export default function DocumentosPage() {
           </div>
 
           <DialogFooter className="gap-2 border-t border-border/40 pt-4">
-            <Button variant="ghost" onClick={() => setShareOpen(false)} disabled={busy !== null} className="rounded-xl">
+            <Button variant="ghost" onClick={() => setShareOpen(false)} disabled={busy !== null} className="rounded-xl px-6">
               Cancelar
             </Button>
             <Button
-              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 min-w-[100px]"
+              className="rounded-xl bg-indigo-600 hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 min-w-[120px]"
               onClick={handleSaveShare}
               disabled={busy !== null}
             >
