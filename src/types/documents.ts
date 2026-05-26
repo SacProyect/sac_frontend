@@ -31,7 +31,7 @@ export interface DocumentItem {
   createdAt: string;
   updatedAt: string;
   owner?: UserInfo | null;
-  uploadedBy?: UserInfo | null;
+  uploadedBy?: UserInfo | null; accessRecords?: DocumentAccessItem[];
   sharedWith?: SharedWithInfo[];
 }
 
@@ -57,3 +57,5 @@ export interface FiscalGroupListResponse {
   success: boolean;
   data: FiscalGroupInfo[];
 }
+`nexport interface AdminUnitInfo {`n  id: string;`n  name: string;`n}`n`nexport interface AdminUnitListResponse {`n  success: boolean;`n  data: AdminUnitInfo[];`n}
+`nexport interface DocumentAccessItem {`n  id: string;`n  principalType: \"USER\" | \"FISCAL_GROUP\" | \"ROLE\" | \"ADMIN_UNIT\";`n  principalId: string;`n  permission: \"VIEW\" | \"MANAGE\";`n  createdAt: string;`n  expiresAt: string | null;`n}

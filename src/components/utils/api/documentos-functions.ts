@@ -1,5 +1,6 @@
 import { apiConnection } from "./api-connection";
 import type {
+  AdminUnitListResponse,
   DocumentItem,
   DocumentScope,
   DocumentTab,
@@ -40,11 +41,14 @@ export async function uploadDocument(
   name: string,
   scope: DocumentScope,
   fiscalGroupIds?: string[],
+  jefaOnly?: boolean,
 ): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
   formData.append("scope", scope);
+  if (jefaOnly) formData.append("jefaOnly", "true");
+  
   if (fiscalGroupIds?.length) {
     fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
   }
@@ -90,6 +94,33 @@ export async function listFiscalGroups(): Promise<FiscalGroupListResponse> {
   return response.data;
 }
 
+export async function listAdminUnits(): Promise<AdminUnitListResponse> {
+  const response = await apiConnection.get("/admin-units");
+  return response.data;
+}
+
+export async function shareDocumentWithPrincipal(
+  id: string,
+  data: { 
+    principalType: string; 
+    principalId: string; 
+    permission?: string; 
+    expiresAt?: string 
+  }
+): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.post(`${BASE}/${id}/share/principal`, data);
+  return response.data;
+}
+
+export async function revokeDocumentAccess(
+  id: string, 
+  type: string, 
+  principalId: string
+): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.delete(`${BASE}/${id}/share/principal/${type}/${principalId}`);
+  return response.data;
+}
+
 // Helper para formatear tamaño de archivo
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -115,5 +146,5 @@ export function getFileIcon(mimeType: string): string {
   if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "📊";
   if (mimeType.includes("image")) return "🖼️";
   if (mimeType.includes("text")) return "📃";
-  return "📁";
+  return "📄";
 }
