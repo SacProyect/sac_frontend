@@ -42,7 +42,7 @@ export default function DocumentosPage() {
 	const navigate = useNavigate();
 	const { user } = useAuth();
 	const [searchParams, setSearchParams] = useSearchParams();
-	const tabParam = (searchParams.get("tab") as DocumentTab) || "mine";
+	const tabParam = (searchParams.get("tab") as DocumentTab) || "shared";
 
 	const role = user?.role ?? "";
 

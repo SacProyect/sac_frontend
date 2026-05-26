@@ -5,7 +5,7 @@ import { AdminOnly } from '@/components/Navigation/admin-only';
  * Permite el render solo a usuarios ADMIN o COORDINATOR.
  * Redirige al dashboard si no tiene permiso.
  */
-const AdminOrCoordinatorOnly = ({ children }: { children: React.ReactNode }) => {
+const AdminOrCoordinatorOnly = ({ children }: { children: ReactNode }) => {
 	const { user } = useAuth();
 	if (!user) return <Navigate to="/login" replace />;
 	if (user.role !== "ADMIN" && user.role !== "COORDINATOR") return <Navigate to="/" replace />;
@@ -19,7 +19,7 @@ import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory, getTa
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayoutV2 from '@/main-layout-v2';
-import { lazy, Suspense, type ComponentType } from 'react';
+import { lazy, Suspense, type ComponentType, type ReactNode } from 'react';
 import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";

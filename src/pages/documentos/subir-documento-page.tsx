@@ -62,6 +62,7 @@ export default function SubirDocumentoPage() {
 	const [dragOver, setDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
 
+<<<<<<< Updated upstream
 	// Estado para coordinaciones
 	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
 	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
@@ -78,6 +79,9 @@ export default function SubirDocumentoPage() {
 		}
 		// COORDINATOR: listFiscalGroups devuelve solo su grupo
 	}, [role]);
+=======
+	const [sendToJefa, setSendToJefa] = useState(true);
+>>>>>>> Stashed changes
 
 	const handleFileChange = (selectedFile: File | null) => {
 		if (!selectedFile) return;
