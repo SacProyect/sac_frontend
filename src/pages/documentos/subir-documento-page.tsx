@@ -236,9 +236,10 @@ export default function SubirDocumentoPage() {
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="private" disabled>Próximamente</SelectItem>
+										<div className="px-3 py-2 text-sm text-muted-foreground cursor-not-allowed">Próximamente</div>
 										<SelectItem value="jefa">Administración</SelectItem>
 									</SelectContent>
+
 								</Select>
 								<p className="text-xs text-muted-foreground">
 									{sendToJefa
