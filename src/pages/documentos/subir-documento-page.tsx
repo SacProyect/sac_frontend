@@ -13,9 +13,13 @@ import { ArrowLeft, Upload, FileText } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SCOPE_OPTIONS: { value: DocumentScope; label: string; description: string }[] = [
-	{ value: "PRIVATE", label: "Privado", description: "Solo visible para ti" },
-	{ value: "SHARED", label: "Compartido", description: "Visible para administradores (y coordinaciones si se comparte después)" },
+	{ value: "PRIVATE", label: "Próximamente", description: "Disponible pronto" },
+	{ value: "SHARED", label: "Compartido", description: "Visible para administradores" },
 ];
+
+// Default to SHARED
+
+const DEFAULT_SCOPE: DocumentScope = "SHARED";
 
 const ALLOWED_MIME_TYPES = [
 	"application/pdf",
@@ -57,7 +61,7 @@ export default function SubirDocumentoPage() {
 
 	const [file, setFile] = useState<File | null>(null);
 	const [name, setName] = useState("");
-	const [scope, setScope] = useState<DocumentScope>("PRIVATE");
+	const [scope, setScope] = useState<DocumentScope>(DEFAULT_SCOPE);
 	const [uploading, setUploading] = useState(false);
 	const [dragOver, setDragOver] = useState(false);
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -208,11 +212,11 @@ export default function SubirDocumentoPage() {
 											<SelectValue />
 										</SelectTrigger>
 										<SelectContent>
-											{SCOPE_OPTIONS.map((opt) => (
-												<SelectItem key={opt.value} value={opt.value}>
-													{opt.label} — {opt.description}
-												</SelectItem>
-											))}
+{SCOPE_OPTIONS.map((opt) => (
+										<SelectItem key={opt.value} value={opt.value} disabled={opt.value === "PRIVATE"}>
+											{opt.label} — {opt.description}
+										</SelectItem>
+									))}
 										</SelectContent>
 									</Select>
 								</div>
@@ -232,14 +236,14 @@ export default function SubirDocumentoPage() {
 										<SelectValue />
 									</SelectTrigger>
 									<SelectContent>
-										<SelectItem value="private">Solo yo (Privado)</SelectItem>
-										<SelectItem value="jefa">Jefe de division y administracion</SelectItem>
+										<SelectItem value="private" disabled>Próximamente</SelectItem>
+										<SelectItem value="jefa">Administración</SelectItem>
 									</SelectContent>
 								</Select>
 								<p className="text-xs text-muted-foreground">
 									{sendToJefa
-										? "Se compartira con el jefe de division"
-										: "Solo visible para ti (scope PRIVATE)"}
+										? "Se compartira con Gestion administrativa"
+										: "Solo visible para ti (próximamente)"}
 								</p>
 							</div>
 						)}
