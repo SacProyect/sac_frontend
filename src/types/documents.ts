@@ -23,7 +23,7 @@ export interface DocumentItem {
   id: string;
   name: string;
   originalName: string;
-  mimeType: string;
+  mimeType: string; description?: string; categoryId?: string; isSensitive?: boolean; category?: DocumentCategoryInfo;
   fileSize: number;
   scope: DocumentScope;
   ownerId: string;
@@ -59,3 +59,4 @@ export interface FiscalGroupListResponse {
 }
 `nexport interface AdminUnitInfo {`n  id: string;`n  name: string;`n}`n`nexport interface AdminUnitListResponse {`n  success: boolean;`n  data: AdminUnitInfo[];`n}
 `nexport interface DocumentAccessItem {`n  id: string;`n  principalType: \"USER\" | \"FISCAL_GROUP\" | \"ROLE\" | \"ADMIN_UNIT\";`n  principalId: string;`n  permission: \"VIEW\" | \"MANAGE\";`n  createdAt: string;`n  expiresAt: string | null;`n}
+`nexport interface DocumentCategoryInfo {`n  id: string;`n  name: string;`n  slug: string;`n}`n`nexport interface DocumentCategoryListResponse {`n  success: boolean;`n  data: DocumentCategoryInfo[];`n}

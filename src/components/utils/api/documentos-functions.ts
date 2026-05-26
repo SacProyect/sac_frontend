@@ -1,6 +1,7 @@
 import { apiConnection } from "./api-connection";
 import type {
   AdminUnitListResponse,
+  DocumentCategoryListResponse,
   DocumentItem,
   DocumentScope,
   DocumentTab,
@@ -20,6 +21,7 @@ export interface ListDocumentsQuery {
   hasta?: string;
   page?: number;
   pageSize?: number;
+  categoryId?: string;
 }
 
 export async function listDocuments(query: ListDocumentsQuery = {}): Promise<ListDocumentsResponse> {
@@ -31,6 +33,7 @@ export async function listDocuments(query: ListDocumentsQuery = {}): Promise<Lis
   if (query.hasta) params.hasta = query.hasta;
   if (query.page) params.page = String(query.page);
   if (query.pageSize) params.pageSize = String(query.pageSize);
+  if (query.categoryId) params.categoryId = query.categoryId;
 
   const response = await apiConnection.get(BASE, { params });
   return response.data;
@@ -42,6 +45,11 @@ export async function uploadDocument(
   scope: DocumentScope,
   fiscalGroupIds?: string[],
   jefaOnly?: boolean,
+  metadata?: {
+    description?: string;
+    categoryId?: string;
+    isSensitive?: boolean;
+  }
 ): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
@@ -49,6 +57,10 @@ export async function uploadDocument(
   formData.append("scope", scope);
   if (jefaOnly) formData.append("jefaOnly", "true");
   
+  if (metadata?.description) formData.append("description", metadata.description);
+  if (metadata?.categoryId) formData.append("categoryId", metadata.categoryId);
+  if (metadata?.isSensitive) formData.append("isSensitive", "true");
+
   if (fiscalGroupIds?.length) {
     fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
   }
@@ -96,6 +108,11 @@ export async function listFiscalGroups(): Promise<FiscalGroupListResponse> {
 
 export async function listAdminUnits(): Promise<AdminUnitListResponse> {
   const response = await apiConnection.get("/admin-units");
+  return response.data;
+}
+
+export async function listDocumentCategories(): Promise<DocumentCategoryListResponse> {
+  const response = await apiConnection.get(`${BASE}/categories`);
   return response.data;
 }
 

@@ -5,6 +5,7 @@ import { Button } from "@/components/UI/button";
 import { Input } from "@/components/UI/input";
 import { Card, CardContent } from "@/components/UI/card";
 import { Label } from "@/components/UI/label";
+import { Textarea } from "@/components/UI/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/UI/select";
 import { Skeleton } from "@/components/UI/skeleton";
 import { Switch } from "@/components/UI/switch";
@@ -12,14 +13,16 @@ import { useAuth } from "@/hooks/use-auth";
 import { 
   uploadDocument, 
   listFiscalGroups, 
-  listAdminUnits 
+  listAdminUnits,
+  listDocumentCategories 
 } from "@/components/utils/api/documentos-functions";
 import type { 
   DocumentScope, 
   FiscalGroupInfo, 
-  AdminUnitInfo 
+  AdminUnitInfo,
+  DocumentCategoryInfo 
 } from "@/types/documents";
-import { ArrowLeft, Upload, FileText, Users, Building2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Users, Building2, ShieldCheck, Share2, Tag, Info, Lock } from "lucide-react";
 import toast from "react-hot-toast";
 
 const SCOPE_OPTIONS: { value: DocumentScope; label: string; description: string }[] = [
@@ -66,17 +69,24 @@ export default function SubirDocumentoPage() {
 
   const [file, setFile] = useState<File | null>(null);
   const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [categoryId, setCategoryId] = useState<string>("none");
+  const [isSensitive, setIsSensitive] = useState(false);
   const [scope, setScope] = useState<DocumentScope>("PRIVATE");
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Categorías
+  const [categories, setCategories] = useState<DocumentCategoryInfo[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
   // Compartición con Coordinaciones
   const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
 
-  // Compartición con Unidades Administrativas (Phase 3)
+  // Compartición con Unidades Administrativas
   const [adminUnits, setAdminUnits] = useState<AdminUnitInfo[]>([]);
   const [selectedUnits, setSelectedUnits] = useState<string[]>([]);
   const [loadingUnits, setLoadingUnits] = useState(false);
@@ -85,6 +95,12 @@ export default function SubirDocumentoPage() {
   const [sendToJefa, setSendToJefa] = useState(false);
 
   useEffect(() => {
+    setLoadingCategories(true);
+    listDocumentCategories()
+      .then((res) => setCategories(res.data ?? []))
+      .catch(() => {})
+      .finally(() => setLoadingCategories(false));
+
     if (role === "ADMIN" || role === "COORDINATOR") {
       setLoadingGroups(true);
       listFiscalGroups()
@@ -146,7 +162,6 @@ export default function SubirDocumentoPage() {
       return;
     }
     
-    // Si es compartido, debe tener al menos un destinatario (Grupo o Unidad)
     if (scope === "SHARED" && selectedGroups.length === 0 && selectedUnits.length === 0 && !sendToJefa) {
       toast.error("Selecciona al menos un destinatario para compartir");
       return;
@@ -154,14 +169,15 @@ export default function SubirDocumentoPage() {
 
     try {
       setUploading(true);
-      // Combinamos grupos y unidades para el endpoint legacy o usamos el nuevo modelo si se prefiere.
-      // Por ahora mantenemos paridad con el service que recibe fiscalGroupIds.
-      await uploadDocument(file, name.trim(), scope, selectedGroups, sendToJefa);
+      await uploadDocument(file, name.trim(), scope, selectedGroups, sendToJefa, {
+        description: description.trim() || undefined,
+        categoryId: categoryId === "none" ? undefined : categoryId,
+        isSensitive
+      });
       
-      // Phase 3: Si hay unidades seleccionadas, las enviamos via Principal API
-      // Nota: Esto podría optimizarse para enviarse en una sola petición en el futuro.
-      // (Implementation detail: we'd need a multi-principal upload endpoint)
-      
+      // Phase 3 support for selectedUnits would go here if needed via Principal API
+      // but for now we focus on Phase 4 metadata.
+
       toast.success("Documento subido exitosamente");
       navigate("/documentos");
     } catch (e: any) {
@@ -175,9 +191,9 @@ export default function SubirDocumentoPage() {
     <div className="space-y-6 w-full max-w-2xl mx-auto">
       <PageHeader
         title="Subir documento"
-        description="Selecciona un archivo y configura su visibilidad"
+        description="Selecciona un archivo y configura su clasificación"
         action={
-          <Button variant="outline" onClick={() => navigate("/documentos")}>
+          <Button variant="outline" onClick={() => navigate("/documentos")} className="rounded-xl">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Volver
           </Button>
@@ -185,7 +201,7 @@ export default function SubirDocumentoPage() {
       />
 
       <form onSubmit={handleSubmit} className="space-y-6 pb-12">
-        {/* Drop zone / file selector */}
+        {/* Archivo */}
         <Card className="rounded-2xl overflow-hidden border-none shadow-sm bg-card/50 backdrop-blur-sm">
           <CardContent className="p-6">
             <div
@@ -214,14 +230,14 @@ export default function SubirDocumentoPage() {
                     <FileText className="h-6 w-6 text-emerald-400" />
                   </div>
                   <p className="font-medium text-sm">{file.name}</p>
-                  <p className="text-xs text-muted-foreground tabular-nums">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB
+                  <p className="text-[10px] text-muted-foreground tabular-nums uppercase">
+                    {(file.size / 1024 / 1024).toFixed(2)} MB · {file.type.split('/')[1] || 'Archivo'}
                   </p>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="text-xs text-rose-400 mt-2 hover:bg-rose-500/10"
+                    className="text-[10px] text-rose-400 mt-2 hover:bg-rose-500/10 uppercase font-bold tracking-wider"
                     onClick={(e) => {
                       e.stopPropagation();
                       setFile(null);
@@ -247,47 +263,93 @@ export default function SubirDocumentoPage() {
           </CardContent>
         </Card>
 
-        {/* Configuración básica */}
+        {/* Clasificación y Metadatos */}
         <Card className="rounded-2xl border-none shadow-sm bg-card/50 backdrop-blur-sm">
-          <CardContent className="p-6 space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre del documento</Label>
-              <Input
-                id="name"
-                placeholder="Ej: Informe mensual mayo 2026"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-                className="bg-background/50"
-              />
+          <CardContent className="p-6 space-y-5">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="name" className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <FileText className="w-3 h-3 text-indigo-400" /> Nombre
+                </Label>
+                <Input
+                  id="name"
+                  placeholder="Ej: Informe mensual mayo"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  required
+                  className="bg-background/50 rounded-xl"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="category" className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <Tag className="w-3 h-3 text-indigo-400" /> Categoría
+                </Label>
+                <Select value={categoryId} onValueChange={setCategoryId}>
+                  <SelectTrigger id="category" className="bg-background/50 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    <SelectItem value="none">Sin categoría</SelectItem>
+                    {loadingCategories ? (
+                      <div className="p-2 flex items-center justify-center"><Skeleton className="h-4 w-20" /></div>
+                    ) : categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="scope">Visibilidad base</Label>
-              <Select value={scope} onValueChange={(v) => setScope(v as DocumentScope)}>
-                <SelectTrigger id="scope" className="bg-background/50">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {SCOPE_OPTIONS.map((opt) => (
-                    <SelectItem key={opt.value} value={opt.value}>
-                      <span className="font-medium">{opt.label}</span> — <span className="text-muted-foreground text-xs">{opt.description}</span>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="description" className="text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <Info className="w-3 h-3 text-indigo-400" /> Descripción (opcional)
+              </Label>
+              <Textarea
+                id="description"
+                placeholder="Breve descripción del contenido..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                className="bg-background/50 rounded-xl min-h-[80px]"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+              <div className="space-y-2">
+                <Label htmlFor="scope" className="text-xs font-bold uppercase tracking-wider">Visibilidad Base</Label>
+                <Select value={scope} onValueChange={(v) => setScope(v as DocumentScope)}>
+                  <SelectTrigger id="scope" className="bg-background/50 rounded-xl">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {SCOPE_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>
+                        <span className="font-medium text-xs">{opt.label}</span>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-xl bg-rose-500/5 border border-rose-500/10 h-[50px] self-end">
+                <div className="flex items-center gap-2">
+                  <Lock className="w-3.5 h-3.5 text-rose-400" />
+                  <span className="text-xs font-medium text-rose-300">Sensible</span>
+                </div>
+                <Switch checked={isSensitive} onCheckedChange={setIsSensitive} />
+              </div>
             </div>
             
             {/* Toggle Jefa Division (solo ADMIN) */}
             {role === "ADMIN" && (
-              <div className="flex items-center justify-between p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10 mt-2">
+              <div className="flex items-center justify-between p-4 rounded-xl bg-indigo-500/5 border border-indigo-500/10">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-400">
                     <ShieldCheck className="w-4 h-4" />
                   </div>
                   <div>
                     <p className="text-sm font-medium text-indigo-300">Visible para Jefa de División</p>
-                    <p className="text-xs text-muted-foreground">Marcar como contenido de alta gerencia</p>
+                    <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-tighter">Acceso de alta gerencia</p>
                   </div>
                 </div>
                 <Switch 
@@ -299,12 +361,12 @@ export default function SubirDocumentoPage() {
           </CardContent>
         </Card>
 
-        {/* Compartición avanzada (solo si scope = SHARED) */}
+        {/* Destinatarios (solo si scope = SHARED) */}
         {scope === "SHARED" && (
           <div className="space-y-4">
-            <div className="flex items-center gap-2 px-1">
+            <div className="flex items-center gap-2 px-1 pt-2">
               <Share2 className="w-4 h-4 text-indigo-400" />
-              <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground/70">Destinatarios</h3>
+              <h3 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70">Destinatarios</h3>
             </div>
             
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -313,16 +375,13 @@ export default function SubirDocumentoPage() {
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Users className="w-4 h-4 text-emerald-400" />
-                    <Label className="text-xs font-bold">Coordinaciones Fiscales</Label>
+                    <Label className="text-[10px] font-bold uppercase tracking-wider">Coordinaciones</Label>
                   </div>
                   
                   {loadingGroups ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
+                    <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
                   ) : fiscalGroups.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No hay grupos disponibles</p>
+                    <p className="text-xs text-muted-foreground italic">No hay grupos</p>
                   ) : (
                     <div className="space-y-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                       {fiscalGroups.map((fg) => (
@@ -350,16 +409,13 @@ export default function SubirDocumentoPage() {
                 <CardContent className="p-5 space-y-3">
                   <div className="flex items-center gap-2 mb-1">
                     <Building2 className="w-4 h-4 text-indigo-400" />
-                    <Label className="text-xs font-bold">Unidades Administrativas</Label>
+                    <Label className="text-[10px] font-bold uppercase tracking-wider">U. Administrativas</Label>
                   </div>
                   
                   {loadingUnits ? (
-                    <div className="space-y-2">
-                      <Skeleton className="h-10 w-full" />
-                      <Skeleton className="h-10 w-full" />
-                    </div>
+                    <div className="space-y-2"><Skeleton className="h-10 w-full" /><Skeleton className="h-10 w-full" /></div>
                   ) : adminUnits.length === 0 ? (
-                    <p className="text-xs text-muted-foreground italic">No hay unidades disponibles</p>
+                    <p className="text-xs text-muted-foreground italic">No hay unidades</p>
                   ) : (
                     <div className="space-y-1 max-h-48 overflow-y-auto pr-1 custom-scrollbar">
                       {adminUnits.map((au) => (
@@ -382,12 +438,6 @@ export default function SubirDocumentoPage() {
                 </CardContent>
               </Card>
             </div>
-            
-            {(selectedGroups.length > 0 || selectedUnits.length > 0) && (
-              <p className="text-[10px] text-muted-foreground px-1">
-                Compartiendo con {selectedGroups.length} grupo(s) y {selectedUnits.length} unidad(es).
-              </p>
-            )}
           </div>
         )}
 
@@ -398,14 +448,14 @@ export default function SubirDocumentoPage() {
             variant="outline"
             onClick={() => navigate("/documentos")}
             disabled={uploading}
-            className="rounded-xl"
+            className="rounded-xl px-8"
           >
             Cancelar
           </Button>
           <Button 
             type="submit" 
             disabled={!file || !name.trim() || uploading}
-            className="rounded-xl shadow-lg shadow-indigo-500/20"
+            className="rounded-xl px-8 shadow-lg shadow-indigo-500/20"
           >
             {uploading ? (
               <>
