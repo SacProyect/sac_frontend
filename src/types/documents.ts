@@ -57,6 +57,31 @@ export interface FiscalGroupListResponse {
   success: boolean;
   data: FiscalGroupInfo[];
 }
-`nexport interface AdminUnitInfo {`n  id: string;`n  name: string;`n}`n`nexport interface AdminUnitListResponse {`n  success: boolean;`n  data: AdminUnitInfo[];`n}
-`nexport interface DocumentAccessItem {`n  id: string;`n  principalType: \"USER\" | \"FISCAL_GROUP\" | \"ROLE\" | \"ADMIN_UNIT\";`n  principalId: string;`n  permission: \"VIEW\" | \"MANAGE\";`n  createdAt: string;`n  expiresAt: string | null;`n}
-`nexport interface DocumentCategoryInfo {`n  id: string;`n  name: string;`n  slug: string;`n}`n`nexport interface DocumentCategoryListResponse {`n  success: boolean;`n  data: DocumentCategoryInfo[];`n}
+export interface AdminUnitInfo {
+  id: string;
+     name: string;
+   }
+  
+export interface AdminUnitListResponse {
+     success: boolean;
+     data: AdminUnitInfo[];
+   }
+ 
+export interface DocumentAccessItem {
+    id: string;
+    principalType: "USER" | "FISCAL_GROUP" | "ROLE" | "ADMIN_UNIT";
+    principalId: string;
+    permission: "VIEW" | "MANAGE";
+    createdAt: string;
+    expiresAt: string | null;
+  }
+export interface DocumentCategoryInfo {
+    id: string;
+    name: string;
+    slug: string;
+  }
+ 
+export interface DocumentCategoryListResponse {
+    success: boolean;
+    data: DocumentCategoryInfo[];
+}

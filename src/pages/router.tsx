@@ -15,7 +15,7 @@ const AdminOrCoordinatorOnly = ({ children }: { children: ReactNode }) => {
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout, useAuth } from '@/hooks/use-auth';
-import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory, getTaxpayerDashboard } from '@/components/utils/api/report-functions';
+import { getFineHistory, getIslrReports, getPaymentHistory, getTaxHistory, getTaxpayerDashboard, TaxpayerDashboardResponse } from '@/components/utils/api/report-functions';
 import { Event } from '@/types/event';
 import { Payment } from '@/types/payment';
 import MainLayoutV2 from '@/main-layout-v2';
@@ -127,7 +127,7 @@ const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion
 const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
 const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
 const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
-
+const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmin"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -448,6 +448,16 @@ export const router = createBrowserRouter([
                         }>
                             <ContributionsPageV2 />
                         </Suspense>,
+                    },
+                    {
+                    path: "admin-anuncios",
+                        element: (
+                            <AdminOnly>
+                            <Suspense fallback={<GlobalLoader message="Cargando Anuncios..." />}>
+                                <AnnouncementsAdmin />
+                            </Suspense>
+                        </AdminOnly>
+                        ),
                     },
                     {
                         path: "iva",

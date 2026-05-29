@@ -16,6 +16,7 @@ import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
 import { useDemoMode } from '@/hooks/use-demo-mode';
 import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
 import DevFiscalGroupSwitcher from "@/components/dev/debug-fiscal-group-switcher";
+import { AnnouncementQueue } from "@/components/announcements/AnnouncementQueue";
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -303,7 +304,8 @@ const MainLayoutV2 = () => {
     const isPageLoading = navigation.state === 'loading';
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background text-foreground">
+        <div className="flex h-screen overflow-hidden bg-background text-foreground">          
+        <AnnouncementQueue />
             <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
                 {isPageLoading && <GlobalLoader />}
                 {!isDemoModeActive && <Header />}
@@ -323,4 +325,5 @@ const MainLayoutV2 = () => {
 };
 
 export default MainLayoutV2;
+
 

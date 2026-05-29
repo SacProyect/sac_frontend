@@ -36,7 +36,11 @@ export const internalAuditNavItem: NavItem = {
 };
 
 export const visitsRoute: NavItem = { href: '/visits-monitor', label: 'Visitas', icon: <ScanEye className="w-4 h-4" /> };
-
+export const announcementsNavItem: NavItem = {
+    href: "/admin-anuncios",
+    label: "Anuncios",
+    icon: <Megaphone className="w-4 h-4" />,
+};
 export const sharedRoutes: NavItem[] = [
     { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
     { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },
@@ -44,6 +48,7 @@ export const sharedRoutes: NavItem[] = [
     { href: '/gen-reports', label: 'Reportes', icon: <FileBarChart className="w-4 h-4" /> },
     { href: '/stats', label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },
     { href: '/notifications', label: 'Notificaciones', icon: <Bell className="w-4 h-4" /> },
+    announcementsNavItem,
 ];
 
 export const documentosNavItem: NavItem = {
@@ -104,3 +109,4 @@ export const RESTRICTED_ROUTES: ReadonlySet<string> = new Set([
     '/fine', '/iva', '/islr', '/census',
     '/show-census', '/taxpayer', '/index-iva', '/warning',
 ]);
+
