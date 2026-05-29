@@ -23,7 +23,7 @@ export interface DocumentItem {
   id: string;
   name: string;
   originalName: string;
-  mimeType: string;
+  mimeType: string; description?: string; categoryId?: string; isSensitive?: boolean; category?: DocumentCategoryInfo;
   fileSize: number;
   scope: DocumentScope;
   ownerId: string;
@@ -32,7 +32,7 @@ export interface DocumentItem {
   updatedAt: string;
   jefaOnly?: boolean;
   owner?: UserInfo | null;
-  uploadedBy?: UserInfo | null;
+  uploadedBy?: UserInfo | null; accessRecords?: DocumentAccessItem[];
   sharedWith?: SharedWithInfo[];
 }
 
@@ -57,4 +57,32 @@ export interface DownloadResponse {
 export interface FiscalGroupListResponse {
   success: boolean;
   data: FiscalGroupInfo[];
+}
+export interface AdminUnitInfo {
+  id: string;
+     name: string;
+   }
+  
+export interface AdminUnitListResponse {
+     success: boolean;
+     data: AdminUnitInfo[];
+   }
+ 
+export interface DocumentAccessItem {
+    id: string;
+    principalType: "USER" | "FISCAL_GROUP" | "ROLE" | "ADMIN_UNIT";
+    principalId: string;
+    permission: "VIEW" | "MANAGE";
+    createdAt: string;
+    expiresAt: string | null;
+  }
+export interface DocumentCategoryInfo {
+    id: string;
+    name: string;
+    slug: string;
+  }
+ 
+export interface DocumentCategoryListResponse {
+    success: boolean;
+    data: DocumentCategoryInfo[];
 }

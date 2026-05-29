@@ -1,5 +1,7 @@
 import { apiConnection } from "./api-connection";
 import type {
+  AdminUnitListResponse,
+  DocumentCategoryListResponse,
   DocumentItem,
   DocumentScope,
   DocumentTab,
@@ -19,6 +21,7 @@ export interface ListDocumentsQuery {
   hasta?: string;
   page?: number;
   pageSize?: number;
+  categoryId?: string;
 }
 
 export async function listDocuments(query: ListDocumentsQuery = {}): Promise<ListDocumentsResponse> {
@@ -30,6 +33,7 @@ export async function listDocuments(query: ListDocumentsQuery = {}): Promise<Lis
   if (query.hasta) params.hasta = query.hasta;
   if (query.page) params.page = String(query.page);
   if (query.pageSize) params.pageSize = String(query.pageSize);
+  if (query.categoryId) params.categoryId = query.categoryId;
 
   const response = await apiConnection.get(BASE, { params });
   return response.data;
@@ -41,16 +45,30 @@ export async function uploadDocument(
   scope: DocumentScope,
   fiscalGroupIds?: string[],
   jefaOnly?: boolean,
+  metadata?: {
+    description?: string;
+    categoryId?: string;
+    isSensitive?: boolean;
+  },
 ): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
   formData.append("scope", scope);
+  if (fiscalGroupIds?.length) {
+    fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
+  }
   if (jefaOnly) {
     formData.append("jefaOnly", "true");
   }
-  if (fiscalGroupIds?.length) {
-    fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
+  if (metadata?.description) {
+    formData.append("description", metadata.description);
+  }
+  if (metadata?.categoryId) {
+    formData.append("categoryId", metadata.categoryId);
+  }
+  if (metadata?.isSensitive !== undefined) {
+    formData.append("isSensitive", String(metadata.isSensitive));
   }
 
   const response = await apiConnection.post(BASE, formData, {
@@ -94,6 +112,38 @@ export async function listFiscalGroups(): Promise<FiscalGroupListResponse> {
   return response.data;
 }
 
+export async function listAdminUnits(): Promise<AdminUnitListResponse> {
+  const response = await apiConnection.get("/admin-units");
+  return response.data;
+}
+
+export async function listDocumentCategories(): Promise<DocumentCategoryListResponse> {
+  const response = await apiConnection.get(`${BASE}/categories`);
+  return response.data;
+}
+
+export async function shareDocumentWithPrincipal(
+  id: string,
+  data: { 
+    principalType: string; 
+    principalId: string; 
+    permission?: string; 
+    expiresAt?: string 
+  }
+): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.post(`${BASE}/${id}/share/principal`, data);
+  return response.data;
+}
+
+export async function revokeDocumentAccess(
+  id: string, 
+  type: string, 
+  principalId: string
+): Promise<{ success: boolean; data: DocumentItem }> {
+  const response = await apiConnection.delete(`${BASE}/${id}/share/principal/${type}/${principalId}`);
+  return response.data;
+}
+
 // Helper para formatear tamaño de archivo
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return "0 B";
@@ -119,5 +169,5 @@ export function getFileIcon(mimeType: string): string {
   if (mimeType.includes("excel") || mimeType.includes("spreadsheet")) return "📊";
   if (mimeType.includes("image")) return "🖼️";
   if (mimeType.includes("text")) return "📃";
-  return "📁";
+  return "📄";
 }
