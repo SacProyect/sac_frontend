@@ -27,16 +27,23 @@ export const AnnouncementTopBar: React.FC<AnnouncementTopBarProps> = ({
         {announcement.mediaUrl && (
           <div className="flex-shrink-0 w-10 h-10 rounded overflow-hidden hidden sm:block">
             {announcement.mediaType === 'video' ? (
-              <video src={announcement.mediaUrl} className="w-full h-full object-cover" autoPlay muted loop />
+              <video src={announcement.mediaUrl} className="w-full h-full object-cover" autoPlay muted loop
+                onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }}
+              />
             ) : (
-              <img src={announcement.mediaUrl} alt="" className="w-full h-full object-cover" />
+              <img src={announcement.mediaUrl} alt="" className="w-full h-full object-cover"
+                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+              />
             )}
           </div>
         )}
         <div className="overflow-hidden">
           <p className="font-semibold text-sm truncate">{announcement.title}</p>
           {announcement.description && (
-            <p className="text-xs opacity-90 truncate hidden md:block">{announcement.description}</p>
+            <span
+              className="text-xs opacity-90 truncate hidden md:block"
+              dangerouslySetInnerHTML={{ __html: announcement.description }}
+            />
           )}
         </div>
       </div>

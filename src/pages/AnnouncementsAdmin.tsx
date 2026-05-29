@@ -219,25 +219,25 @@ export default function AnnouncementsAdmin() {
           <Table className="w-full min-w-[700px]">
             <TableHeader className="sticky top-0 z-10 bg-slate-800/95 backdrop-blur-sm">
               <TableRow className="border-slate-700 hover:bg-transparent">
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap" aria-sort="none">
                   Título
                 </TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap" aria-sort="none">
                   Tipo
                 </TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden md:table-cell">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap hidden md:table-cell" aria-sort="none">
                   Target
                 </TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden lg:table-cell">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap hidden lg:table-cell" aria-sort="none">
                   Crítico
                 </TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap" aria-sort="none">
                   Estado
                 </TableHead>
-                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden xl:table-cell">
+                <TableHead className="text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap hidden xl:table-cell" aria-sort="none">
                   Fechas
                 </TableHead>
-                <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                <TableHead className="text-right text-[11px] font-bold uppercase tracking-widest text-slate-300 whitespace-nowrap">
                   Acciones
                 </TableHead>
               </TableRow>
@@ -264,12 +264,12 @@ export default function AnnouncementsAdmin() {
                       <div className="p-3 rounded-full bg-slate-700/30 mb-4">
                         <Inbox className="w-8 h-8 text-slate-500" />
                       </div>
-                      <h3 className="text-sm font-semibold text-slate-300 mb-1">
+                      <h3 className="text-sm font-semibold text-slate-100 mb-1">
                         {announcements.length === 0
                           ? 'No hay anuncios'
                           : 'No se encontraron resultados'}
                       </h3>
-                      <p className="text-xs text-slate-500 max-w-[280px]">
+                      <p className="text-xs text-slate-400 max-w-[280px]">
                         {announcements.length === 0
                           ? 'Crea tu primer anuncio para comenzar a administrar los avisos del sistema.'
                           : 'Intenta ajustar los filtros de búsqueda para encontrar lo que buscas.'}
@@ -308,13 +308,13 @@ export default function AnnouncementsAdmin() {
                     </TableCell>
                     <TableCell className="text-right">
                       <div className="flex items-center justify-end gap-1">
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleDetails(a)} className="text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" aria-label="Ver detalles">
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleDetails(a)} className="cursor-pointer text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" aria-label="Ver detalles">
                           <Eye className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(a)} className="text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors" aria-label="Editar anuncio">
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(a)} className="cursor-pointer text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors" aria-label="Editar anuncio">
                           <Edit className="w-4 h-4" />
                         </Button>
-                        <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteClick(a)} className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label="Eliminar anuncio">
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteClick(a)} className="cursor-pointer text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label="Eliminar anuncio">
                           <Trash2 className="w-4 h-4" />
                         </Button>
                       </div>

@@ -33,17 +33,32 @@ export const AnnouncementCritical: React.FC<AnnouncementCriticalProps> = ({
             <Dialog.Title className="text-2xl font-bold mb-2">{announcement.title}</Dialog.Title>
             
             {announcement.description && (
-              <Dialog.Description className="text-muted-foreground mb-6 whitespace-pre-wrap">
-                {announcement.description}
+              <Dialog.Description className="text-muted-foreground mb-6">
+                <div
+                  className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_strong]:text-white [&_em]:text-slate-300 [&_a]:text-indigo-400 [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: announcement.description }}
+                />
               </Dialog.Description>
             )}
 
             {announcement.mediaUrl && (
               <div className="w-full aspect-video rounded-lg overflow-hidden mb-6 border border-muted">
                 {announcement.mediaType === 'video' ? (
-                  <video src={announcement.mediaUrl} className="w-full h-full object-cover" autoPlay muted loop />
+                  <video
+                    src={announcement.mediaUrl}
+                    className="w-full h-full object-cover"
+                    autoPlay
+                    muted
+                    loop
+                    onError={(e) => { (e.target as HTMLVideoElement).style.display = 'none'; }}
+                  />
                 ) : (
-                  <img src={announcement.mediaUrl} alt="" className="w-full h-full object-cover" />
+                  <img
+                    src={announcement.mediaUrl}
+                    alt=""
+                    className="w-full h-full object-cover"
+                    onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                  />
                 )}
               </div>
             )}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useDropzone } from 'react-dropzone';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +7,7 @@ import {
 } from '@/components/UI/dialog';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
-import { Textarea } from '@/components/UI/textarea';
+import { RichTextEditor } from '@/components/UI/rich-text-editor';
 import { Switch } from '@/components/UI/switch';
 import {
   Select,
@@ -19,11 +20,14 @@ import { ModalFooter } from '@/components/UI/v2';
 import {
   createAnnouncement,
   updateAnnouncement,
+  uploadAnnouncementMedia,
   CreateAnnouncementData,
 } from '@/components/utils/api/announcements-admin-functions';
+import { getCoordinationGroups } from '@/components/utils/api/report-functions';
 import { Announcement, AnnouncementType, AnnouncementTargetType } from '@/types/announcements';
 import toast from 'react-hot-toast';
 import { cn } from '@/lib/utils';
+import { Upload, X, Loader2, ImageIcon, Film } from 'lucide-react';
 
 interface AnnouncementFormModalProps {
   isOpen: boolean;
@@ -50,6 +54,7 @@ interface FormState {
   mediaType: 'image' | 'gif' | 'video' | '';
   version: string;
   isActive: boolean;
+  useMedia: boolean;
 }
 
 const defaultFormState: FormState = {
@@ -70,6 +75,7 @@ const defaultFormState: FormState = {
   mediaType: '',
   version: '',
   isActive: true,
+  useMedia: false,
 };
 
 /** Converts ISO date string to datetime-local input value (YYYY-MM-DDTHH:mm) */
@@ -103,6 +109,9 @@ export function AnnouncementFormModal({
   const [formData, setFormData] = useState<FormState>(defaultFormState);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [coordinaciones, setCoordinaciones] = useState<Array<{ id: string; name: string }>>([]);
 
   // Pre-fill form when editing or reset when creating
   useEffect(() => {
@@ -127,6 +136,7 @@ export function AnnouncementFormModal({
         mediaType: editData.mediaType ?? '',
         version: editData.version ?? '',
         isActive: editData.isActive ?? true,
+        useMedia: !!(editData.mediaUrl),
       });
     } else {
       setFormData(defaultFormState);
@@ -134,6 +144,47 @@ export function AnnouncementFormModal({
 
     setErrors({});
   }, [isOpen, editData]);
+
+  // Fetch coordinations when targetType is COORDINACION
+  useEffect(() => {
+    if (isOpen && formData.targetType === 'COORDINACION' && coordinaciones.length === 0) {
+      getCoordinationGroups()
+        .then(setCoordinaciones)
+        .catch(() => {
+          // Silent fail — user can still type if needed
+        });
+    }
+  }, [isOpen, formData.targetType, coordinaciones.length]);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    accept: {
+      'image/jpeg': [],
+      'image/png': [],
+      'image/gif': [],
+      'video/mp4': [],
+      'video/webm': [],
+    },
+    maxFiles: 1,
+    maxSize: 10 * 1024 * 1024, // 10MB
+    onDrop: async (acceptedFiles) => {
+      if (acceptedFiles.length === 0) return;
+      const file = acceptedFiles[0];
+      setIsUploading(true);
+      setUploadError('');
+      try {
+        const result = await uploadAnnouncementMedia(file);
+        setFormData(prev => ({
+          ...prev,
+          mediaUrl: result.url,
+          mediaType: result.mediaType as 'image' | 'gif' | 'video',
+        }));
+      } catch (err) {
+        setUploadError(err instanceof Error ? err.message : 'Error al subir el archivo');
+      } finally {
+        setIsUploading(false);
+      }
+    },
+  });
 
   const handleChange = (field: keyof FormState, value: string | boolean) => {
     setFormData((prev) => {
@@ -224,9 +275,13 @@ export function AnnouncementFormModal({
       if (formData.specificUserId.trim()) payload.specificUserId = formData.specificUserId.trim();
       if (formData.ctaText.trim()) payload.ctaText = formData.ctaText.trim();
       if (formData.ctaUrl.trim()) payload.ctaUrl = formData.ctaUrl.trim();
-      if (formData.mediaUrl.trim()) payload.mediaUrl = formData.mediaUrl.trim();
-      if (formData.mediaType) payload.mediaType = formData.mediaType as 'image' | 'gif' | 'video';
       if (formData.version.trim()) payload.version = formData.version.trim();
+
+      // Media — only include if useMedia is enabled and mediaUrl exists
+      if (formData.useMedia && formData.mediaUrl.trim()) {
+        payload.mediaUrl = formData.mediaUrl.trim();
+        if (formData.mediaType) payload.mediaType = formData.mediaType as 'image' | 'gif' | 'video';
+      }
 
       const startIso = fromDatetimeLocal(formData.startsAt);
       const endIso = fromDatetimeLocal(formData.expiresAt);
@@ -268,7 +323,7 @@ export function AnnouncementFormModal({
           </DialogTitle>
         </div>
 
-        <div className="overflow-y-auto custom-scrollbar max-h-[calc(90vh-140px)]">
+        <div className="overflow-y-auto custom-scrollbar max-h-[calc(80vh-140px)]">
         <div className="px-5 py-5 space-y-4">
           {/* ── Row 1: Title ── */}
           <div className="space-y-2">
@@ -293,20 +348,15 @@ export function AnnouncementFormModal({
             )}
           </div>
 
-          {/* ── Row 2: Description ── */}
+          {/* ── Row 2: Description (Rich Text) ── */}
           <div className="space-y-2">
-            <Label
-              htmlFor="announcement-description"
-              className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1"
-            >
+            <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
               Descripción
             </Label>
-            <Textarea
-              id="announcement-description"
-              placeholder="Descripción del anuncio (opcional)"
+            <RichTextEditor
               value={formData.description}
-              onChange={(e) => handleChange('description', e.target.value)}
-              className="bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl text-slate-200 transition-all min-h-[80px]"
+              onChange={(html) => handleChange('description', html)}
+              placeholder="Escribe la descripción del anuncio..."
             />
           </div>
 
@@ -421,22 +471,33 @@ export function AnnouncementFormModal({
           {/* ── Conditional: targetCoordinacionId (only when targetType = COORDINACION) ── */}
           {formData.targetType === 'COORDINACION' && (
             <div className="space-y-2">
-              <Label
-                htmlFor="announcement-targetCoordinacionId"
-                className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1"
-              >
-                ID Coordinación *
+              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
+                Coordinación *
               </Label>
-              <Input
-                id="announcement-targetCoordinacionId"
-                placeholder="ID de la coordinación"
+              <Select
                 value={formData.targetCoordinacionId}
-                onChange={(e) => handleChange('targetCoordinacionId', e.target.value)}
-                className={cn(
-                  'bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all',
-                  errors.targetCoordinacionId && 'border-rose-500/50 bg-rose-500/5 text-rose-200'
-                )}
-              />
+                onValueChange={(val) => handleChange('targetCoordinacionId', val)}
+              >
+                <SelectTrigger
+                  className={cn(
+                    'bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all',
+                    errors.targetCoordinacionId && 'border-rose-500/50'
+                  )}
+                >
+                  <SelectValue placeholder="Seleccionar coordinación..." />
+                </SelectTrigger>
+                <SelectContent className="bg-slate-800 border-slate-700 max-h-[200px] overflow-y-auto custom-scrollbar">
+                  {coordinaciones.length === 0 ? (
+                    <SelectItem value="__loading" disabled>Cargando coordinaciones...</SelectItem>
+                  ) : (
+                    coordinaciones.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))
+                  )}
+                </SelectContent>
+              </Select>
               {errors.targetCoordinacionId && (
                 <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.targetCoordinacionId}</p>
               )}
@@ -575,43 +636,105 @@ export function AnnouncementFormModal({
             </div>
           </div>
 
-          {/* ── Row 7: Media fields ── */}
-          <div className="space-y-2">
-            <Label
-              htmlFor="announcement-mediaUrl"
-              className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1"
-            >
-              URL de Medio
-            </Label>
-            <Input
-              id="announcement-mediaUrl"
-              placeholder="URL de imagen, GIF o video (opcional)"
-              value={formData.mediaUrl}
-              onChange={(e) => handleChange('mediaUrl', e.target.value)}
-              className="bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all"
-            />
-          </div>
-
-          {formData.mediaUrl.trim() && (
-            <div className="space-y-2">
-              <Label className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
-                Tipo de Medio
-              </Label>
-              <Select
-                value={formData.mediaType}
-                onValueChange={(val) => handleChange('mediaType', val)}
+          {/* ── Media Section ── */}
+          <div className="space-y-3">
+            {/* Toggle */}
+            <div className="flex items-center justify-between rounded-xl border border-slate-700 bg-slate-950/30 px-4 h-12">
+              <Label
+                htmlFor="announcement-useMedia"
+                className="text-[10px] font-bold text-slate-400 uppercase tracking-widest"
               >
-                <SelectTrigger className="bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all">
-                  <SelectValue placeholder="Seleccionar tipo de medio..." />
-                </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
-                  <SelectItem value="image">Imagen</SelectItem>
-                  <SelectItem value="gif">GIF</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                </SelectContent>
-              </Select>
+                Adjuntar Media
+              </Label>
+              <Switch
+                id="announcement-useMedia"
+                checked={formData.useMedia}
+                onCheckedChange={(checked) => {
+                  setFormData(prev => ({
+                    ...prev,
+                    useMedia: checked,
+                    mediaUrl: checked ? prev.mediaUrl : '',
+                    mediaType: checked ? prev.mediaType : '',
+                  }));
+                }}
+              />
             </div>
-          )}
+
+            {/* Upload Zone (when useMedia is true AND no mediaUrl yet) */}
+            {formData.useMedia && !formData.mediaUrl && (
+              <div
+                {...getRootProps()}
+                className={`relative border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition-all duration-200 ${
+                  isDragActive
+                    ? 'border-indigo-500 bg-indigo-500/5'
+                    : 'border-slate-700 hover:border-slate-600 bg-slate-950/30 hover:bg-slate-900/50'
+                }`}
+              >
+                <input {...getInputProps()} />
+                {isUploading ? (
+                  <div className="flex flex-col items-center gap-2">
+                    <Loader2 className="w-8 h-8 text-indigo-400 animate-spin" />
+                    <p className="text-sm text-slate-400">Subiendo archivo...</p>
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center gap-2">
+                    <div className="p-3 rounded-full bg-slate-700/30">
+                      <Upload className="w-6 h-6 text-slate-500" />
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-300 font-medium">
+                        {isDragActive ? 'Suelta el archivo aquí' : 'Arrastra un archivo o haz clic'}
+                      </p>
+                      <p className="text-xs text-slate-500 mt-1">
+                        JPG, PNG, GIF, MP4, WebM — Max 10MB
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Upload Error */}
+            {uploadError && (
+              <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{uploadError}</p>
+            )}
+
+            {/* Preview (when mediaUrl exists) */}
+            {formData.useMedia && formData.mediaUrl && (
+              <div className="relative rounded-xl overflow-hidden border border-slate-700/50 bg-slate-900/30">
+                {formData.mediaType === 'video' ? (
+                  <video
+                    src={formData.mediaUrl}
+                    controls
+                    className="w-full max-h-[200px] object-contain"
+                  />
+                ) : (
+                  <img
+                    src={formData.mediaUrl}
+                    alt="Preview"
+                    className="w-full max-h-[200px] object-contain"
+                  />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setFormData(prev => ({ ...prev, mediaUrl: '', mediaType: '' }))}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-slate-900/80 border border-slate-700/50 text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+                <div className="absolute bottom-2 left-2 flex items-center gap-1.5 px-2 py-1 rounded-lg bg-slate-900/80 border border-slate-700/50">
+                  {formData.mediaType === 'video' ? (
+                    <Film className="w-3 h-3 text-purple-400" />
+                  ) : (
+                    <ImageIcon className="w-3 h-3 text-blue-400" />
+                  )}
+                  <span className="text-[10px] text-slate-400 font-medium uppercase">
+                    {formData.mediaType === 'gif' ? 'GIF' : formData.mediaType === 'video' ? 'Video' : 'Imagen'}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
 
           {/* ── Row 8: Version ── */}
           <div className="space-y-2">

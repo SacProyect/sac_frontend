@@ -46,3 +46,14 @@ export const getAnnouncementReaders = async (announcementId: string) => {
   );
   return resp.data.data;
 };
+
+export const uploadAnnouncementMedia = async (file: File) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  const resp = await apiConnection.post<{ success: boolean; data: { url: string; mediaType: string } }>(
+    "/announcements/upload-media",
+    formData,
+    { headers: { "Content-Type": "multipart/form-data" } }
+  );
+  return resp.data.data;
+};

@@ -171,13 +171,14 @@ export function AnnouncementDetailsModal({
           </div>
 
           {/* Description */}
-          {announcement.description && (
-            <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
-              <p className="text-sm text-slate-300 leading-relaxed whitespace-pre-wrap">
-                {announcement.description}
-              </p>
-            </div>
-          )}
+            {announcement.description && (
+              <div className="bg-slate-900/50 rounded-xl p-4 border border-slate-700/50">
+                <div
+                  className="prose prose-sm prose-invert max-w-none [&_p]:my-1 [&_strong]:text-white [&_em]:text-slate-300 [&_a]:text-cyan-400 [&_a]:underline"
+                  dangerouslySetInnerHTML={{ __html: announcement.description }}
+                />
+              </div>
+            )}
 
           {/* Info grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
