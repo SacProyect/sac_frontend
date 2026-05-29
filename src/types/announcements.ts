@@ -35,3 +35,16 @@ export interface AnnouncementRead {
   timeSpentSeconds?: number;
   isConfirmed: boolean;
 }
+
+export interface AnnouncementReader {
+  id: string;
+  userId: string;
+  userName: string;
+  userEmail?: string;
+  userRole?: string;
+  openedAt: string;
+  closedAt?: string;
+  ctaClickedAt?: string;
+  timeSpentSeconds?: number;
+  isConfirmed: boolean;
+}

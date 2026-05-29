@@ -17,11 +17,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/UI/select';
-import { Plus, Edit, Trash2, Search, Inbox } from 'lucide-react';
+import { Plus, Edit, Trash2, Search, Inbox, Eye } from 'lucide-react';
 import { getAnnouncements } from '@/components/utils/api/announcements-admin-functions';
 import { Announcement } from '@/types/announcements';
 import { AnnouncementFormModal } from '@/components/modals/announcement-form-modal';
 import { AnnouncementDeleteModal } from '@/components/modals/announcement-delete-modal';
+import { AnnouncementDetailsModal } from '@/components/modals/announcement-details-modal';
 import toast from 'react-hot-toast';
 
 const typeBadgeStyles: Record<string, string> = {
@@ -63,8 +64,10 @@ export default function AnnouncementsAdmin() {
   // Modal states
   const [isFormModalOpen, setIsFormModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedAnnouncement, setSelectedAnnouncement] = useState<Announcement | null>(null);
   const [editingAnnouncement, setEditingAnnouncement] = useState<Announcement | null>(null);
+  const [detailsAnnouncement, setDetailsAnnouncement] = useState<Announcement | null>(null);
 
   // Filter states
   const [filterType, setFilterType] = useState<string>('all');
@@ -119,6 +122,11 @@ export default function AnnouncementsAdmin() {
     setIsDeleteModalOpen(true);
   };
 
+  const handleDetails = (announcement: Announcement) => {
+    setDetailsAnnouncement(announcement);
+    setIsDetailsModalOpen(true);
+  };
+
   const handleFormSuccess = () => {
     loadAnnouncements();
   };
@@ -128,11 +136,11 @@ export default function AnnouncementsAdmin() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="w-full max-w-full overflow-x-hidden space-y-6">
       {/* ── Header ── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0">
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words tracking-tight">
             Gestión de Anuncios
           </h1>
           <p className="text-slate-400 mt-1 text-sm sm:text-base">
@@ -142,7 +150,7 @@ export default function AnnouncementsAdmin() {
         <div className="shrink-0 w-full sm:w-auto">
           <Button
             onClick={handleCreate}
-            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white"
+            className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg shadow-md shadow-emerald-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5"
           >
             <Plus className="w-4 h-4 mr-2" />
             Nuevo Anuncio
@@ -151,7 +159,7 @@ export default function AnnouncementsAdmin() {
       </div>
 
       {/* ── Filters ── */}
-      <Card className="bg-slate-800 border-slate-700 p-4">
+      <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Search by title */}
           <div className="relative">
@@ -206,148 +214,123 @@ export default function AnnouncementsAdmin() {
       </Card>
 
       {/* ── Table ── */}
-      <Card className="bg-slate-800 border-slate-700">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-slate-700 hover:bg-slate-800">
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider">
-                Título
-              </TableHead>
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider">
-                Tipo
-              </TableHead>
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider hidden md:table-cell">
-                Target
-              </TableHead>
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider hidden lg:table-cell">
-                Crítico
-              </TableHead>
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider">
-                Estado
-              </TableHead>
-              <TableHead className="text-slate-300 font-semibold text-xs uppercase tracking-wider hidden xl:table-cell">
-                Fechas
-              </TableHead>
-              <TableHead className="text-right text-slate-300 font-semibold text-xs uppercase tracking-wider">
-                Acciones
-              </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              // ── Loading skeleton ──
-              Array.from({ length: 5 }).map((_, i) => (
-                <TableRow key={`skeleton-${i}`} className="border-slate-700">
-                  <TableCell colSpan={7} className="py-3">
-                    <div className="flex items-center gap-4">
-                      <div className="h-4 w-1/3 bg-slate-700/50 rounded animate-pulse" />
-                      <div className="h-4 w-20 bg-slate-700/50 rounded animate-pulse" />
-                      <div className="h-4 w-24 bg-slate-700/50 rounded animate-pulse hidden md:block" />
-                      <div className="h-4 w-16 bg-slate-700/50 rounded animate-pulse hidden lg:block" />
-                      <div className="h-4 w-20 bg-slate-700/50 rounded animate-pulse" />
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            ) : filteredAnnouncements.length === 0 ? (
-              // ── Empty state ──
-              <TableRow className="border-slate-700">
-                <TableCell colSpan={7} className="py-16">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="p-3 rounded-full bg-slate-700/30 mb-4">
-                      <Inbox className="w-8 h-8 text-slate-500" />
-                    </div>
-                    <h3 className="text-sm font-semibold text-slate-300 mb-1">
-                      {announcements.length === 0
-                        ? 'No hay anuncios'
-                        : 'No se encontraron resultados'}
-                    </h3>
-                    <p className="text-xs text-slate-500 max-w-[280px]">
-                      {announcements.length === 0
-                        ? 'Crea tu primer anuncio para comenzar a administrar los avisos del sistema.'
-                        : 'Intenta ajustar los filtros de búsqueda para encontrar lo que buscas.'}
-                    </p>
-                  </div>
-                </TableCell>
+      <Card className="bg-slate-800 border-slate-700 overflow-hidden transition-all duration-200 hover:border-slate-600 hover:shadow-md">
+        <div className="overflow-x-auto max-h-[min(70vh,720px)] overflow-y-auto custom-scrollbar">
+          <Table className="w-full min-w-[700px]">
+            <TableHeader className="sticky top-0 z-10 bg-slate-800/95 backdrop-blur-sm">
+              <TableRow className="border-slate-700 hover:bg-transparent">
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                  Título
+                </TableHead>
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                  Tipo
+                </TableHead>
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden md:table-cell">
+                  Target
+                </TableHead>
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden lg:table-cell">
+                  Crítico
+                </TableHead>
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                  Estado
+                </TableHead>
+                <TableHead className="text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap hidden xl:table-cell">
+                  Fechas
+                </TableHead>
+                <TableHead className="text-right text-[10px] font-bold uppercase tracking-widest text-slate-400 whitespace-nowrap">
+                  Acciones
+                </TableHead>
               </TableRow>
-            ) : (
-              // ── Data rows ──
-              filteredAnnouncements.map((a) => (
-                <TableRow
-                  key={a.id}
-                  className="border-slate-700/50 hover:bg-slate-700/30 transition-colors"
-                >
-                  <TableCell className="text-slate-200 font-medium max-w-[200px] truncate">
-                    {a.title}
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${typeBadgeStyles[a.type] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20'}`}
-                    >
-                      {typeLabels[a.type] ?? a.type}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-slate-400 text-sm hidden md:table-cell">
-                    {targetTypeLabels[a.targetType] ?? a.targetType}
-                  </TableCell>
-                  <TableCell className="hidden lg:table-cell">
-                    <span
-                      className={
-                        a.isCritical
-                          ? 'text-red-400 font-semibold text-sm'
-                          : 'text-slate-500 text-sm'
-                      }
-                    >
-                      {a.isCritical ? 'Sí' : 'No'}
-                    </span>
-                  </TableCell>
-                  <TableCell>
-                    <span
-                      className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
-                        a.isActive
-                          ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-                          : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
-                      }`}
-                    >
-                      {a.isActive ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </TableCell>
-                  <TableCell className="text-slate-500 text-xs hidden xl:table-cell whitespace-nowrap">
-                    {formatDate(a.startsAt)} — {formatDate(a.expiresAt)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-1">
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleEdit(a)}
-                        className="text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10"
-                        aria-label="Editar anuncio"
-                      >
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon-sm"
-                        onClick={() => handleDeleteClick(a)}
-                        className="text-slate-400 hover:text-red-400 hover:bg-red-500/10"
-                        aria-label="Eliminar anuncio"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </Button>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={`skeleton-${i}`} className="border-slate-700/50 h-14">
+                    <TableCell colSpan={7} className="py-3">
+                      <div className="flex items-center gap-4">
+                        <div className="h-3.5 w-1/3 bg-slate-700/50 rounded-md animate-pulse" />
+                        <div className="h-3.5 w-16 bg-slate-700/50 rounded-md animate-pulse" />
+                        <div className="h-3.5 w-20 bg-slate-700/50 rounded-md animate-pulse hidden md:block" />
+                        <div className="h-3.5 w-12 bg-slate-700/50 rounded-md animate-pulse hidden lg:block" />
+                        <div className="h-3.5 w-16 bg-slate-700/50 rounded-md animate-pulse" />
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : filteredAnnouncements.length === 0 ? (
+                <TableRow className="border-slate-700/50">
+                  <TableCell colSpan={7} className="py-16">
+                    <div className="flex flex-col items-center text-center">
+                      <div className="p-3 rounded-full bg-slate-700/30 mb-4">
+                        <Inbox className="w-8 h-8 text-slate-500" />
+                      </div>
+                      <h3 className="text-sm font-semibold text-slate-300 mb-1">
+                        {announcements.length === 0
+                          ? 'No hay anuncios'
+                          : 'No se encontraron resultados'}
+                      </h3>
+                      <p className="text-xs text-slate-500 max-w-[280px]">
+                        {announcements.length === 0
+                          ? 'Crea tu primer anuncio para comenzar a administrar los avisos del sistema.'
+                          : 'Intenta ajustar los filtros de búsqueda para encontrar lo que buscas.'}
+                      </p>
                     </div>
                   </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : (
+                filteredAnnouncements.map((a) => (
+                  <TableRow key={a.id} className="border-slate-700/50 hover:bg-slate-700/30 h-14 transition-colors">
+                    <TableCell className="text-sm text-slate-200 font-medium max-w-[200px]">
+                      <span className="block truncate" title={a.title}>{a.title}</span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${typeBadgeStyles[a.type] ?? 'bg-slate-500/10 text-slate-400 border-slate-500/20'}`}>
+                        {typeLabels[a.type] ?? a.type}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-xs text-slate-400 hidden md:table-cell">
+                      {targetTypeLabels[a.targetType] ?? a.targetType}
+                    </TableCell>
+                    <TableCell className="hidden lg:table-cell">
+                      <span className={a.isCritical ? 'text-red-400 font-semibold text-xs' : 'text-slate-500 text-xs'}>
+                        {a.isCritical ? 'Sí' : 'No'}
+                      </span>
+                    </TableCell>
+                    <TableCell>
+                      <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${
+                        a.isActive ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-slate-500/10 text-slate-400 border-slate-500/20'
+                      }`}>
+                        {a.isActive ? 'Activo' : 'Inactivo'}
+                      </span>
+                    </TableCell>
+                    <TableCell className="text-[11px] text-slate-500 hidden xl:table-cell whitespace-nowrap tabular-nums">
+                      {formatDate(a.startsAt)} — {formatDate(a.expiresAt)}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex items-center justify-end gap-1">
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleDetails(a)} className="text-slate-400 hover:text-cyan-400 hover:bg-cyan-500/10 transition-colors" aria-label="Ver detalles">
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleEdit(a)} className="text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 transition-colors" aria-label="Editar anuncio">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" onClick={() => handleDeleteClick(a)} className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors" aria-label="Eliminar anuncio">
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
 
         {/* Results count */}
         {!loading && filteredAnnouncements.length > 0 && (
-          <div className="px-4 py-3 border-t border-slate-700/50">
+          <div className="px-4 py-3 border-t border-slate-700/50 bg-slate-800/50">
             <p className="text-xs text-slate-500">
-              Mostrando {filteredAnnouncements.length} de {announcements.length} anuncios
+              Mostrando <span className="text-indigo-400 font-bold">{filteredAnnouncements.length}</span> de <span className="text-slate-200 font-bold">{announcements.length}</span> anuncios
             </p>
           </div>
         )}
@@ -366,6 +349,12 @@ export default function AnnouncementsAdmin() {
         onClose={() => setIsDeleteModalOpen(false)}
         onSuccess={handleDeleteSuccess}
         announcement={selectedAnnouncement}
+      />
+
+      <AnnouncementDetailsModal
+        isOpen={isDetailsModalOpen}
+        onClose={() => setIsDetailsModalOpen(false)}
+        announcement={detailsAnnouncement}
       />
     </div>
   );

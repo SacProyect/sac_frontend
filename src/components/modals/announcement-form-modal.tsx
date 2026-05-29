@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from '@/components/UI/dialog';
 import { Input } from '@/components/UI/input';
 import { Label } from '@/components/UI/label';
@@ -256,14 +254,22 @@ export function AnnouncementFormModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="bg-slate-800 border-slate-700 text-white transition-all duration-200 max-h-[90vh] overflow-y-auto p-4 sm:p-6">
-        <DialogHeader>
-          <DialogTitle className="text-white">
+      <DialogContent className="bg-slate-900 border-slate-700/80 text-white w-full max-w-[calc(100%-1rem)] sm:max-w-2xl p-0 overflow-hidden gap-0">
+        {/* Top accent bar */}
+        <div className="h-0.5 bg-gradient-to-r from-indigo-500 via-indigo-400/60 to-transparent" />
+
+        {/* Header */}
+        <div className="flex items-center gap-3 px-5 pt-5 pb-4 border-b border-slate-800">
+          <div className="p-2 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400">
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" /></svg>
+          </div>
+          <DialogTitle className="text-white text-base font-semibold">
             {isEditing ? 'Editar Anuncio' : 'Nuevo Anuncio'}
           </DialogTitle>
-        </DialogHeader>
+        </div>
 
-        <div className="space-y-4">
+        <div className="overflow-y-auto custom-scrollbar max-h-[calc(90vh-140px)]">
+        <div className="px-5 py-5 space-y-4">
           {/* ── Row 1: Title ── */}
           <div className="space-y-2">
             <Label
@@ -624,8 +630,9 @@ export function AnnouncementFormModal({
             />
           </div>
         </div>
+        </div>
 
-        <DialogFooter>
+        <div className="flex items-center justify-end gap-3 px-5 py-4 border-t border-slate-800 bg-slate-900/80">
           <ModalFooter
             onCancel={onClose}
             onConfirm={handleSubmit}
@@ -633,7 +640,7 @@ export function AnnouncementFormModal({
             isLoading={isSubmitting}
             confirmVariant="default"
           />
-        </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
