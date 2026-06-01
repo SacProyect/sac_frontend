@@ -151,6 +151,7 @@ export interface NewEvent {
     date: string;
     amount?: number;
     taxpayerId: string;
+    tax_case_id?: string;
     eventId?: string;
     debt?: number;
     expires_at?: string;
@@ -170,7 +171,7 @@ export interface PendingPayments {
 
 
 
-function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
+function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "", tax_case_id }: { title?: string; type?: string; taxpayerId?: string; tax_case_id?: string }) {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>(useLoaderData() as PendingPayments[])
@@ -359,6 +360,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     date: formattedDate,
                     amount: data.amount,
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    tax_case_id: tax_case_id,
                     eventId: data.eventId,
                     debt: data.debt,
                 };
@@ -367,6 +369,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     date: formattedDate,
                     amount: data.amount,
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    tax_case_id: tax_case_id,
                     ...(data.description && { description: data.description }),
                 };
             } else {
@@ -375,6 +378,7 @@ function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "" }) {
                     date: formattedDate,
                     amount: data.amount,
                     taxpayerId: taxpayerId != "" ? taxpayerId : data.taxpayerId,
+                    tax_case_id: tax_case_id,
                     expires_at: formattedExpiresAt,
                     fineEventId: data.eventId,
                 };

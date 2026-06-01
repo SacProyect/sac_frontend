@@ -1,0 +1,1427 @@
+{
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\components.json": {
+    "mtime": 1776272859.0590222,
+    "ast_hash": "1207c0ee6ecd09a4f1cdf19fb6dcf9d3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\eslint.config.js": {
+    "mtime": 1776272859.0590222,
+    "ast_hash": "d4ddc5173bb083c1ade571729d07db6c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\package.json": {
+    "mtime": 1780059342.578888,
+    "ast_hash": "887d148b916d774f3a147741056be40b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\playwright.config.ts": {
+    "mtime": 1778176573.0722597,
+    "ast_hash": "abc9d658d7d327f8eea8e99c44d86e39",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\skills-lock.json": {
+    "mtime": 1776272859.0779161,
+    "ast_hash": "13d7a19dfbaf468947c2ffb113d02750",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\tailwind.config.js": {
+    "mtime": 1776272859.2638562,
+    "ast_hash": "4a8e0bb9a8667e3d02476e0731649fe1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\tsconfig.json": {
+    "mtime": 1778612584.2821422,
+    "ast_hash": "ba5ab466d68270353bf3352f6f7bea4b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\vercel.json": {
+    "mtime": 1778176573.3781247,
+    "ast_hash": "e1d441a587f30cbf8eb80bf9050509e3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\vite.config.js": {
+    "mtime": 1778851308.02557,
+    "ast_hash": "89dfeb46e976aa7587ae5037a5cb4ce8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\.opencode\\package.json": {
+    "mtime": 1778684406.8992555,
+    "ast_hash": "970ee6b31d6094f6c41df4e55bb52b4b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\scripts\\rename-to-kebab.js": {
+    "mtime": 1776272859.0779161,
+    "ast_hash": "c36eefe708c4bb5a7325409067af1601",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\scripts\\theme-fiscalizacion.js": {
+    "mtime": 1778851307.789731,
+    "ast_hash": "eccbdb4041778bcc57b6ea9e5a11ef6d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\App.tsx": {
+    "mtime": 1776272859.0802753,
+    "ast_hash": "f3136e91eedcbc4e9f96f2241b3a6708",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\main-layout-v2.tsx": {
+    "mtime": 1780059342.611805,
+    "ast_hash": "01cb913b3bacfe913f4cfd9134fff070",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\main.tsx": {
+    "mtime": 1778851307.9315495,
+    "ast_hash": "1f3754497f7edd0760614c81db5501aa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\announcements\\AnnouncementCritical.tsx": {
+    "mtime": 1780059342.5897937,
+    "ast_hash": "1896908674beb6d6da8e5c11b9a4f43a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\announcements\\AnnouncementModal.tsx": {
+    "mtime": 1780059342.5897937,
+    "ast_hash": "391077b041e826318517ceb32bcdd7b4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\announcements\\AnnouncementQueue.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "2d1990d6efddd62f46376cbeb0141407",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\announcements\\AnnouncementTooltip.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "eae1173b898db5e705dfe4cddaade1b2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\announcements\\AnnouncementTopBar.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "e819d498f465afba4e78b3e5061916d5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Auth\\login-v2.tsx": {
+    "mtime": 1778851307.7934196,
+    "ast_hash": "7af003adf80ecf3fa082ad696f30b639",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Auth\\Login.tsx": {
+    "mtime": 1776272859.0802753,
+    "ast_hash": "cef5b9d6369578d8be773c85a0a41252",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\census\\taxpayer-census-table.tsx": {
+    "mtime": 1776272859.1389134,
+    "ast_hash": "59e2629790f43b7bddf4957d731983cb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\context\\PresentationContext.tsx": {
+    "mtime": 1779459177.3614864,
+    "ast_hash": "50ea6f55e6c06265d7e12de22a02585f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\contribution-types.ts": {
+    "mtime": 1776272859.1389134,
+    "ast_hash": "ff8dc16d533ca53846c40bcc0eccd0f6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\contributions-filter.tsx": {
+    "mtime": 1778851307.8097112,
+    "ast_hash": "b7a834924c9b574f3ae3b5483512823c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\contributions-header.tsx": {
+    "mtime": 1776272859.1389134,
+    "ast_hash": "9b5eb6bd59885d3985103683d41fee42",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\contributions-statistics.tsx": {
+    "mtime": 1778851307.8126845,
+    "ast_hash": "6fc62e4329201c4b798b1ee3536fe591",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\ContributionsPageSkeleton.tsx": {
+    "mtime": 1776272859.1389134,
+    "ast_hash": "e162f003027ebb471274e96c380c7096",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\contributions\\normalize-contributions-response.ts": {
+    "mtime": 1778851307.8136973,
+    "ast_hash": "ffa9ea601ea01c7a2f2a84a2c678c3f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\dev\\debug-fiscal-group-switcher.tsx": {
+    "mtime": 1779725884.0912209,
+    "ast_hash": "c3ba93682a6d54c71813d314d4648ea3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\dev\\DevRoleSwitcher.tsx": {
+    "mtime": 1778851307.8180416,
+    "ast_hash": "7065586225fde58c990abc9f6c8e846c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\errors\\error-fallback.tsx": {
+    "mtime": 1776272859.1463773,
+    "ast_hash": "dd866061915845ef94de3de838f1be40",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Events\\event-form.tsx": {
+    "mtime": 1780318695.5323403,
+    "ast_hash": "b92834ca531faa600de8c0f921842809",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Events\\event-table.tsx": {
+    "mtime": 1780318719.1714406,
+    "ast_hash": "17c6fe0d01cf7a16c35b7a77660fe7c8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-kpi-breakdown-dialog.tsx": {
+    "mtime": 1778851307.8200924,
+    "ast_hash": "46c9f61b7e0c4705d5c7d7e494a442b8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-review-component.tsx": {
+    "mtime": 1778176573.1366513,
+    "ast_hash": "20e3d1b1a3ad44331361ce0183bdfabf",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-review-page1-resumen.tsx": {
+    "mtime": 1779712502.9054544,
+    "ast_hash": "3a02187ebfc4afe757127cbc72610c40",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-review-page2-cumplimiento.tsx": {
+    "mtime": 1778851307.824695,
+    "ast_hash": "01c1db5ac01c031b640744ba4d35543a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-review-page3-reportes.tsx": {
+    "mtime": 1778851307.827533,
+    "ast_hash": "06ede9f9df401051db9b06ecfc3f54fb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\fiscal-review\\fiscal-review-page4-declaraciones.tsx": {
+    "mtime": 1779715475.017156,
+    "ast_hash": "79e498a856835d1a0b7a7851a54b0a72",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\casos-por-fiscal-section.tsx": {
+    "mtime": 1779725884.0943427,
+    "ast_hash": "b161885f5afbafa222c45ecd3f70bfb4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\personal-absences-panel.tsx": {
+    "mtime": 1778851307.832917,
+    "ast_hash": "7e00d53debae8b339b5c22072f044f9f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\personal-fiscal-panel.tsx": {
+    "mtime": 1779725884.0968623,
+    "ast_hash": "97da18711414c58c127215d1887e5f28",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\personal-permisos-vacaciones-panel.tsx": {
+    "mtime": 1779725884.0998733,
+    "ast_hash": "bed990daddae2c8f679814d6df7f5a68",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\registrar-ausencia-dialog.tsx": {
+    "mtime": 1778851307.8394566,
+    "ast_hash": "8d4f7bfd7ed0d305671a98e25e91b31a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\gestion-personal\\reparos-actas-section.tsx": {
+    "mtime": 1779725884.1033978,
+    "ast_hash": "76c55ce8b2659900d37199e4214b5df2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\index-iva\\index-current-iva.tsx": {
+    "mtime": 1776272859.154282,
+    "ast_hash": "1ac2b410c50bd804157563de29117d30",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\index-iva\\index-iva-form.tsx": {
+    "mtime": 1776272859.1555016,
+    "ast_hash": "e0a37fa3da32267f93a1d32bb8069b3b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\ISLR\\islr-form.tsx": {
+    "mtime": 1779740179.9951918,
+    "ast_hash": "b2768db92149e0bb4bdae422df54bea8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\ISLR\\islr-summary-table.tsx": {
+    "mtime": 1778176573.0927625,
+    "ast_hash": "6afe74abde918b94f257ea973c10f630",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\iva\\iva-form.tsx": {
+    "mtime": 1779715475.017156,
+    "ast_hash": "b6b097b8caeb02e681d6f2c010f8648c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\iva\\tax-summary-table.tsx": {
+    "mtime": 1778176573.158867,
+    "ast_hash": "8da3e952be4e105bce1c9dad436d1194",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\maintenance\\maintenance-notice.tsx": {
+    "mtime": 1778176573.1625314,
+    "ast_hash": "90494b6a990b3299cc3e7a89aa13cfab",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\add-aviso-modal-v2.tsx": {
+    "mtime": 1780318947.2336433,
+    "ast_hash": "9be08264c6f44634cb2aebd361722714",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\add-contribuyente-modal-v2.tsx": {
+    "mtime": 1780318885.004834,
+    "ast_hash": "79e91a8e18669c6d58a92479af0734cd",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\add-multa-modal-v2.tsx": {
+    "mtime": 1780318909.6087475,
+    "ast_hash": "9dba6d6960556470b1780e2c17d4a551",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\announcement-delete-modal.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "155b60c5be6d64ca82870d8fc0423b1e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\announcement-details-modal.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "261f3d3ceced93ebb963a71f71639889",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\announcement-form-modal.tsx": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "b3278a5c50f66ec8423e49413ff63e85",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\modals\\index.ts": {
+    "mtime": 1776272859.1610098,
+    "ast_hash": "fa5aafd9757164e3091a534e6a5764ba",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Navigation\\admin-only.tsx": {
+    "mtime": 1778851307.7952824,
+    "ast_hash": "ca09d79c5f0632185626ddf2e60e2777",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Navigation\\notification-bell.tsx": {
+    "mtime": 1778176573.0951612,
+    "ast_hash": "29a283113852913972efe85524c073fb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Navigation\\protected-route.tsx": {
+    "mtime": 1779459177.345509,
+    "ast_hash": "7d608358831bd85de426655002682777",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Navigation\\sidebar-button.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "5b21a149665cba3572ef5e270e39d2c5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\observations\\observations-header.tsx": {
+    "mtime": 1780316050.2409198,
+    "ast_hash": "50b76f561dcb333bdafda1d391a14a16",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\observations\\observations-panel.tsx": {
+    "mtime": 1780318730.5687027,
+    "ast_hash": "1d461fd1cef87c507c6499b092b8f16c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\observations\\observations-section.tsx": {
+    "mtime": 1776272859.164621,
+    "ast_hash": "6a999d57da73fe9692de05a49fa2de77",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\complete-report-modal.tsx": {
+    "mtime": 1779715475.017156,
+    "ast_hash": "48fa0232e2a20bf3f0417147f511224f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\generate-report.tsx": {
+    "mtime": 1779715475.017156,
+    "ast_hash": "c7220ef29c0851191cbdf099cea753c1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\group-charts.tsx": {
+    "mtime": 1779715475.0264854,
+    "ast_hash": "b36d78871855eaa66567fa5649cb5914",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\group-fiscal-table.tsx": {
+    "mtime": 1779715475.0264854,
+    "ast_hash": "2df7036ab12ae383ac9c343c58689eba",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\group-kpi-cards.tsx": {
+    "mtime": 1779715475.0264854,
+    "ast_hash": "f0b1c7ec33b6e4a9da94326786048e1d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\reports\\group-report-statistics.tsx": {
+    "mtime": 1776272859.168656,
+    "ast_hash": "b5e76c1dc091823e02f55e725d3faa5e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\router\\app-router.tsx": {
+    "mtime": 1776272859.169655,
+    "ast_hash": "69e957ab251f9aab54c41d032ddeb654",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\settings\\escalation-config-tab.tsx": {
+    "mtime": 1778176573.1783254,
+    "ast_hash": "58bdb261866d09ceda73ec603938b432",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\settings\\notifications-tab-v2.tsx": {
+    "mtime": 1778176573.1830056,
+    "ast_hash": "189643cc5ac7385a2e6eee9949d35df3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\settings\\profile-tab-v2.tsx": {
+    "mtime": 1776272859.1706538,
+    "ast_hash": "2de3f56cb7a1f031f136f3214640b7c9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\settings\\security-tab-v2.tsx": {
+    "mtime": 1776272859.1721492,
+    "ast_hash": "8ee6d5661b480c5f5865237734302902",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\compliance-distribution-chart-v2.tsx": {
+    "mtime": 1778851307.856626,
+    "ast_hash": "ba801a3f144424f465a3c490851d2eee",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\fiscal-alerts-grid-v2.tsx": {
+    "mtime": 1776272859.1741593,
+    "ast_hash": "9a52abcc0d9135d02546f6803a5c12d9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\fiscal-leaderboard-v2.tsx": {
+    "mtime": 1776272859.1751645,
+    "ast_hash": "db4ed3ee86003fe6ec36352f549cbabb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\fiscal-performance-chart-v2.tsx": {
+    "mtime": 1778851307.8579018,
+    "ast_hash": "d13e32760ab3b67e9e06eb8efb6f8bf8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\fiscal-profile-card-v2.tsx": {
+    "mtime": 1778176573.1899052,
+    "ast_hash": "04534ba078d98c49306cb1a951b204ca",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\global-kpi-stats.tsx": {
+    "mtime": 1776272859.1771662,
+    "ast_hash": "f77810a72e7905f20d62fd95df81de3c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\global-perfomance.tsx": {
+    "mtime": 1778851307.8611295,
+    "ast_hash": "d4e51b395c806e1bf79a752e20aa3d5b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\global-taxpayer-performance.tsx": {
+    "mtime": 1778851307.863773,
+    "ast_hash": "19ed4cf5169b8b59837f025b3efe0509",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\group-performance-stats.tsx": {
+    "mtime": 1778851307.867244,
+    "ast_hash": "fa7bbef4ce02ca72852587c345231eae",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\index.ts": {
+    "mtime": 1776272859.1797721,
+    "ast_hash": "ef6a3bb251c899b405b3994e41f5315f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\individual-stats.tsx": {
+    "mtime": 1780326875.186877,
+    "ast_hash": "9069f9476af57029204e8ec711190a49",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\iva-by-group-chart.tsx": {
+    "mtime": 1778851307.8730705,
+    "ast_hash": "5865eefbdce64a6f666ea5014e9d1aea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\metric-card-v2.tsx": {
+    "mtime": 1776272859.1827805,
+    "ast_hash": "07052972ae75fa6a3f7907b6ff6cdfea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\monthly-revenue-chart-v2.tsx": {
+    "mtime": 1778851307.8755078,
+    "ast_hash": "7766b140c506b45f4fab62983173341d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\stats\\supervisor-leaderboard-v2.tsx": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "5fd33e63d4aeb30f19de9f0386a73991",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Taxpayer\\case-selector.tsx": {
+    "mtime": 1780327614.586974,
+    "ast_hash": "39486ad99be14af1387ad1547f0900ba",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Taxpayer\\edit-taxpayer-modal.tsx": {
+    "mtime": 1778176573.0988438,
+    "ast_hash": "ae6ee15c7791d18bdbeadca1e6a6b89a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\Taxpayer\\taxpayer-table.tsx": {
+    "mtime": 1778176573.1016688,
+    "ast_hash": "707f356ae517fe70bf9d5e5ab593e80c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\taxpayer-census\\taxpayer-census-form.tsx": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "06986f57baebb1d2030933c7e88ee2b2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\Alert.tsx": {
+    "mtime": 1779459177.345509,
+    "ast_hash": "74bac7891584c2eefe4a72553936b4d8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\avatar.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "8f44230e5058b7ace8269c971da7189e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\badge.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "d5ace372df14e508a95cfcc6bc108eea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\breadcrumb.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "dcfabfc9f457acbf1857a56cbd9bbb8f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\button.tsx": {
+    "mtime": 1776272859.1032817,
+    "ast_hash": "d7636ef183de4b80a1d71f65ea89b9e4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\card.tsx": {
+    "mtime": 1776272859.1032817,
+    "ast_hash": "a4de31e919fcb1f8e97e185f8c94fbb2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\chunk-error-boundary.tsx": {
+    "mtime": 1778851354.2789822,
+    "ast_hash": "7741e1dbbe91bd790d9a00b364048f34",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\date-input-ui.tsx": {
+    "mtime": 1778176573.1137643,
+    "ast_hash": "01da6b14f8944bc942090329fd0a0d9e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\dialog.tsx": {
+    "mtime": 1776272859.1052907,
+    "ast_hash": "c0fd5882b74c148e7625f83b5dc2d14b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\dropdown-menu.tsx": {
+    "mtime": 1776272859.1062987,
+    "ast_hash": "cd1eb1df99fbbd4356d633ee5838b6aa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\form-container.tsx": {
+    "mtime": 1776272859.1062987,
+    "ast_hash": "7d9320365c52b8f58dad0d524b2f9bf5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\form.tsx": {
+    "mtime": 1776272859.1062987,
+    "ast_hash": "eed0db7694c201c21cec39532672de0c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\global-loader.tsx": {
+    "mtime": 1778176573.115437,
+    "ast_hash": "ae30cec7f298dc77d9d51679de5d2f4d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\input-button.tsx": {
+    "mtime": 1779459177.345509,
+    "ast_hash": "8cda82b480d1c2368a1bd2bb1f2c2b0a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\input.tsx": {
+    "mtime": 1776272859.1062987,
+    "ast_hash": "e83c6b294678d487b508106f6be623bc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\label.tsx": {
+    "mtime": 1776272859.111432,
+    "ast_hash": "99b8b7244860ecba9ce05f5a644e0360",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\negative-button.tsx": {
+    "mtime": 1776272859.111432,
+    "ast_hash": "7b40a7f752764f6aad4e376043af869c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\rich-text-editor.tsx": {
+    "mtime": 1780059342.5897937,
+    "ast_hash": "bb9e6203fe7dfa29f8a4371a1eaa6d59",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\select-input.tsx": {
+    "mtime": 1776272859.1139886,
+    "ast_hash": "9ff140cfac9e674515402262195ff2e1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\select.tsx": {
+    "mtime": 1776272859.1139886,
+    "ast_hash": "bee66c400edf07534da746d6f7973529",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\separator.tsx": {
+    "mtime": 1776272859.1166778,
+    "ast_hash": "14b352d106f7c90830cea0ce57cdbde5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\sheet.tsx": {
+    "mtime": 1776272859.1166778,
+    "ast_hash": "7794674dea5a9a7f876641a775c1a354",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\skeleton.tsx": {
+    "mtime": 1776272859.1166778,
+    "ast_hash": "c446baef0fe18e66af422e089a8fc7a9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\switch.tsx": {
+    "mtime": 1776272859.1166778,
+    "ast_hash": "eb9c958dbcb35094c332c8bed5e989ee",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\table.tsx": {
+    "mtime": 1776272859.1166778,
+    "ast_hash": "462e61164dff70cbd0eb9018cf233fa8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\TableSkeleton.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "f7a19722eb4ef3fe27eeb61ae76bebcf",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\tabs.tsx": {
+    "mtime": 1776272859.122248,
+    "ast_hash": "dc20f28b198f9d0a909f601c748db51a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\taxpayer-combobox.tsx": {
+    "mtime": 1778176573.1189778,
+    "ast_hash": "625144278563b074d7abf812fca628e4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\taxpayer-list.tsx": {
+    "mtime": 1778176573.1213288,
+    "ast_hash": "ef3967de17ca61ad3aef5aa3e30867f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\text-input.tsx": {
+    "mtime": 1776272859.1242585,
+    "ast_hash": "ba03c971b2be5b15f064f36b5b6e35c6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\textarea.tsx": {
+    "mtime": 1776272859.1242585,
+    "ast_hash": "e4dcc76411f902479c6d8cf88efe93a2",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\toast.tsx": {
+    "mtime": 1776272859.1242585,
+    "ast_hash": "bbad7c38ac01d05852eccdcc263c604f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\toaster.tsx": {
+    "mtime": 1776272859.1242585,
+    "ast_hash": "4dfb805b34da3d4f8539b2b1ca602500",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2.tsx": {
+    "mtime": 1779725884.08842,
+    "ast_hash": "b4ab620dc0983eea688b8c577bfc369e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\InfoTable\\info-table-column.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "a89c4f5f04bfbb9e3d4f6cfc0787f9de",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\InfoTable\\info-table-header.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "6917716ecdcbc3d1c67ec79546245edc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\InfoTable\\info-table-opt-menu.tsx": {
+    "mtime": 1778176573.1070962,
+    "ast_hash": "76ae8a578e522d4292c2a4bae7db414c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\InfoTable\\info-table-row.tsx": {
+    "mtime": 1778176573.109482,
+    "ast_hash": "0e528da648bc80984a8e557c2f8c301c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\Loading\\loading-circular-component.tsx": {
+    "mtime": 1776272859.0906646,
+    "ast_hash": "e4af960ad30e38db720f438b0fd9305b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\back-button.tsx": {
+    "mtime": 1779715475.0090055,
+    "ast_hash": "01ebd9f31bfcb94a4677b07709c43021",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\empty-state.tsx": {
+    "mtime": 1779715475.0107613,
+    "ast_hash": "6aeea3763248721ee87c007c254c3c8f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\error-state.tsx": {
+    "mtime": 1776272859.1328585,
+    "ast_hash": "58185ad19e73df02f5c755944ad48bb5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\index.ts": {
+    "mtime": 1778612584.2662816,
+    "ast_hash": "e70b10868e6c1e1a0c72fd705188fc5d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\loading-state.tsx": {
+    "mtime": 1779715475.0107613,
+    "ast_hash": "f022c0d474adbbf3b8dc2e83dbff872c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\modal-footer.tsx": {
+    "mtime": 1776272859.1358707,
+    "ast_hash": "524c118850a30d3441a4cb98ca8d6e4a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\page-header.tsx": {
+    "mtime": 1779715475.0151446,
+    "ast_hash": "22d39dcdda366d3bbb532faa687058b8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\UI\\v2\\year-selector.tsx": {
+    "mtime": 1776272859.1382966,
+    "ast_hash": "14d499bce37990432de65e821d297f3a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\format-currency.ts": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "726271828c5604e9f9ef981439e458aa",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\number.utils.ts": {
+    "mtime": 1778176573.2227733,
+    "ast_hash": "353cb9049155f1a04a247dff76591d0b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\announcements-admin-functions.ts": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "2395ba1cbe4c350ab4cc70bcddb3a676",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\announcements-functions.ts": {
+    "mtime": 1780059342.5945907,
+    "ast_hash": "153f6d279f902087f5039556a23b1d92",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\api-connection.tsx": {
+    "mtime": 1779725884.105906,
+    "ast_hash": "74a381dd8acba698a46d319eb512b2ea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\auditoria-functions.ts": {
+    "mtime": 1778176573.2117257,
+    "ast_hash": "c6474f77814971c28f77fe0d4120ecb8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\divulgacion-functions.ts": {
+    "mtime": 1779725884.1100132,
+    "ast_hash": "d60576d0fd35b56e800a70246573eb35",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\documentos-functions.ts": {
+    "mtime": 1780059681.2328207,
+    "ast_hash": "b9f30886a6a800926d54a50e91c7b6f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\fiscal-operaciones-functions.ts": {
+    "mtime": 1778851307.8799822,
+    "ast_hash": "95c7ac53afbd6ba0625e737fd72ca4c3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\notifications-functions.ts": {
+    "mtime": 1778176573.213213,
+    "ast_hash": "aee93b0e956a848c06e6de0ae7a239c0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\personal-stats-functions.ts": {
+    "mtime": 1778851307.8822725,
+    "ast_hash": "385757256e8de0a825716e6fbbd2334d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\report-functions.ts": {
+    "mtime": 1780318716.1631627,
+    "ast_hash": "0685121f24189deb309e593341569a1f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\taxpayer-census-functions.ts": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "1bfc9a86de1b8daad77e35e31a4bd71a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\taxpayer-functions.ts": {
+    "mtime": 1780315750.886598,
+    "ast_hash": "4b2022bf2d1ea2efb78a1a8ac61490d8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\user-functions.ts": {
+    "mtime": 1778851307.8894866,
+    "ast_hash": "a39e486e3ec844383da633491a964e49",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\visits-functions.ts": {
+    "mtime": 1778851307.894481,
+    "ast_hash": "9b055056bbb45cc1eca1193e5688dab9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\api\\visits-ws-connection.ts": {
+    "mtime": 1778851307.897123,
+    "ast_hash": "f7778e316f240c7d959d69ca981fb94c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\Fiscal utils\\export-reports.ts": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "62a8f0428438f84beef0752a8f57e6f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\Form utils\\Normalize.tsx": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "e8143d0b7c032801302f66ab7ad3209f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\stats\\export-compliance-excel.ts": {
+    "mtime": 1776272859.1837811,
+    "ast_hash": "cf5a898094a90b1771c947ab28f041d9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\stats\\export-supervisors-excel.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "ccdd43529eaacf2908c1be209d2fb021",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\stats\\export-top-fiscals-excel.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "df146aa503e1b3e0f36616df762d0737",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\stats\\export-top-five-by-group-excel.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "61cab254b4b0e1c157bf6e27716984c6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\utils\\stats\\export-top-growth-excel.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "8146a2c16e2d6b76abb9d16ba68ac393",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\validations\\errors-schema.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "89212a58a39c52985be6021dd2c09cbc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\components\\visits\\visits-queue-panel.tsx": {
+    "mtime": 1778851307.89953,
+    "ast_hash": "6b27790ee57a3b18a2a13fe7ae8bacad",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\config\\feature-flags.ts": {
+    "mtime": 1778851307.9023857,
+    "ast_hash": "cb85c4f8805ce3baa76cab5f2bf0e2b1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\config\\nav-routes.tsx": {
+    "mtime": 1780059342.6087418,
+    "ast_hash": "e531b529c4869c3bfa130afc7a47a0f6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\config\\nav-strategies.ts": {
+    "mtime": 1779725884.1177456,
+    "ast_hash": "9e4611bebd5c96d7acf9659866e49eec",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\theme-provider.tsx": {
+    "mtime": 1778851307.9090025,
+    "ast_hash": "550469e1a6471c76a20b77c9459698b1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-auth.tsx": {
+    "mtime": 1778851307.91108,
+    "ast_hash": "1f7f7f8bddf63776d948a18cf5773f68",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-debounce.tsx": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "39fb48a1ef1f9d3501d22ad5c527f45c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-demo-mode.ts": {
+    "mtime": 1778851307.913566,
+    "ast_hash": "2130e3479932a027f7b63a9273ad78fc",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-fiscal-stats.tsx": {
+    "mtime": 1776795352.9754953,
+    "ast_hash": "fb901eb913583e9b7d6230a208e89800",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-local-storage.tsx": {
+    "mtime": 1778851307.9157965,
+    "ast_hash": "18ae98b7dbcafa22a4e06aef31cb28b1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-media-query.ts": {
+    "mtime": 1778176573.2388234,
+    "ast_hash": "888d9d98b69145bfd5280a6b7e7e3e70",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-nav-items.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "04302d4c680a247d50609930353a3d20",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-notifications.tsx": {
+    "mtime": 1778176573.2406604,
+    "ast_hash": "7080387e4d89145789d63f43465f4278",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-presence-heartbeat.ts": {
+    "mtime": 1778851307.9179747,
+    "ast_hash": "4cbd458fc002ef5a1b3cbd86765186bb",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-toast.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "7e3fe3fae43305ab0ace659832a8d072",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-tv-idle-rotation.ts": {
+    "mtime": 1778851307.920346,
+    "ast_hash": "571111df4f90bbb7f62d026111d09b5e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-visit-notifications.ts": {
+    "mtime": 1778851307.9216805,
+    "ast_hash": "1c5063688795a23ed05dd5dcb7c51ea9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\use-visits-monitor.ts": {
+    "mtime": 1778851307.9244695,
+    "ast_hash": "9872a116f365ae510cbae30f7265f272",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\useAutoScroll.ts": {
+    "mtime": 1778176573.2479706,
+    "ast_hash": "7d0a1d3d989b09acda30803d17ac8626",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\useCachedData.ts": {
+    "mtime": 1776795352.9814968,
+    "ast_hash": "87a606a688c67a4bd148ed90852ebc57",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\hooks\\useFiscalStats.ts": {
+    "mtime": 1779459177.3614864,
+    "ast_hash": "44169e9b3cd4441acd13501bdbef0656",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\lib\\utils.ts": {
+    "mtime": 1776272859.1995056,
+    "ast_hash": "1d8011eb18769078bf77502b220daa5e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\AnnouncementsAdmin.tsx": {
+    "mtime": 1780059342.611805,
+    "ast_hash": "32d00d4afb1843e8db6619cdc76a3879",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\router.tsx": {
+    "mtime": 1780059342.6172447,
+    "ast_hash": "14cffc010ecb8cc87e92ca72f9320aee",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Admin\\admin-page-v2.tsx": {
+    "mtime": 1780319021.3893356,
+    "ast_hash": "29b5c272c8288e0c89eee468988b4769",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\audit\\audit-trail-page-v2.tsx": {
+    "mtime": 1779725884.1242137,
+    "ast_hash": "34a4ee05bbd5d499600ae186a6e74aea",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Auth\\login-page-v2.tsx": {
+    "mtime": 1776272859.2154262,
+    "ast_hash": "e3000c17fcb931897ef1262f64c8b945",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\CensusTable\\census-table-page-v2.tsx": {
+    "mtime": 1780059337.776248,
+    "ast_hash": "415f0b1daf4d7c2cc27bc12f6305a64a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Contributions\\contributions-page-v2.tsx": {
+    "mtime": 1779715475.038411,
+    "ast_hash": "9194083d7e7c272fc38022c152f422b6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\desglose-comercial.tsx": {
+    "mtime": 1778851307.9481971,
+    "ast_hash": "768120d9526353329a92b15d2f88905c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\divulgacion-detalle-page.tsx": {
+    "mtime": 1779715475.0578952,
+    "ast_hash": "9ce08aad13df2a1f7fa9b0f68c9133c1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\divulgacion-presencia-page.tsx": {
+    "mtime": 1779725884.127887,
+    "ast_hash": "bb91c0c933cc96c41612f522e81fd682",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\equipo-quick-add.tsx": {
+    "mtime": 1778851307.953847,
+    "ast_hash": "e27b058725721f9f002c5d01c89b6ba1",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\parroquia-mapa-interactivo.tsx": {
+    "mtime": 1779725884.1298976,
+    "ast_hash": "2c1c4d927b6ec6049d225e0946d6d330",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\divulgacion\\parroquias-libertador.geo.json": {
+    "mtime": 1778851307.9616709,
+    "ast_hash": "5f29077dbe82ce5a2f2818dd6255828a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\documentos\\documentos-page.tsx": {
+    "mtime": 1780059380.0135827,
+    "ast_hash": "4b215e36b539d520cbb9ec187da614ed",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\documentos\\subir-documento-page.tsx": {
+    "mtime": 1780059782.2793095,
+    "ast_hash": "f38101c8aaf0e6d231b6d2aa6da6fb41",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\errors\\errors-report-v2.tsx": {
+    "mtime": 1779715475.0674198,
+    "ast_hash": "5ee4bd9afac29ddea59d211101850d0b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Events\\comitment-page-v2.tsx": {
+    "mtime": 1780316143.508176,
+    "ast_hash": "d2ce3678ce1953d7a27f98ac5c87665d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Events\\fine-page-v2.tsx": {
+    "mtime": 1780316092.3882196,
+    "ast_hash": "feb25a7a8f92f13dd12c8b5ecd10b098",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Events\\notice-page-v2.tsx": {
+    "mtime": 1780316108.5965483,
+    "ast_hash": "f075f86e550919234150cdeed66da887",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Events\\payment-page-v2.tsx": {
+    "mtime": 1780316127.7708316,
+    "ast_hash": "89b765eb2d7a30e71ddaf96a2dcd7dc0",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\fiscal-review\\fiscal-review-page-v2.tsx": {
+    "mtime": 1779715475.0674198,
+    "ast_hash": "135c656d51e315303b34d50ba326147d",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\fiscalizacion\\fiscalizacion-page-v2.tsx": {
+    "mtime": 1779715475.072035,
+    "ast_hash": "2e928b1aaac6a73258ceec0ad80f2b36",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\gestion-personal\\gestion-personal-page-v2.tsx": {
+    "mtime": 1779725884.139015,
+    "ast_hash": "a4b5bef168d17ab490207c6ab3c4001a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Home\\HomePage.tsx": {
+    "mtime": 1778612584.273849,
+    "ast_hash": "c924860eebabed440fa8b4faf1182b29",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\index-iva\\index-iva-v2.tsx": {
+    "mtime": 1779715475.0744238,
+    "ast_hash": "42b2f1e9a4a5561a56576421ceffb474",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\internal-audit-page-v2.tsx": {
+    "mtime": 1779715475.0744238,
+    "ast_hash": "91f7d6ac71e30de89eace5cacae141e9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-alerts-table.tsx": {
+    "mtime": 1778851307.9724395,
+    "ast_hash": "3fdcd52e8f17d7a8ad7865c86003d388",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-fiscals-table.tsx": {
+    "mtime": 1778851307.9756744,
+    "ast_hash": "0836391418e3c60e1fdedcae341f9345",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-kpi-panel.tsx": {
+    "mtime": 1778851307.9774451,
+    "ast_hash": "058124b62478c8f37e9bcd71d32b727a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-pagination-bar.tsx": {
+    "mtime": 1778851307.9790728,
+    "ast_hash": "3fd721f0daf8595255afb7bce1564172",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-roadmap-card.tsx": {
+    "mtime": 1778851307.9819846,
+    "ast_hash": "dddd4f9dae563cd95bb050fb9bfb2cce",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-timeline-table.tsx": {
+    "mtime": 1778851307.9836216,
+    "ast_hash": "a0d36c1d3c38ad5ffd6115ba7c7c788f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-toolbar.tsx": {
+    "mtime": 1778851307.985204,
+    "ast_hash": "1a014fd17d25d5a1c1071dfb261571e4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\components\\internal-audit-usage-ranking-panel.tsx": {
+    "mtime": 1778851307.9874048,
+    "ast_hash": "7f8b08d3414a46e760a65bcc99a51966",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\utils\\datetime-local.ts": {
+    "mtime": 1778851307.992857,
+    "ast_hash": "593e6747713d36b5b854047323b117e3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\internal-audit\\utils\\format-when.ts": {
+    "mtime": 1778851307.994429,
+    "ast_hash": "9c89f006da575217ea4a6d724344e53f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\ISLR\\islr-report-v2.tsx": {
+    "mtime": 1779715475.0431764,
+    "ast_hash": "05d7334ccd5798cfb2891725454d59c3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\iva\\iva-report-v2.tsx": {
+    "mtime": 1779715475.0744238,
+    "ast_hash": "c0905a0c87b6eea0d57686ddff70412b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Notifications\\notifications-page-v1.tsx": {
+    "mtime": 1779715475.0431764,
+    "ast_hash": "143d81183fae0a43756bc9c804b05dda",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Observations\\observations-page-v2.tsx": {
+    "mtime": 1780316241.6131182,
+    "ast_hash": "2c2539c9954a0110c0bd9a39050e72ae",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\reports\\group-performance-page.tsx": {
+    "mtime": 1778851307.9975264,
+    "ast_hash": "37c6a23cf348f76b7550639f71062005",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\reports\\group-report-page-v2.tsx": {
+    "mtime": 1779715475.0744238,
+    "ast_hash": "9f9ac224dfc4ab54272e66f323a74ff8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\reports\\reports-page-v2.tsx": {
+    "mtime": 1779715475.0744238,
+    "ast_hash": "81dde7a8e1b1fbba025e68a03e46e519",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\reports\\taxpayer-report-page.tsx": {
+    "mtime": 1780318732.1176252,
+    "ast_hash": "159a1ffd598823b657230012755afc3f",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Settings\\settings-page-v2.tsx": {
+    "mtime": 1779715475.0431764,
+    "ast_hash": "57b2d0e314dc8765c6cedc6d0fc60d2a",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\fiscal-stats-dashboard-v2.tsx": {
+    "mtime": 1778851373.183999,
+    "ast_hash": "c530fc1bbaf79aa4d13ec478cd3d7057",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-dashboard-v2.tsx": {
+    "mtime": 1779715475.0878022,
+    "ast_hash": "8f38a28976807daf4ba0ff4e29a26a3c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-demo-mode.tsx": {
+    "mtime": 1778851308.0084925,
+    "ast_hash": "1c868a9ad45eada5ec61ea5fff2a0024",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-page2-rankings.tsx": {
+    "mtime": 1778851308.0118678,
+    "ast_hash": "14c359d56adb00b4d2a853ea2f3c6169",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-page3-cumplimiento.tsx": {
+    "mtime": 1778851308.0150607,
+    "ast_hash": "a5bd451c5105ed587c75b65be7bb2c92",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-top-coordinadores.tsx": {
+    "mtime": 1776272859.2311776,
+    "ast_hash": "bc6d7b51a04a2dfe04cd533780c106fe",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\stats-top-fiscales.tsx": {
+    "mtime": 1776272859.2311776,
+    "ast_hash": "30e18bfc42c33697953bfeef85b5ac15",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\stats\\StatsPage.tsx": {
+    "mtime": 1778176573.3316536,
+    "ast_hash": "63a33795d51063cb855ee3e65a2f8fd7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Taxpayer\\taxpayer-detail-v2.tsx": {
+    "mtime": 1780326894.9276922,
+    "ast_hash": "e53c0cb97ed605575abdd8535b89c996",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\v2\\index.ts": {
+    "mtime": 1778612584.278054,
+    "ast_hash": "39ea018e6153f2dd560cb2c4fbb3bd05",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\pages\\Visits\\visits-monitor-page.tsx": {
+    "mtime": 1779715475.0578952,
+    "ast_hash": "29b40155f33020707cb4ee393076b897",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\announcements.ts": {
+    "mtime": 1780059342.6172447,
+    "ast_hash": "4faa42f95d15ecc5bf54f7749fc20ae4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\auditoria.ts": {
+    "mtime": 1778176573.3540502,
+    "ast_hash": "9462603c22c818b4aa31f3dec848d840",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\declaration-status.ts": {
+    "mtime": 1779715475.0895576,
+    "ast_hash": "47a457934da33e4cdb201e68acb0b8ff",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\documents.ts": {
+    "mtime": 1780059342.6263447,
+    "ast_hash": "2e3a6689b4ec92ecba75ac7380e4ec42",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\errors.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "701dd55c3b4593fc20bd84d8103bc357",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\event.ts": {
+    "mtime": 1780315747.6900234,
+    "ast_hash": "d5cf0efc85e25554f323edbd78faed83",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\fiscal-stats.ts": {
+    "mtime": 1779715475.0895576,
+    "ast_hash": "75f45d0952ac91a58f17f0fb22caa703",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\group-records.ts": {
+    "mtime": 1779715475.0895576,
+    "ast_hash": "f06254c2dd0faadd4800dbe9bc68cb02",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\group.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "51f5e0d100bcd10db00716c71aca3b46",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\internal-audit.ts": {
+    "mtime": 1778851308.0171485,
+    "ast_hash": "cba0936f1434b3b009a2bff4a7af8bec",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\investigation-pdf.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "63348c032581e87fe9a934ccab367a85",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\islr-reports.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "1bdccc9b4cbd395e759b59f36687b823",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\iva-reports.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "109175dd546e09857cc6e723506df2f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\nav.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "b2a9e262113e91b78c651c7918339639",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\notifications.ts": {
+    "mtime": 1778176573.3583899,
+    "ast_hash": "053ca27369dd730a891933adc28b17d9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\parish.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "f19356d116e435c271a47e1f8d5e4621",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\payment.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "29a665d208dcdd46b77017af44beb208",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\repair-reports.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "16bccc6cacf845e811c775469c4ae25e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\reports.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "a041959d2e38cbadc28b522ec66709b5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\stats.ts": {
+    "mtime": 1778176573.3605864,
+    "ast_hash": "07c6a6016049144c0bd6e54b7c872961",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\tax-case.ts": {
+    "mtime": 1780315746.4018807,
+    "ast_hash": "a5441609e0d60ba90e9a2950e004a683",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\taxpayer-categories.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "7161ffc10d7c67f96fa3a2a31c06e03e",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\taxpayer-census.ts": {
+    "mtime": 1776272859.2470572,
+    "ast_hash": "daff249e26d4592e2f686a52a4d33be3",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\taxpayer.ts": {
+    "mtime": 1780315747.068931,
+    "ast_hash": "a64faf09003d86053f73b05d4039e673",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\user.ts": {
+    "mtime": 1779725884.1466708,
+    "ast_hash": "5617ff23c1d2a753c45996657fef17e4",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\visits.ts": {
+    "mtime": 1778851308.0219133,
+    "ast_hash": "b572c96563a0e2ffb70f3d66747fbdf9",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\types\\v2\\index.ts": {
+    "mtime": 1780319013.4150672,
+    "ast_hash": "0d38e18c755df81833a265802048667b",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\utils\\fiscal-cartera-year.ts": {
+    "mtime": 1778851308.0230846,
+    "ast_hash": "9af8184f0f099459bd68e4595f9d999c",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\test-results\\.last-run.json": {
+    "mtime": 1778176573.3698921,
+    "ast_hash": "5970244f4baa12f805a34ee49fa86ab5",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\tests\\notifications.e2e.spec.ts": {
+    "mtime": 1778176573.3737886,
+    "ast_hash": "eef2995eb9c2f55d0321dae15a6ae2a6",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\DOCUMENTACION_FEATURE_FLAGS.md": {
+    "mtime": 1778851307.765093,
+    "ast_hash": "1c643f20075943c51380498afd0087a7",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\index.html": {
+    "mtime": 1776272859.0590222,
+    "ast_hash": "6dd042e457ea2e9dfd12410ff5f458f8",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\public\\vite.svg": {
+    "mtime": 1776272859.0749013,
+    "ast_hash": "8e3a10e157f75ada21ab742c022d5430",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\assets\\react.svg": {
+    "mtime": 1776272859.0802753,
+    "ast_hash": "f0402b67b6ce880f65666bb49e841696",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\src\\assets\\sac-background.svg": {
+    "mtime": 1776272859.0802753,
+    "ast_hash": "8ebe35ac7cc51bc90160db8672ec4860",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\public\\sounds\\notificacion.mp3": {
+    "mtime": 1778851307.784907,
+    "ast_hash": "875834d629e2d0e43d8b69f88410ed59",
+    "semantic_hash": ""
+  },
+  "C:\\Users\\glong\\Desktop\\sac_frontend\\public\\sounds\\notificacion2.mp3": {
+    "mtime": 1778851307.787501,
+    "ast_hash": "ab63095aafbaa1a1e70d4ce3c43f5a5e",
+    "semantic_hash": ""
+  }
+}

@@ -1,4 +1,4 @@
-import { useParams, Navigate, useLoaderData } from 'react-router-dom';
+import { useParams, Navigate, useLoaderData, useSearchParams } from 'react-router-dom';
 import { PageHeader, BackButton } from '@/components/UI/v2';
 import EventForm from '@/components/Events/event-form';
 import { useAuth } from '@/hooks/use-auth';
@@ -6,6 +6,8 @@ import { AlertTriangle, Building2, Hash } from 'lucide-react';
 
 export default function FinePageV2() {
   const { taxpayerId } = useParams();
+  const [searchParams] = useSearchParams();
+  const tax_case_id = searchParams.get('case') || undefined;
   const { user } = useAuth();
   const data = useLoaderData() as { taxpayerData: any } | null;
   const taxpayerData = data?.taxpayerData;
@@ -111,7 +113,7 @@ export default function FinePageV2() {
 
             {/* Form */}
             <div className="px-5 py-5">
-              <EventForm title="Multa" type="fine" taxpayerId={taxpayerId || ""} />
+              <EventForm title="Multa" type="fine" taxpayerId={taxpayerId || ""} tax_case_id={tax_case_id} />
             </div>
           </div>
         </div>

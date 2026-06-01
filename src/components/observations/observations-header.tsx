@@ -9,15 +9,17 @@ export interface ObservationsForm {
     taxpayerId: string
     description: string,
     date: string,
+    tax_case_id?: string
 }
 
 interface ObservationsHeaderProps {
     taxpayerId: string | undefined,
     onObservationCreated: () => void;
+    tax_case_id?: string;
 }
 
 
-function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHeaderProps) {
+function ObservationsHeader({ taxpayerId, onObservationCreated, tax_case_id }: ObservationsHeaderProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { register, handleSubmit, reset, formState: { isValid, errors }, } = useForm<ObservationsForm>({
@@ -42,6 +44,7 @@ function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHe
             const payload = {
                 ...data,
                 taxpayerId: taxpayerId!, // force taxpayerId from props
+                tax_case_id,
             };
 
             const response = await createObservation(payload);
@@ -52,7 +55,7 @@ function ObservationsHeader({ taxpayerId, onObservationCreated }: ObservationsHe
                     date: new Date().toISOString(),
                     description: "",
                 }),
-                    onObservationCreated(); // âÿÿ trigger the refresh in parent
+                    onObservationCreated(); // ï¿½ï¿½ï¿½ trigger the refresh in parent
             }
         } catch (e) {
             console.error("Error al crear la observaciÃ³n...", e)

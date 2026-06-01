@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import {
   createObservation,
@@ -41,6 +41,8 @@ interface ObservationFormData {
  */
 export default function ObservationsPageV2() {
   const { taxpayerId } = useParams();
+  const [searchParams] = useSearchParams();
+  const tax_case_id = searchParams.get('case') || undefined;
   const { user } = useAuth();
   const [observations, setObservations] = useState<Observation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -92,6 +94,7 @@ export default function ObservationsPageV2() {
       const payload = {
         ...data,
         taxpayerId: taxpayerId,
+        tax_case_id: tax_case_id,
       };
 
       const response = await createObservation(payload);

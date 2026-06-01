@@ -84,6 +84,7 @@ interface FineRecord {
   debt?: unknown;
   description?: string;
   expires_at?: string;
+  tax_case_id?: string;
 }
 
 interface FineApiResponse {
@@ -97,6 +98,7 @@ interface PaymentRecord {
   date: string;
   amount: unknown;
   status?: boolean;
+  tax_case_id?: string;
 }
 
 interface PaymentApiResponse {
@@ -473,7 +475,14 @@ export default function TaxpayerReportPage() {
               {(pending as FineRecord[]).map((e, i) => (
                 <div key={e.id ?? i} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-yellow-800/40">
                   <div>
-                    <p className="text-sm font-medium text-slate-200">{e.type}</p>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <p className="text-sm font-medium text-slate-200">{e.type}</p>
+                      {e.tax_case_id && (
+                        <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-900/30 text-blue-300">
+                          Caso
+                        </span>
+                      )}
+                    </div>
                     {e.date && <p className="text-xs text-slate-500">{fmtDate(e.date)}</p>}
                   </div>
                   <span className="text-yellow-400 font-bold text-sm">Bs. {fmt(e.debt ?? e.amount)}</span>
@@ -501,6 +510,11 @@ export default function TaxpayerReportPage() {
                         </Badge>
                         <span className="text-xs text-slate-500">{fmtDate(f.date)}</span>
                         {f.expires_at && <span className="text-xs text-slate-500">Vence: {fmtDate(f.expires_at)}</span>}
+                        {f.tax_case_id && (
+                          <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-900/30 text-blue-300">
+                            Caso
+                          </span>
+                        )}
                       </div>
                       {f.description && (
                         <p className="text-xs text-slate-400 mt-1 leading-relaxed line-clamp-2">{f.description}</p>
@@ -533,7 +547,14 @@ export default function TaxpayerReportPage() {
             <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
               {payments.map((p) => (
                 <div key={p.id} className="flex items-center justify-between p-3 bg-slate-900/50 rounded-lg border border-slate-700/50">
-                  <p className="text-xs text-slate-400">{fmtDate(p.date)}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs text-slate-400">{fmtDate(p.date)}</p>
+                    {p.tax_case_id && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-900/30 text-blue-300">
+                        Caso
+                      </span>
+                    )}
+                  </div>
                   <p className="text-green-400 font-bold text-sm">Bs. {fmt(p.amount)}</p>
                 </div>
               ))}

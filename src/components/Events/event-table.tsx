@@ -8,6 +8,8 @@ import { decimalToNumber } from '../utils/number.utils';
 import { MoreVertical, Pencil, Trash2, Check, X, Loader2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/UI/dropdown-menu';
 import { getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/UI/dialog';
+import { Button } from '@/components/UI/button';
 
 interface EventTableProps {
   rows: Event[];
@@ -58,6 +60,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
     { label: 'Monto', id: 'amount' },
     { label: 'Fecha', id: 'date' },
     { label: 'Motivo', id: 'description' },
+    { label: 'Caso', id: 'tax_case_id' },
     { label: 'Estado', id: 'debt' },
   ];
 
@@ -156,298 +159,18 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
 
   return (
     <>
-      <style>{`
-        /* ── EventTable tokens ── */
-        .et-wrap {
-          --et-base: #0b1220;
-          --et-surface: #111f32;
-          --et-border: rgba(148,163,184,0.09);
-          --et-border-row: rgba(148,163,184,0.07);
-          --et-text-1: #e2e8f0;
-          --et-text-2: #94a3b8;
-          --et-text-3: #475569;
-          --et-hover: rgba(148,163,184,0.05);
-          --et-amber: #f59e0b;
-          font-family: 'Inter', system-ui, sans-serif;
-          width: 100%;
-          overflow-x: auto;
-          scrollbar-width: thin;
-          scrollbar-color: var(--et-border) transparent;
-        }
-        .et-wrap::-webkit-scrollbar { height: 4px; }
-        .et-wrap::-webkit-scrollbar-thumb { background: var(--et-border); border-radius: 2px; }
-
-        .et-table {
-          width: 100%;
-          min-width: 600px;
-          border-collapse: collapse;
-          font-size: 12.5px;
-          table-layout: fixed; /* Added for sizing consistency */
-        }
-
-        /* ── Header ── */
-        .et-thead tr {
-          background: rgba(8,15,28,0.9);
-          border-bottom: 1px solid var(--et-border);
-        }
-        .et-th {
-          padding: 10px 14px;
-          font-size: 10px;
-          font-weight: 700;
-          text-transform: uppercase;
-          letter-spacing: 0.07em;
-          color: var(--et-text-3);
-          text-align: left;
-          white-space: nowrap;
-        }
-        .et-th.num { text-align: right; }
-        .et-th.center { text-align: center; }
-
-        /* ── Rows ── */
-        .et-tr {
-          border-bottom: 1px solid var(--et-border-row);
-          transition: background 0.12s;
-          position: relative;
-        }
-        .et-tr:hover { background: var(--et-hover); }
-        .et-tr:last-child { border-bottom: none; }
-
-        /* Strip cell */
-        .et-td-strip {
-          width: 3px;
-          padding: 0;
-          position: relative;
-        }
-        .et-strip {
-          position: absolute;
-          inset: 0;
-          width: 3px;
-        }
-
-        .et-td {
-          padding: 12px 14px;
-          color: var(--et-text-1);
-          vertical-align: middle;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
-        }
-        .et-td.num {
-          text-align: right;
-          font-family: 'Courier New', monospace;
-          font-size: 12px;
-          font-variant-numeric: tabular-nums;
-          color: var(--et-text-2);
-        }
-        .et-td.muted { color: var(--et-text-2); font-size: 11.5px; }
-        .et-td.center { 
-          text-align: center;
-          display: table-cell;
-        }
-        .et-td.center > * {
-          margin: 0 auto;
-        }
-
-        /* ── Type badge ── */
-        .et-type-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 2px 8px;
-          border-radius: 999px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          white-space: nowrap;
-        }
-
-        /* ── Debt badge ── */
-        .et-debt-badge {
-          display: inline-flex;
-          align-items: center;
-          gap: 4px;
-          padding: 3px 8px;
-          border-radius: 999px;
-          font-size: 10px;
-          font-weight: 700;
-        }
-        .et-debt-badge.paid {
-          background: rgba(16,185,129,0.12);
-          color: #6ee7b7;
-        }
-        .et-debt-badge.unpaid {
-          background: rgba(244,63,94,0.12);
-          color: #fda4af;
-        }
-
-        /* ── Debt select: tamaño compacto (como antes) + colores del tema ── */
-        .et-debt-select {
-          appearance: none;
-          -webkit-appearance: none;
-          padding: 3px 22px 3px 8px;
-          border-radius: 999px;
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 0.04em;
-          line-height: 1.35;
-          outline: none;
-          cursor: pointer;
-          transition: border-color 0.12s ease, background 0.12s ease;
-          background-repeat: no-repeat;
-          background-position: right 6px center;
-          background-size: 10px 10px;
-        }
-        .et-debt-select:hover {
-          filter: brightness(1.05);
-        }
-        .et-debt-select:focus-visible {
-          outline: 2px solid rgba(99, 102, 241, 0.55);
-          outline-offset: 1px;
-        }
-        /* Pagada */
-        .et-debt-select.paid {
-          background-color: rgba(6, 78, 59, 0.45);
-          border: 1px solid rgba(52, 211, 153, 0.5);
-          color: #6ee7b7;
-          text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2334d399' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-        }
-        .et-debt-select.paid:hover {
-          border-color: rgba(110, 231, 183, 0.7);
-          background-color: rgba(6, 95, 70, 0.5);
-        }
-        /* No pagada */
-        .et-debt-select.unpaid {
-          background-color: rgba(127, 29, 29, 0.35);
-          border: 1px solid rgba(251, 113, 133, 0.5);
-          color: #fda4af;
-          text-shadow: 0 1px 1px rgba(0,0,0,0.3);
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23fb7185' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
-        }
-        .et-debt-select.unpaid:hover {
-          border-color: rgba(253, 164, 175, 0.75);
-          background-color: rgba(153, 27, 27, 0.4);
-        }
-        .et-debt-select option {
-          background: #0f172a;
-          color: #e2e8f0;
-          font-weight: 600;
-          font-size: 12px;
-          padding: 6px 8px;
-        }
-        .et-debt-select option[value="paid"] {
-          color: #6ee7b7;
-          background: #022c22;
-        }
-        .et-debt-select option[value="not_paid"] {
-          color: #fda4af;
-          background: #450a0a;
-        }
-
-        /* ── Edit input ── */
-        .et-edit-input {
-          width: 100%;
-          padding: 5px 8px;
-          background: rgba(148,163,184,0.08);
-          border: 1px solid rgba(245,158,11,0.4);
-          border-radius: 5px;
-          color: var(--et-text-1);
-          font-size: 12px;
-          outline: none;
-          box-sizing: border-box;
-        }
-
-        /* ── Menu button ── */
-        .et-menu-btn {
-          width: 28px; height: 28px;
-          border-radius: 6px;
-          background: transparent;
-          border: 1px solid var(--et-border);
-          color: var(--et-text-3);
-          display: flex; align-items: center; justify-content: center;
-          cursor: pointer;
-          transition: background 0.12s, color 0.12s;
-        }
-        .et-menu-btn:hover {
-          background: rgba(148,163,184,0.10);
-          color: var(--et-text-1);
-        }
-        .et-menu-btn.active {
-          background: rgba(245,158,11,0.10);
-          color: var(--et-amber);
-          border-color: rgba(245,158,11,0.25);
-        }
-
-        /* ── Dropdown ── */
-        .et-dropdown {
-          position: fixed;
-          z-index: 9999;
-          background: #1e293b;
-          border: 1px solid rgba(148,163,184,0.15);
-          border-radius: 8px;
-          box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-          min-width: 140px;
-          padding: 4px;
-          animation: etDropIn 0.12s ease;
-        }
-        @keyframes etDropIn {
-          from { opacity: 0; transform: translateY(-4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        .et-drop-item {
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          width: 100%;
-          padding: 7px 10px;
-          border-radius: 5px;
-          background: transparent;
-          border: none;
-          font-size: 12px;
-          font-weight: 500;
-          cursor: pointer;
-          transition: background 0.1s;
-          text-align: left;
-        }
-        .et-drop-item.edit { color: #93c5fd; }
-        .et-drop-item.edit:hover { background: rgba(59,130,246,0.10); }
-        .et-drop-item.del  { color: #fda4af; }
-        .et-drop-item.del:hover { background: rgba(244,63,94,0.10); }
-
-        /* ── Inline edit bar ── */
-        .et-edit-bar {
-          display: flex;
-          justify-content: flex-end;
-          gap: 8px;
-          padding: 10px 16px 14px;
-          border-top: 1px solid var(--et-border);
-        }
-        .et-btn {
-          display: inline-flex; align-items: center; gap: 5px;
-          padding: 6px 14px;
-          border-radius: 6px;
-          font-size: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          border: 1px solid transparent;
-          transition: opacity 0.15s;
-        }
-        .et-btn:hover { opacity: 0.85; }
-        .et-btn.save { background: #059669; color: #f0fdf4; }
-        .et-btn.cancel { background: transparent; border-color: rgba(148,163,184,0.2); color: #94a3b8; }
-      `}</style>
-
-      <div className="et-wrap">
+      <div className="w-full overflow-x-auto scrollbar-thin font-sans">
         {pdfMode && <p className="py-4 text-lg text-slate-100">Historial de Multas</p>}
 
-        <table className="et-table">
-          <thead className="et-thead">
-            <tr>
-              <th style={{ width: 3, padding: 0 }} />
+        <table className="w-full min-w-[600px] border-collapse text-[12.5px] table-layout-fixed">
+          <thead>
+            <tr className="bg-slate-950/90 border-b border-slate-700/9">
+              <th className="w-[3px] p-0" />
               {columns.map(col => (
                 <th
                   key={col.id}
                   style={col.id === 'options' ? { width: '60px' } : (col.id === 'date' ? { width: '120px' } : {})}
-                  className={`et-th${col.id === 'amount' ? ' num' : col.id === 'options' ? ' center' : ''}`}
+                  className={`py-2.5 px-3.5 text-[10px] font-bold uppercase tracking-[0.07em] text-slate-500 text-left whitespace-nowrap${col.id === 'amount' ? ' text-right' : col.id === 'options' ? ' text-center' : ''}`}
                 >
                   {col.label}
                 </th>
@@ -465,28 +188,31 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
               const canChangeDebt = row.type === 'FINE' && !!canEdit;
 
               return (
-                <tr key={row.id} className="et-tr">
+                <tr key={row.id} className="border-b border-slate-800/7 transition-colors duration-150 relative hover:bg-slate-800/5 last:border-b-0">
                   {/* Color strip */}
-                  <td className="et-td-strip">
-                    <span className="et-strip" style={{ background: stripColor }} />
+                  <td className="w-[3px] p-0 relative">
+                    <span className="absolute inset-0 w-[3px]" style={{ background: stripColor }} />
                   </td>
 
                   {columns.map(col => (
                     <td
                       key={col.id}
-                      className={`et-td${col.id === 'amount' ? ' num' : col.id === 'description' ? ' muted' : col.id === 'options' ? ' center' : ''}`}
+                      className={`px-3.5 py-3 text-slate-200 align-middle overflow-hidden text-ellipsis whitespace-nowrap${col.id === 'amount' ? ' text-right font-mono text-xs text-slate-400 tabular-nums' : col.id === 'description' ? ' text-slate-400 text-[11.5px]' : col.id === 'options' ? ' text-center table-cell [&>*]:mx-auto' : ''}`}
                     >
                       {/* Edit mode inputs */}
                       {isEditing && col.id !== 'options' && !['type', 'taxpayer', 'date', 'debt'].includes(col.id) ? (
                         <input
-                          className="et-edit-input"
+                          className="w-full py-1 px-2 bg-slate-700/30 border border-amber-400/40 rounded text-sm text-slate-200 outline-none box-border"
                           value={getEditInputValue(row, col.id as keyof Event)}
                           onChange={e => handleInputChange(col.id as keyof Event, e.target.value)}
                         />
                       ) : col.id === 'options' && !pdfMode && canEdit ? (
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <button className="et-menu-btn" title="Opciones">
+                            <button
+                              className="w-7 h-7 rounded-md bg-transparent border border-slate-700/9 text-slate-500 flex items-center justify-center cursor-pointer transition-colors hover:bg-slate-700/10 hover:text-slate-200"
+                              title="Opciones"
+                            >
                               <MoreVertical size={13} />
                             </button>
                           </DropdownMenuTrigger>
@@ -510,7 +236,7 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
                         </DropdownMenu>
                       ) : col.id === 'type' ? (
                         badge ? (
-                          <span className="et-type-badge" style={{ background: badge.bg, color: badge.color }}>
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wider whitespace-nowrap" style={{ background: badge.bg, color: badge.color }}>
                             {typeMapping[row.type] ?? row.type}
                           </span>
                         ) : (typeMapping[row.type] ?? row.type)
@@ -522,12 +248,18 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
                         row.type === 'FINE' ? (
                           canChangeDebt ? (
                             isPaid ? (
-                              <span className="et-debt-badge paid" title="Multa pagada — no se puede revertir">
+                              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/12 text-emerald-300" title="Multa pagada — no se puede revertir">
                                 Pagada
                               </span>
                             ) : (
                               <select
-                                className="et-debt-select unpaid"
+                                className="appearance-none px-2 py-0.5 pl-2 pr-6 rounded-full text-[10px] font-bold tracking-wider leading-[1.35] outline-none cursor-pointer transition-all bg-red-900/35 border border-rose-400/50 text-rose-300 shadow-[0_1px_1px_rgba(0,0,0,0.3)] hover:border-rose-300/75 hover:bg-red-900/40 focus-visible:outline-2 focus-visible:outline-indigo-400/55 focus-visible:outline-offset-1"
+                                style={{
+                                  backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23fb7185' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
+                                  backgroundRepeat: 'no-repeat',
+                                  backgroundPosition: 'right 6px center',
+                                  backgroundSize: '10px 10px',
+                                }}
                                 value="not_paid"
                                 onClick={e => e.stopPropagation()}
                                 onChange={e => {
@@ -537,19 +269,27 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
                                   }
                                 }}
                               >
-                                <option value="not_paid">No pagada</option>
-                                <option value="paid">Pagada</option>
+                                <option value="not_paid" style={{ background: '#0f172a', color: '#e2e8f0', fontWeight: 600, fontSize: 12, padding: '6px 8px' }}>No pagada</option>
+                                <option value="paid" style={{ background: '#022c22', color: '#6ee7b7', fontWeight: 600, fontSize: 12, padding: '6px 8px' }}>Pagada</option>
                               </select>
                             )
                           ) : (
-                            <span className={`et-debt-badge${isPaid ? ' paid' : ' unpaid'}`}>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? 'bg-emerald-500/12 text-emerald-300' : 'bg-rose-500/12 text-rose-300'}`}>
                               {isPaid ? 'Pagada' : 'No pagada'}
                             </span>
                           )
                         ) : (
-                          <span className={`et-debt-badge${isPaid ? ' paid' : ' unpaid'}`}>
+                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isPaid ? 'bg-emerald-500/12 text-emerald-300' : 'bg-rose-500/12 text-rose-300'}`}>
                             {isPaid ? 'Pagada' : 'No pagada'}
                           </span>
+                        )
+                      ) : col.id === 'tax_case_id' ? (
+                        row.tax_case_id ? (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-900/30 text-blue-300">
+                            Caso
+                          </span>
+                        ) : (
+                          <span className="text-slate-500 text-xs">—</span>
                         )
                       ) : (
                         String(row[col.id as keyof Event])
@@ -564,11 +304,17 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
 
         {/* Inline edit save bar */}
         {editingRowId && (
-          <div className="et-edit-bar">
-            <button className="et-btn cancel" onClick={() => { setEditingRowId(null); setEditValues({}); }}>
+          <div className="flex justify-end gap-2 px-4 pt-2.5 pb-3.5 border-t border-slate-800/50">
+            <button
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer border border-transparent transition-opacity hover:opacity-85 bg-transparent border-slate-700/20 text-slate-400"
+              onClick={() => { setEditingRowId(null); setEditValues({}); }}
+            >
               <X size={12} /> Cancelar
             </button>
-            <button className="et-btn save" onClick={handleSave}>
+            <button
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-semibold cursor-pointer border border-transparent transition-opacity hover:opacity-85 bg-emerald-600 text-green-50"
+              onClick={handleSave}
+            >
               <Check size={12} /> Guardar cambios
             </button>
           </div>
@@ -576,81 +322,90 @@ const EventTable: React.FC<EventTableProps> = ({ rows, setRows, pdfMode, canEdit
       </div>
 
       {/* Delete confirm modal */}
-      {eventIdToDelete && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm p-6 rounded-xl" style={{ background: '#1e293b', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <p className="mb-4 text-sm text-slate-200">
+      <Dialog open={!!eventIdToDelete} onOpenChange={(open) => { if (!open) setEventIdToDelete(null); }}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader>
+            <DialogTitle>Confirmar Eliminación</DialogTitle>
+            <DialogDescription className="text-slate-400">
               ¿Confirmar eliminación del evento?
-            </p>
-            <div className="flex justify-end gap-3">
-              <button className="et-btn cancel" onClick={() => setEventIdToDelete(null)}><X size={12} /> Cancelar</button>
-              <button className="et-btn" style={{ background: '#e11d48', color: 'white' }} onClick={confirmDelete}><Trash2 size={12} /> Eliminar</button>
-            </div>
-          </div>
-        </div>
-      )}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setEventIdToDelete(null)}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+            >
+              <X size={12} /> Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={confirmDelete}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              <Trash2 size={12} /> Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Payment status confirm modal (solo transición a Pagada) */}
-      {pendingStatusChange && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="w-full max-w-sm p-6 rounded-xl" style={{ background: '#1e293b', border: '1px solid rgba(148,163,184,0.15)' }}>
-            <p className="mb-1 text-sm text-center text-slate-200">
+      <Dialog open={!!pendingStatusChange} onOpenChange={(open) => { if (!open && !paymentConfirmLoading) setPendingStatusChange(null); }}>
+        <DialogContent className="bg-slate-800 border-slate-700 text-white">
+          <DialogHeader className="text-center sm:text-center">
+            <DialogTitle>Confirmar Pago</DialogTitle>
+            <DialogDescription className="text-slate-400">
               ¿Confirmar que la multa queda como{' '}
-              <strong style={{ color: '#6ee7b7' }}>Pagada</strong>?
-            </p>
-            <p className="mb-4 text-xs text-center text-slate-500">
-              Esta acción no se puede deshacer.
-            </p>
-            <div className="flex justify-end gap-3">
-              <button
-                type="button"
-                className="et-btn cancel"
-                disabled={paymentConfirmLoading}
-                onClick={() => {
-                  if (!paymentConfirmLoading) setPendingStatusChange(null);
-                }}
-                style={{ opacity: paymentConfirmLoading ? 0.5 : 1, cursor: paymentConfirmLoading ? 'not-allowed' : 'pointer' }}
-              >
-                <X size={12} /> Cancelar
-              </button>
-              <button
-                type="button"
-                className="et-btn save"
-                disabled={paymentConfirmLoading}
-                onClick={async () => {
-                  if (!pendingStatusChange || paymentConfirmLoading) return;
-                  setPaymentConfirmLoading(true);
-                  try {
-                    const { id, newStatus } = pendingStatusChange;
-                    const success = await handlePaymentChange(id, newStatus);
-                    if (success) setPendingStatusChange(null);
-                  } finally {
-                    setPaymentConfirmLoading(false);
-                  }
-                }}
-                style={{
-                  opacity: paymentConfirmLoading ? 0.85 : 1,
-                  cursor: paymentConfirmLoading ? 'wait' : 'pointer',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                }}
-              >
-                {paymentConfirmLoading ? (
-                  <>
-                    <Loader2 size={14} className="animate-spin shrink-0" />
-                    Guardando...
-                  </>
-                ) : (
-                  <>
-                    <Check size={12} /> Confirmar
-                  </>
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+              <strong className="text-emerald-300">Pagada</strong>?
+              <br />
+              <span className="text-xs text-slate-500">Esta acción no se puede deshacer.</span>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-end">
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={paymentConfirmLoading}
+              onClick={() => {
+                if (!paymentConfirmLoading) setPendingStatusChange(null);
+              }}
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent"
+            >
+              <X size={12} /> Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              size="sm"
+              disabled={paymentConfirmLoading}
+              onClick={async () => {
+                if (!pendingStatusChange || paymentConfirmLoading) return;
+                setPaymentConfirmLoading(true);
+                try {
+                  const { id, newStatus } = pendingStatusChange;
+                  const success = await handlePaymentChange(id, newStatus);
+                  if (success) setPendingStatusChange(null);
+                } finally {
+                  setPaymentConfirmLoading(false);
+                }
+              }}
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+            >
+              {paymentConfirmLoading ? (
+                <>
+                  <Loader2 size={14} className="animate-spin shrink-0" />
+                  Guardando...
+                </>
+              ) : (
+                <>
+                  <Check size={12} /> Confirmar
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   );
 };

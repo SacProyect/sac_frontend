@@ -87,6 +87,7 @@ export function AddContribuyenteModalV2({
   const [parishList, setParishList] = useState<Parish[]>([]);
   const [taxpayerCategories, setTaxpayerCategories] = useState<TaxpayerCategories[]>([]);
   const [officers, setOfficers] = useState<Array<{ id: string; name: string; personId: string }>>([]);
+  const [createInitialCase, setCreateInitialCase] = useState(true);
 
   const allowedOfficerIds = useMemo(() => {
     if (!user) return null;
@@ -253,6 +254,30 @@ export function AddContribuyenteModalV2({
         
         // ✅ Invalidar caché de contribuyentes para refrescar listas
         invalidateCache('taxpayers');
+
+        // Create initial TaxCase if checkbox is checked
+        if (createInitialCase && result?.id) {
+          try {
+            const currentYear = new Date().getFullYear();
+            const processValue = formData.process || 'NA';
+            await fetch(`${import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000'}/taxpayer/${result.id}/cases`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+              },
+              body: JSON.stringify({
+                year: currentYear,
+                process: processValue,
+                contract_type: formData.contract_type || 'ORDINARY',
+                fase: 'FASE_1',
+              }),
+            });
+          } catch (e) {
+            console.error('Error creating initial case:', e);
+            // Don't fail the whole operation if case creation fails
+          }
+        }
         
         // Reset form
         setFormData({
@@ -538,6 +563,20 @@ export function AddContribuyenteModalV2({
               <p className="text-[9px] text-slate-600 italic">Formato: .pdf — Máx 10MB</p>
             )}
             {errors.pdf && <p className="text-[9px] font-bold text-rose-500 uppercase">{errors.pdf}</p>}
+          </div>
+
+          {/* Crear caso inicial */}
+          <div className="col-span-2 flex items-center gap-2 mt-2">
+            <input
+              type="checkbox"
+              id="createInitialCase"
+              checked={createInitialCase}
+              onChange={(e) => setCreateInitialCase(e.target.checked)}
+              className="rounded border-slate-600 bg-slate-700 text-blue-500 focus:ring-blue-500"
+            />
+            <label htmlFor="createInitialCase" className="text-sm text-slate-300">
+              Crear caso fiscal inicial (año actual)
+            </label>
           </div>
 
         </form>

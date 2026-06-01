@@ -20,4 +20,5 @@ export interface Event {
     expires_at?: string;
     description?: string;
     officerId?: string;
+    tax_case_id?: string;
 }

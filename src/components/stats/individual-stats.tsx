@@ -31,6 +31,8 @@ interface IndividualStatsProps {
     taxpayerData?: TaxpayerData;
     observations?: ObservationData[];
     onTaxpayerDataLoaded?: (summary: TaxpayerSummaryStrip | null) => void;
+    selectedCaseId?: string | null;
+    selectedCaseLabel?: string;
 }
 
 interface ObservationData {
@@ -98,7 +100,7 @@ interface TaxpayerData {
 
 
 
-export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerDataFromLoader, observations: observationsFromLoader, onTaxpayerDataLoaded }: IndividualStatsProps) => {
+export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerDataFromLoader, observations: observationsFromLoader, onTaxpayerDataLoaded, selectedCaseId, selectedCaseLabel }: IndividualStatsProps) => {
     const { taxpayer } = useParams();
     const [taxpayerData, setTaxpayerData] = useState<TaxpayerData | undefined>(taxpayerDataFromLoader);
     const { user } = useAuth();
@@ -567,10 +569,6 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
                           {taxpayerData.contract_type === 'SPECIAL' ? 'ESPECIAL' : 'ORDINARIO'}
                         </span>
                       )}
-                      {/* Culminated badge */}
-                      {taxpayerData?.culminated && (
-                        <span className="is-badge culminated">CULMINADO</span>
-                      )}
                       {canEditIndex && (
                         <button
                           type="button"
@@ -599,6 +597,16 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
                     </div>
                   </div>
 
+                  {/* Active case badge */}
+                  {selectedCaseLabel && (
+                    <div className="flex items-center gap-2 -mt-1">
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide bg-indigo-900/25 text-indigo-300 border border-indigo-800/30">
+                        <span>🎯</span>
+                        Caso activo: {selectedCaseLabel}
+                      </span>
+                    </div>
+                  )}
+
                   <hr className="is-divider" />
 
                   {/* Fields grid */}
@@ -610,18 +618,6 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
                     <div className="is-field">
                       <span className="is-field-label">N° Providencia</span>
                       <span className="is-field-value">{taxpayerData?.providenceNum ?? '—'}</span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Procedimiento</span>
-                      <span className="is-field-value">{taxpayerData?.process ?? '—'}</span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Fase</span>
-                      <span className="is-field-value">
-                        {taxpayerData?.fase
-                          ? <span className="is-badge active">{taxpayerData.fase.replace('_', ' ')}</span>
-                          : '—'}
-                      </span>
                     </div>
                     <div className="is-field col-span-2">
                       <span className="is-field-label">Actividad Comercial</span>
@@ -640,44 +636,8 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
                       <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.address ?? '—'}</span>
                     </div>
                     <div className="is-field">
-                      <span className="is-field-label">Fiscal Asignado</span>
-                      <span className="is-field-value" style={{fontSize:'12px'}}>{taxpayerData?.user?.name ?? 'No asignado'}</span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Supervisor</span>
-                      <span className="is-field-value" style={{fontSize:'12px'}}>
-                        {taxpayerData?.user?.supervisor?.name ?? 'No asignado'}
-                      </span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Grupo</span>
-                      <span className="is-field-value" style={{fontSize:'12px'}}>
-                        {taxpayerData?.user?.group?.name ?? 'No asignado'}
-                      </span>
-                    </div>
-                    <div className="is-field">
                       <span className="is-field-label">Excedente IVA</span>
                       <span className="is-field-value">{taxpayerData?.IVAReports?.[0]?.excess != null ? formatCurrency(taxpayerData.IVAReports[0].excess) : '—'}</span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Fecha Procedimiento</span>
-                      <span className="is-field-value" style={{fontSize:'12px'}}>
-                        {taxpayerData?.emition_date
-                          ? new Date(taxpayerData.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })
-                          : '—'}
-                      </span>
-                    </div>
-                    <div className="is-field">
-                      <span className="is-field-label">Notificación</span>
-                      <span className="is-field-value" style={{fontSize:'12px'}}>
-                        {taxpayerData?.notified && taxpayerData?.updated_at
-                          ? new Date(taxpayerData.updated_at).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })
-                          : (
-                            <span className={`is-badge ${taxpayerData?.notified ? 'notif' : 'pending'}`}>
-                              {taxpayerData?.notified ? 'Notificado' : 'Pendiente'}
-                            </span>
-                          )}
-                      </span>
                     </div>
                   </div>
 

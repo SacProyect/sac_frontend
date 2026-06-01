@@ -534,6 +534,7 @@ export interface TaxpayerDashboardResponse {
 	taxpayerId: string;
 	generatedAt: string;
 	taxpayerData?: unknown;
+	cases?: unknown[];
 	events?: unknown[];
 	fineHistory?: unknown;
 	paymentHistory?: unknown;

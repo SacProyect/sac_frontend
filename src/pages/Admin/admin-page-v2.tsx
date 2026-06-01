@@ -46,6 +46,7 @@ import {
   Plus,
   FileText,
   Scale,
+  Download,
 } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
@@ -88,6 +89,34 @@ export default function AdminPageV2() {
   const [totalSpecial, setTotalSpecial] = useState(0);
   const [totalOrdinary, setTotalOrdinary] = useState(0);
   const limit = 50;
+
+  const exportToCSV = () => {
+    const headers = ['Nro Providencia', 'Procedimiento', 'Razón Social', 'RIF', 'Tipo', 'Dirección', 'Fecha', 'Parroquia', 'Fiscal', 'Estado'];
+    const rows = tableData.map(item => [
+      item.nroProvidencia,
+      item.procedimiento,
+      item.razonSocial,
+      item.rif,
+      item.tipo,
+      item.direccion,
+      item.fecha ? new Date(item.fecha).toLocaleDateString('es-ES') : 'N/A',
+      item.parroquia,
+      item.fiscal,
+      item.status ? 'Activo' : 'Inactivo',
+    ]);
+    
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.map(cell => `"${String(cell).replace(/"/g, '""')}"`).join(','))
+    ].join('\n');
+    
+    const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `contribuyentes_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+  };
 
   // Detectar mobile/tablet (< 1024px usa vista de cards)
   useEffect(() => {
@@ -175,6 +204,8 @@ export default function AdminPageV2() {
     fecha: item.emition_date || '',
     parroquia: item.parish?.name || 'N/A',
     fiscal: item.user?.name || 'N/A',
+    status: item.status,
+    caseCount: item.cases?.length || 0,
     originalData: item, // Guardar referencia al objeto original
   });
 
@@ -236,7 +267,12 @@ export default function AdminPageV2() {
               <div className="flex justify-between items-start">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-white truncate">{item.razonSocial}</p>
-                  <p className="text-xs text-slate-400 mt-1">{item.rif}</p>
+                  <p className="text-xs text-slate-400 mt-1">
+                    {item.rif}
+                    {item.caseCount !== undefined && item.caseCount > 0 && (
+                      <span className="text-xs text-slate-500"> · {item.caseCount} caso(s)</span>
+                    )}
+                  </p>
                   <p className="text-xs text-slate-300 mt-2 font-mono">{item.nroProvidencia}</p>
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
@@ -317,6 +353,7 @@ export default function AdminPageV2() {
               <TableHead className="text-slate-300 font-semibold hidden md:table-cell">Fecha</TableHead>
               <TableHead className="text-slate-300 font-semibold hidden lg:table-cell">Parroquia</TableHead>
               <TableHead className="text-slate-300 font-semibold hidden xl:table-cell">Fiscal</TableHead>
+              <TableHead className="text-slate-300 font-semibold hidden md:table-cell">Casos</TableHead>
               <TableHead className="text-slate-300 font-semibold text-right">Acciones</TableHead>
             </TableRow>
           </TableHeader>
@@ -378,6 +415,9 @@ export default function AdminPageV2() {
                   <TableCell className="text-xs text-slate-400 hidden xl:table-cell">
                     {item.fiscal}
                   </TableCell>
+                  <TableCell className="text-xs text-slate-400 hidden md:table-cell">
+                    {item.caseCount || 0}
+                  </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
@@ -412,7 +452,7 @@ export default function AdminPageV2() {
 
         {/* Acciones Rápidas (Ahora en el Top-Right) */}
         <div className="flex flex-wrap items-center gap-2.5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full md:w-auto">
             <Button
               onClick={() => setIsAddContribuyenteOpen(true)}
               size="sm"
@@ -438,6 +478,17 @@ export default function AdminPageV2() {
             >
               <Scale className="w-3.5 h-3.5 shrink-0" />
               <span className="truncate">Multa</span>
+            </Button>
+
+            <Button
+              onClick={exportToCSV}
+              disabled={loading || tableData.length === 0}
+              size="sm"
+              variant="outline"
+              className="border-slate-600 text-slate-300 hover:bg-slate-700 bg-transparent rounded-lg font-semibold transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+            >
+              <Download className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">Exportar CSV</span>
             </Button>
           </div>
         </div>
@@ -664,10 +715,8 @@ export default function AdminPageV2() {
       </Dialog>
 
       {/* Modales de Acciones Rápidas */}
-      <AddContribuyenteModalV2
-        isOpen={isAddContribuyenteOpen}
-        onClose={() => setIsAddContribuyenteOpen(false)}
-        onSuccess={async () => {
+      {(() => {
+        const refreshTable = async () => {
           try {
             const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
             const searchFilter = debouncedSearch.trim() || undefined;
@@ -680,20 +729,29 @@ export default function AdminPageV2() {
           } catch (e) {
             console.error(e);
           }
-        }}
+        };
+        return (
+          <>
+      <AddContribuyenteModalV2
+        isOpen={isAddContribuyenteOpen}
+        onClose={() => setIsAddContribuyenteOpen(false)}
+        onSuccess={refreshTable}
       />
 
       <AddAvisoModalV2
         isOpen={isAddAvisoOpen}
         onClose={() => setIsAddAvisoOpen(false)}
-        onSuccess={() => { }}
+        onSuccess={refreshTable}
       />
 
       <AddMultaModalV2
         isOpen={isAddMultaOpen}
         onClose={() => setIsAddMultaOpen(false)}
-        onSuccess={() => { }}
+        onSuccess={refreshTable}
       />
+          </>
+        );
+      })()}
     </div>
   );
 }

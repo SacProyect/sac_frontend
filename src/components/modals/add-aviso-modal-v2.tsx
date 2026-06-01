@@ -26,6 +26,7 @@ export interface AvisoFormData {
   taxpayerId: string;
   date: string;
   amount: string;
+  description: string;
   fineEventId: string;
 }
 
@@ -36,6 +37,7 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
     taxpayerId: '',
     date: '',
     amount: '',
+    description: '',
     fineEventId: '',
   });
 
@@ -44,6 +46,10 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
   const [searchTaxpayer, setSearchTaxpayer] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Casos fiscales del contribuyente seleccionado
+  const [cases, setCases] = useState<any[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('');
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -56,6 +62,29 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
     }
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isDropdownOpen]);
+
+  // Cargar casos fiscales del contribuyente seleccionado
+  useEffect(() => {
+    const fetchCases = async () => {
+      if (!formData.taxpayerId) {
+        setCases([]);
+        setSelectedCaseId('');
+        return;
+      }
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000'}/taxpayer/${formData.taxpayerId}/cases`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+        });
+        const data = await response.json();
+        setCases(data || []);
+        setSelectedCaseId(data?.[0]?.id || '');
+      } catch (e) {
+        setCases([]);
+        setSelectedCaseId('');
+      }
+    };
+    fetchCases();
+  }, [formData.taxpayerId]);
 
   const selectedTaxpayer = useMemo(() => {
     return taxpayers.find((t) => t.id === formData.taxpayerId);
@@ -96,6 +125,8 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
       loadTaxpayers();
       setSearchTaxpayer('');
       setIsDropdownOpen(false);
+      setCases([]);
+      setSelectedCaseId('');
     }
   }, [isOpen, user]);
 
@@ -130,11 +161,15 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
         date: string;
         amount: number;
         taxpayerId: string;
+        description: string;
         fineEventId?: string;
+        tax_case_id?: string;
       } = {
         date: formattedDate,
         amount: Number(formData.amount),
         taxpayerId: formData.taxpayerId,
+        description: formData.description,
+        ...(selectedCaseId ? { tax_case_id: selectedCaseId } : {}),
       };
 
       if (formData.fineEventId) {
@@ -149,6 +184,7 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
           taxpayerId: '',
           date: '',
           amount: '',
+          description: '',
           fineEventId: '',
         });
         setSearchTaxpayer('');
@@ -296,6 +332,23 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
             )}
           </div>
 
+          {/* Selector de caso fiscal (opcional) */}
+          {cases.length > 0 && (
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-slate-300">Caso Fiscal (opcional)</label>
+              <select
+                value={selectedCaseId}
+                onChange={(e) => setSelectedCaseId(e.target.value)}
+                className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+              >
+                <option value="">Sin caso</option>
+                {cases.map((c: any) => (
+                  <option key={c.id} value={c.id}>{c.year} — {c.process}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label htmlFor="date" className="text-[10px] font-bold text-slate-400 uppercase tracking-widest px-1">
@@ -345,6 +398,16 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
                 </p>
               )}
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-slate-300">Motivo / Descripción</label>
+            <textarea
+              value={formData.description}
+              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+              placeholder="Descripción del aviso..."
+              className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm resize-none h-20"
+            />
           </div>
         </form>
 

@@ -20,6 +20,8 @@ export interface ContribuyenteTableData {
   fecha: string;
   parroquia: string;
   fiscal: string;
+  status?: boolean;
+  caseCount?: number;
   originalData?: any; // Referencia al objeto Taxpayer original
 }
 

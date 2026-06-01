@@ -19,11 +19,13 @@ interface Observation {
   description: string;
   date: string;
   created_at?: string;
+  tax_case_id?: string;
 }
 
 interface ObservationsPanelProps {
   taxpayerId: string | undefined;
   initialObservations?: Observation[];
+  tax_case_id?: string;
 }
 
 /* ─── Helpers ────────────────────────────────────────────────── */
@@ -37,7 +39,7 @@ function ticketNumber(index: number) {
 }
 
 /* ─── Component ──────────────────────────────────────────────── */
-export function ObservationsPanel({ taxpayerId, initialObservations }: ObservationsPanelProps) {
+export function ObservationsPanel({ taxpayerId, initialObservations, tax_case_id }: ObservationsPanelProps) {
   const { user } = useAuth();
 
   const [observations, setObservations] = useState<Observation[]>(initialObservations ?? []);
@@ -93,7 +95,7 @@ export function ObservationsPanel({ taxpayerId, initialObservations }: Observati
 
     setSubmitting(true);
     try {
-      await createObservation({ description: newDesc, date: newDate, taxpayerId });
+      await createObservation({ description: newDesc, date: newDate, taxpayerId, tax_case_id });
       toast.success('¡Observación creada!');
       setNewDesc('');
       setNewDate(new Date().toISOString().split('T')[0]);
@@ -682,6 +684,11 @@ export function ObservationsPanel({ taxpayerId, initialObservations }: Observati
                       <span className="ticket-date">
                         <Clock size={10} />
                         {formatDate(obs.created_at)}
+                      </span>
+                    )}
+                    {obs.tax_case_id && (
+                      <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[9px] font-bold bg-blue-900/30 text-blue-300 ml-2">
+                        Caso
                       </span>
                     )}
                   </div>

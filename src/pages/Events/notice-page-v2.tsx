@@ -1,4 +1,4 @@
-import { useParams, Navigate, useLoaderData } from 'react-router-dom';
+import { useParams, Navigate, useLoaderData, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
 import EventForm from '@/components/Events/event-form';
@@ -9,6 +9,8 @@ import { useAuth } from '@/hooks/use-auth';
  */
 export default function NoticePageV2() {
   const { taxpayerId } = useParams();
+  const [searchParams] = useSearchParams();
+  const tax_case_id = searchParams.get('case') || undefined;
   const { user } = useAuth();
   const data = useLoaderData() as { taxpayerData: any } | null;
   const taxpayerData = data?.taxpayerData;
@@ -28,7 +30,7 @@ export default function NoticePageV2() {
         backTo={`/taxpayer/${taxpayerId}`}
       />
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <EventForm title="Aviso" type="warning" taxpayerId={taxpayerId || ""} />
+        <EventForm title="Aviso" type="warning" taxpayerId={taxpayerId || ""} tax_case_id={tax_case_id} />
       </Card>
     </div>
   );

@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams, useNavigate, useLoaderData, useLocation, Navigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Link } from 'react-router-dom';
@@ -30,7 +30,9 @@ import { ISLRReports } from '@/types/islr-reports';
 import { Fines } from '@/pages/router';
 import { Payment } from '@/types/payment';
 import { PageHeader, EmptyState } from '@/components/UI/v2';
-import { deleteTaxpayer } from '@/components/utils/api/taxpayer-functions';
+import { deleteTaxpayer, getTaxpayerCases } from '@/components/utils/api/taxpayer-functions';
+import { TaxCase } from '@/types/tax-case';
+import CaseSelector from '@/components/taxpayer/case-selector';
 import {
   Dialog,
   DialogContent,
@@ -83,9 +85,17 @@ export default function TaxpayerDetailV2() {
   const [taxSummary, setTaxSummary] = useState<IVAReports[]>(initialTaxSummary);
   const [islrReports, setIslrReports] = useState<ISLRReports[]>(initialIslrReports);
   const [activeTab, setActiveTab] = useState('fine');
+  const [cases, setCases] = useState<TaxCase[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
   const [showPerformanceChart, setShowPerformanceChart] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+
+  // Filter events by selected case (legacy events without tax_case_id always show)
+  const filteredEvents = useMemo(() => {
+    if (!selectedCaseId) return events;
+    return events.filter(e => e.tax_case_id === selectedCaseId || !e.tax_case_id);
+  }, [events, selectedCaseId]);
 
   const handleDeleteTaxpayer = useCallback(async () => {
     if (!taxpayer) return;
@@ -100,6 +110,26 @@ export default function TaxpayerDetailV2() {
       setShowDeleteConfirm(false);
     }
   }, [taxpayer, navigate]);
+
+  // Load cases for this taxpayer
+  useEffect(() => {
+    if (taxpayer) {
+      getTaxpayerCases(taxpayer).then((data) => {
+        setCases(data);
+        // Select the most recent case by default
+        if (data.length > 0) {
+          setSelectedCaseId(data[0].id);
+        }
+      });
+    }
+  }, [taxpayer]);
+
+  // Compute label for selected case
+  const selectedCaseLabel = useMemo(() => {
+    if (!selectedCaseId) return null;
+    const c = cases.find(c => c.id === selectedCaseId);
+    return c ? `${c.year} — ${c.process} (${c.fase})` : null;
+  }, [cases, selectedCaseId]);
 
   // Media query para gráficos responsivos
   const isSmUp = useMediaQuery('(min-width: 640px)');
@@ -139,28 +169,28 @@ export default function TaxpayerDetailV2() {
     {
       name: 'Aviso',
       title: 'Registrar un aviso asociado a este expediente',
-      path: `/warning/${taxpayer}`,
+      path: `/warning/${taxpayer}?case=${selectedCaseId || ''}`,
       icon: Bell,
       color: 'bg-blue-600 hover:bg-blue-700',
     },
     {
       name: 'Multa',
       title: 'Registrar una multa o sanción',
-      path: `/fine/${taxpayer}`,
+      path: `/fine/${taxpayer}?case=${selectedCaseId || ''}`,
       icon: AlertTriangle,
       color: 'bg-red-600 hover:bg-red-700',
     },
     {
       name: 'Pago',
       title: 'Registrar un pago recibido',
-      path: `/payment/${taxpayer}`,
+      path: `/payment/${taxpayer}?case=${selectedCaseId || ''}`,
       icon: DollarSign,
       color: 'bg-green-600 hover:bg-green-700',
     },
     {
       name: 'Compromiso de pago',
       title: 'Registrar un compromiso de pago',
-      path: `/payment_compromise/${taxpayer}`,
+      path: `/payment_compromise/${taxpayer}?case=${selectedCaseId || ''}`,
       icon: FileText,
       color: 'bg-purple-600 hover:bg-purple-700',
     },
@@ -198,7 +228,7 @@ export default function TaxpayerDetailV2() {
   }, [ivaTotals]);
 
   const eventPieData = useMemo(() => {
-    if (!events?.length) return [];
+    if (!filteredEvents?.length) return [];
 
     const totalsByType: Record<string, { label: string; cantidad: number; monto: number }> = {
       WARNING: { label: 'Avisos', cantidad: 0, monto: 0 },
@@ -206,7 +236,7 @@ export default function TaxpayerDetailV2() {
       PAYMENT_COMPROMISE: { label: 'Compromisos', cantidad: 0, monto: 0 },
     };
 
-    events.forEach((event) => {
+    filteredEvents.forEach((event) => {
       const key = String(event.type) as keyof typeof totalsByType;
       if (!totalsByType[key]) return;
 
@@ -221,7 +251,7 @@ export default function TaxpayerDetailV2() {
         value: item.cantidad,
         fill: EVENT_PIE_COLORS[item.label] ?? '#f59e0b',
       }));
-  }, [events]);
+  }, [filteredEvents]);
 
   const currencyFormatter = (value: number) =>
     new Intl.NumberFormat('es-VE', {
@@ -239,11 +269,100 @@ export default function TaxpayerDetailV2() {
       />
 
       <IndividualStats
-        events={events}
+        events={filteredEvents}
         IVAReports={taxSummary}
         taxpayerData={taxpayerData}
         observations={observations}
+        selectedCaseId={selectedCaseId}
+        selectedCaseLabel={selectedCaseLabel}
       />
+
+      {/* Case Detail Card — muestra info del caso seleccionado */}
+      {selectedCaseId && cases.length > 0 && taxpayerData && (
+        <Card className="bg-slate-800 border-slate-700 p-4 sm:p-5 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
+          <div className="flex items-center gap-2 mb-3">
+            <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+              Detalle del Caso
+            </span>
+            {(() => {
+              const selectedCase = cases.find(c => c.id === selectedCaseId);
+              if (!selectedCase) return null;
+              return (
+                <Badge className="bg-indigo-900/30 text-indigo-300 border border-indigo-800/30 text-[11px] font-bold">
+                  {selectedCase.year} — {selectedCase.process}
+                </Badge>
+              );
+            })()}
+          </div>
+
+          {(() => {
+            const selectedCase = cases.find(c => c.id === selectedCaseId);
+            if (!selectedCase) return null;
+
+            return (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-3">
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Procedimiento</span>
+                  <span className="text-sm font-medium text-slate-200">{selectedCase.process || '—'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fase</span>
+                  <span className="text-sm font-medium">
+                    {selectedCase.fase ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide bg-blue-900/20 text-blue-400">
+                        {selectedCase.fase.replace('_', ' ')}
+                      </span>
+                    ) : '—'}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">N° Providencia</span>
+                  <span className="text-sm font-medium text-slate-200">{taxpayerData.providenceNum ?? '—'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fiscal Asignado</span>
+                  <span className="text-sm font-medium text-slate-200">{taxpayerData.user?.name ?? 'No asignado'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Supervisor</span>
+                  <span className="text-sm font-medium text-slate-200">{taxpayerData.user?.supervisor?.name ?? 'No asignado'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Grupo</span>
+                  <span className="text-sm font-medium text-slate-200">{taxpayerData.user?.group?.name ?? 'No asignado'}</span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Fecha de Emisión</span>
+                  <span className="text-sm font-medium text-slate-200">
+                    {selectedCase.emition_date
+                      ? new Date(selectedCase.emition_date).toLocaleDateString('es-VE', { year: 'numeric', month: 'short', day: 'numeric' })
+                      : '—'}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Estado</span>
+                  <span className="text-sm font-medium flex items-center gap-2">
+                    {selectedCase.notified ? (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide bg-emerald-900/20 text-emerald-400">
+                        Notificado
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide bg-red-900/20 text-red-400">
+                        Pendiente
+                      </span>
+                    )}
+                    {selectedCase.culminated && (
+                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-bold tracking-wide bg-emerald-900/20 text-emerald-400">
+                        Culminado
+                      </span>
+                    )}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
+        </Card>
+      )}
 
       <Card className="bg-slate-800 border-slate-700 p-4 sm:p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md rounded-lg">
         <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4">Acciones Rápidas</h3>
@@ -308,6 +427,14 @@ export default function TaxpayerDetailV2() {
           </p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full p-4 sm:p-6 pt-4">
+          <div className="mb-4">
+            <CaseSelector
+              cases={cases}
+              selectedCaseId={selectedCaseId}
+              onSelect={setSelectedCaseId}
+              onCreateCase={() => navigate(`/taxpayer/${taxpayer}/cases/new`)}
+            />
+          </div>
           <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-3 h-auto flex-wrap gap-1 p-1">
             <TabsTrigger 
               value="fine" 
@@ -333,10 +460,10 @@ export default function TaxpayerDetailV2() {
           </TabsList>
 
           <TabsContent value="fine" className="mt-4">
-            {events.length > 0 ? (
+            {filteredEvents.length > 0 ? (
               <div className="overflow-x-auto">
                 <EventTable
-                  rows={events}
+                  rows={filteredEvents}
                   setRows={setEvents}
                   canEdit={user.role === 'ADMIN' || isAssignedFiscal}
                 />

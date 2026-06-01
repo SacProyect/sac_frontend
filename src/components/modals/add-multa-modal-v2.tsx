@@ -49,6 +49,10 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Casos fiscales del contribuyente seleccionado
+  const [cases, setCases] = useState<any[]>([]);
+  const [selectedCaseId, setSelectedCaseId] = useState<string>('');
+
   // Contribuyentes con paginación
   const [taxpayers, setTaxpayers] = useState<Taxpayer[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -117,6 +121,8 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
     setSearchDebounce('');
     setIsDropdownOpen(false);
     setSelectionSnapshot(null);
+    setCases([]);
+    setSelectedCaseId('');
     setErrors({});
   }, [isOpen]);
 
@@ -147,6 +153,29 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
     fetch();
     return () => { cancelled = true; };
   }, [searchDebounce]);
+
+  // Cargar casos fiscales del contribuyente seleccionado
+  useEffect(() => {
+    const fetchCases = async () => {
+      if (!formData.taxpayerId) {
+        setCases([]);
+        setSelectedCaseId('');
+        return;
+      }
+      try {
+        const response = await fetch(`${import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || 'http://localhost:3000'}/taxpayer/${formData.taxpayerId}/cases`, {
+          headers: { 'Authorization': `Bearer ${localStorage.getItem('authToken')}` },
+        });
+        const data = await response.json();
+        setCases(data || []);
+        setSelectedCaseId(data?.[0]?.id || '');
+      } catch (e) {
+        setCases([]);
+        setSelectedCaseId('');
+      }
+    };
+    fetchCases();
+  }, [formData.taxpayerId]);
 
   // Scroll infinito
   const loadMore = useCallback(async () => {
@@ -246,6 +275,7 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
         amount: Number(formData.amount),
         taxpayerId: formData.taxpayerId,
         description: formData.description,
+        ...(selectedCaseId ? { tax_case_id: selectedCaseId } : {}),
       });
       if (result) {
         toast.success('Multa creada exitosamente');
@@ -470,6 +500,23 @@ export function AddMultaModalV2({ isOpen, onClose, onSuccess }: AddMultaModalV2P
                 </p>
               )}
             </div>
+
+            {/* Selector de caso fiscal (opcional) */}
+            {cases.length > 0 && (
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-slate-300">Caso Fiscal (opcional)</label>
+                <select
+                  value={selectedCaseId}
+                  onChange={(e) => setSelectedCaseId(e.target.value)}
+                  className="w-full px-3 py-2 bg-slate-700 border border-slate-600 rounded-lg text-white text-sm"
+                >
+                  <option value="">Sin caso</option>
+                  {cases.map((c: any) => (
+                    <option key={c.id} value={c.id}>{c.year} — {c.process}</option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             {/* Fecha + Monto */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">

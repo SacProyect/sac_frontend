@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
 import EventForm from '@/components/Events/event-form';
@@ -8,6 +8,8 @@ import EventForm from '@/components/Events/event-form';
  */
 export default function ComitmentPageV2() {
   const { taxpayerId } = useParams();
+  const [searchParams] = useSearchParams();
+  const tax_case_id = searchParams.get('case') || undefined;
   
   return (
     <div className="space-y-4 sm:space-y-6 w-full max-w-full overflow-x-hidden">
@@ -17,7 +19,7 @@ export default function ComitmentPageV2() {
         backTo={`/taxpayer/${taxpayerId}`}
       />
       <Card className="bg-slate-800 border-slate-700 p-6 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
-        <EventForm title="Compromiso de pago" type="payment_compromise" taxpayerId={taxpayerId || ""} />
+        <EventForm title="Compromiso de pago" type="payment_compromise" taxpayerId={taxpayerId || ""} tax_case_id={tax_case_id} />
       </Card>
     </div>
   );

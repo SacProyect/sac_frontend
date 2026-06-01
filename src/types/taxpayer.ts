@@ -42,6 +42,7 @@ export interface Taxpayer {
     /** Fiscal asignado. En listados: { id, name }. En detalle: con group, coordinator, supervisorId. */
     user?: TaxpayerUser;
     IVAReports?: IVAReports[];
+    cases?: import('./tax-case').TaxCase[];
 }
 
 /** Respuesta paginada de get-taxpayers (findAll). */

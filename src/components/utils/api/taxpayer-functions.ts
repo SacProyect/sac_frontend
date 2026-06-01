@@ -811,3 +811,13 @@ export const getFiscalDeclarationStatus = async (fiscalId: string, year?: number
         throw new Error(e.response?.data?.error || "No se pudo obtener el estado de declaraciones.");
     }
 }
+
+export const getTaxpayerCases = async (taxpayerId: string) => {
+    try {
+        const response = await apiConnection.get(`/taxpayer/${taxpayerId}/cases`);
+        return response.data;
+    } catch (error) {
+        console.error("Error fetching taxpayer cases", error);
+        return [];
+    }
+}
