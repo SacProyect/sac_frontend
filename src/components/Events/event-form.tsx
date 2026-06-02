@@ -4,7 +4,7 @@ import { Control, useForm, Controller, useWatch } from 'react-hook-form';
 import { Form } from 'react-aria-components'
 import DateInputUI from '../UI/date-input-ui';
 import { createEvent, getPendingPayments, getTaxpayerForEvents } from '../utils/api/taxpayer-functions';
-import { useLoaderData, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import SelectInput from '../UI/select-input';
 import { useCallback, useEffect, useState } from 'react';
 import { Event } from '../../types/event';
@@ -174,7 +174,7 @@ export interface PendingPayments {
 function EventForm({ title = 'Multa', type = "FINE", taxpayerId = "", tax_case_id }: { title?: string; type?: string; taxpayerId?: string; tax_case_id?: string }) {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>(useLoaderData() as PendingPayments[])
+    const [pendingPayments, setPendingPayments] = useState<PendingPayments[]>([])
     const [selectedPayment, setSelectedPayment] = useState<PendingPayments | null>(null);
     const [isSubmiting, setIsSubmiting] = useState(false); // Handle submitting behavior
     const [hasFetchedPayments, setHasFetchedPayments] = useState(false);
