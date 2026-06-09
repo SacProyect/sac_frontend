@@ -1,7 +1,7 @@
 # Documentacion de Feature Flags (FF) - SAC Frontend
 
 ## Fecha de actualizacion
-- **2026-05-04**
+- **2026-06-09** (ultima actualizacion: added Maquinas Fiscales)
 
 ## Objetivo
 Mantener una referencia centralizada y detallada de las FF activas del proyecto para saber:
@@ -63,10 +63,26 @@ Mantener una referencia centralizada y detallada de las FF activas del proyecto 
   - `src/pages/reports/taxpayer-report-page.tsx` (lectura directa de `import.meta.env`)
 - **Trabajo en curso asociado:** Consolidar el uso de la FF en una sola fuente (`src/config/feature-flags.ts`) para evitar divergencias de comportamiento.
 
+### 4) Máquinas Fiscales
+- **Variable de entorno:** `VITE_MAQUINAS_FISCALES_ENABLED`
+- **Constante de app:** `isMaquinasFiscalesFeatureEnabled`
+- **Default en codigo:** `true`
+- **Valor actual en `.env` local:** No definida (usa default `true`)
+- **Estado funcional actual:** Habilitada por defecto.
+- **Impacto principal en UI y rutas:**
+  - Activa navegacion a `/maquinas-fiscales` (dashboard) y `/maquinas-fiscales/:serial` (detalle).
+  - Oculta la entrada de navegacion en el sidebar cuando esta desactivada.
+- **Uso detectado en codigo:**
+  - `src/pages/router.tsx` (rutas lazy-loaded con gating por FF)
+  - `src/config/nav-strategies.ts` (filtro en `applyFeatureFlags`)
+  - `src/config/nav-routes.tsx` (definicion de `maquinasFiscalesNavItem`)
+- **Trabajo en curso asociado:** Mock data listo para reemplazar por API real. La separacion mock/UI ya esta implementada.
+
 ## Estado actual consolidado (.env local)
 - `VITE_NOTIFICATIONS_ENABLED='false'`
 - `VITE_INTERNAL_AUDIT_ENABLED='false'`
 - `VITE_TAXPAYER_DASHBOARD_ENABLED='true'`
+- `VITE_MAQUINAS_FISCALES_ENABLED` no definida (default: `true`)
 
 ## Recomendaciones operativas
 1. Centralizar todas las lecturas de FF en `src/config/feature-flags.ts`.
@@ -76,3 +92,4 @@ Mantener una referencia centralizada y detallada de las FF activas del proyecto 
 
 ## Historial de cambios de esta documentacion
 - **2026-05-04:** Creacion inicial del inventario detallado de FF activas, estado local y frentes de trabajo.
+- **2026-06-09:** Agregada feature flag Maquinas Fiscales (`VITE_MAQUINAS_FISCALES_ENABLED`).

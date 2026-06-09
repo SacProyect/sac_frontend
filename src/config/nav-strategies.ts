@@ -1,7 +1,7 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem } from '@/config/nav-routes';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem } from '@/config/nav-routes';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled } from '@/config/feature-flags';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -17,6 +17,7 @@ type NavStrategy = (user: User) => NavItem[];
 const adminStrategy: NavStrategy = () => [
     ...sharedRoutes,
     documentosNavItem,
+    maquinasFiscalesNavItem,
     visitsRoute,
     ...routeBlocks.gestionPersonal,
     auditTrailNavItem,
@@ -95,6 +96,7 @@ const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
     return items.filter((item) => {
         if (!isNotificationsFeatureEnabled && item.href === '/notifications') return false;
         if (!isInternalAuditFeatureEnabled && item.href === '/auditoria-interna') return false;
+        if (!isMaquinasFiscalesFeatureEnabled && item.href === '/maquinas-fiscales') return false;
         return true;
     });
 };

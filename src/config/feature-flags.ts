@@ -40,3 +40,8 @@ export const isVisitNotificationsFeatureEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_VISIT_NOTIFICATIONS_ENABLED,
   true
 );
+
+export const isMaquinasFiscalesFeatureEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_MAQUINAS_FISCALES_ENABLED,
+  true
+);

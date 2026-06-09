@@ -17,6 +17,7 @@ import {
   BarChart3,
   ArrowLeft,
   Trash2,
+  Cpu,
 } from 'lucide-react';
 import { IndividualStats, type TaxpayerSummaryStrip } from '@/components/stats/individual-stats';
 import { useMediaQuery } from '@/hooks/use-media-query';
@@ -46,6 +47,7 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts';
+import { MaquinasTaxpayerSection } from '@/components/maquinas-fiscales/maquinas-taxpayer-section';
 
 /**
  * TaxpayerDetailV2 - Detalle del Contribuyente con diseño Shadcn UI v2.0
@@ -308,7 +310,7 @@ export default function TaxpayerDetailV2() {
           </p>
         </div>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full p-4 sm:p-6 pt-4">
-          <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-3 h-auto flex-wrap gap-1 p-1">
+          <TabsList className="bg-slate-900 border-slate-700 grid w-full grid-cols-4 h-auto flex-wrap gap-1 p-1">
             <TabsTrigger 
               value="fine" 
               className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm min-h-[44px] py-2 touch-manipulation"
@@ -329,6 +331,13 @@ export default function TaxpayerDetailV2() {
             >
               <FileSearch className="h-4 w-4 mr-1 sm:mr-2 shrink-0" />
               <span className="truncate">ISLR</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="maquinas" 
+              className="data-[state=active]:bg-slate-700 data-[state=active]:text-white text-slate-300 text-xs sm:text-sm min-h-[44px] py-2 touch-manipulation"
+            >
+              <Cpu className="h-4 w-4 mr-1 sm:mr-2 shrink-0" />
+              <span className="truncate">Máquinas</span>
             </TabsTrigger>
           </TabsList>
 
@@ -381,6 +390,10 @@ export default function TaxpayerDetailV2() {
                 message="Agrega declaraciones de ISLR para ver el historial"
               />
             )}
+          </TabsContent>
+
+          <TabsContent value="maquinas" className="mt-4">
+            <MaquinasTaxpayerSection rif={taxpayerData?.rif || ''} />
           </TabsContent>
         </Tabs>
       </Card>

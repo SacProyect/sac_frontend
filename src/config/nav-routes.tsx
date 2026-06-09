@@ -14,6 +14,7 @@ import {
     Shield,
     Telescope,
     Megaphone,
+    Cpu,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -41,6 +42,12 @@ export const announcementsNavItem: NavItem = {
     label: "Anuncios",
     icon: <Megaphone className="w-4 h-4" />,
 };
+export const maquinasFiscalesNavItem: NavItem = {
+    href: '/maquinas-fiscales',
+    label: 'Máquinas Fiscales',
+    icon: <Cpu className="w-4 h-4" />,
+};
+
 export const sharedRoutes: NavItem[] = [
     { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
     { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },

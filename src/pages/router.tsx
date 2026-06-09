@@ -24,7 +24,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
@@ -128,6 +128,9 @@ const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/d
 const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
 const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
 const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmin"));
+const MaquinasFiscalesDashboard = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-dashboard"));
+const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-detail"));
+const MaquinasFiscalesStats = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-stats"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -458,6 +461,30 @@ export const router = createBrowserRouter([
                             </Suspense>
                         </AdminOnly>
                         ),
+                    },
+                    {
+                        path: "maquinas-fiscales",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Máquinas Fiscales..." />}>
+                                <MaquinasFiscalesDashboard />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "maquinas-fiscales/estadisticas",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Estadísticas..." />}>
+                                <MaquinasFiscalesStats />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "maquinas-fiscales/:serial",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Detalle..." />}>
+                                <MaquinasFiscalesDetail />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
                     },
                     {
                         path: "iva",
