@@ -45,3 +45,8 @@ export const isMaquinasFiscalesFeatureEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_MAQUINAS_FISCALES_ENABLED,
   true
 );
+
+export const isControlesIngresoEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_CONTROLES_INGRESO_ENABLED,
+  true
+);

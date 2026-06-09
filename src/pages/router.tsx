@@ -24,7 +24,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
@@ -131,6 +131,8 @@ const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmi
 const MaquinasFiscalesDashboard = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-dashboard"));
 const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-detail"));
 const MaquinasFiscalesStats = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-stats"));
+const ControlesDashboardPage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-dashboard-page"));
+const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-detalle-page"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -476,6 +478,26 @@ export const router = createBrowserRouter([
                             <Suspense fallback={<GlobalLoader message="Cargando Estadísticas..." />}>
                                 <MaquinasFiscalesStats />
                             </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "controles-de-ingreso",
+                        element: isControlesIngresoEnabled ? (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Controles de Ingreso..." />}>
+                                    <ControlesDashboardPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "controles-de-ingreso/:id",
+                        element: isControlesIngresoEnabled ? (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Detalle..." />}>
+                                    <ControlesDetallePage />
+                                </Suspense>
+                            </AdminOnly>
                         ) : <Navigate to="/admin" replace />,
                     },
                     {

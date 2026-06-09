@@ -1,7 +1,7 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem } from '@/config/nav-routes';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled } from '@/config/feature-flags';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem, controlesIngreso } from '@/config/nav-routes';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled } from '@/config/feature-flags';
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -26,6 +26,7 @@ const adminStrategy: NavStrategy = () => [
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
     ...routeBlocks.divulgacion,
+    ...routeBlocks.controlesIngreso,
 ];
 
 /**
@@ -97,6 +98,7 @@ const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
         if (!isNotificationsFeatureEnabled && item.href === '/notifications') return false;
         if (!isInternalAuditFeatureEnabled && item.href === '/auditoria-interna') return false;
         if (!isMaquinasFiscalesFeatureEnabled && item.href === '/maquinas-fiscales') return false;
+        if (isControlesIngresoEnabled && item.href === '/divulgacion-presencia-fiscal') return false;
         return true;
     });
 };

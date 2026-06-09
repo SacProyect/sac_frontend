@@ -8,6 +8,7 @@ import {
     Settings2,
     FileText,
     ClipboardList,
+    ClipboardCheck,
     Wallet,
     UserCog,
     Bell,
@@ -93,6 +94,11 @@ export const routeBlocks = {
     /** Solo ADMIN — módulo Divulgación y Presencia Fiscal. */
     divulgacion: [
         { href: '/divulgacion-presencia-fiscal', label: 'Divulgación y Presencia Fiscal', icon: <Megaphone className="w-4 h-4" /> },
+    ] as NavItem[],
+
+    /** Solo ADMIN — módulo de Controles de Ingresos. */
+    controlesIngreso: [
+        { href: '/controles-de-ingreso', label: 'Controles de Ingresos', icon: <ClipboardCheck className="w-4 h-4" /> },
     ] as NavItem[],
 
     /** Genera la ruta de estadísticas personalizada con el ID del usuario */

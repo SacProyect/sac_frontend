@@ -9,6 +9,10 @@ Frontend del **Sistema de Administración Central (SAC)**. Una plataforma robust
 - **Estado & API:** React Query / Axios
 
 
+## 📚 Documentación del Proyecto
+
+- [`docs/controles-ingreso.md`](docs/controles-ingreso.md) — Flujo de generación de documentos, UX de creación, requisitos técnicos y decisiones de arquitectura del módulo Controles de Ingreso.
+
 ## 🔒 Propiedad Intelectual
 **Copyright (c) 2026 Gabriel Longa. Todos los derechos reservados.**
 
