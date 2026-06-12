@@ -12,6 +12,18 @@ const AdminOrCoordinatorOnly = ({ children }: { children: ReactNode }) => {
 	return <>{children}</>;
 };
 
+/**
+ * Permite el render solo a usuarios FISCAL, SUPERVISOR o ADMIN.
+ * Redirige al dashboard si no tiene permiso.
+ */
+const FiscalSupervisorAdminOnly = ({ children }: { children: ReactNode }) => {
+	const { user } = useAuth();
+	if (!user) return <Navigate to="/login" replace />;
+	const allowed = ["FISCAL", "SUPERVISOR", "ADMIN"];
+	if (!allowed.includes(user.role)) return <Navigate to="/" replace />;
+	return <>{children}</>;
+};
+
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout, useAuth } from '@/hooks/use-auth';
@@ -133,6 +145,8 @@ const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fisc
 const MaquinasFiscalesStats = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-stats"));
 const ControlesDashboardPage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-dashboard-page"));
 const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-detalle-page"));
+const CensusQuickCapturePage = lazyWithRetry(() => import("@/pages/Census/census-quick-capture-page"));
+const CensusMapPage = lazyWithRetry(() => import("@/pages/Census/census-map-page"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -247,6 +261,24 @@ export const router = createBrowserRouter([
                     {
                         path: "census",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Tabla Censo..." />}><CensusTablePageV2 /></Suspense>,
+                    },
+                    {
+                        path: "census/quick-capture",
+                        element: (
+                            <FiscalSupervisorAdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Captura Rápida..." />}>
+                                    <CensusQuickCapturePage />
+                                </Suspense>
+                            </FiscalSupervisorAdminOnly>
+                        ),
+                    },
+                    {
+                        path: "census/map",
+                        element: (
+                            <Suspense fallback={<GlobalLoader message="Cargando Mapa de Censo..." />}>
+                                <CensusMapPage />
+                            </Suspense>
+                        ),
                     },
                     {
                         path: "fiscal-review",

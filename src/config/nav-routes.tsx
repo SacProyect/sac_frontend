@@ -16,6 +16,7 @@ import {
     Telescope,
     Megaphone,
     Cpu,
+    MapPin,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -47,6 +48,18 @@ export const maquinasFiscalesNavItem: NavItem = {
     href: '/maquinas-fiscales',
     label: 'Máquinas Fiscales',
     icon: <Cpu className="w-4 h-4" />,
+};
+
+export const quickCaptureNavItem: NavItem = {
+    href: '/census/quick-capture',
+    label: 'Captura Rápida',
+    icon: <ScanEye className="w-4 h-4" />,
+};
+
+export const censusMapNavItem: NavItem = {
+    href: '/census/map',
+    label: 'Mapa Censo',
+    icon: <MapPin className="w-4 h-4" />,
 };
 
 export const sharedRoutes: NavItem[] = [

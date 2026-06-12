@@ -39,6 +39,7 @@ import {
 import ParroquiaMapaInteractivo, { PARROQUIA_LABELS } from "./parroquia-mapa-interactivo";
 import DesgloseComercial from "./desglose-comercial";
 import EquipoQuickAdd from "./equipo-quick-add";
+import { CensusMap } from "@/components/map/CensusMap";
 import {
 	Bar,
 	BarChart,
@@ -636,10 +637,13 @@ export default function DivulgacionPresenciaPage() {
 							</span>
 						)}
 					</TabsTrigger>
-					<TabsTrigger value="mapa" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
-						Georreferencia
-					</TabsTrigger>
-				</TabsList>
+				<TabsTrigger value="mapa" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
+					Georreferencia
+				</TabsTrigger>
+				<TabsTrigger value="censo" className="px-4 py-2 data-[state=active]:shadow-sm transition-all rounded-lg">
+					Censo
+				</TabsTrigger>
+			</TabsList>
 
 				<TabsContent value="dashboard" className="mt-6 space-y-6">
 					{error && (
@@ -1294,6 +1298,10 @@ export default function DivulgacionPresenciaPage() {
 							</div>
 						</div>
 					)}
+				</TabsContent>
+
+				<TabsContent value="censo" className="mt-6 space-y-6">
+					<CensusMap height="600px" />
 				</TabsContent>
 			</Tabs>
 

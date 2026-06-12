@@ -1,6 +1,6 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem, controlesIngreso } from '@/config/nav-routes';
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem, quickCaptureNavItem, censusMapNavItem } from '@/config/nav-routes';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled } from '@/config/feature-flags';
 
 /**
@@ -19,6 +19,8 @@ const adminStrategy: NavStrategy = () => [
     documentosNavItem,
     maquinasFiscalesNavItem,
     visitsRoute,
+    quickCaptureNavItem,
+    censusMapNavItem,
     ...routeBlocks.gestionPersonal,
     auditTrailNavItem,
     internalAuditNavItem,
@@ -38,6 +40,7 @@ const coordinatorStrategy: NavStrategy = () => [
     documentosNavItem,
     auditTrailNavItem,
     internalAuditNavItem,
+    censusMapNavItem,
     ...routeBlocks.ivaIslr,
     ...routeBlocks.indexIva,
     ...routeBlocks.contributions,
@@ -49,6 +52,8 @@ const coordinatorStrategy: NavStrategy = () => [
  */
 const supervisorStrategy: NavStrategy = (user) => [
     ...sharedRoutes,
+    quickCaptureNavItem,
+    censusMapNavItem,
     ...routeBlocks.fiscalStats(user.id),
     auditTrailNavItem,
     ...routeBlocks.ivaIslr,
@@ -61,6 +66,8 @@ const supervisorStrategy: NavStrategy = (user) => [
  */
 const fiscalStrategy: NavStrategy = (user) => [
     ...sharedRoutes.filter((item) => item.href !== '/stats' && item.href !== '/fiscal-review'),
+    quickCaptureNavItem,
+    censusMapNavItem,
     {
         href: `/stats/fiscal/${user.id}`,
         label: 'Revisión Fiscal',
