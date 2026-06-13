@@ -16,4 +16,7 @@ export default defineConfig({
   define: {
     'process.env.VITE_BASE_URL': JSON.stringify(process.env.VITE_BASE_URL),
   },
+  server:{
+    allowedHosts: true,    
+  }
 })

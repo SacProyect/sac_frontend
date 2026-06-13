@@ -1,15 +1,25 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import { MapContainer, TileLayer, useMap, useMapEvents } from "react-leaflet";
+import { MapContainer, TileLayer, useMap, useMapEvents, GeoJSON, Marker } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.markercluster/dist/MarkerCluster.css";
 import "leaflet.markercluster/dist/MarkerCluster.Default.css";
 import "leaflet.markercluster";
+import type { Feature } from "geojson";
 import { MapLocation, MapQueryParams } from "@/types/census-map";
 import { useMapLocations } from "@/hooks/useMapLocations";
 import { CensusMapLegend } from "./CensusMapLegend";
 import { Button } from "@/components/UI/button";
-import { Crosshair, Loader2 } from "lucide-react";
+import { Crosshair, Loader2, MapPin } from "lucide-react";
+import {
+  PARROQUIAS_GEOJSON,
+  PARROQUIA_LABELS,
+  PARROQUIA_CENTROIDS,
+  BASE_COLOR,
+  LIBERTADOR_BOUNDS,
+  detectParroquiaFromPoint,
+} from "./parroquias-data";
+import type { ParroquiaCaracas } from "@/components/utils/api/divulgacion-functions";
 
 interface CensusMapProps {
   height?: string;
@@ -78,6 +88,77 @@ function createMarkerIcon(status: MapLocation["data_integrity_status"]) {
     iconAnchor: [7, 7],
     popupAnchor: [0, -7],
   });
+}
+
+function FitToLibertador() {
+  const map = useMap();
+  const fittedRef = useRef(false);
+
+  useEffect(() => {
+    if (!fittedRef.current) {
+      map.fitBounds(LIBERTADOR_BOUNDS as any, { padding: [12, 12] });
+      fittedRef.current = true;
+    }
+  }, [map]);
+
+  return null;
+}
+
+function ParroquiaPolygons() {
+  const map = useMap();
+
+  const styleFn = useCallback((feature?: Feature) => {
+    const key = (feature as any)?._parroquia_key as ParroquiaCaracas;
+    return {
+      color: "#0b1220",
+      weight: 1.2,
+      fillColor: BASE_COLOR[key] ?? "#94a3b8",
+      fillOpacity: 0.35,
+      opacity: 1,
+      dashArray: "",
+    };
+  }, []);
+
+  const onEachFeature = useCallback((feature: Feature, layer: L.Layer) => {
+    const key = (feature as any)._parroquia_key as ParroquiaCaracas;
+    const path = layer as L.Path;
+    const tooltipHtml = `<div style="font-family:inherit;font-size:11px;font-weight:600;color:#0f172a">${PARROQUIA_LABELS[key]}</div>`;
+    path.bindTooltip(tooltipHtml, { sticky: true, direction: "top" });
+
+    path.on({
+      mouseover: (e: L.LeafletEvent) => {
+        const l = e.target as L.Path;
+        l.setStyle({ weight: 2.5, color: "#fde047" });
+        if ((l as any).bringToFront) (l as any).bringToFront();
+      },
+      mouseout: (e: L.LeafletEvent) => {
+        const l = e.target as L.Path;
+        l.setStyle({ weight: 1.2, color: "#0b1220" });
+      },
+    });
+  }, []);
+
+  return (
+    <>
+      <GeoJSON
+        data={PARROQUIAS_GEOJSON as any}
+        style={styleFn as any}
+        onEachFeature={onEachFeature}
+      />
+      {(Object.keys(PARROQUIA_CENTROIDS) as ParroquiaCaracas[]).map((p) => {
+        const c = PARROQUIA_CENTROIDS[p];
+        if (!c) return null;
+        const labelHtml = `<div class="census-parroquia-label">${PARROQUIA_LABELS[p]}</div>`;
+        const icon = L.divIcon({
+          className: "census-parroquia-label-wrapper",
+          html: labelHtml,
+          iconSize: [1, 1],
+          iconAnchor: [0, 0],
+        });
+        return <Marker key={p} position={c} icon={icon} interactive={false} />;
+      })}
+    </>
+  );
 }
 
 function CensusMarkers({
@@ -207,8 +288,32 @@ function MapFlyToHandler() {
   return null;
 }
 
+function ParroquiaSelector({
+  selected,
+  onChange,
+}: {
+  selected: ParroquiaCaracas | null;
+  onChange: (p: ParroquiaCaracas | null) => void;
+}) {
+  return (
+    <div className="absolute top-3 right-3 z-[1000] bg-slate-900/95 border border-slate-700/50 rounded-lg p-2 shadow-lg">
+      <select
+        className="bg-slate-800 text-slate-200 text-xs rounded border border-slate-600 px-2 py-1"
+        value={selected || ""}
+        onChange={(e) => onChange(e.target.value ? (e.target.value as ParroquiaCaracas) : null)}
+      >
+        <option value="">Todas las parroquias</option>
+        {(Object.keys(PARROQUIA_CENTROIDS) as ParroquiaCaracas[]).map((p) => (
+          <option key={p} value={p}>
+            {PARROQUIA_LABELS[p]}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export function CensusMap({
-  height = "600px",
   showFilters = true,
   showLegend = true,
   showMyLocation = true,
@@ -217,6 +322,7 @@ export function CensusMap({
 }: CensusMapProps) {
   const { locations, loading, error, fetchLocations } = useMapLocations();
   const [selectedStatuses, setSelectedStatuses] = useState<Set<MapLocation["census_status"]>>(new Set());
+  const [selectedParroquia, setSelectedParroquia] = useState<ParroquiaCaracas | null>(null);
 
   const handleBoundsChange = useCallback(
     (bounds: Omit<MapQueryParams, "status" | "limit">) => {
@@ -229,6 +335,10 @@ export function CensusMap({
     },
     [fetchLocations, selectedStatuses]
   );
+
+  const handleParroquiaChange = useCallback((p: ParroquiaCaracas | null) => {
+    setSelectedParroquia(p);
+  }, []);
 
   const toggleStatus = (status: MapLocation["census_status"]) => {
     setSelectedStatuses((prev) => {
@@ -263,8 +373,15 @@ export function CensusMap({
     return locations.filter((loc) => selectedStatuses.has(loc.census_status));
   }, [locations, selectedStatuses]);
 
+  const parroquiaFilteredLocations = useMemo(() => {
+    if (!selectedParroquia) return filteredLocations;
+    return filteredLocations.filter((loc) => {
+      return detectParroquiaFromPoint(loc.latitude, loc.longitude) === selectedParroquia;
+    });
+  }, [filteredLocations, selectedParroquia]);
+
   return (
-    <div className="relative w-full" style={{ height }}>
+    <div className="relative w-full h-full">
       {showFilters && (
         <div className="absolute top-3 left-3 z-[1000] bg-slate-900/95 border border-slate-700/50 rounded-lg p-3 shadow-lg max-w-[16rem]">
           <h4 className="text-xs font-semibold text-slate-200 mb-2">Filtros de censo</h4>
@@ -295,6 +412,8 @@ export function CensusMap({
         </div>
       )}
 
+      <ParroquiaSelector selected={selectedParroquia} onChange={handleParroquiaChange} />
+
       {loading && (
         <div className="absolute top-3 right-3 z-[1000] bg-slate-900/90 border border-slate-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
           <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
@@ -309,21 +428,76 @@ export function CensusMap({
       )}
 
       <MapContainer
-        center={initialCenter}
-        zoom={initialZoom}
-        style={{ width: "100%", height: "100%" }}
+        center={[10.49, -66.96]}
+        zoom={12}
+        minZoom={11}
+        maxZoom={17}
+        scrollWheelZoom
+        style={{ width: "100%", height: "100%", background: "#0f172a" }}
         className="rounded-lg"
+        maxBounds={[
+          [10.34, -67.18],
+          [10.66, -66.74],
+        ]}
+        maxBoundsViscosity={0.9}
       >
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        <FitToLibertador />
         <MapBoundsFetcher onBoundsChange={handleBoundsChange} debounceMs={300} />
         <MapFlyToHandler />
-        <CensusMarkers locations={filteredLocations} />
+        <ParroquiaPolygons />
+        <CensusMarkers locations={parroquiaFilteredLocations} />
       </MapContainer>
 
+      {!loading && parroquiaFilteredLocations.length === 0 && (
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-slate-900/80">
+          <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-sm text-center shadow-xl">
+            <MapPin className="w-10 h-10 text-slate-500 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-slate-200 mb-2">
+              No hay ubicaciones censadas
+            </h3>
+            <p className="text-xs text-slate-400 mb-4">
+              {selectedParroquia
+                ? `No se encontraron contribuyentes censados en ${PARROQUIA_LABELS[selectedParroquia]}.`
+                : "No se encontraron contribuyentes censados en esta área."
+              }
+            </p>
+            <p className="text-xs text-slate-500">
+              Use el selector de parroquia para explorar otras zonas, o capture nuevas ubicaciones desde el tab "Captura".
+            </p>
+          </div>
+        </div>
+      )}
+
       {showLegend && <CensusMapLegend />}
+
+      <style>{`
+        .census-parroquia-label-wrapper {
+          background: transparent !important;
+          border: none !important;
+          pointer-events: none;
+        }
+        .census-parroquia-label {
+          display: inline-block;
+          transform: translate(-50%, -50%);
+          background: rgba(15,23,42,0.82);
+          border: 1px solid rgba(148,163,184,0.4);
+          color: #f1f5f9;
+          padding: 1px 5px;
+          border-radius: 4px;
+          box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+          font-family: inherit;
+          font-size: 9px;
+          font-weight: 600;
+          letter-spacing: 0.01em;
+          white-space: nowrap;
+        }
+        .leaflet-interactive { cursor: pointer; transition: filter 0.15s ease; }
+        .leaflet-interactive:hover { filter: brightness(1.1) saturate(1.15); }
+      `}</style>
     </div>
   );
 }

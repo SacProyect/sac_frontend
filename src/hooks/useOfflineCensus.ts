@@ -127,7 +127,12 @@ export function useOfflineCensus() {
           const photoBlob = new Blob([photoBuffer], { type: 'image/jpeg' });
 
           const formData = new FormData();
-          formData.append('payload', JSON.stringify(payload));
+          // Enviar campos planos para que backend los lea de req.body directamente
+          Object.entries(payload).forEach(([key, value]) => {
+            if (value !== undefined && value !== null) {
+              formData.append(key, String(value));
+            }
+          });
           formData.append('photo', photoBlob, `photo-${record.id}.jpg`);
 
           await apiConnection.post('/census/quick-capture', formData, {
@@ -138,14 +143,18 @@ export function useOfflineCensus() {
 
           await offlineCensusDB.updateStatus(record.id, 'SYNCED');
         } catch (err: any) {
-          const message = err?.response?.data?.message ?? err?.message ?? 'Error desconocido';
+          const message = err?.response?.data?.message ?? err?.response?.data?.error ?? err?.message ?? 'Error desconocido';
           await offlineCensusDB.updateStatus(record.id, 'SYNC_ERROR', message);
+          toast.error(`Error sincronizando censo: ${message}`);
         }
       }
 
       const stillPending = await offlineCensusDB.getPendingRecords();
-      if (stillPending.length === 0 && pending.length > 0) {
+      const syncErrors = await offlineCensusDB.censusRecords.where('status').equals('SYNC_ERROR').count();
+      if (stillPending.length === 0 && pending.length > 0 && syncErrors === 0) {
         toast.success('Todos los registros han sido sincronizados');
+      } else if (stillPending.length > 0) {
+        toast(`Quedan ${stillPending.length} registro(s) pendiente(s) de sincronización`, { icon: '⏳' });
       }
     } catch (err: any) {
       toast.error(`Error durante la sincronización: ${err?.message ?? 'Error desconocido'}`);

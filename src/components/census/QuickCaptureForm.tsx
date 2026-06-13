@@ -30,6 +30,8 @@ import { useOfflineCensus } from '@/hooks/useOfflineCensus';
 import { useAuth } from '@/hooks/use-auth';
 import { useCachedParishes } from '@/hooks/useCachedData';
 import { quickCaptureSchema, type QuickCaptureFormValues } from './quick-capture-schema';
+import { detectParroquiaFromPoint, PARROQUIA_LABELS } from '@/components/map/parroquias-data';
+import type { ParroquiaCaracas } from '@/components/utils/api/divulgacion-functions';
 import { Wifi, WifiOff, Save, RotateCcw, CloudUpload, Database } from 'lucide-react';
 
 export function QuickCaptureForm() {
@@ -58,6 +60,7 @@ export function QuickCaptureForm() {
       parish_id: '',
       official_id: user?.id ?? '',
       taxpayer_id: '',
+      rifPrefix: 'J',
       rif: '',
       name: '',
       employee_count: undefined,
@@ -89,7 +92,22 @@ export function QuickCaptureForm() {
   const handleLocationCaptured = useCallback((lat: number, lng: number) => {
     form.setValue('latitude', lat, { shouldValidate: true });
     form.setValue('longitude', lng, { shouldValidate: true });
-  }, [form]);
+
+    // Auto-detectar parroquia por polígono
+    const detectedKey = detectParroquiaFromPoint(lat, lng);
+    if (detectedKey) {
+      const detectedLabel = PARROQUIA_LABELS[detectedKey as ParroquiaCaracas];
+      // Buscar la parroquia en la lista por nombre (parcial, para manejar diferencias de acentos)
+      const match = parishes.find((p) => {
+        const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+        return normalize(p.name).includes(normalize(detectedLabel)) || normalize(detectedLabel).includes(normalize(p.name));
+      });
+      if (match) {
+        form.setValue('parish_id', match.id, { shouldValidate: true });
+        toast(`Parroquia detectada: ${detectedLabel}`, { icon: '📍' });
+      }
+    }
+  }, [form, parishes]);
 
   const handleLocationError = useCallback((error: string) => {
     toast.error(error);
@@ -147,14 +165,15 @@ export function QuickCaptureForm() {
     setIsSubmitting(true);
 
     try {
-      const payload = {
+      const valuesToSubmit = {
         ...values,
+        rif: values.rif ? `${values.rifPrefix || 'J'}-${values.rif}` : undefined,
         official_id: user?.id ?? values.official_id,
       };
 
-      await saveOffline(payload, photoFile);
+      await saveOffline(valuesToSubmit, photoFile);
 
-      toast.success(isOnline ? 'Censo guardado y sincronizado' : 'Censo guardado localmente');
+      toast.success(isOnline ? 'Censo guardado. Sincronizando...' : 'Censo guardado localmente');
 
       // Resetear formulario
       form.reset({
@@ -171,9 +190,10 @@ export function QuickCaptureForm() {
         address: '',
         parish_id: '',
         official_id: user?.id ?? '',
-        taxpayer_id: '',
-        rif: '',
-        name: '',
+      taxpayer_id: '',
+      rifPrefix: 'J',
+      rif: '',
+      name: '',
         employee_count: undefined,
         admin_unit_id: '',
       });
@@ -207,14 +227,15 @@ export function QuickCaptureForm() {
       longitude: null,
       address: '',
       parish_id: '',
-      official_id: user?.id ?? '',
-      taxpayer_id: '',
-      rif: '',
-      name: '',
-      employee_count: undefined,
-      admin_unit_id: '',
-    });
-    setPhotoFile(null);
+        official_id: user?.id ?? '',
+        taxpayer_id: '',
+        rifPrefix: 'J',
+        rif: '',
+        name: '',
+        employee_count: undefined,
+        admin_unit_id: '',
+      });
+      setPhotoFile(null);
     setPhotoError(null);
     toast('Formulario limpiado', { icon: '🧹' });
   };
@@ -505,12 +526,30 @@ export function QuickCaptureForm() {
                   <FormItem>
                     <FormLabel>RIF</FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="J123456789"
-                        {...field}
-                        className="min-h-[48px] text-base"
-                        aria-label="RIF"
-                      />
+                      <div className="flex gap-2">
+                        <Select
+                          onValueChange={(value) => form.setValue('rifPrefix', value)}
+                          defaultValue="J"
+                          value={form.watch('rifPrefix') || 'J'}
+                        >
+                          <SelectTrigger className="w-[80px] min-h-[48px] text-base">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="J">J-</SelectItem>
+                            <SelectItem value="V">V-</SelectItem>
+                            <SelectItem value="G">G-</SelectItem>
+                            <SelectItem value="E">E-</SelectItem>
+                            <SelectItem value="P">P-</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          placeholder="123456789"
+                          {...field}
+                          className="flex-1 min-h-[48px] text-base"
+                          aria-label="RIF"
+                        />
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>

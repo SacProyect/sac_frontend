@@ -16,7 +16,6 @@ import {
     Telescope,
     Megaphone,
     Cpu,
-    MapPin,
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -50,21 +49,15 @@ export const maquinasFiscalesNavItem: NavItem = {
     icon: <Cpu className="w-4 h-4" />,
 };
 
-export const quickCaptureNavItem: NavItem = {
-    href: '/census/quick-capture',
-    label: 'Captura Rápida',
-    icon: <ScanEye className="w-4 h-4" />,
-};
-
-export const censusMapNavItem: NavItem = {
-    href: '/census/map',
-    label: 'Mapa Censo',
-    icon: <MapPin className="w-4 h-4" />,
+export const censusGroupNavItem: NavItem = {
+    href: '/census',
+    label: 'Censo',
+    icon: <Users className="w-4 h-4" />,
 };
 
 export const sharedRoutes: NavItem[] = [
     { href: '/admin', label: 'Administración', icon: <LayoutDashboard className="w-4 h-4" /> },
-    { href: '/census', label: 'Tabla Censo', icon: <Users className="w-4 h-4" /> },
+    censusGroupNavItem,
     { href: '/fiscal-review', label: 'Revisión Fiscal', icon: <CheckCircle className="w-4 h-4" /> },
     { href: '/gen-reports', label: 'Reportes', icon: <FileBarChart className="w-4 h-4" /> },
     { href: '/stats', label: 'Estadísticas', icon: <BarChart3 className="w-4 h-4" /> },

@@ -12,7 +12,7 @@ const LEGEND_ITEMS = [
 
 export function CensusMapLegend({ className }: CensusMapLegendProps) {
   return (
-    <Card className={`absolute bottom-4 right-4 z-[1000] p-3 bg-slate-900/95 border-slate-700/50 shadow-lg ${className ?? ""}`}>
+    <Card className={`absolute top-16 right-3 z-[1000] p-3 bg-slate-900/95 border-slate-700/50 shadow-lg ${className ?? ""}`}>
       <h4 className="text-xs font-semibold text-slate-200 mb-2">Estado de Censo</h4>
       <div className="space-y-1.5">
         {LEGEND_ITEMS.map((item) => (

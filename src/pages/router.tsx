@@ -147,6 +147,7 @@ const ControlesDashboardPage = lazyWithRetry(() => import("@/pages/controles-ing
 const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-detalle-page"));
 const CensusQuickCapturePage = lazyWithRetry(() => import("@/pages/Census/census-quick-capture-page"));
 const CensusMapPage = lazyWithRetry(() => import("@/pages/Census/census-map-page"));
+const CensusGroupPage = lazyWithRetry(() => import("@/pages/Census/census-group-page"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -260,25 +261,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "census",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Tabla Censo..." />}><CensusTablePageV2 /></Suspense>,
+                        element: <Suspense fallback={<GlobalLoader message="Cargando Censo..." />}><CensusGroupPage /></Suspense>,
                     },
                     {
                         path: "census/quick-capture",
-                        element: (
-                            <FiscalSupervisorAdminOnly>
-                                <Suspense fallback={<GlobalLoader message="Cargando Captura Rápida..." />}>
-                                    <CensusQuickCapturePage />
-                                </Suspense>
-                            </FiscalSupervisorAdminOnly>
-                        ),
+                        element: <Navigate to="/census?tab=captura" replace />,
                     },
                     {
                         path: "census/map",
-                        element: (
-                            <Suspense fallback={<GlobalLoader message="Cargando Mapa de Censo..." />}>
-                                <CensusMapPage />
-                            </Suspense>
-                        ),
+                        element: <Navigate to="/census?tab=mapa" replace />,
                     },
                     {
                         path: "fiscal-review",
