@@ -71,3 +71,30 @@ export const deleteTaxpayerCensus = async (id: string) => {
 
 
 }
+
+export interface ParishDetectionResponse {
+  detected: boolean;
+  parish_id?: string;
+  parish_name?: string;
+  parish_key?: string;
+  message?: string;
+}
+
+export const detectParishFromCoords = async (lat: number, lng: number): Promise<ParishDetectionResponse> => {
+  try {
+    const response = await apiConnection.get('/census/detect-parish', {
+      params: { lat, lng },
+      timeout: 5000, // 5 segundos timeout
+    });
+
+    if (response.status === 200 && response.data?.success) {
+      return response.data.data;
+    }
+
+    return { detected: false, message: 'Error en la respuesta del servidor' };
+  } catch (error: any) {
+    // En caso de error de red o timeout, retornar fallback
+    console.error('[PARISH-DETECTION] Error:', error?.message);
+    return { detected: false, message: 'Error de conexión al detectar parroquia' };
+  }
+};
