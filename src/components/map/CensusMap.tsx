@@ -10,7 +10,7 @@ import { MapLocation, MapQueryParams } from "@/types/census-map";
 import { useMapLocations } from "@/hooks/useMapLocations";
 import { CensusMapLegend } from "./CensusMapLegend";
 import { Button } from "@/components/UI/button";
-import { Crosshair, Loader2, MapPin } from "lucide-react";
+import { Crosshair, Loader2, MapPin, Radio, Filter, X } from "lucide-react";
 import {
   PARROQUIAS_GEOJSON,
   PARROQUIA_LABELS,
@@ -288,31 +288,6 @@ function MapFlyToHandler() {
   return null;
 }
 
-function ParroquiaSelector({
-  selected,
-  onChange,
-}: {
-  selected: ParroquiaCaracas | null;
-  onChange: (p: ParroquiaCaracas | null) => void;
-}) {
-  return (
-    <div className="absolute top-3 right-3 z-[1000] bg-slate-900/95 border border-slate-700/50 rounded-lg p-2 shadow-lg">
-      <select
-        className="bg-slate-800 text-slate-200 text-xs rounded border border-slate-600 px-2 py-1"
-        value={selected || ""}
-        onChange={(e) => onChange(e.target.value ? (e.target.value as ParroquiaCaracas) : null)}
-      >
-        <option value="">Todas las parroquias</option>
-        {(Object.keys(PARROQUIA_CENTROIDS) as ParroquiaCaracas[]).map((p) => (
-          <option key={p} value={p}>
-            {PARROQUIA_LABELS[p]}
-          </option>
-        ))}
-      </select>
-    </div>
-  );
-}
-
 export function CensusMap({
   showFilters = true,
   showLegend = true,
@@ -323,6 +298,9 @@ export function CensusMap({
   const { locations, loading, error, fetchLocations } = useMapLocations();
   const [selectedStatuses, setSelectedStatuses] = useState<Set<MapLocation["census_status"]>>(new Set());
   const [selectedParroquia, setSelectedParroquia] = useState<ParroquiaCaracas | null>(null);
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+  const [isConnected, setIsConnected] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected">("idle");
 
   const handleBoundsChange = useCallback(
     (bounds: Omit<MapQueryParams, "status" | "limit">) => {
@@ -368,6 +346,21 @@ export function CensusMap({
     );
   };
 
+  // ── Live mode (UI state machine; WebSocket integration is a follow-up) ──
+  const connect = useCallback(() => {
+    setConnectionStatus("connecting");
+    // Simulated handshake — replace with real WebSocket connection.
+    setTimeout(() => {
+      setIsConnected(true);
+      setConnectionStatus("connected");
+    }, 600);
+  }, []);
+
+  const disconnect = useCallback(() => {
+    setIsConnected(false);
+    setConnectionStatus("idle");
+  }, []);
+
   const filteredLocations = useMemo(() => {
     if (selectedStatuses.size === 0) return locations;
     return locations.filter((loc) => selectedStatuses.has(loc.census_status));
@@ -380,17 +373,43 @@ export function CensusMap({
     });
   }, [filteredLocations, selectedParroquia]);
 
+  // Shared options for the parroquia <select> used in both desktop panel and mobile sheet.
+  const parroquiaOptions = useMemo(
+    () =>
+      (Object.keys(PARROQUIA_CENTROIDS) as ParroquiaCaracas[]).map((p) => (
+        <option key={p} value={p}>
+          {PARROQUIA_LABELS[p]}
+        </option>
+      )),
+    []
+  );
+
   return (
     <div className="relative w-full h-full">
+      {/* ── Desktop filter panel (≥ lg) ──────────────────────────────── */}
       {showFilters && (
-        <div className="absolute top-3 left-3 z-[1000] bg-slate-900/95 border border-slate-700/50 rounded-lg p-3 shadow-lg max-w-[16rem]">
-          <h4 className="text-xs font-semibold text-slate-200 mb-2">Filtros de censo</h4>
+        <div className="hidden lg:flex absolute top-3 left-3 z-[1000] bg-slate-900/95 border border-slate-700/50 rounded-lg p-3 shadow-lg w-64 flex-col gap-2">
+          <h4 className="text-xs font-semibold text-slate-200">Filtros de censo</h4>
+          <select
+            className="bg-slate-800 text-slate-200 text-xs rounded border border-slate-600 px-2 py-1.5 focus:outline-none focus:ring-1 focus:ring-sky-500/40"
+            value={selectedParroquia || ""}
+            onChange={(e) =>
+              handleParroquiaChange(e.target.value ? (e.target.value as ParroquiaCaracas) : null)
+            }
+            aria-label="Filtrar por parroquia"
+          >
+            <option value="">Todas las parroquias</option>
+            {parroquiaOptions}
+          </select>
           <div className="space-y-1.5">
             {CENSUS_STATUS_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
+              <label
+                key={opt.value}
+                className="flex items-center gap-2 cursor-pointer min-h-[32px]"
+              >
                 <input
                   type="checkbox"
-                  className="w-3.5 h-3.5 rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500/40"
+                  className="w-4 h-4 rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500/40"
                   checked={selectedStatuses.has(opt.value)}
                   onChange={() => toggleStatus(opt.value)}
                 />
@@ -399,34 +418,189 @@ export function CensusMap({
             ))}
           </div>
           {showMyLocation && (
-            <Button
-              variant="outline"
-              size="sm"
-              className="mt-3 w-full text-xs border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
-              onClick={goToMyLocation}
-            >
-              <Crosshair className="w-3 h-3 mr-1" />
-              Mi ubicación
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                className="w-full text-xs border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent min-h-[44px]"
+                onClick={goToMyLocation}
+              >
+                <Crosshair className="size-3 mr-1" />
+                Mi ubicación
+              </Button>
+              <Button
+                variant={isConnected ? "default" : "outline"}
+                size="sm"
+                className={`w-full text-xs min-h-[44px] ${
+                  isConnected
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                    : "border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
+                }`}
+                onClick={() => (isConnected ? disconnect() : connect())}
+                disabled={connectionStatus === "connecting"}
+              >
+                {isConnected ? (
+                  <>
+                    <span className="size-2 rounded-full bg-emerald-300 mr-2 animate-pulse" />
+                    En vivo
+                  </>
+                ) : (
+                  <>
+                    <Radio className="size-3 mr-1" />
+                    {connectionStatus === "connecting" ? "Conectando…" : "Conectar"}
+                  </>
+                )}
+              </Button>
+            </>
           )}
         </div>
       )}
 
-      <ParroquiaSelector selected={selectedParroquia} onChange={handleParroquiaChange} />
+      {/* ── Mobile FAB filter button (< lg) ─────────────────────────── */}
+      {showFilters && (
+        <Button
+          onClick={() => setMobileFiltersOpen(true)}
+          className="lg:hidden fixed bottom-4 right-4 z-[1100] size-14 rounded-full shadow-xl bg-sky-600 hover:bg-sky-700 text-white p-0"
+          aria-label="Abrir filtros"
+        >
+          <Filter className="size-5" />
+          {selectedStatuses.size > 0 && (
+            <span className="absolute -top-1 -right-1 size-6 rounded-full bg-emerald-500 text-[11px] font-bold flex items-center justify-center text-slate-950 border-2 border-slate-950">
+              {selectedStatuses.size}
+            </span>
+          )}
+        </Button>
+      )}
 
-      {loading && (
-        <div className="absolute top-3 right-3 z-[1000] bg-slate-900/90 border border-slate-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
-          <span className="text-xs text-slate-300">Cargando ubicaciones...</span>
+      {/* ── Mobile bottom sheet (< lg) ──────────────────────────────── */}
+      {mobileFiltersOpen && (
+        <div className="lg:hidden fixed inset-0 z-[1200] flex flex-col">
+          <div
+            className="flex-1 bg-slate-950/60 backdrop-blur-sm"
+            onClick={() => setMobileFiltersOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="bg-slate-900 border-t border-slate-700 rounded-t-2xl p-4 pb-[max(1rem,env(safe-area-inset-bottom))] max-h-[80vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-4">
+              <h4 className="text-sm font-semibold text-slate-100">Filtros de censo</h4>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setMobileFiltersOpen(false)}
+                className="text-slate-400 hover:text-slate-100 min-h-[44px] min-w-[44px]"
+                aria-label="Cerrar filtros"
+              >
+                <X className="size-5" />
+              </Button>
+            </div>
+            <div className="mb-3 bg-slate-800 rounded-md border border-slate-700 px-3 py-2">
+              <span className="text-[10px] uppercase tracking-wider text-slate-500 block mb-1">
+                Parroquia
+              </span>
+              <select
+                className="w-full bg-transparent text-slate-200 text-sm focus:outline-none"
+                value={selectedParroquia || ""}
+                onChange={(e) =>
+                  handleParroquiaChange(e.target.value ? (e.target.value as ParroquiaCaracas) : null)
+                }
+                aria-label="Filtrar por parroquia"
+              >
+                <option value="">Todas las parroquias</option>
+                {parroquiaOptions}
+              </select>
+            </div>
+            <div className="space-y-1">
+              {CENSUS_STATUS_OPTIONS.map((opt) => (
+                <label
+                  key={opt.value}
+                  className="flex items-center gap-3 cursor-pointer min-h-[48px] p-2 rounded hover:bg-slate-800/50"
+                >
+                  <input
+                    type="checkbox"
+                    className="w-5 h-5 rounded border-slate-600 bg-slate-800 text-sky-500 focus:ring-sky-500/40"
+                    checked={selectedStatuses.has(opt.value)}
+                    onChange={() => toggleStatus(opt.value)}
+                  />
+                  <span className="text-sm text-slate-200">{opt.label}</span>
+                </label>
+              ))}
+            </div>
+            {showMyLocation && (
+              <div className="flex flex-col gap-2 mt-4 pt-4 border-t border-slate-700">
+                <Button
+                  variant="outline"
+                  className="w-full min-h-[48px] border-slate-600 text-slate-200 hover:bg-slate-800 bg-transparent"
+                  onClick={goToMyLocation}
+                >
+                  <Crosshair className="size-4 mr-2" />
+                  Mi ubicación
+                </Button>
+                <Button
+                  variant={isConnected ? "default" : "outline"}
+                  className={`w-full min-h-[48px] ${
+                    isConnected
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
+                      : "border-slate-600 text-slate-200 hover:bg-slate-800 bg-transparent"
+                  }`}
+                  onClick={() => (isConnected ? disconnect() : connect())}
+                  disabled={connectionStatus === "connecting"}
+                >
+                  {isConnected ? (
+                    <>
+                      <span className="size-2 rounded-full bg-emerald-300 mr-2 animate-pulse" />
+                      Desconectar
+                    </>
+                  ) : (
+                    <>
+                      <Radio className="size-4 mr-2" />
+                      {connectionStatus === "connecting" ? "Conectando…" : "Conectar en vivo"}
+                    </>
+                  )}
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       )}
 
-      {error && (
-        <div className="absolute top-3 right-3 z-[1000] bg-rose-900/90 border border-rose-700/50 rounded-lg px-3 py-2 shadow-lg">
-          <span className="text-xs text-rose-300">{error}</span>
+      {/* ── Loading / connecting / error — top center, stacked ──────── */}
+      <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex flex-col gap-2 pointer-events-none">
+        {loading && (
+          <div className="bg-slate-900/95 border border-slate-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2 pointer-events-auto">
+            <Loader2 className="size-3.5 animate-spin text-sky-400" />
+            <span className="text-xs text-slate-300">Cargando ubicaciones…</span>
+          </div>
+        )}
+        {connectionStatus === "connecting" && !loading && (
+          <div className="bg-yellow-900/90 border border-yellow-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2 pointer-events-auto">
+            <Loader2 className="size-3 animate-spin text-yellow-400" />
+            <span className="text-xs text-yellow-300">Conectando…</span>
+          </div>
+        )}
+        {error && (
+          <div className="bg-rose-900/90 border border-rose-700/50 rounded-lg px-3 py-2 shadow-lg pointer-events-auto max-w-[90vw]">
+            <span className="text-xs text-rose-300">{error}</span>
+          </div>
+        )}
+      </div>
+
+      {/* ── "En vivo" indicator — desktop top-right ─────────────────── */}
+      {isConnected && !loading && (
+        <div className="hidden lg:flex absolute top-3 right-3 z-[1000] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg items-center gap-2">
+          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs text-emerald-300">En vivo · {locations.length}</span>
         </div>
       )}
 
+      {/* ── "En vivo" indicator — mobile bottom-left ────────────────── */}
+      {isConnected && !loading && (
+        <div className="lg:hidden fixed bottom-4 left-4 z-[1100] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
+          <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span className="text-xs text-emerald-300">{locations.length} en vivo</span>
+        </div>
+      )}
+
+      {/* ── Map ─────────────────────────────────────────────────────── */}
       <MapContainer
         center={[10.49, -66.96]}
         zoom={12}
@@ -434,7 +608,7 @@ export function CensusMap({
         maxZoom={17}
         scrollWheelZoom
         style={{ width: "100%", height: "100%", background: "#0f172a" }}
-        className="rounded-lg"
+        className="rounded-none lg:rounded-lg"
         maxBounds={[
           [10.34, -67.18],
           [10.66, -66.74],
@@ -452,9 +626,10 @@ export function CensusMap({
         <CensusMarkers locations={parroquiaFilteredLocations} />
       </MapContainer>
 
+      {/* ── Empty state ─────────────────────────────────────────────── */}
       {!loading && parroquiaFilteredLocations.length === 0 && (
-        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-slate-900/80">
-          <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-sm text-center shadow-xl">
+        <div className="absolute inset-0 z-[999] flex items-center justify-center bg-slate-900/80 p-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-lg p-6 max-w-sm w-full text-center shadow-xl">
             <MapPin className="w-10 h-10 text-slate-500 mx-auto mb-3" />
             <h3 className="text-sm font-semibold text-slate-200 mb-2">
               No hay ubicaciones censadas
@@ -462,8 +637,7 @@ export function CensusMap({
             <p className="text-xs text-slate-400 mb-4">
               {selectedParroquia
                 ? `No se encontraron contribuyentes censados en ${PARROQUIA_LABELS[selectedParroquia]}.`
-                : "No se encontraron contribuyentes censados en esta área."
-              }
+                : "No se encontraron contribuyentes censados en esta área."}
             </p>
             <p className="text-xs text-slate-500">
               Use el selector de parroquia para explorar otras zonas, o capture nuevas ubicaciones desde el tab "Captura".

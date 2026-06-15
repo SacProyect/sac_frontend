@@ -2,8 +2,8 @@ import { CensusMap } from "@/components/map/CensusMap";
 
 export default function CensusMapPage() {
   return (
-    <div className="w-full h-screen">
-      <CensusMap height="100vh" />
+    <div className="relative w-full h-[calc(100dvh-64px)] lg:h-[calc(100dvh-72px)]">
+      <CensusMap />
     </div>
   );
 }

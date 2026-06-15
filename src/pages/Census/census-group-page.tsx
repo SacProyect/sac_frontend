@@ -1,6 +1,13 @@
 import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/UI/tabs';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/UI/select';
 import CensusTableView from '@/pages/Census/CensusTableView';
 import CensusQuickCapturePage from '@/pages/Census/census-quick-capture-page';
 import CensusMapPage from '@/pages/Census/census-map-page';
@@ -22,8 +29,28 @@ export default function CensusGroupPage() {
 
   return (
     <div className="w-full h-full flex flex-col">
+      {/* Mobile: select dropdown (hidden ≥ md) */}
+      <div className="md:hidden px-4 pt-2 pb-3">
+        <Select value={currentTab} onValueChange={handleTabChange}>
+          <SelectTrigger
+            className="w-full min-h-[48px] bg-slate-800 border-slate-700 text-slate-200"
+            aria-label="Cambiar vista de censo"
+          >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="tabla">Tabla de censo</SelectItem>
+            <SelectItem value="mapa">Mapa</SelectItem>
+            {canCapture && <SelectItem value="captura">Captura rápida</SelectItem>}
+          </SelectContent>
+        </Select>
+      </div>
+
       <Tabs value={currentTab} onValueChange={handleTabChange} className="w-full flex flex-col h-full">
-        <TabsList className={`grid w-full max-w-md mx-auto mb-4 ${canCapture ? 'grid-cols-3' : 'grid-cols-2'}`}>
+        {/* Desktop: tabs (hidden < md) */}
+        <TabsList
+          className={`hidden md:grid w-full max-w-md mx-auto mb-4 ${canCapture ? 'grid-cols-3' : 'grid-cols-2'}`}
+        >
           <TabsTrigger value="tabla">Tabla</TabsTrigger>
           <TabsTrigger value="mapa">Mapa</TabsTrigger>
           {canCapture && <TabsTrigger value="captura">Captura</TabsTrigger>}
@@ -32,9 +59,10 @@ export default function CensusGroupPage() {
           <TabsContent value="tabla" className="mt-0 h-full">
             <CensusTableView />
           </TabsContent>
+          {/* Mobile: full-screen map; Desktop: centered with max-w-5xl aspect-[4/3] */}
           <TabsContent value="mapa" className="mt-0 flex-1 min-h-0">
-            <div className="w-full h-full flex items-center justify-center p-4">
-              <div className="w-full max-w-5xl aspect-[4/3] max-h-full">
+            <div className="w-full h-full lg:flex lg:items-center lg:justify-center lg:p-4">
+              <div className="w-full h-full lg:max-w-5xl lg:aspect-[4/3] lg:max-h-full">
                 <CensusMapPage />
               </div>
             </div>

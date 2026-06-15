@@ -80,17 +80,17 @@ interface CensusTableProps {
 function CensusTable({ data, onEdit }: CensusTableProps) {
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="min-w-[640px] lg:min-w-full">
         <TableHeader>
           <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
-            <TableHead className="text-slate-300 font-semibold">N° Censo</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Año</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Nombre Comercial</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Actividad</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Estado</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Parroquia</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Fecha</TableHead>
-            {onEdit && <TableHead className="text-slate-300 font-semibold">Acciones</TableHead>}
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">N° Censo</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Año</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Nombre Comercial</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Actividad</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Estado</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Parroquia</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Fecha</TableHead>
+            {onEdit && <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Acciones</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -151,15 +151,15 @@ interface FiscalCensusesTableProps {
 function FiscalCensusesTable({ data, onViewCensuses }: FiscalCensusesTableProps) {
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="min-w-[640px] lg:min-w-full">
         <TableHeader>
           <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
-            <TableHead className="text-slate-300 font-semibold">Nombre</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Censos Totales</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Borrador</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Completados</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Verificados</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Acciones</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Nombre</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Censos Totales</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Borrador</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Completados</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Verificados</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -221,16 +221,16 @@ interface UnitsTableProps {
 function UnitsTable({ data, onViewFiscales }: UnitsTableProps) {
   return (
     <div className="overflow-x-auto">
-      <Table>
+      <Table className="min-w-[640px] lg:min-w-full">
         <TableHeader>
           <TableRow className="bg-slate-800 hover:bg-slate-800 border-slate-700">
-            <TableHead className="text-slate-300 font-semibold">Coordinación</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Fiscales</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Censos Totales</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Borrador</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Completados</TableHead>
-            <TableHead className="text-slate-300 font-semibold text-center">Verificados</TableHead>
-            <TableHead className="text-slate-300 font-semibold">Acciones</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Coordinación</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Fiscales</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Censos Totales</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Borrador</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Completados</TableHead>
+            <TableHead className="text-slate-300 font-semibold text-center sticky top-0 z-10 bg-slate-800">Verificados</TableHead>
+            <TableHead className="text-slate-300 font-semibold sticky top-0 z-10 bg-slate-800">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -618,7 +618,7 @@ export default function CensusTableView() {
 
       {/* Status Filter (census-level views only) */}
       {showStatusFilter && (
-        <Card className="bg-slate-800 border-slate-700 p-4">
+        <Card className="bg-slate-800 border-slate-700 p-3 lg:p-4">
           <div className="flex items-center gap-2">
             <Search className="h-4 w-4 text-slate-400" />
             <select
