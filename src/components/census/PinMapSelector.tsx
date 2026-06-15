@@ -120,8 +120,7 @@ export function LocationVerificationMap({
 
         {/* Mapa */}
         <div
-          className="relative rounded-lg overflow-hidden border border-blue-200"
-          style={{ height: 250, width: "100%" }}
+          className="relative rounded-lg overflow-hidden border border-blue-200 h-[55vh] min-h-[280px] max-h-[500px] sm:h-[400px]"
         >
           <MapContainer
             center={[latitude, longitude]}
