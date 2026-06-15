@@ -30,6 +30,7 @@ export interface DocumentItem {
   uploadedById: string;
   createdAt: string;
   updatedAt: string;
+  jefaOnly?: boolean;
   owner?: UserInfo | null;
   uploadedBy?: UserInfo | null; accessRecords?: DocumentAccessItem[];
   sharedWith?: SharedWithInfo[];

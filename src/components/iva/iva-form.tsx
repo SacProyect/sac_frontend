@@ -141,7 +141,7 @@ function IvaForm() {
     
     const taxpayerArray = useMemo(() => {
         console.log('[DEBUG] IvaForm - Role:', user?.role);
-        const firstPageFiltered = (firstPageTaxpayers || []).filter((t: Taxpayer) => t.process !== "FP");
+        const firstPageFiltered = (firstPageTaxpayers || []);
         const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
         const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
         const allFetched = [...displayedFirst, ...displayedExtra];

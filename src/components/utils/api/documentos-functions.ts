@@ -49,20 +49,26 @@ export async function uploadDocument(
     description?: string;
     categoryId?: string;
     isSensitive?: boolean;
-  }
+  },
 ): Promise<{ success: boolean; data: DocumentItem }> {
   const formData = new FormData();
   formData.append("file", file);
   formData.append("name", name);
   formData.append("scope", scope);
-  if (jefaOnly) formData.append("jefaOnly", "true");
-  
-  if (metadata?.description) formData.append("description", metadata.description);
-  if (metadata?.categoryId) formData.append("categoryId", metadata.categoryId);
-  if (metadata?.isSensitive) formData.append("isSensitive", "true");
-
   if (fiscalGroupIds?.length) {
     fiscalGroupIds.forEach((id) => formData.append("fiscalGroupIds[]", id));
+  }
+  if (jefaOnly) {
+    formData.append("jefaOnly", "true");
+  }
+  if (metadata?.description) {
+    formData.append("description", metadata.description);
+  }
+  if (metadata?.categoryId) {
+    formData.append("categoryId", metadata.categoryId);
+  }
+  if (metadata?.isSensitive !== undefined) {
+    formData.append("isSensitive", String(metadata.isSensitive));
   }
 
   const response = await apiConnection.post(BASE, formData, {

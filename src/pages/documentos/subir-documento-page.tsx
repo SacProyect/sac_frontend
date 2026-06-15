@@ -30,6 +30,10 @@ const SCOPE_OPTIONS: { value: DocumentScope; label: string; description: string 
   { value: "SHARED", label: "Compartido", description: "Visible para las coordinaciones o unidades seleccionadas" },
 ];
 
+// Default to SHARED
+
+const DEFAULT_SCOPE: DocumentScope = "SHARED";
+
 const ALLOWED_MIME_TYPES = [
   "application/pdf",
   "application/msword",
@@ -177,7 +181,6 @@ export default function SubirDocumentoPage() {
       
       // Phase 3 support for selectedUnits would go here if needed via Principal API
       // but for now we focus on Phase 4 metadata.
-
       toast.success("Documento subido exitosamente");
       navigate("/documentos");
     } catch (e: any) {
