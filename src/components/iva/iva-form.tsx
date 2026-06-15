@@ -140,7 +140,6 @@ function IvaForm() {
     const isSearching = searchDebounce.trim() !== '';
     
     const taxpayerArray = useMemo(() => {
-        console.log('[DEBUG] IvaForm - Role:', user?.role);
         const firstPageFiltered = (firstPageTaxpayers || []);
         const displayedFirst = isSearching ? (searchResults ?? []) : firstPageFiltered;
         const displayedExtra = isSearching ? searchAdditionalPages : additionalPages;
