@@ -3,7 +3,7 @@ import { z } from 'zod';
 export const quickCaptureSchema = z.object({
   census_number: z.string().min(1, 'Número de censo es obligatorio'),
   census_year: z.number().int().min(2000).max(2100),
-  commercial_name: z.string().min(1, 'Nombre comercial es obligatorio'),
+  commercial_name: z.string().optional(),
   activity_type: z.string().min(1, 'Actividad/Rubro es obligatorio'),
   billing_method: z.enum(['MANUAL', 'ELECTRONICA', 'MIXTA']),
   has_fiscal_machine: z.boolean(),
@@ -15,8 +15,8 @@ export const quickCaptureSchema = z.object({
   parish_id: z.string().min(1, 'Parroquia es obligatoria'),
   official_id: z.string(),
   taxpayer_id: z.string().optional(),
-  rif: z.string().optional(),
-  name: z.string().optional(),
+  rif: z.string().min(1, 'RIF es obligatorio'),
+  name: z.string().min(1, 'Razón social es obligatoria'),
   employee_count: z.number().int().optional(),
   admin_unit_id: z.string().optional(),
 }).refine((data) => {

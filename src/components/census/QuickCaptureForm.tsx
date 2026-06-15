@@ -64,7 +64,7 @@ export function QuickCaptureForm() {
       rif: '',
       name: '',
       employee_count: undefined,
-      admin_unit_id: '',
+      admin_unit_id: 'Gerencia Regional de Tributos Internos Libertador',
     },
   });
 
@@ -185,17 +185,17 @@ export function QuickCaptureForm() {
         has_fiscal_machine: false,
         has_homologated_system: false,
         homologated_system_name: '',
-      latitude: null,
-      longitude: null,
+        latitude: null,
+        longitude: null,
         address: '',
         parish_id: '',
         official_id: user?.id ?? '',
-      taxpayer_id: '',
-      rifPrefix: 'J',
-      rif: '',
-      name: '',
+        taxpayer_id: '',
+        rifPrefix: 'J',
+        rif: '',
+        name: '',
         employee_count: undefined,
-        admin_unit_id: '',
+        admin_unit_id: 'Gerencia Regional de Tributos Internos Libertador',
       });
       setPhotoFile(null);
       setPhotoError(null);
@@ -227,15 +227,15 @@ export function QuickCaptureForm() {
       longitude: null,
       address: '',
       parish_id: '',
-        official_id: user?.id ?? '',
-        taxpayer_id: '',
-        rifPrefix: 'J',
-        rif: '',
-        name: '',
-        employee_count: undefined,
-        admin_unit_id: '',
-      });
-      setPhotoFile(null);
+      official_id: user?.id ?? '',
+      taxpayer_id: '',
+      rifPrefix: 'J',
+      rif: '',
+      name: '',
+      employee_count: undefined,
+      admin_unit_id: 'Gerencia Regional de Tributos Internos Libertador',
+    });
+    setPhotoFile(null);
     setPhotoError(null);
     toast('Formulario limpiado', { icon: '🧹' });
   };
@@ -272,8 +272,13 @@ export function QuickCaptureForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-5">
-            {/* Datos básicos del censo */}
+
+            {/* ── SECCIÓN 1: Datos del contribuyente ── */}
             <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Datos del contribuyente
+              </h3>
+
               <FormField
                 control={form.control}
                 name="census_number"
@@ -315,10 +320,66 @@ export function QuickCaptureForm() {
 
               <FormField
                 control={form.control}
+                name="rif"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>RIF *</FormLabel>
+                    <FormControl>
+                      <div className="flex gap-2">
+                        <Select
+                          onValueChange={(value) => form.setValue('rifPrefix', value)}
+                          defaultValue="J"
+                          value={form.watch('rifPrefix') || 'J'}
+                        >
+                          <SelectTrigger className="w-[80px] min-h-[48px] text-base">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="max-h-[300px]">
+                            <SelectItem value="J">J-</SelectItem>
+                            <SelectItem value="V">V-</SelectItem>
+                            <SelectItem value="G">G-</SelectItem>
+                            <SelectItem value="E">E-</SelectItem>
+                            <SelectItem value="P">P-</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <Input
+                          placeholder="123456789"
+                          {...field}
+                          className="flex-1 min-h-[48px] text-base"
+                          aria-label="RIF"
+                        />
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Razón social *</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="Razón social del contribuyente"
+                        {...field}
+                        className="min-h-[48px] text-base"
+                        aria-label="Razón social"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="commercial_name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nombre comercial *</FormLabel>
+                    <FormLabel>Nombre comercial</FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Nombre del establecimiento"
@@ -331,6 +392,13 @@ export function QuickCaptureForm() {
                   </FormItem>
                 )}
               />
+            </div>
+
+            {/* ── SECCIÓN 2: Datos del negocio ── */}
+            <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Datos del negocio
+              </h3>
 
               <FormField
                 control={form.control}
@@ -338,14 +406,34 @@ export function QuickCaptureForm() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Actividad / Rubro *</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Ej: Venta de alimentos, servicios, etc."
-                        {...field}
-                        className="min-h-[48px] text-base"
-                        aria-label="Actividad o rubro"
-                      />
-                    </FormControl>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="min-h-[48px] text-base">
+                          <SelectValue placeholder="Seleccione actividad" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent className="max-h-[300px]">
+                        <SelectItem value="Comercio general">Comercio general</SelectItem>
+                        <SelectItem value="Alimentos y bebidas">Alimentos y bebidas</SelectItem>
+                        <SelectItem value="Servicios profesionales">Servicios profesionales</SelectItem>
+                        <SelectItem value="Servicios generales">Servicios generales</SelectItem>
+                        <SelectItem value="Industria y manufactura">Industria y manufactura</SelectItem>
+                        <SelectItem value="Salud y farmacia">Salud y farmacia</SelectItem>
+                        <SelectItem value="Educación">Educación</SelectItem>
+                        <SelectItem value="Transporte">Transporte</SelectItem>
+                        <SelectItem value="Construcción e inmobiliaria">Construcción e inmobiliaria</SelectItem>
+                        <SelectItem value="Tecnología y telecomunicaciones">Tecnología y telecomunicaciones</SelectItem>
+                        <SelectItem value="Comercio minorista">Comercio minorista</SelectItem>
+                        <SelectItem value="Comercio mayorista">Comercio mayorista</SelectItem>
+                        <SelectItem value="Restaurantes y hoteles">Restaurantes y hoteles</SelectItem>
+                        <SelectItem value="Actividades financieras">Actividades financieras</SelectItem>
+                        <SelectItem value="Otro">Otro</SelectItem>
+                      </SelectContent>
+                    </Select>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -367,7 +455,7 @@ export function QuickCaptureForm() {
                           <SelectValue placeholder="Seleccione método" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         <SelectItem value="MANUAL">Manual</SelectItem>
                         <SelectItem value="ELECTRONICA">Electrónica</SelectItem>
                         <SelectItem value="MIXTA">Mixta</SelectItem>
@@ -377,72 +465,76 @@ export function QuickCaptureForm() {
                   </FormItem>
                 )}
               />
-            </div>
 
-            {/* Switches */}
-            <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
-              <FormField
-                control={form.control}
-                name="has_fiscal_machine"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">¿Tiene máquina fiscal?</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-label="Tiene máquina fiscal"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="has_homologated_system"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between">
-                    <div className="space-y-0.5">
-                      <FormLabel className="text-base">¿Tiene sistema homologado?</FormLabel>
-                    </div>
-                    <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                        aria-label="Tiene sistema homologado"
-                      />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-
-              {watchHasHomologated && (
+              {/* Switches */}
+              <div className="flex flex-col gap-4 rounded-lg border bg-muted/30 p-4">
                 <FormField
                   control={form.control}
-                  name="homologated_system_name"
+                  name="has_fiscal_machine"
                   render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre del sistema homologado *</FormLabel>
+                    <FormItem className="flex flex-row items-center justify-between">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">¿Tiene máquina fiscal?</FormLabel>
+                      </div>
                       <FormControl>
-                        <Input
-                          placeholder="Ej: SoftRestaurant, SAP, etc."
-                          {...field}
-                          className="min-h-[48px] text-base"
-                          aria-label="Nombre del sistema homologado"
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          aria-label="Tiene máquina fiscal"
                         />
                       </FormControl>
-                      <FormMessage />
                     </FormItem>
                   )}
                 />
-              )}
+
+                <FormField
+                  control={form.control}
+                  name="has_homologated_system"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">¿Tiene sistema homologado?</FormLabel>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          aria-label="Tiene sistema homologado"
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+
+                {watchHasHomologated && (
+                  <FormField
+                    control={form.control}
+                    name="homologated_system_name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre del sistema homologado *</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Ej: SoftRestaurant, SAP, etc."
+                            {...field}
+                            className="min-h-[48px] text-base"
+                            aria-label="Nombre del sistema homologado"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
             </div>
 
-            {/* Foto y GPS */}
+            {/* ── SECCIÓN 3: Foto y GPS ── */}
             <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Foto y GPS
+              </h3>
+
               <div>
                 <Label className="text-base font-semibold mb-2 block">Foto de fachada *</Label>
                 <PhotoCapture
@@ -465,8 +557,12 @@ export function QuickCaptureForm() {
               </div>
             </div>
 
-            {/* Datos de ubicación y parroquia */}
+            {/* ── SECCIÓN 4: Ubicación y parroquia ── */}
             <div className="flex flex-col gap-4">
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Ubicación y parroquia
+              </h3>
+
               <FormField
                 control={form.control}
                 name="address"
@@ -503,7 +599,7 @@ export function QuickCaptureForm() {
                           <SelectValue placeholder={parishesLoading ? 'Cargando...' : 'Seleccione parroquia'} />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="max-h-[300px]">
                         {parishes.map((parish) => (
                           <SelectItem key={parish.id} value={parish.id}>
                             {parish.name}
@@ -517,63 +613,11 @@ export function QuickCaptureForm() {
               />
             </div>
 
-            {/* Datos adicionales del contribuyente */}
+            {/* ── SECCIÓN 5: Datos adicionales ── */}
             <div className="flex flex-col gap-4">
-              <FormField
-                control={form.control}
-                name="rif"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>RIF</FormLabel>
-                    <FormControl>
-                      <div className="flex gap-2">
-                        <Select
-                          onValueChange={(value) => form.setValue('rifPrefix', value)}
-                          defaultValue="J"
-                          value={form.watch('rifPrefix') || 'J'}
-                        >
-                          <SelectTrigger className="w-[80px] min-h-[48px] text-base">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="J">J-</SelectItem>
-                            <SelectItem value="V">V-</SelectItem>
-                            <SelectItem value="G">G-</SelectItem>
-                            <SelectItem value="E">E-</SelectItem>
-                            <SelectItem value="P">P-</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Input
-                          placeholder="123456789"
-                          {...field}
-                          className="flex-1 min-h-[48px] text-base"
-                          aria-label="RIF"
-                        />
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Razón social</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Razón social del contribuyente"
-                        {...field}
-                        className="min-h-[48px] text-base"
-                        aria-label="Razón social"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                Datos adicionales
+              </h3>
 
               <FormField
                 control={form.control}
@@ -604,7 +648,7 @@ export function QuickCaptureForm() {
                     <FormLabel>Unidad administrativa</FormLabel>
                     <FormControl>
                       <Input
-                        placeholder="ID de unidad administrativa"
+                        placeholder="Unidad administrativa"
                         {...field}
                         className="min-h-[48px] text-base"
                         aria-label="Unidad administrativa"
@@ -616,7 +660,7 @@ export function QuickCaptureForm() {
               />
             </div>
 
-            {/* Botones */}
+            {/* ── Botones ── */}
             <div className="flex flex-col gap-3 pt-2">
               <Button
                 type="submit"

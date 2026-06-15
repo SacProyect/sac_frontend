@@ -1,5 +1,5 @@
 import React, { useRef, useState, useCallback, useEffect } from "react";
-import { Camera, Trash2, ImageIcon } from "lucide-react";
+import { Camera, Trash2, ImageIcon, Upload } from "lucide-react";
 import { Button } from "@/components/UI/button";
 import { Card, CardContent } from "@/components/UI/card";
 import { Label } from "@/components/UI/label";
@@ -16,7 +16,8 @@ export function PhotoCapture({
   onPhotoRemoved,
   maxSizeMB = 5,
 }: PhotoCaptureProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const uploadInputRef = useRef<HTMLInputElement>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [fileName, setFileName] = useState<string | null>(null);
   const [fileSize, setFileSize] = useState<number | null>(null);
@@ -35,8 +36,11 @@ export function PhotoCapture({
         setPreview(null);
         setFileName(null);
         setFileSize(null);
-        if (inputRef.current) {
-          inputRef.current.value = "";
+        if (cameraInputRef.current) {
+          cameraInputRef.current.value = "";
+        }
+        if (uploadInputRef.current) {
+          uploadInputRef.current.value = "";
         }
         return;
       }
@@ -61,14 +65,21 @@ export function PhotoCapture({
     setFileName(null);
     setFileSize(null);
     setError(null);
-    if (inputRef.current) {
-      inputRef.current.value = "";
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = "";
+    }
+    if (uploadInputRef.current) {
+      uploadInputRef.current.value = "";
     }
     onPhotoRemoved();
   }, [preview, onPhotoRemoved]);
 
-  const handleCaptureClick = useCallback(() => {
-    inputRef.current?.click();
+  const handleCameraClick = useCallback(() => {
+    cameraInputRef.current?.click();
+  }, []);
+
+  const handleUploadClick = useCallback(() => {
+    uploadInputRef.current?.click();
   }, []);
 
   useEffect(() => {
@@ -89,7 +100,7 @@ export function PhotoCapture({
     <Card className="w-full">
       <CardContent className="flex flex-col gap-4 p-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="photo-capture-input" className="text-base font-semibold">
+          <Label className="text-base font-semibold">
             Foto de fachada
           </Label>
           {error && (
@@ -100,31 +111,64 @@ export function PhotoCapture({
         </div>
 
         <input
-          ref={inputRef}
-          id="photo-capture-input"
+          ref={cameraInputRef}
           type="file"
           accept="image/*"
           capture="environment"
           onChange={handleFileChange}
           className="sr-only"
-          aria-label="Capturar foto de fachada"
+          aria-label="Capturar foto con cámara"
+        />
+
+        <input
+          ref={uploadInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          className="sr-only"
+          aria-label="Subir imagen desde galería"
         />
 
         {!preview ? (
-          <button
-            type="button"
-            onClick={handleCaptureClick}
-            className="flex flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-8 transition-colors hover:bg-muted hover:border-muted-foreground/40 active:bg-muted/70 min-h-[200px] w-full touch-manipulation"
-            aria-label="Abrir cámara para capturar foto"
-          >
-            <Camera className="size-12 text-muted-foreground" aria-hidden="true" />
-            <span className="text-sm font-medium text-muted-foreground">
-              Toca para capturar foto
-            </span>
-            <span className="text-xs text-muted-foreground/70">
+          <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-2 gap-3">
+              {/* Botón cámara */}
+              <button
+                type="button"
+                onClick={handleCameraClick}
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-6 transition-colors hover:bg-muted hover:border-muted-foreground/40 active:bg-muted/70 min-h-[140px] touch-manipulation"
+                aria-label="Tomar foto con la cámara"
+              >
+                <Camera className="size-8 text-muted-foreground" aria-hidden="true" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  Tomar foto
+                </span>
+                <span className="text-xs text-muted-foreground/70">
+                  Cámara
+                </span>
+              </button>
+
+              {/* Botón subir archivo */}
+              <button
+                type="button"
+                onClick={handleUploadClick}
+                className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-muted-foreground/25 bg-muted/50 p-6 transition-colors hover:bg-muted hover:border-muted-foreground/40 active:bg-muted/70 min-h-[140px] touch-manipulation"
+                aria-label="Subir imagen desde el dispositivo"
+              >
+                <Upload className="size-8 text-muted-foreground" aria-hidden="true" />
+                <span className="text-sm font-medium text-muted-foreground">
+                  Subir archivo
+                </span>
+                <span className="text-xs text-muted-foreground/70">
+                  Galería
+                </span>
+              </button>
+            </div>
+
+            <p className="text-xs text-muted-foreground/70 text-center">
               Máx. {maxSizeMB} MB
-            </span>
-          </button>
+            </p>
+          </div>
         ) : (
           <div className="flex flex-col gap-3">
             <div className="relative flex items-center justify-center rounded-xl border bg-muted/30 p-4">
