@@ -11,13 +11,14 @@ import { useMapLocations } from "@/hooks/useMapLocations";
 import { useCensusSocket } from "@/hooks/useCensusSocket";
 import { CensusMapLegend } from "./CensusMapLegend";
 import { Button } from "@/components/UI/button";
-import { Crosshair, Loader2, Radio } from "lucide-react";
+import { Crosshair, Filter, Loader2, MapPin, Radio, X } from "lucide-react";
 import {
-  PARROQUIAS_GEOJSON,
-  PARROQUIA_LABELS,
-  PARROQUIA_CENTROIDS,
   BASE_COLOR,
+  detectParroquiaFromPoint,
   LIBERTADOR_BOUNDS,
+  PARROQUIAS_GEOJSON,
+  PARROQUIA_CENTROIDS,
+  PARROQUIA_LABELS,
 } from "./parroquias-data";
 import type { ParroquiaCaracas } from "@/components/utils/api/divulgacion-functions";
 
@@ -308,8 +309,6 @@ export function CensusMap({
   const [selectedStatuses, setSelectedStatuses] = useState<Set<MapLocation["census_status"]>>(new Set());
   const [selectedParroquia, setSelectedParroquia] = useState<ParroquiaCaracas | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
-  const [isConnected, setIsConnected] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected">("idle");
 
   // WebSocket para tiempo real
   const { connectionStatus, isConnected, connect, disconnect } = useCensusSocket(
@@ -364,25 +363,14 @@ export function CensusMap({
     );
   };
 
-  // ── Live mode (UI state machine; WebSocket integration is a follow-up) ──
-  const connect = useCallback(() => {
-    setConnectionStatus("connecting");
-    // Simulated handshake — replace with real WebSocket connection.
-    setTimeout(() => {
-      setIsConnected(true);
-      setConnectionStatus("connected");
-    }, 600);
-  }, []);
-
-  const disconnect = useCallback(() => {
-    setIsConnected(false);
-    setConnectionStatus("idle");
-  }, []);
-
   const filteredLocations = useMemo(() => {
     if (selectedStatuses.size === 0) return locations;
     return locations.filter((loc) => selectedStatuses.has(loc.census_status));
   }, [locations, selectedStatuses]);
+
+  const handleParroquiaChange = useCallback((value: ParroquiaCaracas | null) => {
+    setSelectedParroquia(value);
+  }, []);
 
   const parroquiaFilteredLocations = useMemo(() => {
     if (!selectedParroquia) return filteredLocations;
@@ -460,35 +448,12 @@ export function CensusMap({
                 {isConnected ? (
                   <>
                     <span className="size-2 rounded-full bg-emerald-300 mr-2 animate-pulse" />
-                className="mt-3 w-full text-xs border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
-                onClick={goToMyLocation}
-              >
-                <Crosshair className="w-3 h-3 mr-1" />
-                Mi ubicación
-              </Button>
-              
-              {/* Botón Tiempo Real */}
-              <Button
-                variant={isConnected ? "default" : "outline"}
-                size="sm"
-                className={`mt-2 w-full text-xs ${
-                  isConnected 
-                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
-                    : "border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
-                }`}
-                onClick={() => isConnected ? disconnect() : connect()}
-              >
-                {isConnected ? (
-                  <>
-                    <span className="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse" />
                     En vivo
                   </>
                 ) : (
                   <>
                     <Radio className="size-3 mr-1" />
                     {connectionStatus === "connecting" ? "Conectando…" : "Conectar"}
-                    <Radio className="w-3 h-3 mr-1" />
-                    Tiempo real
                   </>
                 )}
               </Button>
@@ -630,33 +595,6 @@ export function CensusMap({
         <div className="hidden lg:flex absolute top-3 right-3 z-[1000] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg items-center gap-2">
           <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs text-emerald-300">En vivo · {locations.length}</span>
-      {loading && (
-        <div className="absolute top-3 right-3 z-[1000] bg-slate-900/90 border border-slate-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
-          <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
-          <span className="text-xs text-slate-300">Cargando ubicaciones...</span>
-        </div>
-      )}
-
-      {/* Indicador de tiempo real activo */}
-      {isConnected && !loading && (
-        <div className="absolute top-3 right-3 z-[1000] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs text-emerald-300">
-            En vivo
-          </span>
-        </div>
-      )}
-
-      {connectionStatus === "connecting" && (
-        <div className="absolute top-3 right-3 z-[1000] bg-yellow-900/90 border border-yellow-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
-          <Loader2 className="w-3 h-3 animate-spin text-yellow-400" />
-          <span className="text-xs text-yellow-300">Conectando...</span>
-        </div>
-      )}
-
-      {error && (
-        <div className="absolute top-3 right-3 z-[1000] bg-rose-900/90 border border-rose-700/50 rounded-lg px-3 py-2 shadow-lg">
-          <span className="text-xs text-rose-300">{error}</span>
         </div>
       )}
 
