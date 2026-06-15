@@ -15,6 +15,7 @@ export const quickCaptureSchema = z.object({
   parish_id: z.string().min(1, 'Parroquia es obligatoria'),
   official_id: z.string(),
   taxpayer_id: z.string().optional(),
+  rifPrefix: z.enum(['J', 'V', 'G', 'E', 'P']).default('J'),
   rif: z.string().min(1, 'RIF es obligatorio'),
   name: z.string().min(1, 'Razón social es obligatoria'),
   employee_count: z.number().int().optional(),

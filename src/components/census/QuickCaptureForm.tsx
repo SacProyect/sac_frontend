@@ -30,6 +30,7 @@ import { useOfflineCensus } from '@/hooks/useOfflineCensus';
 import { useAuth } from '@/hooks/use-auth';
 import { useCachedParishes } from '@/hooks/useCachedData';
 import { quickCaptureSchema, type QuickCaptureFormValues } from './quick-capture-schema';
+import { z } from 'zod';
 import { detectParroquiaFromPoint, PARROQUIA_LABELS } from '@/components/map/parroquias-data';
 import type { ParroquiaCaracas } from '@/components/utils/api/divulgacion-functions';
 import { Wifi, WifiOff, Save, RotateCcw, CloudUpload, Database } from 'lucide-react';
@@ -43,7 +44,7 @@ export function QuickCaptureForm() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const form = useForm<QuickCaptureFormValues>({
+  const form = useForm({
     resolver: zodResolver(quickCaptureSchema),
     defaultValues: {
       census_number: '',
@@ -146,7 +147,7 @@ export function QuickCaptureForm() {
     );
   };
 
-  const onSubmit = async (values: QuickCaptureFormValues) => {
+  const onSubmit = async (values: z.infer<typeof quickCaptureSchema>) => {
     if (isSubmitting) return;
 
     // Validación manual de foto obligatoria
@@ -167,8 +168,11 @@ export function QuickCaptureForm() {
     try {
       const valuesToSubmit = {
         ...values,
+        commercial_name: values.commercial_name ?? '',
         rif: values.rif ? `${values.rifPrefix || 'J'}-${values.rif}` : undefined,
         official_id: user?.id ?? values.official_id,
+        latitude: values.latitude as number,
+        longitude: values.longitude as number,
       };
 
       await saveOffline(valuesToSubmit, photoFile);
@@ -327,9 +331,9 @@ export function QuickCaptureForm() {
                     <FormControl>
                       <div className="flex gap-2">
                         <Select
-                          onValueChange={(value) => form.setValue('rifPrefix', value)}
+                          onValueChange={(value) => form.setValue('rifPrefix', value as 'J' | 'V' | 'G' | 'E' | 'P')}
                           defaultValue="J"
-                          value={form.watch('rifPrefix') || 'J'}
+                          value={form.watch('rifPrefix') ?? 'J'}
                         >
                           <SelectTrigger className="w-[80px] min-h-[48px] text-base">
                             <SelectValue />
