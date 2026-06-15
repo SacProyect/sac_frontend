@@ -17,6 +17,7 @@ export default defineConfig({
     'process.env.VITE_BASE_URL': JSON.stringify(process.env.VITE_BASE_URL),
   },
   server:{
+    host: '0.0.0.0',
     allowedHosts: true,    
   }
 })

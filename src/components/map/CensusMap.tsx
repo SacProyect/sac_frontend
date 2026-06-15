@@ -8,16 +8,16 @@ import "leaflet.markercluster";
 import type { Feature } from "geojson";
 import { MapLocation, MapQueryParams } from "@/types/census-map";
 import { useMapLocations } from "@/hooks/useMapLocations";
+import { useCensusSocket } from "@/hooks/useCensusSocket";
 import { CensusMapLegend } from "./CensusMapLegend";
 import { Button } from "@/components/UI/button";
-import { Crosshair, Loader2, MapPin, Radio, Filter, X } from "lucide-react";
+import { Crosshair, Loader2, Radio } from "lucide-react";
 import {
   PARROQUIAS_GEOJSON,
   PARROQUIA_LABELS,
   PARROQUIA_CENTROIDS,
   BASE_COLOR,
   LIBERTADOR_BOUNDS,
-  detectParroquiaFromPoint,
 } from "./parroquias-data";
 import type { ParroquiaCaracas } from "@/components/utils/api/divulgacion-functions";
 
@@ -71,6 +71,7 @@ function buildPopupHtml(location: MapLocation): string {
           ${location.address ? `<p class="text-xs text-slate-400 truncate" title="${escapeHtml(location.address)}">${escapeHtml(location.address)}</p>` : ""}
           <div class="flex flex-wrap items-center gap-1.5 pt-1">
             <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold border-slate-700 text-slate-300">Censo: ${escapeHtml(location.taxpayer_id)}</span>
+            ${location.fiscal_name ? `<span class="inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold border-slate-700 text-slate-300">Fiscal: ${escapeHtml(location.fiscal_name)}</span>` : ''}
             <span class="inline-flex items-center rounded-md border px-2 py-0.5 text-[10px] font-semibold" style="background-color:${color}20;color:${color};border-color:${color}40">${statusLabel}</span>
           </div>
         </div>
@@ -295,12 +296,33 @@ export function CensusMap({
   initialCenter = [10.4806, -66.9036],
   initialZoom = 13,
 }: CensusMapProps) {
-  const { locations, loading, error, fetchLocations } = useMapLocations();
+  const { 
+    locations, 
+    loading, 
+    error, 
+    fetchLocations,
+    addLocation,
+    updateLocation,
+    removeLocation,
+  } = useMapLocations();
   const [selectedStatuses, setSelectedStatuses] = useState<Set<MapLocation["census_status"]>>(new Set());
   const [selectedParroquia, setSelectedParroquia] = useState<ParroquiaCaracas | null>(null);
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState<"idle" | "connecting" | "connected">("idle");
+
+  // WebSocket para tiempo real
+  const { connectionStatus, isConnected, connect, disconnect } = useCensusSocket(
+    addLocation,
+    updateLocation,
+    removeLocation,
+  );
+
+  // Conectar WebSocket al montar
+  useEffect(() => {
+    connect();
+    return () => disconnect();
+  }, [connect, disconnect]);
 
   const handleBoundsChange = useCallback(
     (bounds: Omit<MapQueryParams, "status" | "limit">) => {
@@ -313,10 +335,6 @@ export function CensusMap({
     },
     [fetchLocations, selectedStatuses]
   );
-
-  const handleParroquiaChange = useCallback((p: ParroquiaCaracas | null) => {
-    setSelectedParroquia(p);
-  }, []);
 
   const toggleStatus = (status: MapLocation["census_status"]) => {
     setSelectedStatuses((prev) => {
@@ -442,12 +460,35 @@ export function CensusMap({
                 {isConnected ? (
                   <>
                     <span className="size-2 rounded-full bg-emerald-300 mr-2 animate-pulse" />
+                className="mt-3 w-full text-xs border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
+                onClick={goToMyLocation}
+              >
+                <Crosshair className="w-3 h-3 mr-1" />
+                Mi ubicación
+              </Button>
+              
+              {/* Botón Tiempo Real */}
+              <Button
+                variant={isConnected ? "default" : "outline"}
+                size="sm"
+                className={`mt-2 w-full text-xs ${
+                  isConnected 
+                    ? "bg-emerald-600 hover:bg-emerald-700 text-white" 
+                    : "border-slate-600 text-slate-300 hover:bg-slate-800 bg-transparent"
+                }`}
+                onClick={() => isConnected ? disconnect() : connect()}
+              >
+                {isConnected ? (
+                  <>
+                    <span className="w-2 h-2 rounded-full bg-green-400 mr-2 animate-pulse" />
                     En vivo
                   </>
                 ) : (
                   <>
                     <Radio className="size-3 mr-1" />
                     {connectionStatus === "connecting" ? "Conectando…" : "Conectar"}
+                    <Radio className="w-3 h-3 mr-1" />
+                    Tiempo real
                   </>
                 )}
               </Button>
@@ -589,6 +630,33 @@ export function CensusMap({
         <div className="hidden lg:flex absolute top-3 right-3 z-[1000] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg items-center gap-2">
           <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
           <span className="text-xs text-emerald-300">En vivo · {locations.length}</span>
+      {loading && (
+        <div className="absolute top-3 right-3 z-[1000] bg-slate-900/90 border border-slate-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
+          <Loader2 className="w-3.5 h-3.5 animate-spin text-sky-400" />
+          <span className="text-xs text-slate-300">Cargando ubicaciones...</span>
+        </div>
+      )}
+
+      {/* Indicador de tiempo real activo */}
+      {isConnected && !loading && (
+        <div className="absolute top-3 right-3 z-[1000] bg-emerald-900/90 border border-emerald-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
+          <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
+          <span className="text-xs text-emerald-300">
+            En vivo
+          </span>
+        </div>
+      )}
+
+      {connectionStatus === "connecting" && (
+        <div className="absolute top-3 right-3 z-[1000] bg-yellow-900/90 border border-yellow-700/50 rounded-lg px-3 py-2 shadow-lg flex items-center gap-2">
+          <Loader2 className="w-3 h-3 animate-spin text-yellow-400" />
+          <span className="text-xs text-yellow-300">Conectando...</span>
+        </div>
+      )}
+
+      {error && (
+        <div className="absolute top-3 right-3 z-[1000] bg-rose-900/90 border border-rose-700/50 rounded-lg px-3 py-2 shadow-lg">
+          <span className="text-xs text-rose-300">{error}</span>
         </div>
       )}
 
@@ -623,7 +691,7 @@ export function CensusMap({
         <MapBoundsFetcher onBoundsChange={handleBoundsChange} debounceMs={300} />
         <MapFlyToHandler />
         <ParroquiaPolygons />
-        <CensusMarkers locations={parroquiaFilteredLocations} />
+        <CensusMarkers locations={filteredLocations} />
       </MapContainer>
 
       {/* ── Empty state ─────────────────────────────────────────────── */}

@@ -43,8 +43,11 @@ const isCacheValid = <T>(cache: CacheEntry<T> | null): boolean => {
   return Date.now() - cache.timestamp < CACHE_DURATION;
 };
 
+const PARISHES_STORAGE_KEY = 'sac_cached_parishes';
+
 /**
  * Hook para obtener y cachear listas de parroquias
+ * Soporta offline: guarda en localStorage y usa como fallback
  */
 export const useCachedParishes = () => {
   const [parishes, setParishes] = useState<Parish[]>([]);
@@ -52,7 +55,7 @@ export const useCachedParishes = () => {
   const [error, setError] = useState<string | null>(null);
 
   const fetchParishes = useCallback(async () => {
-    // Si hay caché válido, usarlo
+    // Si hay caché en memoria válido, usarlo
     if (isCacheValid(globalCache.parishes)) {
       setParishes(globalCache.parishes!.data);
       return;
@@ -60,7 +63,6 @@ export const useCachedParishes = () => {
 
     // Si ya se está haciendo una petición, esperar
     if (fetchingFlags.parishes) {
-      // Esperar un poco y volver a intentar
       setTimeout(() => {
         if (globalCache.parishes) {
           setParishes(globalCache.parishes.data);
@@ -85,11 +87,47 @@ export const useCachedParishes = () => {
         timestamp: Date.now(),
       };
       
+      // Guardar en localStorage para uso offline
+      try {
+        localStorage.setItem(PARISHES_STORAGE_KEY, JSON.stringify(data));
+      } catch {
+        // Ignorar errores de localStorage (quota exceeded, etc.)
+      }
+      
       setParishes(data);
       setError(null);
     } catch (err) {
       console.error('Error fetching parishes:', err);
-      setError('No se pudo cargar la lista de parroquias');
+      
+      // Intentar cargar desde localStorage como fallback
+      try {
+        const cached = localStorage.getItem(PARISHES_STORAGE_KEY);
+        if (cached) {
+          const parsed = JSON.parse(cached) as Parish[];
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            setParishes(parsed);
+            globalCache.parishes = {
+              data: parsed,
+              timestamp: Date.now(),
+            };
+            setError(null);
+            console.log(`[PARISHES] Loaded ${parsed.length} parishes from localStorage cache`);
+            return;
+          }
+        }
+      } catch {
+        // Ignorar errores de parsing
+      }
+      
+      // Si no hay cache en localStorage, usar lista offline estática
+      try {
+        const { OFFLINE_PARISHES } = await import('@/data/offline-parroquias');
+        setParishes(OFFLINE_PARISHES);
+        setError('Sin conexión. Usando lista de parroquias offline.');
+        console.log(`[PARISHES] Using ${OFFLINE_PARISHES.length} offline parishes`);
+      } catch {
+        setError('No se pudo cargar la lista de parroquias');
+      }
     } finally {
       setLoading(false);
       fetchingFlags.parishes = false;

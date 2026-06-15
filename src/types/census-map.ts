@@ -8,6 +8,7 @@ export interface MapLocation {
   longitude: number;
   census_status: 'DRAFT' | 'COMPLETED' | 'VERIFIED' | 'IMPORTED';
   data_integrity_status: 'COMPLETE' | 'PENDING_DATA' | 'NOT_VERIFIED';
+  fiscal_name?: string | null;
 }
 
 export interface MapLocationFeature {

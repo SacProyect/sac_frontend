@@ -26,6 +26,7 @@ import {
 } from '@/components/UI/form';
 import { PhotoCapture } from '@/components/census/PhotoCapture';
 import { GpsCapture } from '@/components/census/GpsCapture';
+import { LocationVerificationMap } from '@/components/census/PinMapSelector';
 import { useOfflineCensus } from '@/hooks/useOfflineCensus';
 import { useAuth } from '@/hooks/use-auth';
 import { useCachedParishes } from '@/hooks/useCachedData';
@@ -33,7 +34,8 @@ import { quickCaptureSchema, type QuickCaptureFormValues } from './quick-capture
 import { z } from 'zod';
 import { detectParroquiaFromPoint, PARROQUIA_LABELS } from '@/components/map/parroquias-data';
 import type { ParroquiaCaracas } from '@/components/utils/api/divulgacion-functions';
-import { Wifi, WifiOff, Save, RotateCcw, CloudUpload, Database } from 'lucide-react';
+import { detectParishFromCoords } from '@/components/utils/api/taxpayer-census-functions';
+import { Wifi, WifiOff, Save, RotateCcw, CloudUpload, Database, Loader2 } from 'lucide-react';
 
 export function QuickCaptureForm() {
   const { user } = useAuth();
@@ -42,6 +44,7 @@ export function QuickCaptureForm() {
 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoError, setPhotoError] = useState<string | null>(null);
+  const [photoResetKey, setPhotoResetKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const form = useForm({
@@ -90,29 +93,123 @@ export function QuickCaptureForm() {
     setPhotoError(null);
   }, []);
 
-  const handleLocationCaptured = useCallback((lat: number, lng: number) => {
+  const handleLocationCaptured = useCallback(async (lat: number, lng: number) => {
     form.setValue('latitude', lat, { shouldValidate: true });
     form.setValue('longitude', lng, { shouldValidate: true });
-
-    // Auto-detectar parroquia por polígono
-    const detectedKey = detectParroquiaFromPoint(lat, lng);
-    if (detectedKey) {
-      const detectedLabel = PARROQUIA_LABELS[detectedKey as ParroquiaCaracas];
-      // Buscar la parroquia en la lista por nombre (parcial, para manejar diferencias de acentos)
-      const match = parishes.find((p) => {
-        const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
-        return normalize(p.name).includes(normalize(detectedLabel)) || normalize(detectedLabel).includes(normalize(p.name));
-      });
-      if (match) {
-        form.setValue('parish_id', match.id, { shouldValidate: true });
-        toast(`Parroquia detectada: ${detectedLabel}`, { icon: '📍' });
+    
+    setIsDetectingParish(true);
+    setParishDetectionError(null);
+    
+    try {
+      // 1. Intentar detección server-side primero
+      const serverResult = await detectParishFromCoords(lat, lng);
+      
+      if (serverResult.detected && serverResult.parish_id) {
+        // Encontrado en el backend
+        form.setValue('parish_id', serverResult.parish_id, { shouldValidate: true });
+        toast(`Parroquia detectada: ${serverResult.parish_name}`, { icon: '📍' });
+        setIsDetectingParish(false);
+        return;
       }
+      
+      // 2. Fallback a detección client-side
+      const clientKey = detectParroquiaFromPoint(lat, lng);
+      if (clientKey) {
+        const detectedLabel = PARROQUIA_LABELS[clientKey as ParroquiaCaracas];
+        const match = parishes.find((p) => {
+          const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+          return normalize(p.name).includes(normalize(detectedLabel)) || normalize(detectedLabel).includes(normalize(p.name));
+        });
+        if (match) {
+          form.setValue('parish_id', match.id, { shouldValidate: true });
+          toast(`Parroquia detectada: ${detectedLabel}`, { icon: '📍' });
+          setIsDetectingParish(false);
+          return;
+        }
+      }
+      
+      // 3. No se pudo detectar
+      setParishDetectionError('No se pudo detectar la parroquia. Seleccione manualmente.');
+      toast('No se pudo detectar la parroquia. Seleccione manualmente.', { icon: '⚠️' });
+    } catch (error) {
+      // Error inesperado, intentar fallback client-side
+      try {
+        const clientKey = detectParroquiaFromPoint(lat, lng);
+        if (clientKey) {
+          const detectedLabel = PARROQUIA_LABELS[clientKey as ParroquiaCaracas];
+          const match = parishes.find((p) => {
+            const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return normalize(p.name).includes(normalize(detectedLabel)) || normalize(detectedLabel).includes(normalize(p.name));
+          });
+          if (match) {
+            form.setValue('parish_id', match.id, { shouldValidate: true });
+            toast(`Parroquia detectada (offline): ${detectedLabel}`, { icon: '📍' });
+          }
+        }
+      } catch {
+        setParishDetectionError('Error al detectar parroquia');
+      }
+    } finally {
+      setIsDetectingParish(false);
     }
   }, [form, parishes]);
 
   const handleLocationError = useCallback((error: string) => {
     toast.error(error);
   }, []);
+
+  // Cuando el usuario confirma la ubicación (click "Listo")
+  const handleLocationConfirmed = useCallback((lat: number, lng: number) => {
+    // La ubicación ya está seteada, no hacer nada más
+    // El formulario ya tiene lat/lng y parish_id
+  }, []);
+
+  // Cuando el usuario mueve el pin (re-detectar parroquia)
+  const handlePinMoved = useCallback((lat: number, lng: number) => {
+    form.setValue('latitude', lat, { shouldValidate: true });
+    form.setValue('longitude', lng, { shouldValidate: true });
+    
+    // Re-detectar parroquia
+    setIsDetectingParish(true);
+    setParishDetectionError(null);
+    
+    // Usar la misma lógica de detección
+    (async () => {
+      try {
+        const serverResult = await detectParishFromCoords(lat, lng);
+        if (serverResult.detected && serverResult.parish_id) {
+          form.setValue('parish_id', serverResult.parish_id, { shouldValidate: true });
+          toast(`Parroquia detectada: ${serverResult.parish_name}`, { icon: '📍' });
+          return;
+        }
+        const clientKey = detectParroquiaFromPoint(lat, lng);
+        if (clientKey) {
+          const detectedLabel = PARROQUIA_LABELS[clientKey as ParroquiaCaracas];
+          const match = parishes.find((p) => {
+            const normalize = (s: string) => s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+            return normalize(p.name).includes(normalize(detectedLabel)) || normalize(detectedLabel).includes(normalize(p.name));
+          });
+          if (match) {
+            form.setValue('parish_id', match.id, { shouldValidate: true });
+            toast(`Parroquia detectada: ${detectedLabel}`, { icon: '📍' });
+          }
+        }
+      } catch {
+        // Fallback silencioso
+      } finally {
+        setIsDetectingParish(false);
+      }
+    })();
+  }, [form, parishes]);
+
+  // Cuando el usuario quiere capturar GPS de nuevo
+  const handleDiscardLocation = useCallback(() => {
+    form.setValue('latitude', null, { shouldValidate: true });
+    form.setValue('longitude', null, { shouldValidate: true });
+    form.setValue('parish_id', '', { shouldValidate: true });
+    setIsDetectingParish(false);
+    setParishDetectionError(null);
+  }, [form]);
 
   const getSyncBadge = () => {
     if (isSyncing) {
@@ -203,6 +300,9 @@ export function QuickCaptureForm() {
       });
       setPhotoFile(null);
       setPhotoError(null);
+      setPhotoResetKey((k) => k + 1);
+      setIsDetectingParish(false);
+      setParishDetectionError(null);
     } catch (err: any) {
       console.error(err);
       toast.error(err?.message ?? 'Error al guardar el censo');
@@ -241,6 +341,9 @@ export function QuickCaptureForm() {
     });
     setPhotoFile(null);
     setPhotoError(null);
+    setPhotoResetKey((k) => k + 1);
+    setIsDetectingParish(false);
+    setParishDetectionError(null);
     toast('Formulario limpiado', { icon: '🧹' });
   };
 
@@ -542,6 +645,7 @@ export function QuickCaptureForm() {
               <div>
                 <Label className="text-base font-semibold mb-2 block">Foto de fachada *</Label>
                 <PhotoCapture
+                  key={photoResetKey}
                   onPhotoCaptured={handlePhotoCaptured}
                   onPhotoRemoved={handlePhotoRemoved}
                 />
@@ -552,12 +656,24 @@ export function QuickCaptureForm() {
 
               <div>
                 <Label className="text-base font-semibold mb-2 block">Ubicación GPS *</Label>
-                <GpsCapture
-                  latitude={watchLatitude || null}
-                  longitude={watchLongitude || null}
-                  onLocationCaptured={handleLocationCaptured}
-                  onLocationError={handleLocationError}
-                />
+                
+                {/* Mostrar GPS capture SOLO cuando no hay coordenadas */}
+                {!watchLatitude && !watchLongitude ? (
+                  <GpsCapture
+                    onLocationCaptured={handleLocationCaptured}
+                    onLocationError={handleLocationError}
+                  />
+                ) : (
+                  /* Mostrar mapa de verificación cuando hay coordenadas */
+                  <LocationVerificationMap
+                    latitude={watchLatitude!}
+                    longitude={watchLongitude!}
+                    onConfirm={handleLocationConfirmed}
+                    onPinMoved={handlePinMoved}
+                    onDiscard={handleDiscardLocation}
+                    isDetectingParish={isDetectingParish}
+                  />
+                )}
               </div>
             </div>
 
@@ -591,16 +707,32 @@ export function QuickCaptureForm() {
                 name="parish_id"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Parroquia *</FormLabel>
+                    <FormLabel className="flex items-center gap-2">
+                      Parroquia *
+                      {isDetectingParish && (
+                        <span className="text-xs text-muted-foreground flex items-center gap-1">
+                          <Loader2 className="w-3 h-3 animate-spin" />
+                          Detectando parroquia...
+                        </span>
+                      )}
+                    </FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
-                      disabled={parishesLoading}
+                      disabled={parishesLoading || isDetectingParish}
                     >
                       <FormControl>
                         <SelectTrigger className="min-h-[48px] text-base">
-                          <SelectValue placeholder={parishesLoading ? 'Cargando...' : 'Seleccione parroquia'} />
+                          <SelectValue 
+                            placeholder={
+                              parishesLoading 
+                                ? 'Cargando...' 
+                                : isDetectingParish 
+                                  ? 'Detectando parroquia...' 
+                                  : 'Seleccione parroquia'
+                            } 
+                          />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent className="max-h-[300px]">
@@ -611,6 +743,9 @@ export function QuickCaptureForm() {
                         ))}
                       </SelectContent>
                     </Select>
+                    {parishDetectionError && (
+                      <p className="text-xs text-amber-600 mt-1">{parishDetectionError}</p>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
