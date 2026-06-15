@@ -1,7 +1,6 @@
 import { Card } from './card';
 import { Button } from './button';
-import { Loader2, AlertCircle, Inbox, ArrowLeft } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Loader2, AlertCircle, Inbox } from 'lucide-react';
 import {
   Select,
   SelectContent,
@@ -10,8 +9,9 @@ import {
   SelectValue,
 } from './select';
 
-// Re-export ModalFooter from v2 directory
+// Re-exports from v2 directory
 export { ModalFooter } from '@/components/UI/v2/modal-footer';
+export { PageHeader, type PageHeaderProps } from '@/components/UI/v2/page-header';
 
 interface LoadingStateProps {
   message?: string;
@@ -68,23 +68,6 @@ export function EmptyState({ title = 'No hay datos', message }: EmptyStateProps)
         <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
         {message && <p className="text-slate-400">{message}</p>}
       </Card>
-    </div>
-  );
-}
-
-interface PageHeaderProps {
-  title: string;
-  description?: string;
-}
-
-export function PageHeader({ title, description, action }: PageHeaderProps & { action?: React.ReactNode }) {
-  return (
-    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-      <div className="min-w-0">
-        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white break-words">{title}</h1>
-        {description && <p className="text-slate-400 mt-1 sm:mt-2 text-sm sm:text-base">{description}</p>}
-      </div>
-      {action && <div className="shrink-0 w-full sm:w-auto">{action}</div>}
     </div>
   );
 }
