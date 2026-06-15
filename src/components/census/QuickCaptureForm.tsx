@@ -46,6 +46,9 @@ export function QuickCaptureForm() {
   const [photoError, setPhotoError] = useState<string | null>(null);
   const [photoResetKey, setPhotoResetKey] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // Estado para detección server-side de parroquia
+  const [isDetectingParish, setIsDetectingParish] = useState(false);
+  const [parishDetectionError, setParishDetectionError] = useState<string | null>(null);
 
   const form = useForm({
     resolver: zodResolver(quickCaptureSchema),
