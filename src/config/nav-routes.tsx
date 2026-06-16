@@ -49,6 +49,12 @@ export const maquinasFiscalesNavItem: NavItem = {
     icon: <Cpu className="w-4 h-4" />,
 };
 
+export const gestionActasNavItem: NavItem = {
+    href: '/gestion-actas',
+    label: 'Gestión de Actas',
+    icon: <ClipboardList className="w-4 h-4" />,
+};
+
 export const censusGroupNavItem: NavItem = {
     href: '/census',
     label: 'Censo',
