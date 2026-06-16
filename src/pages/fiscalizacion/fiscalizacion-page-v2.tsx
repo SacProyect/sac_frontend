@@ -56,7 +56,7 @@ import {
 import { Badge } from "@/components/UI/badge";
 import { PersonalFiscalPanel } from "@/components/gestion-personal/personal-fiscal-panel";
 import { RegistrarAusenciaDialog } from "@/components/gestion-personal/registrar-ausencia-dialog";
-import { ReparosActasSection } from "@/components/gestion-personal/reparos-actas-section";
+import { ActasTab } from "@/components/gestion-actas/ActasTab/ActasTab";
 import { BarChart3, FileDown, Plus, RefreshCw, ScrollText, UserRoundSearch } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -847,7 +847,7 @@ export default function FiscalizacionPageV2() {
                 </TabsContent>
 
                 <TabsContent value="reparos" className="mt-4 focus-visible:outline-none">
-                    <ReparosActasSection />
+                    <ActasTab />
                 </TabsContent>
 
                 <TabsContent value="personal" className="mt-4">

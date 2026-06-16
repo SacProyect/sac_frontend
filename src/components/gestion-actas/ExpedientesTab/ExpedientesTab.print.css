@@ -1,0 +1,89 @@
+/* Print stylesheet para Control de Expedientes (auditorías)
+ *
+ * Scope: se activa SOLO al imprimir (`@media print`). En pantalla, todas las
+ * reglas están inactivas. El contenedor raíz se identifica por
+ * `data-testid="gestion-actas-panel-expedientes-content"`.
+ *
+ * Estrategia:
+ *  1. `display: none !important` para todos los controles interactivos y
+ *     elementos no-imprimibles (search, refresh, export, view-toggles, tabs
+ *     de la página, banners de UI, back button, error/cap banners).
+ *  2. `visibility: hidden` global + override `visibility: visible` solo
+ *     sobre el contenedor de contenido y sus descendientes. Esto evita
+ *     que elementos huérfanos (modals, toasts, etc.) se filtren al print.
+ *  3. `position: absolute` sobre el contenedor visible para sacarlo del
+ *     flujo de scroll natural.
+ *  4. `page-break-inside: avoid` en cards/filas para que ninguna unidad
+ *     semántica quede partida entre páginas.
+ *  5. Configuración `@page A4 portrait` con márgenes consistentes.
+ *  6. `::before` con título de auditoría y fecha extraída de
+ *     `data-print-date` (provista por el orquestador).
+ *  7. Reset de sombras/backgrounds/colores para impresión limpia.
+ */
+
+@media print {
+    /* --- 1. Ocultar todo lo no esencial ------------------------------ */
+    [data-testid="expedientes-search"],
+    [data-testid="expedientes-refresh"],
+    [data-testid="expedientes-export"],
+    [data-testid="expedientes-view-cards"],
+    [data-testid="expedientes-view-table"],
+    [data-testid="expedientes-year-input"],
+    [data-testid="gestion-actas-tab-actas"],
+    [data-testid="gestion-actas-tab-expedientes"],
+    [data-testid="gestion-actas-back"],
+    [data-testid="gestion-actas-panel-expedientes-error-banner"],
+    [data-testid="gestion-actas-panel-expedientes-loading"],
+    [data-testid="expedientes-error-banner"],
+    [data-testid="expedientes-error-retry"],
+    [data-testid="expedientes-cap-banner"] {
+        display: none !important;
+    }
+
+    /* --- 2 & 3. Permitir solo el contenido de la lista -------------- */
+    body * {
+        visibility: hidden;
+    }
+    [data-testid="gestion-actas-panel-expedientes-content"],
+    [data-testid="gestion-actas-panel-expedientes-content"] * {
+        visibility: visible;
+    }
+    [data-testid="gestion-actas-panel-expedientes-content"] {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+    }
+
+    /* --- 4. Evitar que las cards/filas se rompan entre páginas ------- */
+    [data-testid^="expedientes-card-"],
+    [data-testid^="expedientes-row-"] {
+        page-break-inside: avoid;
+        break-inside: avoid;
+    }
+
+    /* --- 5. Configuración de página --------------------------------- */
+    @page {
+        size: A4 portrait;
+        margin: 1.5cm 1cm;
+    }
+
+    /* --- 6. Header de auditoría (opcional - provisto por el orquestador
+       a través del atributo `data-print-date`) --------------------- */
+    [data-testid="gestion-actas-panel-expedientes-content"]::before {
+        content: "Reporte de Control de Expedientes - " attr(data-print-date);
+        display: block;
+        font-weight: bold;
+        font-size: 14pt;
+        margin-bottom: 12pt;
+        border-bottom: 1pt solid #000;
+        padding-bottom: 6pt;
+    }
+
+    /* --- 7. Sin sombras ni backgrounds ------------------------------- */
+    * {
+        box-shadow: none !important;
+        background: white !important;
+        color: black !important;
+    }
+}

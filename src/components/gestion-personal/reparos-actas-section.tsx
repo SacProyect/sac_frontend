@@ -1,3 +1,12 @@
+/**
+ * @deprecated Reemplazado por `ActasTab` en `/gestion-actas`.
+ *
+ * - Migrado en TASK-006b a `src/pages/fiscalizacion/fiscalizacion-page-v2.tsx`.
+ * - La migración de `gestion-personal-page-v2.tsx` está en TASK-006 (banner + flip flag).
+ * - Remoción planeada: 2 sprints tras el flip del feature flag a true en producción.
+ *
+ * Ver: docs/migracion-gestion-actas.md (TASK-009)
+ */
 import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import {

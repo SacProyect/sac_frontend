@@ -1,22 +1,42 @@
 import { useState } from "react";
+import { useAuth } from "@/hooks/use-auth";
+import { isActasExpedientesEnabled } from "@/config/feature-flags";
 import { PersonalFiscalPanel } from "@/components/gestion-personal/personal-fiscal-panel";
 import { CasosPorFiscalSection } from "@/components/gestion-personal/casos-por-fiscal-section";
 import { PersonalPermisosVacacionesPanel } from "@/components/gestion-personal/personal-permisos-vacaciones-panel";
 import { ReparosActasSection } from "@/components/gestion-personal/reparos-actas-section";
+import { DeprecationBanner } from "@/components/gestion-actas/shared/DeprecationBanner";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/UI/tabs";
 import { BackButton } from "@/components/UI/v2";
-import { BarChart3, CalendarRange, ScrollText, Table2 } from "lucide-react";
+import { CalendarRange, ScrollText, Table2 } from "lucide-react";
 
 /**
  * Módulo «Gestión de personal»: métricas, casos por fiscal, permisos/vacaciones (tabla + tarjetas)
  * y actas de reparo — rediseñado como un Centro de Mando (Command Center).
+ *
+ * TASK-006: durante la ventana de coexistencia, esta página muestra un banner
+ * de deprecación (solo admins) que apunta a `/gestion-actas` cuando el feature
+ * flag `isActasExpedientesEnabled` está activo. Con el flag en `false` (default)
+ * la página sigue funcionando sin banner — es el rollback de nivel 1.
  */
 export default function GestionPersonalPageV2() {
+    const { user } = useAuth();
+    const isAdmin = user?.role === "ADMIN";
+    const showDeprecationBanner = isAdmin && isActasExpedientesEnabled;
     const [casosYear, setCasosYear] = useState(() => new Date().getFullYear());
 
     return (
         <div className="space-y-5 max-w-[1680px] mx-auto pb-8">
             <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
+            {showDeprecationBanner && (
+                <DeprecationBanner
+                    title="Nueva página disponible: Centro de Mando de Actas y Expedientes"
+                    description="Hemos mejorado la página con un Command Center renovado. La versión anterior (esta página) seguirá funcionando durante 30 días y luego será removida."
+                    linkTo="/gestion-actas"
+                    linkLabel="Ir a la nueva página"
+                    dismissableSession
+                />
+            )}
             <header className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
                     SAC Fiscal · Operaciones de Campo
