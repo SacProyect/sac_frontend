@@ -1,7 +1,7 @@
 # Documentacion de Feature Flags (FF) - SAC Frontend
 
 ## Fecha de actualizacion
-- **2026-06-09** (ultima actualizacion: added Maquinas Fiscales)
+- **2026-06-15** (ultima actualizacion: added Actas y Expedientes)
 
 ## Objetivo
 Mantener una referencia centralizada y detallada de las FF activas del proyecto para saber:
@@ -78,11 +78,28 @@ Mantener una referencia centralizada y detallada de las FF activas del proyecto 
   - `src/config/nav-routes.tsx` (definicion de `maquinasFiscalesNavItem`)
 - **Trabajo en curso asociado:** Mock data listo para reemplazar por API real. La separacion mock/UI ya esta implementada.
 
+### 5) Actas y Expedientes (Centro de Mando)
+- **Variable de entorno:** `VITE_ACTAS_EXPEDIENTES_ENABLED`
+- **Constante de app:** `isActasExpedientesEnabled`
+- **Default en codigo:** `false`
+- **Valor actual en `.env` local:** `false`
+- **Estado funcional actual:** Deshabilitada en entorno local. En produccion se activa tras el flip manual documentado en `docs/migracion-gestion-actas.md`.
+- **Impacto principal en UI y rutas:**
+  - Habilita la nueva ruta `/gestion-actas` (Command Center con UI renovada). Mientras esta en `false`, el router redirige `/gestion-actas` → `/gestion-personal` (legacy).
+  - Habilita el banner de deprecacion en `/gestion-personal` (solo admins), apuntando a la nueva pagina.
+  - Redirige `/fiscalizacion` → `/gestion-actas` (en lugar de `/gestion-personal`) cuando el flag esta en `true`.
+- **Uso detectado en codigo:**
+  - `src/config/feature-flags.ts` (definicion de la constante)
+  - `src/pages/router.tsx` (gating de la ruta `/gestion-actas` y de la redireccion desde `/gestion-personal` y `/fiscalizacion`)
+  - `src/pages/gestion-personal/gestion-personal-page-v2.tsx` (render condicional del `DeprecationBanner`)
+  - `src/components/gestion-actas/shared/DeprecationBanner.tsx` (componente del banner)
+- **Trabajo en curso asociado:** Migracion completa del modulo a la nueva UI (TASK-001 → TASK-009). El flip se hara tras validar los tests E2E (`tests/gestion-actas.*.spec.ts`) y el smoke test post-deploy documentado en la guia de migracion).
 ## Estado actual consolidado (.env local)
 - `VITE_NOTIFICATIONS_ENABLED='false'`
 - `VITE_INTERNAL_AUDIT_ENABLED='false'`
 - `VITE_TAXPAYER_DASHBOARD_ENABLED='true'`
 - `VITE_MAQUINAS_FISCALES_ENABLED` no definida (default: `true`)
+- `VITE_ACTAS_EXPEDIENTES_ENABLED` no definida (default: `false`) — ver `docs/migracion-gestion-actas.md`
 
 ## Recomendaciones operativas
 1. Centralizar todas las lecturas de FF en `src/config/feature-flags.ts`.
@@ -93,3 +110,4 @@ Mantener una referencia centralizada y detallada de las FF activas del proyecto 
 ## Historial de cambios de esta documentacion
 - **2026-05-04:** Creacion inicial del inventario detallado de FF activas, estado local y frentes de trabajo.
 - **2026-06-09:** Agregada feature flag Maquinas Fiscales (`VITE_MAQUINAS_FISCALES_ENABLED`).
+- **2026-06-15:** Agregada feature flag Actas y Expedientes (`VITE_ACTAS_EXPEDIENTES_ENABLED`). Plan completo en `plans/gestion-actas-migration.md`.

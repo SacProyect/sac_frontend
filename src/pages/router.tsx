@@ -36,7 +36,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
@@ -132,6 +132,7 @@ const ErrorsReportV2 = lazyWithRetry(() => import("@/pages/errors/errors-report-
 const GroupReportPageV2 = lazyWithRetry(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazyWithRetry(() => import("@/pages/reports/taxpayer-report-page"));
 const GestionPersonalPageV2 = lazyWithRetry(() => import("@/pages/gestion-personal/gestion-personal-page-v2"));
+const GestionActasPage = lazyWithRetry(() => import("@/pages/gestion-actas/gestion-actas-page"));
 const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
 const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
 const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
@@ -176,6 +177,7 @@ function GestionPersonalRoute() {
     if (user.role !== "ADMIN") {
         return <Navigate to="/admin" replace />;
     }
+    if (isActasExpedientesEnabled) return <Navigate to="/gestion-actas" replace />;
     return (
         <Suspense
             fallback={
@@ -185,6 +187,18 @@ function GestionPersonalRoute() {
             }
         >
             <GestionPersonalPageV2 />
+        </Suspense>
+    );
+}
+
+function GestionActasRoute() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role !== "ADMIN") return <Navigate to="/admin" replace />;
+    if (!isActasExpedientesEnabled) return <Navigate to="/gestion-personal" replace />;
+    return (
+        <Suspense fallback={<GlobalLoader message="Cargando Centro de Mando..." />}>
+            <GestionActasPage />
         </Suspense>
     );
 }
@@ -277,11 +291,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "fiscalizacion",
-                        element: <Navigate to="/gestion-personal" replace />,
+                        element: <Navigate to="/gestion-actas" replace />,
                     },
                     {
                         path: "gestion-personal",
                         element: <GestionPersonalRoute />,
+                    },
+                    {
+                        path: "gestion-actas",
+                        element: <GestionActasRoute />,
                     },
                     {
                         path: "divulgacion-presencia-fiscal",

@@ -50,3 +50,16 @@ export const isControlesIngresoEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_CONTROLES_INGRESO_ENABLED,
   true
 );
+
+/**
+ * Habilita la nueva página /gestion-actas con la UI renovada.
+ * - false (default): los admins siguen usando /gestion-personal con la UI actual.
+ * - true: la página nueva reemplaza la antigua.
+ *
+ * Debe permanecer en false hasta que TASK-006b (migración del segundo consumidor
+ * en fiscalizacion-page-v2.tsx) esté mergeada y validada en staging.
+ */
+export const isActasExpedientesEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_ACTAS_EXPEDIENTES_ENABLED,
+  false
+);
