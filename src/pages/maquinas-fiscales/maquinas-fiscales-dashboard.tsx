@@ -9,8 +9,10 @@ import { MaquinasQuickDetailDrawer } from '@/components/maquinas-fiscales/maquin
 import { maquinasFiscalesMock, maquinasFiscalesStatsMock } from '@/data/mock-maquinas-fiscales';
 import type { MachineMock } from '@/types/maquinas-fiscales';
 import { useDebounce } from '@/hooks/use-debounce';
-import { RefreshCw, BarChart3 } from 'lucide-react';
+import { RefreshCw, BarChart3, Cpu, Building2 } from 'lucide-react';
 import { Button } from '@/components/UI/button';
+import { Tabs, TabsList, TabsTrigger } from '@/components/UI/tabs';
+import { EntidadesTab } from '@/components/maquinas-fiscales/entidades-tab';
 
 export default function MaquinasFiscalesDashboard() {
   const [loading, setLoading] = useState(true);
@@ -20,6 +22,7 @@ export default function MaquinasFiscalesDashboard() {
   const [searchValue, setSearchValue] = useState('');
   const [selectedMachine, setSelectedMachine] = useState<MachineMock | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [mainTab, setMainTab] = useState<"maquinas" | "entidades">("maquinas");
 
   const debouncedSearch = useDebounce(searchValue.toLowerCase(), 300);
 
@@ -76,65 +79,84 @@ export default function MaquinasFiscalesDashboard() {
 
   return (
     <div className="space-y-6">
-      <PageHeader
-        title="Máquinas Fiscales"
-        description="Monitoreo y control de máquinas fiscales del municipio Libertador"
-        action={
-          <div className="flex items-center gap-2">
-            <Link to="/maquinas-fiscales/estadisticas">
-              <Button
-                variant="outline"
-                size="sm"
-                className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
-              >
-                <BarChart3 className="h-4 w-4 mr-2" />
-                Estadísticas
-              </Button>
-            </Link>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.location.reload()}
-              className="border-slate-700 text-slate-400 hover:text-slate-200"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Actualizar
-            </Button>
+      <Tabs value={mainTab} onValueChange={(v) => setMainTab(v as "maquinas" | "entidades")}>
+        <TabsList className="bg-slate-800 border border-slate-700">
+          <TabsTrigger value="maquinas" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <Cpu className="mr-2 h-4 w-4" />
+            Máquinas Fiscales
+          </TabsTrigger>
+          <TabsTrigger value="entidades" className="data-[state=active]:bg-indigo-600 data-[state=active]:text-white">
+            <Building2 className="mr-2 h-4 w-4" />
+            Entidades
+          </TabsTrigger>
+        </TabsList>
+      </Tabs>
+
+      {mainTab === "maquinas" && (
+        <>
+          <PageHeader
+            title="Máquinas Fiscales"
+            description="Monitoreo y control de máquinas fiscales del municipio Libertador"
+            action={
+              <div className="flex items-center gap-2">
+                <Link to="/maquinas-fiscales/estadisticas">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-indigo-500/30 text-indigo-400 hover:bg-indigo-500/10"
+                  >
+                    <BarChart3 className="h-4 w-4 mr-2" />
+                    Estadísticas
+                  </Button>
+                </Link>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.location.reload()}
+                  className="border-slate-700 text-slate-400 hover:text-slate-200"
+                >
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Actualizar
+                </Button>
+              </div>
+            }
+          />
+
+          {/* KPIs — 8 métricas en 2 filas */}
+          <MaquinasKpiCards stats={stats} />
+
+          {/* Filtros y búsqueda */}
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <MaquinasFilterTabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              counts={counts}
+            />
+            <div className="w-full sm:w-72">
+              <MaquinasSearchBar value={searchValue} onValueChange={setSearchValue} />
+            </div>
           </div>
-        }
-      />
 
-      {/* KPIs — 8 métricas en 2 filas */}
-      <MaquinasKpiCards stats={stats} />
+          {/* Tabla */}
+          {filteredMachines.length === 0 ? (
+            <EmptyState
+              title="Sin resultados"
+              message="No se encontraron máquinas con los filtros aplicados."
+            />
+          ) : (
+            <MaquinasTable machines={filteredMachines} onRowClick={handleRowClick} />
+          )}
 
-      {/* Filtros y búsqueda */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <MaquinasFilterTabs
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-          counts={counts}
-        />
-        <div className="w-full sm:w-72">
-          <MaquinasSearchBar value={searchValue} onValueChange={setSearchValue} />
-        </div>
-      </div>
-
-      {/* Tabla */}
-      {filteredMachines.length === 0 ? (
-        <EmptyState
-          title="Sin resultados"
-          message="No se encontraron máquinas con los filtros aplicados."
-        />
-      ) : (
-        <MaquinasTable machines={filteredMachines} onRowClick={handleRowClick} />
+          {/* Drawer de detalle rápido */}
+          <MaquinasQuickDetailDrawer
+            machine={selectedMachine}
+            open={drawerOpen}
+            onOpenChange={setDrawerOpen}
+          />
+        </>
       )}
 
-      {/* Drawer de detalle rápido */}
-      <MaquinasQuickDetailDrawer
-        machine={selectedMachine}
-        open={drawerOpen}
-        onOpenChange={setDrawerOpen}
-      />
+      {mainTab === "entidades" && <EntidadesTab />}
     </div>
   );
 }
