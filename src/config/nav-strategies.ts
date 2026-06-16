@@ -101,7 +101,6 @@ const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
         if (!isMaquinasFiscalesFeatureEnabled && item.href === '/maquinas-fiscales') return false;
         if (isControlesIngresoEnabled && item.href === '/divulgacion-presencia-fiscal') return false;
         if (!isActasExpedientesEnabled && item.href === '/gestion-actas') return false;
-        if (isActasExpedientesEnabled && item.href === '/gestion-personal') return false;
         return true;
     });
 };
