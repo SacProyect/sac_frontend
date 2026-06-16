@@ -17,6 +17,12 @@ export interface Entidad {
     tiene_maquina_fiscal: string | null;
     tipo_facturacion: string | null;
     abierto_cerrado: string | null;
+    fecha_censo: string | null;
+    grupo: string | null;
+    ordinario_especial: string | null;
+    sistema_homologado: string | null;
+    boleta_comparecencia: string | null;
+    tipo_comparecencia: string | null;
     created_at: string;
     updated_at: string;
 }
@@ -26,9 +32,9 @@ export type CreateEntidadPayload = Pick<Entidad, "rif" | "razon_social"> & Parti
 export type UpdateEntidadPayload = Partial<CreateEntidadPayload>;
 
 export interface EntidadFilters {
-    search?: string;
     rif?: string;
     razon_social?: string;
+    search?: string;
     parroquia?: string;
     municipio?: string;
     estado?: string;
@@ -38,6 +44,8 @@ export interface EntidadFilters {
     tiene_maquina_fiscal?: string;
     tipo_facturacion?: string;
     abierto_cerrado?: string;
+    grupo?: string;
+    ordinario_especial?: string;
     pending_enrichment?: boolean;
     page?: number;
     limit?: number;

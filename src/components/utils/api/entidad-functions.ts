@@ -76,3 +76,13 @@ export async function updateEnrichmentFields(
     const res = await apiConnection.patch<{ success: boolean; data: Entidad }>(`${BASE}/enrichment/${id}`, data);
     return res.data;
 }
+
+export async function getEntidadParroquias(): Promise<{ success: boolean; data: string[] }> {
+    const res = await apiConnection.get<{ success: boolean; data: string[] }>(`${BASE}/parroquias`);
+    return res.data;
+}
+
+export async function getEntidadOrdinarioEspecialList(): Promise<{ success: boolean; data: string[] }> {
+    const res = await apiConnection.get<{ success: boolean; data: string[] }>(`${BASE}/ordinario-especial-list`);
+    return res.data;
+}
