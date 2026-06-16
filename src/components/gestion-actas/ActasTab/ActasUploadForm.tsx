@@ -32,7 +32,9 @@ import {
     uploadRepairReport,
     type RepairReportUploadMeta,
 } from '@/components/utils/api/taxpayer-functions';
-import type { ImpuestoTipo } from './types';
+import type { ImpuestoTipo, ActaFormState } from './types';
+import { IMPUESTO_OPTIONS, emptyActaForm } from './types';
+import { toAmountString } from '../shared/utils';
 import toast from 'react-hot-toast';
 
 /* -------------------------------------------------------------------------- */
@@ -42,48 +44,8 @@ import toast from 'react-hot-toast';
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const MAX_FILE_SIZE = 25 * 1024 * 1024; // 25 MB (per task; guía §4.1.1 dice 20 MB)
-const MAX_FILE_SIZE_MB = 25;
-
-const IMPUESTO_OPTIONS: ReadonlyArray<{ value: ImpuestoTipo; label: string }> = [
-    { value: 'IVA-ISLR', label: 'IVA-ISLR' },
-    { value: 'ISLR', label: 'ISLR' },
-    { value: 'IVA', label: 'IVA' },
-];
-
-/** Estado del formulario de metadatos (alineado con `ActaFormState` del legacy). */
-type ActaFormState = {
-    fechaEntrega: string;
-    impuestoTipo: '' | ImpuestoTipo;
-    numeroExpediente: string;
-    ejercicioFiscalPeriodo: string;
-    numeroReparo: string;
-    fechaNotificado: string;
-    montoIslr: string;
-    montoIva: string;
-    montoAceptacionPago: string;
-    montoTotal: string;
-};
-
-const emptyActaForm = (): ActaFormState => ({
-    fechaEntrega: '',
-    impuestoTipo: '',
-    numeroExpediente: '',
-    ejercicioFiscalPeriodo: '',
-    numeroReparo: '',
-    fechaNotificado: '',
-    montoIslr: '',
-    montoIva: '',
-    montoAceptacionPago: '',
-    montoTotal: '',
-});
-
-/** Normaliza importes en formato `0,00` → `0.00` antes de enviar al backend. */
-function toAmountString(raw: string): string | undefined {
-    const trimmed = raw.trim();
-    if (!trimmed) return undefined;
-    return trimmed.replace(',', '.');
-}
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB (guía §4.1.1)
+const MAX_FILE_SIZE_MB = 20;
 
 function buildUploadMeta(
     state: ActaFormState,

@@ -32,7 +32,7 @@ export function ExpedienteCard({ row }: Props) {
     return (
         <div
             data-testid={`expedientes-card-${row.fiscalId}`}
-            className="flex flex-col md:flex-row md:items-center gap-4 p-4 border border-border/60 bg-card rounded-md shadow-sm transition-colors hover:bg-muted/10"
+            className="flex flex-col md:flex-row md:items-center gap-4 p-4 border border-border/60 bg-card rounded-md transition-colors hover:bg-muted/10"
         >
             {/* Bloque 1 — Identidad */}
             <div className="min-w-[200px] flex-shrink-0">

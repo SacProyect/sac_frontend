@@ -71,7 +71,6 @@ export function ExpedientesTab() {
         const stored = window.localStorage.getItem(VIEW_STORAGE_KEY);
         return stored === 'table' || stored === 'cards' ? stored : 'cards';
     });
-    const [page, setPage] = useState(1);
     const [rows, setRows] = useState<ExpedienteRow[]>([]);
     const [loading, setLoading] = useState(false);
     const [exporting, setExporting] = useState(false);
@@ -109,13 +108,6 @@ export function ExpedientesTab() {
     useEffect(() => {
         void load();
     }, [load]);
-
-    // Reset a página 1 cuando cambia la búsqueda (no resetear al cambiar
-    // `year` para no perder la posición del usuario al explorar el
-    // histórico).
-    useEffect(() => {
-        setPage(1);
-    }, [debouncedQ]);
 
     /* ----------------------- Export Excel (TASK-005b) ----------------------- */
     const handleExport = useCallback(async () => {
@@ -291,11 +283,6 @@ export function ExpedientesTab() {
 
             {/* Totales globales (cards o tabla) */}
             <ExpedientesTotals rows={filteredRows} />
-
-            {/* `page` queda expuesto para integraciones futuras con
-                paginación server-side; en TASK-005a se mantiene client-side. */}
-            {/* eslint-disable-next-line @typescript-eslint/no-unused-vars */}
-            {page}
         </div>
     );
 }

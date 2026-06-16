@@ -13,6 +13,7 @@ import {
 import { Label } from '@/components/UI/label';
 import { Textarea } from '@/components/UI/textarea';
 import { createOperativoVincularReparo } from '@/components/utils/api/fiscal-operaciones-functions';
+import { extractMessage } from '../shared/utils';
 import type { ActaReparo } from './types';
 
 /* -------------------------------------------------------------------------- */
@@ -162,18 +163,4 @@ export function ActasLinkDialog({ row, open, onOpenChange, onLinked }: Props) {
             </DialogContent>
         </Dialog>
     );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function extractMessage(e: unknown, fallback: string): string {
-    if (e instanceof Error) return e.message;
-    if (typeof e === 'object' && e !== null) {
-        const maybe = (e as { response?: { data?: { error?: string } } }).response?.data
-            ?.error;
-        if (typeof maybe === 'string') return maybe;
-    }
-    return fallback;
 }

@@ -61,3 +61,46 @@ export const defaultActasAdvancedFilters: ActasAdvancedFilters = {
     supervisorName: '',
     estado: '',
 };
+
+/* -------------------------------------------------------------------------- */
+/* TASK-DEUDA-02 — Opciones de impuesto compartidas                          */
+/* -------------------------------------------------------------------------- */
+
+/** Opciones de tipo de impuesto para selects y filtros. */
+export const IMPUESTO_OPTIONS: ReadonlyArray<{ value: ImpuestoTipo; label: string }> = [
+    { value: 'IVA-ISLR', label: 'IVA-ISLR' },
+    { value: 'ISLR', label: 'ISLR' },
+    { value: 'IVA', label: 'IVA' },
+];
+
+/* -------------------------------------------------------------------------- */
+/* TASK-DEUDA-03 — Estado del formulario de acta compartido                  */
+/* -------------------------------------------------------------------------- */
+
+/** Estado del formulario de acta de reparo (upload y edición). */
+export type ActaFormState = {
+    fechaEntrega: string;
+    impuestoTipo: '' | ImpuestoTipo;
+    numeroExpediente: string;
+    ejercicioFiscalPeriodo: string;
+    numeroReparo: string;
+    fechaNotificado: string;
+    montoIslr: string;
+    montoIva: string;
+    montoAceptacionPago: string;
+    montoTotal: string;
+};
+
+/** Factory para estado vacío del formulario de acta. */
+export const emptyActaForm = (): ActaFormState => ({
+    fechaEntrega: '',
+    impuestoTipo: '',
+    numeroExpediente: '',
+    ejercicioFiscalPeriodo: '',
+    numeroReparo: '',
+    fechaNotificado: '',
+    montoIslr: '',
+    montoIva: '',
+    montoAceptacionPago: '',
+    montoTotal: '',
+});

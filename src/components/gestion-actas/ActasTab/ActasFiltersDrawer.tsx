@@ -24,6 +24,7 @@ import {
 import { useDebounce } from '@/hooks/use-debounce';
 import {
     defaultActasAdvancedFilters,
+    IMPUESTO_OPTIONS,
     type ActasAdvancedFilters,
     type ImpuestoTipo,
 } from './types';
@@ -36,12 +37,6 @@ type Props = {
     onApply: (f: ActasAdvancedFilters) => void;
     onClear: () => void;
 };
-
-const IMPUESTO_OPTIONS: ReadonlyArray<{ value: ImpuestoTipo; label: string }> = [
-    { value: 'IVA-ISLR', label: 'IVA-ISLR' },
-    { value: 'ISLR', label: 'ISLR' },
-    { value: 'IVA', label: 'IVA' },
-];
 
 const ESTADO_OPTIONS: ReadonlyArray<{ value: '' | 'VINCULADO' | 'PENDIENTE'; label: string }> = [
     { value: '', label: 'Todos' },

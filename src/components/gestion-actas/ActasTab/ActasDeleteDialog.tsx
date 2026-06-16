@@ -11,6 +11,7 @@ import {
     DialogTitle,
 } from '@/components/UI/dialog';
 import { adminDeleteReparoActa } from '@/components/utils/api/fiscal-operaciones-functions';
+import { extractMessage } from '../shared/utils';
 import type { ActaReparo } from './types';
 
 /* -------------------------------------------------------------------------- */
@@ -126,19 +127,4 @@ export function ActasDeleteDialog({ row, open, onOpenChange, onDeleted }: Props)
             </DialogContent>
         </Dialog>
     );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-/** Extrae un mensaje legible de un error desconocido. */
-function extractMessage(e: unknown, fallback: string): string {
-    if (e instanceof Error) return e.message;
-    if (typeof e === 'object' && e !== null) {
-        const maybe = (e as { response?: { data?: { error?: string } } }).response?.data
-            ?.error;
-        if (typeof maybe === 'string') return maybe;
-    }
-    return fallback;
 }

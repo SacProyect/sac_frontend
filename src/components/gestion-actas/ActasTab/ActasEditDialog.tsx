@@ -22,57 +22,16 @@ import {
 import { Textarea } from '@/components/UI/textarea';
 import { adminUpdateReparoActa } from '@/components/utils/api/fiscal-operaciones-functions';
 import type { RepairReportUploadMeta } from '@/components/utils/api/taxpayer-functions';
-import type { ActaReparo, ImpuestoTipo } from './types';
+import type { ActaReparo, ImpuestoTipo, ActaFormState } from './types';
+import { IMPUESTO_OPTIONS, emptyActaForm } from './types';
+import { extractMessage, toAmountString } from '../shared/utils';
 
 /* -------------------------------------------------------------------------- */
 /* Constantes                                                                 */
 /* -------------------------------------------------------------------------- */
 
-const IMPUESTO_OPTIONS: ReadonlyArray<{ value: ImpuestoTipo; label: string }> = [
-    { value: 'IVA-ISLR', label: 'IVA-ISLR' },
-    { value: 'ISLR', label: 'ISLR' },
-    { value: 'IVA', label: 'IVA' },
-];
-
 /** Tolerancia para el warning de concurrencia (per guía §8.1). */
 const CONCURRENCY_TOLERANCE_MS = 5 * 60 * 1000;
-
-/* -------------------------------------------------------------------------- */
-/* Estado del formulario                                                      */
-/* -------------------------------------------------------------------------- */
-
-type ActaFormState = {
-    fechaEntrega: string;
-    impuestoTipo: '' | ImpuestoTipo;
-    numeroExpediente: string;
-    ejercicioFiscalPeriodo: string;
-    numeroReparo: string;
-    fechaNotificado: string;
-    montoIslr: string;
-    montoIva: string;
-    montoAceptacionPago: string;
-    montoTotal: string;
-};
-
-const emptyActaForm = (): ActaFormState => ({
-    fechaEntrega: '',
-    impuestoTipo: '',
-    numeroExpediente: '',
-    ejercicioFiscalPeriodo: '',
-    numeroReparo: '',
-    fechaNotificado: '',
-    montoIslr: '',
-    montoIva: '',
-    montoAceptacionPago: '',
-    montoTotal: '',
-});
-
-/** Normaliza importes en formato `0,00` → `0.00` antes de enviar al backend. */
-function toAmountString(raw: string): string | undefined {
-    const trimmed = raw.trim();
-    if (!trimmed) return undefined;
-    return trimmed.replace(',', '.');
-}
 
 function isoToDateInput(iso: string | null | undefined): string {
     if (!iso) return '';
@@ -641,18 +600,4 @@ export function ActasEditDialog({
             </DialogContent>
         </Dialog>
     );
-}
-
-/* -------------------------------------------------------------------------- */
-/* Helpers                                                                    */
-/* -------------------------------------------------------------------------- */
-
-function extractMessage(e: unknown, fallback: string): string {
-    if (e instanceof Error) return e.message;
-    if (typeof e === 'object' && e !== null) {
-        const maybe = (e as { response?: { data?: { error?: string } } }).response?.data
-            ?.error;
-        if (typeof maybe === 'string') return maybe;
-    }
-    return fallback;
 }
