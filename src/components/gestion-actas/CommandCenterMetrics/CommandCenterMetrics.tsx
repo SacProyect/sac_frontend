@@ -60,7 +60,7 @@ export function CommandCenterMetrics() {
     return (
         <div
             data-testid="gestion-actas-ledger"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4"
         >
             {SLOTS.map((slot, i) => (
                 <motion.div

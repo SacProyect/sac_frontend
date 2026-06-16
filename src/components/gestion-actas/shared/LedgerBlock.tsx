@@ -36,6 +36,13 @@ const TONE_VALUE_CLASS: Record<LedgerBlockTone, string> = {
     critical: 'text-red-700 dark:text-red-400',
 };
 
+const TONE_TOP_BORDER: Record<LedgerBlockTone, string> = {
+    neutral: 'border-t-2 border-t-slate-300 dark:border-t-slate-600',
+    positive: 'border-t-2 border-t-emerald-500',
+    warning: 'border-t-2 border-t-amber-500',
+    critical: 'border-t-2 border-t-red-500',
+};
+
 export function LedgerBlock({
     label,
     value,
@@ -49,8 +56,10 @@ export function LedgerBlock({
         <div
             data-testid={dataTestId}
             className={cn(
-                'bg-muted/30 border border-border/60 rounded-md py-3 px-4',
+                'bg-muted/30 border border-border/60 rounded-md py-4 px-5',
                 'flex flex-col gap-1',
+                'hover:bg-muted/50 transition-colors',
+                TONE_TOP_BORDER[tone],
                 className,
             )}
         >
@@ -60,20 +69,20 @@ export function LedgerBlock({
                         {icon}
                     </span>
                 ) : null}
-                <span className="text-[10px] uppercase tracking-wide text-muted-foreground font-semibold">
+                <span className="text-[11px] uppercase tracking-wide text-muted-foreground font-semibold">
                     {label}
                 </span>
             </div>
             <p
                 className={cn(
-                    'text-3xl font-bold tabular-nums tracking-tight',
+                    'text-4xl font-bold tabular-nums tracking-tight',
                     TONE_VALUE_CLASS[tone],
                 )}
             >
                 {value}
             </p>
             {hint ? (
-                <p className="text-[10px] text-muted-foreground">{hint}</p>
+                <p className="text-[11px] text-muted-foreground">{hint}</p>
             ) : null}
         </div>
     );

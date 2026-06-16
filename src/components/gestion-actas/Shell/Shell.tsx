@@ -79,20 +79,14 @@ export function Shell() {
                 <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
             </div>
 
-            <header className="space-y-1 min-w-0">
-                <p
-                    data-testid="gestion-actas-eyebrow"
-                    className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400"
-                >
-                    SAC Fiscal · Operaciones de Reparo
-                </p>
+            <header className="space-y-2 min-w-0 pt-2">
                 <h1
                     data-testid="gestion-actas-title"
-                    className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
+                    className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground border-b-2 border-indigo-500/30 pb-3"
                 >
                     Centro de Mando: Actas y Expedientes
                 </h1>
-                <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
+                <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed mt-2">
                     Vista global de actas de reparo y control de expedientes
                     fiscales. Las métricas principales se mantienen visibles
                     mientras exploras el detalle.
@@ -119,7 +113,7 @@ export function Shell() {
                         <TabsTrigger
                             value="actas"
                             data-testid="gestion-actas-tab-actas"
-                            className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border-border/60 border border-transparent"
+                            className="gap-1.5 px-4 py-2.5 data-[state=active]:bg-indigo-500/5 data-[state=active]:border-l-2 data-[state=active]:border-l-indigo-500 data-[state=active]:text-foreground data-[state=active]:font-medium border border-transparent transition-colors"
                         >
                             <ScrollText className="h-4 w-4" />
                             Actas de Reparo
@@ -127,7 +121,7 @@ export function Shell() {
                         <TabsTrigger
                             value="expedientes"
                             data-testid="gestion-actas-tab-expedientes"
-                            className="gap-1.5 data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:border-border/60 border border-transparent"
+                            className="gap-1.5 px-4 py-2.5 data-[state=active]:bg-indigo-500/5 data-[state=active]:border-l-2 data-[state=active]:border-l-indigo-500 data-[state=active]:text-foreground data-[state=active]:font-medium border border-transparent transition-colors"
                         >
                             <Table2 className="h-4 w-4" />
                             Control de Expedientes
