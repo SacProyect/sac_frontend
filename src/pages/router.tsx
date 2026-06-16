@@ -177,7 +177,6 @@ function GestionPersonalRoute() {
     if (user.role !== "ADMIN") {
         return <Navigate to="/admin" replace />;
     }
-    if (isActasExpedientesEnabled) return <Navigate to="/gestion-actas" replace />;
     return (
         <Suspense
             fallback={
