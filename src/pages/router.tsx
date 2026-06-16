@@ -12,6 +12,18 @@ const AdminOrCoordinatorOnly = ({ children }: { children: ReactNode }) => {
 	return <>{children}</>;
 };
 
+/**
+ * Permite el render solo a usuarios FISCAL, SUPERVISOR o ADMIN.
+ * Redirige al dashboard si no tiene permiso.
+ */
+const FiscalSupervisorAdminOnly = ({ children }: { children: ReactNode }) => {
+	const { user } = useAuth();
+	if (!user) return <Navigate to="/login" replace />;
+	const allowed = ["FISCAL", "SUPERVISOR", "ADMIN"];
+	if (!allowed.includes(user.role)) return <Navigate to="/" replace />;
+	return <>{children}</>;
+};
+
 import { getPendingPayments, getTaxpayerData, getTaxpayerEvents } from '@/components/utils/api/taxpayer-functions';
 import { createBrowserRouter, LoaderFunctionArgs, Navigate } from 'react-router-dom';
 import { AuthLayout, useAuth } from '@/hooks/use-auth';
@@ -24,7 +36,7 @@ import { IVAReports } from '@/types/iva-reports';
 import { ISLRReports } from '@/types/islr-reports';
 import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled } from '@/config/feature-flags';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
@@ -120,6 +132,7 @@ const ErrorsReportV2 = lazyWithRetry(() => import("@/pages/errors/errors-report-
 const GroupReportPageV2 = lazyWithRetry(() => import("@/pages/reports/group-report-page-v2"));
 const TaxpayerReportPage = lazyWithRetry(() => import("@/pages/reports/taxpayer-report-page"));
 const GestionPersonalPageV2 = lazyWithRetry(() => import("@/pages/gestion-personal/gestion-personal-page-v2"));
+const GestionActasPage = lazyWithRetry(() => import("@/pages/gestion-actas/gestion-actas-page"));
 const NotificationsPageV1 = lazyWithRetry(() => import("@/pages/Notifications/notifications-page-v1"));
 const AuditTrailPageV2 = lazyWithRetry(() => import("@/pages/audit/audit-trail-page-v2"));
 const InternalAuditPageV2 = lazyWithRetry(() => import("@/pages/internal-audit/internal-audit-page-v2"));
@@ -128,6 +141,14 @@ const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/d
 const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
 const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
 const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmin"));
+const MaquinasFiscalesDashboard = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-dashboard"));
+const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-detail"));
+const MaquinasFiscalesStats = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-stats"));
+const ControlesDashboardPage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-dashboard-page"));
+const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-detalle-page"));
+const CensusQuickCapturePage = lazyWithRetry(() => import("@/pages/Census/census-quick-capture-page"));
+const CensusMapPage = lazyWithRetry(() => import("@/pages/Census/census-map-page"));
+const CensusGroupPage = lazyWithRetry(() => import("@/pages/Census/census-group-page"));
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -156,6 +177,7 @@ function GestionPersonalRoute() {
     if (user.role !== "ADMIN") {
         return <Navigate to="/admin" replace />;
     }
+    if (isActasExpedientesEnabled) return <Navigate to="/gestion-actas" replace />;
     return (
         <Suspense
             fallback={
@@ -165,6 +187,18 @@ function GestionPersonalRoute() {
             }
         >
             <GestionPersonalPageV2 />
+        </Suspense>
+    );
+}
+
+function GestionActasRoute() {
+    const { user } = useAuth();
+    if (!user) return <Navigate to="/login" replace />;
+    if (user.role !== "ADMIN") return <Navigate to="/admin" replace />;
+    if (!isActasExpedientesEnabled) return <Navigate to="/gestion-personal" replace />;
+    return (
+        <Suspense fallback={<GlobalLoader message="Cargando Centro de Mando..." />}>
+            <GestionActasPage />
         </Suspense>
     );
 }
@@ -241,7 +275,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "census",
-                        element: <Suspense fallback={<GlobalLoader message="Cargando Tabla Censo..." />}><CensusTablePageV2 /></Suspense>,
+                        element: <Suspense fallback={<GlobalLoader message="Cargando Censo..." />}><CensusGroupPage /></Suspense>,
+                    },
+                    {
+                        path: "census/quick-capture",
+                        element: <Navigate to="/census?tab=captura" replace />,
+                    },
+                    {
+                        path: "census/map",
+                        element: <Navigate to="/census?tab=mapa" replace />,
                     },
                     {
                         path: "fiscal-review",
@@ -249,11 +291,15 @@ export const router = createBrowserRouter([
                     },
                     {
                         path: "fiscalizacion",
-                        element: <Navigate to="/gestion-personal" replace />,
+                        element: <Navigate to="/gestion-actas" replace />,
                     },
                     {
                         path: "gestion-personal",
                         element: <GestionPersonalRoute />,
+                    },
+                    {
+                        path: "gestion-actas",
+                        element: <GestionActasRoute />,
                     },
                     {
                         path: "divulgacion-presencia-fiscal",
@@ -458,6 +504,50 @@ export const router = createBrowserRouter([
                             </Suspense>
                         </AdminOnly>
                         ),
+                    },
+                    {
+                        path: "maquinas-fiscales",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Máquinas Fiscales..." />}>
+                                <MaquinasFiscalesDashboard />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "maquinas-fiscales/estadisticas",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Estadísticas..." />}>
+                                <MaquinasFiscalesStats />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "controles-de-ingreso",
+                        element: isControlesIngresoEnabled ? (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Controles de Ingreso..." />}>
+                                    <ControlesDashboardPage />
+                                </Suspense>
+                            </AdminOnly>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "controles-de-ingreso/:id",
+                        element: isControlesIngresoEnabled ? (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando Detalle..." />}>
+                                    <ControlesDetallePage />
+                                </Suspense>
+                            </AdminOnly>
+                        ) : <Navigate to="/admin" replace />,
+                    },
+                    {
+                        path: "maquinas-fiscales/:serial",
+                        element: isMaquinasFiscalesFeatureEnabled ? (
+                            <Suspense fallback={<GlobalLoader message="Cargando Detalle..." />}>
+                                <MaquinasFiscalesDetail />
+                            </Suspense>
+                        ) : <Navigate to="/admin" replace />,
                     },
                     {
                         path: "iva",
