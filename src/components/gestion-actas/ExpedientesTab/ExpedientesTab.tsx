@@ -1,4 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
+import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
+import { bannerEnter } from '@/lib/motion';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { useDebounce } from '@/hooks/use-debounce';
 import {
@@ -76,6 +79,8 @@ export function ExpedientesTab() {
     const [exporting, setExporting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const debouncedQ = useDebounce(q, 250);
+
+    const reducedMotion = usePrefersReducedMotion();
 
     // Persistir la elección de vista en localStorage.
     useEffect(() => {
@@ -215,36 +220,39 @@ export function ExpedientesTab() {
             </div>
 
             {/* Banner de error de carga */}
-            {error && (
-                <div
-                    data-testid="expedientes-error-banner"
-                    role="alert"
-                    className="border border-rose-500/60 bg-rose-500/10 rounded-md px-3 py-2 flex items-start gap-2"
-                >
-                    <AlertCircle
-                        className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
-                        aria-hidden="true"
-                    />
-                    <div className="flex-1 text-sm text-rose-700 dark:text-rose-300">
-                        <p>{error}</p>
-                    </div>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => void load()}
-                        disabled={loading}
-                        className="gap-1.5 shrink-0"
-                        data-testid="expedientes-error-retry"
+            <AnimatePresence>
+                {error && (
+                    <motion.div
+                        {...bannerEnter(reducedMotion)}
+                        data-testid="expedientes-error-banner"
+                        role="alert"
+                        className="border border-rose-500/60 bg-rose-500/10 rounded-md px-3 py-2 flex items-start gap-2"
                     >
-                        <RefreshCw
-                            className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`}
+                        <AlertCircle
+                            className="h-4 w-4 text-rose-600 dark:text-rose-400 shrink-0 mt-0.5"
                             aria-hidden="true"
                         />
-                        Reintentar
-                    </Button>
-                </div>
-            )}
+                        <div className="flex-1 text-sm text-rose-700 dark:text-rose-300">
+                            <p>{error}</p>
+                        </div>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => void load()}
+                            disabled={loading}
+                            className="gap-1.5 shrink-0"
+                            data-testid="expedientes-error-retry"
+                        >
+                            <RefreshCw
+                                className={`h-3.5 w-3.5 ${loading ? 'animate-spin' : ''}`}
+                                aria-hidden="true"
+                            />
+                            Reintentar
+                        </Button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Banner de cap de 500 filas */}
             {rows.length >= PAGE_SIZE && !error && (

@@ -46,6 +46,8 @@ export interface EntidadFilters {
     abierto_cerrado?: string;
     grupo?: string;
     ordinario_especial?: string;
+    fecha_censo_desde?: string;
+    fecha_censo_hasta?: string;
     pending_enrichment?: boolean;
     page?: number;
     limit?: number;

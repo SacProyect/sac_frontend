@@ -1,4 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { fadeInSection, staggerContainer, staggerItem, bannerEnter } from "@/lib/motion";
 import {
     Table,
     TableBody,
@@ -122,6 +125,8 @@ export function EntidadesTab() {
     const [filterTipoFacturacion, setFilterTipoFacturacion] = useState<string>("");
     const [filterAbiertoCerrado, setFilterAbiertoCerrado] = useState<string>("");
     const [filterOrdinarioEspecial, setFilterOrdinarioEspecial] = useState<string>("");
+    const [filterFechaDesde, setFilterFechaDesde] = useState<string>("");
+    const [filterFechaHasta, setFilterFechaHasta] = useState<string>("");
 
     // Parroquia list for filter dropdown
     const [parroquias, setParroquias] = useState<string[]>([]);
@@ -166,6 +171,8 @@ export function EntidadesTab() {
     // Enrichment search
     const [enrichmentSearch, setEnrichmentSearch] = useState("");
 
+    const reducedMotion = usePrefersReducedMotion();
+
     // ─── FETCH DATA ──────────────────────────────────────────
     const fetchData = useCallback(async (signal?: AbortSignal) => {
         setIsLoading(true);
@@ -183,6 +190,8 @@ export function EntidadesTab() {
             if (filterTipoFacturacion && filterTipoFacturacion !== "all") filters.tipo_facturacion = filterTipoFacturacion;
             if (filterAbiertoCerrado && filterAbiertoCerrado !== "all") filters.abierto_cerrado = filterAbiertoCerrado;
             if (filterOrdinarioEspecial && filterOrdinarioEspecial !== "all") filters.ordinario_especial = filterOrdinarioEspecial;
+            if (filterFechaDesde) filters.fecha_censo_desde = filterFechaDesde;
+            if (filterFechaHasta) filters.fecha_censo_hasta = filterFechaHasta;
 
             const result = await listEntidades(filters, signal);
             setEntidades(result.data);
@@ -194,12 +203,12 @@ export function EntidadesTab() {
         } finally {
             if (!signal?.aborted) setIsLoading(false);
         }
-    }, [page, limit, debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial]);
+    }, [page, limit, debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta]);
 
     // Reset page when filters change
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial]);
+    }, [debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta]);
 
     // Fetch data with cancellation
     useEffect(() => {
@@ -209,24 +218,30 @@ export function EntidadesTab() {
         return () => controller.abort();
     }, [fetchData, enrichmentMode]);
 
-    // Load parroquia list for filter dropdown
+    // Load parroquia list for filter dropdown — AbortController prevents stale response from overwriting state
     useEffect(() => {
+        const controller = new AbortController();
         getEntidadParroquias()
             .then((res) => {
+                if (controller.signal.aborted) return;
                 const data = Array.isArray(res) ? res : res?.data;
                 if (Array.isArray(data)) setParroquias(data);
             })
             .catch(() => {});
+        return () => controller.abort();
     }, []);
 
-    // Load ordinario/especial list for filter dropdown
+    // Load ordinario/especial list for filter dropdown — AbortController prevents stale response from overwriting state
     useEffect(() => {
+        const controller = new AbortController();
         getEntidadOrdinarioEspecialList()
             .then((res) => {
+                if (controller.signal.aborted) return;
                 const data = Array.isArray(res) ? res : res?.data;
                 if (Array.isArray(data)) setOrdinarioEspecialList(data);
             })
             .catch(() => {});
+        return () => controller.abort();
     }, []);
 
     // ─── ENRICHMENT ──────────────────────────────────────────
@@ -446,7 +461,7 @@ export function EntidadesTab() {
     return (
         <div className="space-y-4">
             {/* ─── TOOLBAR ──────────────────────────────────── */}
-            <div className="flex flex-col gap-3">
+            <motion.div {...fadeInSection(reducedMotion)} className="flex flex-col gap-3">
                 {!enrichmentMode && (
                     <div className="flex flex-wrap items-center gap-2">
                         <div className="relative">
@@ -528,6 +543,21 @@ export function EntidadesTab() {
                                 ))}
                             </SelectContent>
                         </Select>
+
+                        <input
+                            type="date"
+                            value={filterFechaDesde}
+                            onChange={(e) => setFilterFechaDesde(e.target.value)}
+                            placeholder="Desde"
+                            className="w-36 bg-slate-800 border border-slate-700 text-slate-200 rounded-md px-3 py-2 text-sm"
+                        />
+                        <input
+                            type="date"
+                            value={filterFechaHasta}
+                            onChange={(e) => setFilterFechaHasta(e.target.value)}
+                            placeholder="Hasta"
+                            className="w-36 bg-slate-800 border border-slate-700 text-slate-200 rounded-md px-3 py-2 text-sm"
+                        />
                     </div>
                 )}
 
@@ -577,11 +607,11 @@ export function EntidadesTab() {
                         </>
                     )}
                 </div>
-            </div>
+            </motion.div>
 
             {/* ─── ENRICHMENT MODE ─────────────────────────── */}
             {enrichmentMode ? (
-                <div className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
+                <motion.div {...fadeInSection(reducedMotion)} className="rounded-lg border border-slate-700 bg-slate-800/50 p-6">
                     {/* Search bar */}
                     <div className="mb-4">
                         <div className="flex gap-2 max-w-md">
@@ -617,7 +647,7 @@ export function EntidadesTab() {
                             {/* LEFT: Entity Info + Quick Controls */}
                             <div className="space-y-4">
                                 {/* Entity Card */}
-                                <div className="rounded-lg bg-slate-900/50 border border-slate-700 p-4">
+                                <motion.div {...fadeInSection(reducedMotion)} className="rounded-lg bg-slate-900/50 border border-slate-700 p-4">
                                     <div className="flex items-start justify-between">
                                         <div>
                                             <p className="text-xs text-slate-500 mb-1">RIF</p>
@@ -629,83 +659,83 @@ export function EntidadesTab() {
                                     </div>
                                     <p className="text-sm text-slate-300 mt-2">{enrichmentEntity.razon_social}</p>
                                     {enrichmentEntity.gerencia_dependencia && <p className="text-xs text-slate-500 mt-1">{enrichmentEntity.gerencia_dependencia}</p>}
-                                </div>
+                                </motion.div>
 
                                 {/* Quick Controls */}
-                                <div className="grid grid-cols-2 gap-3">
+                                <motion.div {...staggerContainer(reducedMotion)} className="grid grid-cols-2 gap-3">
                                     {/* 1. Abierto / Cerrado */}
-                                    <div className="space-y-1">
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Abierto / Cerrado</Label>
                                         <div className="flex gap-1">
                                             <Button variant={enrichAbiertoCerrado === "ABIERTO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "ABIERTO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("ABIERTO")}>Abierto</Button>
                                             <Button variant={enrichAbiertoCerrado === "CERRADO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "CERRADO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("CERRADO")}>Cerrado</Button>
                                         </div>
-                                    </div>
+                                    </motion.div>
 
                                     {/* 2. Ordinario / Especial */}
-                                    <div className="space-y-1">
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Ordinario / Especial</Label>
                                         <div className="flex gap-1">
                                             <Button variant={enrichOrdinarioEspecial === "ORDINARIO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ORDINARIO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ORDINARIO")}>Ordinario</Button>
                                             <Button variant={enrichOrdinarioEspecial === "ESPECIAL" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ESPECIAL" ? "bg-purple-600 hover:bg-purple-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ESPECIAL")}>Especial</Button>
                                         </div>
-                                    </div>
+                                    </motion.div>
 
                                     {/* 3. ¿Máquina Fiscal? → auto-setea tipo_facturacion */}
-                                    <div className="space-y-1">
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">¿Máquina Fiscal?</Label>
                                         <div className="flex gap-1">
                                             <Button variant={enrichTieneMaquina === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("Sí"); setEnrichTipoFacturacion("IMPRESORA FISCAL"); }}>Sí</Button>
                                             <Button variant={enrichTieneMaquina === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("No"); setEnrichTipoFacturacion(""); }}>No</Button>
                                         </div>
-                                    </div>
+                                    </motion.div>
 
                                     {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
                                     {enrichTieneMaquina === "No" && (
-                                        <div className="space-y-1">
+                                        <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
                                             <div className="flex flex-wrap gap-1">
-                                                <Button variant={enrichTipoFacturacion === "IMPRESORA FISCAL" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "IMPRESORA FISCAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("IMPRESORA FISCAL")}>Impresora Fiscal</Button>
+
                                                 <Button variant={enrichTipoFacturacion === "REGISTRADORA" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "REGISTRADORA" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("REGISTRADORA")}>Registradora</Button>
                                                 <Button variant={enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FACTURACIÓN DIGITAL")}>Digital</Button>
                                                 <Button variant={enrichTipoFacturacion === "FORMA LIBRE" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FORMA LIBRE" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FORMA LIBRE")}>Forma Libre</Button>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
 
                                     {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
                                     {enrichTipoFacturacion === "FORMA LIBRE" && (
-                                        <div className="space-y-1">
+                                        <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">¿Sistema Homologado?</Label>
                                             <div className="flex gap-1">
                                                 <Button variant={enrichSistemaHomologado === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichSistemaHomologado === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichSistemaHomologado("Sí")}>Sí</Button>
                                                 <Button variant={enrichSistemaHomologado === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichSistemaHomologado === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichSistemaHomologado("No")}>No</Button>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
 
                                     {/* 6. Boleta Comparecencia */}
-                                    <div className="space-y-1">
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Boleta Comparecencia</Label>
                                         <div className="flex gap-1">
                                             <Button variant={enrichBoletaComparecencia === "SÍ" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichBoletaComparecencia === "SÍ" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichBoletaComparecencia("SÍ"); if (!enrichTipoComparecencia) setEnrichTipoComparecencia("CORREO"); }}>Sí</Button>
                                             <Button variant={enrichBoletaComparecencia === "NO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichBoletaComparecencia === "NO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichBoletaComparecencia("NO"); setEnrichTipoComparecencia(""); }}>No</Button>
                                         </div>
-                                    </div>
+                                    </motion.div>
 
                                     {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
                                     {enrichBoletaComparecencia === "SÍ" && (
-                                        <div className="space-y-1">
+                                        <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">Tipo Comparecencia</Label>
                                             <div className="flex gap-1">
                                                 <Button variant={enrichTipoComparecencia === "CORREO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTipoComparecencia === "CORREO" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoComparecencia("CORREO")}>Correo</Button>
                                                 <Button variant={enrichTipoComparecencia === "PRESENCIAL" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTipoComparecencia === "PRESENCIAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoComparecencia("PRESENCIAL")}>Presencial</Button>
                                             </div>
-                                        </div>
+                                        </motion.div>
                                     )}
 
                                     {/* 8. Grupo */}
-                                    <div className="space-y-1">
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Grupo</Label>
                                         <Select value={enrichGrupo} onValueChange={setEnrichGrupo}>
                                             <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs"><SelectValue placeholder="..." /></SelectTrigger>
@@ -715,44 +745,44 @@ export function EntidadesTab() {
                                                 ))}
                                             </SelectContent>
                                         </Select>
-                                    </div>
+                                    </motion.div>
 
-                                    {/* 9. Fecha Censo */}
-                                    <div className="space-y-1">
-                                        <Label className="text-slate-400 text-xs">Fecha Censo</Label>
+                                    {/* 9. Fecha Notificado */}
+                                    <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
+                                        <Label className="text-slate-400 text-xs">Fecha Notificado</Label>
                                         <Input type="date" value={enrichFechaCenso} onChange={(e) => setEnrichFechaCenso(e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs" />
-                                    </div>
-                                </div>
+                                    </motion.div>
+                                </motion.div>
                             </div>
 
                             {/* RIGHT: Contact + Notes */}
-                            <div className="space-y-4">
-                                <div className="space-y-1.5">
+                            <motion.div {...staggerContainer(reducedMotion)} className="space-y-4">
+                                <motion.div {...staggerItem(reducedMotion)} className="space-y-1.5">
                                     <Label className="text-slate-400 text-xs">Teléfono</Label>
                                     <Input value={enrichTelefono} onChange={(e) => setEnrichTelefono(e.target.value)} placeholder="Teléfono..." className="bg-slate-900 border-slate-700 text-slate-200 text-sm" />
-                                </div>
-                                <div className="space-y-1.5">
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)} className="space-y-1.5">
                                     <Label className="text-slate-400 text-xs">Correo</Label>
                                     <Input value={enrichCorreo} onChange={(e) => setEnrichCorreo(e.target.value)} placeholder="Correo..." className="bg-slate-900 border-slate-700 text-slate-200 text-sm" />
-                                </div>
-                                <div className="space-y-1.5">
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)} className="space-y-1.5">
                                     <Label className="text-slate-400 text-xs">Observaciones</Label>
                                     <Textarea value={enrichObservaciones} onChange={(e) => setEnrichObservaciones(e.target.value)} rows={6} placeholder="Notas..." className="bg-slate-900 border-slate-700 text-slate-200 text-sm resize-none" />
-                                </div>
-                            </div>
+                                </motion.div>
+                            </motion.div>
                         </div>
                     )}
 
                     {/* Save Button */}
                     {!enrichmentLoading && enrichmentEntity && (
-                        <div className="mt-6">
+                        <motion.div {...fadeInSection(reducedMotion)} className="mt-6">
                             <Button className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-11" onClick={handleEnrichmentSave} disabled={enrichmentSaving}>
                                 {enrichmentSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ArrowRight className="mr-2 h-4 w-4" />}
                                 Guardar y Siguiente
                             </Button>
-                        </div>
+                        </motion.div>
                     )}
-                </div>
+                </motion.div>
             ) : (
                 <>
                     {/* ─── TABLE ────────────────────────────────── */}
@@ -1047,7 +1077,7 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                 </Select>
             </div>
             <div className="space-y-1.5">
-                <Label className="text-slate-400">Fecha Censo</Label>
+                <Label className="text-slate-400">Fecha Notificado</Label>
                 <Input type="date" value={data.fecha_censo || ""} onChange={(e) => update("fecha_censo", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
             </div>
 

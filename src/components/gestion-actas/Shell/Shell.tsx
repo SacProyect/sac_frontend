@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ScrollText, Table2 } from 'lucide-react';
 import {
     Tabs,
@@ -9,6 +9,7 @@ import {
     TabsTrigger,
 } from '@/components/UI/tabs';
 import { BackButton } from '@/components/UI/v2';
+import { fadeInSection, crossFade } from '@/lib/motion';
 import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
 import { CommandCenterMetrics } from '../CommandCenterMetrics/CommandCenterMetrics';
 import { ActasTab } from '../ActasTab/ActasTab';
@@ -79,7 +80,10 @@ export function Shell() {
                 <BackButton to="/admin" hideLabelOnMobile className="mb-2" />
             </div>
 
-            <header className="space-y-2 min-w-0 pt-2">
+            <motion.header
+                {...fadeInSection(reducedMotion)}
+                className="space-y-2 min-w-0 pt-2"
+            >
                 <h1
                     data-testid="gestion-actas-title"
                     className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground border-b-2 border-indigo-500/30 pb-3"
@@ -91,7 +95,7 @@ export function Shell() {
                     fiscales. Las métricas principales se mantienen visibles
                     mientras exploras el detalle.
                 </p>
-            </header>
+            </motion.header>
 
             <motion.section
                 initial={reducedMotion ? false : { opacity: 0, y: 8 }}
@@ -128,18 +132,30 @@ export function Shell() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent
-                        value="actas"
-                        className="mt-6 focus-visible:outline-none"
-                    >
-                        <ActasTab />
-                    </TabsContent>
-                    <TabsContent
-                        value="expedientes"
-                        className="mt-6 focus-visible:outline-none"
-                    >
-                        <ExpedientesTab />
-                    </TabsContent>
+                    <AnimatePresence mode="wait">
+                        {activeTab === 'actas' && (
+                            <TabsContent
+                                value="actas"
+                                className="mt-6 focus-visible:outline-none"
+                                forceMount
+                            >
+                                <motion.div key="actas" {...crossFade(reducedMotion)}>
+                                    <ActasTab />
+                                </motion.div>
+                            </TabsContent>
+                        )}
+                        {activeTab === 'expedientes' && (
+                            <TabsContent
+                                value="expedientes"
+                                className="mt-6 focus-visible:outline-none"
+                                forceMount
+                            >
+                                <motion.div key="expedientes" {...crossFade(reducedMotion)}>
+                                    <ExpedientesTab />
+                                </motion.div>
+                            </TabsContent>
+                        )}
+                    </AnimatePresence>
                 </Tabs>
             </section>
         </div>

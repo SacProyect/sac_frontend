@@ -3,6 +3,9 @@ import { isActasExpedientesEnabled } from "@/config/feature-flags";
 import { PersonalFiscalPanel } from "@/components/gestion-personal/personal-fiscal-panel";
 import { DeprecationBanner } from "@/components/gestion-actas/shared/DeprecationBanner";
 import { BackButton } from "@/components/UI/v2";
+import { motion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { fadeInSection } from "@/lib/motion";
 
 /**
  * Módulo «Gestión de personal»: solo muestra el panel de personal fiscal.
@@ -13,6 +16,7 @@ export default function GestionPersonalPageV2() {
     const { user } = useAuth();
     const isAdmin = user?.role === "ADMIN";
     const showDeprecationBanner = isAdmin && isActasExpedientesEnabled;
+    const reducedMotion = usePrefersReducedMotion();
 
     return (
         <div className="space-y-5 max-w-[1680px] mx-auto pb-8">
@@ -26,7 +30,7 @@ export default function GestionPersonalPageV2() {
                     dismissableSession
                 />
             )}
-            <header className="space-y-1 min-w-0">
+            <motion.header {...fadeInSection(reducedMotion)} className="space-y-1 min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-indigo-600 dark:text-indigo-400">
                     SAC Fiscal · Operaciones de Campo
                 </p>
@@ -34,11 +38,11 @@ export default function GestionPersonalPageV2() {
                 <p className="text-muted-foreground max-w-2xl text-sm leading-relaxed">
                     Panel de personal fiscal con métricas y estado del equipo.
                 </p>
-            </header>
+            </motion.header>
 
-            <section>
+            <motion.section {...fadeInSection(reducedMotion)} transition={reducedMotion ? { duration: 0 } : { duration: 0.25, delay: 0.1 }}>
                 <PersonalFiscalPanel />
-            </section>
+            </motion.section>
         </div>
     );
 }

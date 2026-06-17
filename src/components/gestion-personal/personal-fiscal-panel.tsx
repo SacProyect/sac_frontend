@@ -52,6 +52,9 @@ import {
     Info,
 } from "lucide-react";
 import toast from "react-hot-toast";
+import { motion } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/use-prefers-reduced-motion";
+import { staggerContainer, staggerItem } from "@/lib/motion";
 
 type OfficerRow = { id: string; name: string; role: string; personId?: number };
 
@@ -96,6 +99,7 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
     const [reportYear, setReportYear] = useState(() => new Date().getFullYear());
     const [excelExporting, setExcelExporting] = useState(false);
     const [fiscalSearch, setFiscalSearch] = useState("");
+    const reducedMotion = usePrefersReducedMotion();
 
     useEffect(() => {
         if (user?.role === "ADMIN") setAlcance("global");
@@ -455,7 +459,7 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                         </p>
                     )}
 
-                    <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
+                    <motion.div {...staggerContainer(reducedMotion)} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
                         {loading ? (
                             <>
                                 {[1, 2, 3, 4, 5].map((i) => (
@@ -469,6 +473,7 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                             </>
                         ) : (
                             <>
+                                <motion.div {...staggerItem(reducedMotion)}>
                                 <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
                                     <CardHeader className="p-4 pb-3">
                                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
@@ -479,6 +484,8 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)}>
                                 <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
                                     <CardHeader className="p-4 pb-3">
                                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
@@ -489,6 +496,8 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)}>
                                 <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
                                     <CardHeader className="p-4 pb-3">
                                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
@@ -499,6 +508,8 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)}>
                                 <Card className="border-border/60 bg-muted/10 dark:bg-slate-900/30 shadow-none rounded-sm">
                                     <CardHeader className="p-4 pb-3">
                                         <CardDescription className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-1.5">
@@ -509,6 +520,8 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                                         </CardTitle>
                                     </CardHeader>
                                 </Card>
+                                </motion.div>
+                                <motion.div {...staggerItem(reducedMotion)}>
                                 <button
                                     type="button"
                                     className="text-left focus:outline-none focus:ring-2 focus:ring-indigo-500/50 disabled:opacity-50 disabled:pointer-events-none"
@@ -537,9 +550,10 @@ export function PersonalFiscalPanel({ hideCasosReportCard = false }: PersonalFis
                                         </CardHeader>
                                     </Card>
                                 </button>
+                                </motion.div>
                             </>
                         )}
-                    </div>
+                    </motion.div>
 
                     {stats && stats.contribuyentesAtendidos.sinClasificar > 0 && (
                         <p className="text-xs text-muted-foreground">
