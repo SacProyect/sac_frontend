@@ -633,34 +633,47 @@ export function EntidadesTab() {
 
                                 {/* Quick Controls */}
                                 <div className="grid grid-cols-2 gap-3">
+                                    {/* 1. Abierto / Cerrado */}
+                                    <div className="space-y-1">
+                                        <Label className="text-slate-400 text-xs">Abierto / Cerrado</Label>
+                                        <div className="flex gap-1">
+                                            <Button variant={enrichAbiertoCerrado === "ABIERTO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "ABIERTO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("ABIERTO")}>Abierto</Button>
+                                            <Button variant={enrichAbiertoCerrado === "CERRADO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "CERRADO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("CERRADO")}>Cerrado</Button>
+                                        </div>
+                                    </div>
+
+                                    {/* 2. Ordinario / Especial */}
+                                    <div className="space-y-1">
+                                        <Label className="text-slate-400 text-xs">Ordinario / Especial</Label>
+                                        <div className="flex gap-1">
+                                            <Button variant={enrichOrdinarioEspecial === "ORDINARIO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ORDINARIO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ORDINARIO")}>Ordinario</Button>
+                                            <Button variant={enrichOrdinarioEspecial === "ESPECIAL" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ESPECIAL" ? "bg-purple-600 hover:bg-purple-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ESPECIAL")}>Especial</Button>
+                                        </div>
+                                    </div>
+
+                                    {/* 3. ¿Máquina Fiscal? → auto-setea tipo_facturacion */}
                                     <div className="space-y-1">
                                         <Label className="text-slate-400 text-xs">¿Máquina Fiscal?</Label>
                                         <div className="flex gap-1">
-                                            <Button variant={enrichTieneMaquina === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTieneMaquina("Sí")}>Sí</Button>
-                                            <Button variant={enrichTieneMaquina === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTieneMaquina("No")}>No</Button>
+                                            <Button variant={enrichTieneMaquina === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("Sí"); setEnrichTipoFacturacion("IMPRESORA FISCAL"); }}>Sí</Button>
+                                            <Button variant={enrichTieneMaquina === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("No"); setEnrichTipoFacturacion(""); }}>No</Button>
                                         </div>
                                     </div>
-                                    <div className="space-y-1">
-                                        <Label className="text-slate-400 text-xs">Ordinario / Especial</Label>
-                                        <Select value={enrichOrdinarioEspecial} onValueChange={setEnrichOrdinarioEspecial}>
-                                            <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs"><SelectValue placeholder="..." /></SelectTrigger>
-                                            <SelectContent className="bg-slate-800 border-slate-700">
-                                                <SelectItem value="ORDINARIO">Ordinario</SelectItem>
-                                                <SelectItem value="ESPECIAL">Especial</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
-                                    <div className="space-y-1">
-                                        <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
-                                        <Select value={enrichTipoFacturacion} onValueChange={setEnrichTipoFacturacion}>
-                                            <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs"><SelectValue placeholder="..." /></SelectTrigger>
-                                            <SelectContent className="bg-slate-800 border-slate-700">
-                                                <SelectItem value="IMPRESORA FISCAL">Impresora Fiscal</SelectItem>
-                                                <SelectItem value="REGISTRADORA">Registradora</SelectItem>
-                                                <SelectItem value="FORMA LIBRE">Forma Libre</SelectItem>
-                                            </SelectContent>
-                                        </Select>
-                                    </div>
+
+                                    {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
+                                    {enrichTieneMaquina === "No" && (
+                                        <div className="space-y-1">
+                                            <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
+                                            <div className="flex flex-wrap gap-1">
+                                                <Button variant={enrichTipoFacturacion === "IMPRESORA FISCAL" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "IMPRESORA FISCAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("IMPRESORA FISCAL")}>Impresora Fiscal</Button>
+                                                <Button variant={enrichTipoFacturacion === "REGISTRADORA" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "REGISTRADORA" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("REGISTRADORA")}>Registradora</Button>
+                                                <Button variant={enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FACTURACIÓN DIGITAL")}>Digital</Button>
+                                                <Button variant={enrichTipoFacturacion === "FORMA LIBRE" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FORMA LIBRE" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FORMA LIBRE")}>Forma Libre</Button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
                                     {enrichTipoFacturacion === "FORMA LIBRE" && (
                                         <div className="space-y-1">
                                             <Label className="text-slate-400 text-xs">¿Sistema Homologado?</Label>
@@ -670,6 +683,8 @@ export function EntidadesTab() {
                                             </div>
                                         </div>
                                     )}
+
+                                    {/* 6. Boleta Comparecencia */}
                                     <div className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Boleta Comparecencia</Label>
                                         <div className="flex gap-1">
@@ -677,6 +692,8 @@ export function EntidadesTab() {
                                             <Button variant={enrichBoletaComparecencia === "NO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichBoletaComparecencia === "NO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichBoletaComparecencia("NO"); setEnrichTipoComparecencia(""); }}>No</Button>
                                         </div>
                                     </div>
+
+                                    {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
                                     {enrichBoletaComparecencia === "SÍ" && (
                                         <div className="space-y-1">
                                             <Label className="text-slate-400 text-xs">Tipo Comparecencia</Label>
@@ -686,13 +703,8 @@ export function EntidadesTab() {
                                             </div>
                                         </div>
                                     )}
-                                    <div className="space-y-1">
-                                        <Label className="text-slate-400 text-xs">Abierto / Cerrado</Label>
-                                        <div className="flex gap-1">
-                                            <Button variant={enrichAbiertoCerrado === "ABIERTO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "ABIERTO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("ABIERTO")}>Abierto</Button>
-                                            <Button variant={enrichAbiertoCerrado === "CERRADO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "CERRADO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("CERRADO")}>Cerrado</Button>
-                                        </div>
-                                    </div>
+
+                                    {/* 8. Grupo */}
                                     <div className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Grupo</Label>
                                         <Select value={enrichGrupo} onValueChange={setEnrichGrupo}>
@@ -704,6 +716,8 @@ export function EntidadesTab() {
                                             </SelectContent>
                                         </Select>
                                     </div>
+
+                                    {/* 9. Fecha Censo */}
                                     <div className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Fecha Censo</Label>
                                         <Input type="date" value={enrichFechaCenso} onChange={(e) => setEnrichFechaCenso(e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-8 text-xs" />
