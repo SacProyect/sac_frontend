@@ -990,81 +990,97 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="sm:col-span-2 border-t border-slate-700 pt-4 mt-2">
                 <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Campos de Enriquecimiento</p>
             </div>
+
+            {/* 1. Abierto / Cerrado */}
+            <div className="space-y-1.5">
+                <Label className="text-slate-400">Abierto / Cerrado</Label>
+                <div className="flex gap-2">
+                    {["ABIERTO","CERRADO"].map(v => (
+                        <Button key={v} size="sm" variant={data.abierto_cerrado === v ? "default" : "outline"}
+                            className={data.abierto_cerrado === v ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
+                            onClick={() => update("abierto_cerrado", v)}>{v}</Button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 2. Ordinario / Especial */}
+            <div className="space-y-1.5">
+                <Label className="text-slate-400">Ordinario / Especial</Label>
+                <div className="flex gap-2">
+                    {["ORDINARIO","ESPECIAL"].map(v => (
+                        <Button key={v} size="sm" variant={data.ordinario_especial === v ? "default" : "outline"}
+                            className={data.ordinario_especial === v ? "bg-blue-600 hover:bg-blue-700" : "border-slate-600 text-slate-300"}
+                            onClick={() => update("ordinario_especial", v)}>{v}</Button>
+                    ))}
+                </div>
+            </div>
+
+            {/* 3. ¿Máquina Fiscal? */}
             <div className="space-y-1.5">
                 <Label className="text-slate-400">¿Máquina Fiscal?</Label>
-                <Select value={data.tiene_maquina_fiscal || ""} onValueChange={(v) => update("tiene_maquina_fiscal", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="Sí">Sí</SelectItem>
-                        <SelectItem value="No">No</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                    <Button size="sm" variant={data.tiene_maquina_fiscal === "Sí" ? "default" : "outline"}
+                        className={data.tiene_maquina_fiscal === "Sí" ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
+                        onClick={() => { update("tiene_maquina_fiscal", "Sí"); update("tipo_facturacion", "IMPRESORA FISCAL"); }}>Sí</Button>
+                    <Button size="sm" variant={data.tiene_maquina_fiscal === "No" ? "default" : "outline"}
+                        className={data.tiene_maquina_fiscal === "No" ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
+                        onClick={() => { update("tiene_maquina_fiscal", "No"); if (data.tipo_facturacion === "IMPRESORA FISCAL") update("tipo_facturacion", ""); }}>No</Button>
+                </div>
             </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Tipo Facturación</Label>
-                <Select value={data.tipo_facturacion || ""} onValueChange={(v) => update("tipo_facturacion", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="IMPRESORA FISCAL">Impresora Fiscal</SelectItem>
-                        <SelectItem value="REGISTRADORA">Registradora</SelectItem>
-                        <SelectItem value="FORMA LIBRE">Forma Libre</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+
+            {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
+            {data.tiene_maquina_fiscal !== "Sí" && (
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400">Tipo Facturación</Label>
+                    <div className="flex flex-wrap gap-2">
+                        {["IMPRESORA FISCAL","REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
+                            <Button key={v} size="sm" variant={data.tipo_facturacion === v ? "default" : "outline"}
+                                className={data.tipo_facturacion === v ? "bg-violet-600 hover:bg-violet-700" : "border-slate-600 text-slate-300"}
+                                onClick={() => update("tipo_facturacion", v)}>{v.replace("IMPRESORA FISCAL","Impresora Fiscal").replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
+                        ))}
+                    </div>
+                </div>
+            )}
+
+            {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
             {data.tipo_facturacion === "FORMA LIBRE" && (
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">¿Sistema Homologado?</Label>
-                    <Select value={data.sistema_homologado || ""} onValueChange={(v) => update("sistema_homologado", v)}>
-                        <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-slate-700">
-                            <SelectItem value="Sí">Sí</SelectItem>
-                            <SelectItem value="No">No</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        {[["Sí","bg-emerald-600 hover:bg-emerald-700"],["No","bg-slate-600 hover:bg-slate-500"]].map(([v,c]) => (
+                            <Button key={v} size="sm" variant={data.sistema_homologado === v ? "default" : "outline"}
+                                className={data.sistema_homologado === v ? c : "border-slate-600 text-slate-300"}
+                                onClick={() => update("sistema_homologado", v)}>{v}</Button>
+                        ))}
+                    </div>
                 </div>
             )}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Ordinario / Especial</Label>
-                <Select value={data.ordinario_especial || ""} onValueChange={(v) => update("ordinario_especial", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="ORDINARIO">Ordinario</SelectItem>
-                        <SelectItem value="ESPECIAL">Especial</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+
+            {/* 6. Boleta Comparecencia */}
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Boleta Comparecencia</Label>
-                <Select value={data.boleta_comparecencia || ""} onValueChange={(v) => update("boleta_comparecencia", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="SÍ">Sí</SelectItem>
-                        <SelectItem value="NO">No</SelectItem>
-                    </SelectContent>
-                </Select>
+                <div className="flex gap-2">
+                    {[["SÍ","bg-amber-600 hover:bg-amber-700"],["NO","bg-slate-600 hover:bg-slate-500"]].map(([v,c]) => (
+                        <Button key={v} size="sm" variant={data.boleta_comparecencia === v ? "default" : "outline"}
+                            className={data.boleta_comparecencia === v ? c : "border-slate-600 text-slate-300"}
+                            onClick={() => { update("boleta_comparecencia", v); if (v !== "SÍ") update("tipo_comparecencia", ""); }}>{v}</Button>
+                    ))}
+                </div>
             </div>
+
+            {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
             {data.boleta_comparecencia === "SÍ" && (
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">Tipo Comparecencia</Label>
-                    <Select value={data.tipo_comparecencia || ""} onValueChange={(v) => update("tipo_comparecencia", v)}>
-                        <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                        <SelectContent className="bg-slate-800 border-slate-700">
-                            <SelectItem value="CORREO">Correo</SelectItem>
-                            <SelectItem value="PRESENCIAL">Presencial</SelectItem>
-                        </SelectContent>
-                    </Select>
+                    <div className="flex gap-2">
+                        {[["CORREO","bg-cyan-600 hover:bg-cyan-700"],["PRESENCIAL","bg-purple-600 hover:bg-purple-700"]].map(([v,c]) => (
+                            <Button key={v} size="sm" variant={data.tipo_comparecencia === v ? "default" : "outline"}
+                                className={data.tipo_comparecencia === v ? c : "border-slate-600 text-slate-300"}
+                                onClick={() => update("tipo_comparecencia", v)}>{v}</Button>
+                        ))}
+                    </div>
                 </div>
             )}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Abierto / Cerrado</Label>
-                <Select value={data.abierto_cerrado || ""} onValueChange={(v) => update("abierto_cerrado", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="ABIERTO">Abierto</SelectItem>
-                        <SelectItem value="CERRADO">Cerrado</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Grupo</Label>
                 <Select value={data.grupo || ""} onValueChange={(v) => update("grupo", v)}>
