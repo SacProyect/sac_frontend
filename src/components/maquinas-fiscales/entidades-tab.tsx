@@ -950,6 +950,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
         onChange({ ...data, [field]: value });
     };
 
+    const updateMany = (patch: Partial<CreateEntidadPayload>) => {
+        onChange({ ...data, ...patch });
+    };
+
     return (
         <div className="space-y-5">
             {/* ─── Identity ─── */}
@@ -1016,9 +1020,9 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                         <Label className="text-slate-400 text-xs">¿Máquina Fiscal?</Label>
                         <div className="flex gap-2">
                             <Button variant={data.tiene_maquina_fiscal === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
-                                onClick={() => { update("tiene_maquina_fiscal", "Sí"); update("tipo_facturacion", "IMPRESORA FISCAL"); }}>Sí</Button>
+                                onClick={() => updateMany({ tiene_maquina_fiscal: "Sí", tipo_facturacion: "IMPRESORA FISCAL" })}>Sí</Button>
                             <Button variant={data.tiene_maquina_fiscal === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
-                                onClick={() => { update("tiene_maquina_fiscal", "No"); if (data.tipo_facturacion === "IMPRESORA FISCAL") update("tipo_facturacion", ""); }}>No</Button>
+                                onClick={() => updateMany({ tiene_maquina_fiscal: "No", tipo_facturacion: data.tipo_facturacion === "IMPRESORA FISCAL" ? "" : data.tipo_facturacion })}>No</Button>
                         </div>
                     </div>
 
@@ -1053,9 +1057,9 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                         <Label className="text-slate-400 text-xs">Boleta Comparecencia</Label>
                         <div className="flex gap-2">
                             <Button variant={data.boleta_comparecencia === "SÍ" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
-                                onClick={() => { update("boleta_comparecencia", "SÍ"); if (!data.tipo_comparecencia) update("tipo_comparecencia", "CORREO"); }}>Sí</Button>
+                                onClick={() => updateMany({ boleta_comparecencia: "SÍ", tipo_comparecencia: data.tipo_comparecencia || "CORREO" })}>Sí</Button>
                             <Button variant={data.boleta_comparecencia === "NO" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
-                                onClick={() => { update("boleta_comparecencia", "NO"); update("tipo_comparecencia", ""); }}>No</Button>
+                                onClick={() => updateMany({ boleta_comparecencia: "NO", tipo_comparecencia: "" })}>No</Button>
                         </div>
                     </div>
 
