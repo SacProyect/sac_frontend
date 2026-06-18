@@ -990,9 +990,35 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="sm:col-span-2 border-t border-slate-700 pt-4 mt-2">
                 <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Campos de Enriquecimiento</p>
             </div>
+
+            {/* 1. Abierto / Cerrado */}
+            <div className="space-y-1.5">
+                <Label className="text-slate-400">Abierto / Cerrado</Label>
+                <Select value={data.abierto_cerrado || ""} onValueChange={(v) => update("abierto_cerrado", v)}>
+                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="ABIERTO">Abierto</SelectItem>
+                        <SelectItem value="CERRADO">Cerrado</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* 2. Ordinario / Especial */}
+            <div className="space-y-1.5">
+                <Label className="text-slate-400">Ordinario / Especial</Label>
+                <Select value={data.ordinario_especial || ""} onValueChange={(v) => update("ordinario_especial", v)}>
+                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
+                    <SelectContent className="bg-slate-800 border-slate-700">
+                        <SelectItem value="ORDINARIO">Ordinario</SelectItem>
+                        <SelectItem value="ESPECIAL">Especial</SelectItem>
+                    </SelectContent>
+                </Select>
+            </div>
+
+            {/* 3. ¿Máquina Fiscal? → auto-set tipo_facturacion */}
             <div className="space-y-1.5">
                 <Label className="text-slate-400">¿Máquina Fiscal?</Label>
-                <Select value={data.tiene_maquina_fiscal || ""} onValueChange={(v) => update("tiene_maquina_fiscal", v)}>
+                <Select value={data.tiene_maquina_fiscal || ""} onValueChange={(v) => { update("tiene_maquina_fiscal", v); if (v === "Sí") update("tipo_facturacion", "IMPRESORA FISCAL"); else update("tipo_facturacion", ""); }}>
                     <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
                         <SelectItem value="Sí">Sí</SelectItem>
@@ -1000,17 +1026,24 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                     </SelectContent>
                 </Select>
             </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Tipo Facturación</Label>
-                <Select value={data.tipo_facturacion || ""} onValueChange={(v) => update("tipo_facturacion", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="IMPRESORA FISCAL">Impresora Fiscal</SelectItem>
-                        <SelectItem value="REGISTRADORA">Registradora</SelectItem>
-                        <SelectItem value="FORMA LIBRE">Forma Libre</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+
+            {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
+            {data.tiene_maquina_fiscal !== "Sí" && (
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400">Tipo Facturación</Label>
+                    <Select value={data.tipo_facturacion || ""} onValueChange={(v) => update("tipo_facturacion", v)}>
+                        <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                            <SelectItem value="IMPRESORA FISCAL">Impresora Fiscal</SelectItem>
+                            <SelectItem value="REGISTRADORA">Registradora</SelectItem>
+                            <SelectItem value="FACTURACIÓN DIGITAL">Facturación Digital</SelectItem>
+                            <SelectItem value="FORMA LIBRE">Forma Libre</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            )}
+
+            {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
             {data.tipo_facturacion === "FORMA LIBRE" && (
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">¿Sistema Homologado?</Label>
@@ -1023,19 +1056,11 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                     </Select>
                 </div>
             )}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Ordinario / Especial</Label>
-                <Select value={data.ordinario_especial || ""} onValueChange={(v) => update("ordinario_especial", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="ORDINARIO">Ordinario</SelectItem>
-                        <SelectItem value="ESPECIAL">Especial</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
+
+            {/* 6. Boleta Comparecencia */}
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Boleta Comparecencia</Label>
-                <Select value={data.boleta_comparecencia || ""} onValueChange={(v) => update("boleta_comparecencia", v)}>
+                <Select value={data.boleta_comparecencia || ""} onValueChange={(v) => { update("boleta_comparecencia", v); if (v !== "SÍ") update("tipo_comparecencia", ""); }}>
                     <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
                     <SelectContent className="bg-slate-800 border-slate-700">
                         <SelectItem value="SÍ">Sí</SelectItem>
@@ -1043,6 +1068,8 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                     </SelectContent>
                 </Select>
             </div>
+
+            {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
             {data.boleta_comparecencia === "SÍ" && (
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">Tipo Comparecencia</Label>
@@ -1055,16 +1082,6 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                     </Select>
                 </div>
             )}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Abierto / Cerrado</Label>
-                <Select value={data.abierto_cerrado || ""} onValueChange={(v) => update("abierto_cerrado", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="ABIERTO">Abierto</SelectItem>
-                        <SelectItem value="CERRADO">Cerrado</SelectItem>
-                    </SelectContent>
-                </Select>
-            </div>
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Grupo</Label>
                 <Select value={data.grupo || ""} onValueChange={(v) => update("grupo", v)}>
