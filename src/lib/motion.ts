@@ -39,11 +39,11 @@ export function fadeInSection(reducedMotion: boolean): MotionPreset {
     };
   }
 
-  return {
-    initial: { opacity: 0, y: 8 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.25, ease: "easeOut" },
-  };
+    return {
+      initial: { opacity: 0, y: 8 },
+      animate: { opacity: 1, y: 0 },
+      transition: { duration: 0.18, ease: "easeOut" },
+    };
 }
 
 /**
@@ -103,7 +103,7 @@ export function staggerItem(reducedMotion: boolean): MotionPreset {
   return {
     initial: { opacity: 0, y: 6 },
     animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.2, ease: "easeOut" },
+    transition: { duration: 0.16, ease: "easeOut" },
   };
 }
 

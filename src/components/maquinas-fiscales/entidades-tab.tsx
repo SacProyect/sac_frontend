@@ -667,8 +667,8 @@ export function EntidadesTab() {
                                     <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Abierto / Cerrado</Label>
                                         <div className="flex gap-1">
-                                            <Button variant={enrichAbiertoCerrado === "ABIERTO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "ABIERTO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("ABIERTO")}>Abierto</Button>
-                                            <Button variant={enrichAbiertoCerrado === "CERRADO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichAbiertoCerrado === "CERRADO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichAbiertoCerrado("CERRADO")}>Cerrado</Button>
+                                            <Button variant={enrichAbiertoCerrado === "ABIERTO" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichAbiertoCerrado("ABIERTO")}>Abierto</Button>
+                                            <Button variant={enrichAbiertoCerrado === "CERRADO" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichAbiertoCerrado("CERRADO")}>Cerrado</Button>
                                         </div>
                                     </motion.div>
 
@@ -676,8 +676,8 @@ export function EntidadesTab() {
                                     <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Ordinario / Especial</Label>
                                         <div className="flex gap-1">
-                                            <Button variant={enrichOrdinarioEspecial === "ORDINARIO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ORDINARIO" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ORDINARIO")}>Ordinario</Button>
-                                            <Button variant={enrichOrdinarioEspecial === "ESPECIAL" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichOrdinarioEspecial === "ESPECIAL" ? "bg-purple-600 hover:bg-purple-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichOrdinarioEspecial("ESPECIAL")}>Especial</Button>
+                                            <Button variant={enrichOrdinarioEspecial === "ORDINARIO" ? "enrich-active-blue" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichOrdinarioEspecial("ORDINARIO")}>Ordinario</Button>
+                                            <Button variant={enrichOrdinarioEspecial === "ESPECIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichOrdinarioEspecial("ESPECIAL")}>Especial</Button>
                                         </div>
                                     </motion.div>
 
@@ -685,8 +685,8 @@ export function EntidadesTab() {
                                     <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">¿Máquina Fiscal?</Label>
                                         <div className="flex gap-1">
-                                            <Button variant={enrichTieneMaquina === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("Sí"); setEnrichTipoFacturacion("IMPRESORA FISCAL"); }}>Sí</Button>
-                                            <Button variant={enrichTieneMaquina === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTieneMaquina === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichTieneMaquina("No"); setEnrichTipoFacturacion(""); }}>No</Button>
+                                            <Button variant={enrichTieneMaquina === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setEnrichTieneMaquina("Sí"); setEnrichTipoFacturacion("IMPRESORA FISCAL"); }}>Sí</Button>
+                                            <Button variant={enrichTieneMaquina === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setEnrichTieneMaquina("No"); setEnrichTipoFacturacion(""); }}>No</Button>
                                         </div>
                                     </motion.div>
 
@@ -695,10 +695,9 @@ export function EntidadesTab() {
                                         <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
                                             <div className="flex flex-wrap gap-1">
-
-                                                <Button variant={enrichTipoFacturacion === "REGISTRADORA" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "REGISTRADORA" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("REGISTRADORA")}>Registradora</Button>
-                                                <Button variant={enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FACTURACIÓN DIGITAL")}>Digital</Button>
-                                                <Button variant={enrichTipoFacturacion === "FORMA LIBRE" ? "default" : "outline"} size="sm" className={`text-xs h-8 ${enrichTipoFacturacion === "FORMA LIBRE" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoFacturacion("FORMA LIBRE")}>Forma Libre</Button>
+                                                <Button variant={enrichTipoFacturacion === "REGISTRADORA" ? "enrich-active-blue" : "enrich-inactive"} size="sm" className="text-xs h-8" onClick={() => setEnrichTipoFacturacion("REGISTRADORA")}>Registradora</Button>
+                                                <Button variant={enrichTipoFacturacion === "FACTURACIÓN DIGITAL" ? "enrich-active-blue" : "enrich-inactive"} size="sm" className="text-xs h-8" onClick={() => setEnrichTipoFacturacion("FACTURACIÓN DIGITAL")}>Digital</Button>
+                                                <Button variant={enrichTipoFacturacion === "FORMA LIBRE" ? "enrich-active-blue" : "enrich-inactive"} size="sm" className="text-xs h-8" onClick={() => setEnrichTipoFacturacion("FORMA LIBRE")}>Forma Libre</Button>
                                             </div>
                                         </motion.div>
                                     )}
@@ -708,8 +707,8 @@ export function EntidadesTab() {
                                         <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">¿Sistema Homologado?</Label>
                                             <div className="flex gap-1">
-                                                <Button variant={enrichSistemaHomologado === "Sí" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichSistemaHomologado === "Sí" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichSistemaHomologado("Sí")}>Sí</Button>
-                                                <Button variant={enrichSistemaHomologado === "No" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichSistemaHomologado === "No" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichSistemaHomologado("No")}>No</Button>
+                                                <Button variant={enrichSistemaHomologado === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichSistemaHomologado("Sí")}>Sí</Button>
+                                                <Button variant={enrichSistemaHomologado === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichSistemaHomologado("No")}>No</Button>
                                             </div>
                                         </motion.div>
                                     )}
@@ -718,8 +717,8 @@ export function EntidadesTab() {
                                     <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                         <Label className="text-slate-400 text-xs">Boleta Comparecencia</Label>
                                         <div className="flex gap-1">
-                                            <Button variant={enrichBoletaComparecencia === "SÍ" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichBoletaComparecencia === "SÍ" ? "bg-green-600 hover:bg-green-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichBoletaComparecencia("SÍ"); if (!enrichTipoComparecencia) setEnrichTipoComparecencia("CORREO"); }}>Sí</Button>
-                                            <Button variant={enrichBoletaComparecencia === "NO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichBoletaComparecencia === "NO" ? "bg-red-600 hover:bg-red-700" : "border-slate-700 text-slate-300"}`} onClick={() => { setEnrichBoletaComparecencia("NO"); setEnrichTipoComparecencia(""); }}>No</Button>
+                                            <Button variant={enrichBoletaComparecencia === "SÍ" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setEnrichBoletaComparecencia("SÍ"); if (!enrichTipoComparecencia) setEnrichTipoComparecencia("CORREO"); }}>Sí</Button>
+                                            <Button variant={enrichBoletaComparecencia === "NO" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => { setEnrichBoletaComparecencia("NO"); setEnrichTipoComparecencia(""); }}>No</Button>
                                         </div>
                                     </motion.div>
 
@@ -728,8 +727,8 @@ export function EntidadesTab() {
                                         <motion.div {...staggerItem(reducedMotion)} className="space-y-1">
                                             <Label className="text-slate-400 text-xs">Tipo Comparecencia</Label>
                                             <div className="flex gap-1">
-                                                <Button variant={enrichTipoComparecencia === "CORREO" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTipoComparecencia === "CORREO" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoComparecencia("CORREO")}>Correo</Button>
-                                                <Button variant={enrichTipoComparecencia === "PRESENCIAL" ? "default" : "outline"} size="sm" className={`flex-1 text-xs h-8 ${enrichTipoComparecencia === "PRESENCIAL" ? "bg-blue-600 hover:bg-blue-700" : "border-slate-700 text-slate-300"}`} onClick={() => setEnrichTipoComparecencia("PRESENCIAL")}>Presencial</Button>
+                                                <Button variant={enrichTipoComparecencia === "CORREO" ? "enrich-active-cyan" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichTipoComparecencia("CORREO")}>Correo</Button>
+                                                <Button variant={enrichTipoComparecencia === "PRESENCIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm" className="flex-1 text-xs h-8" onClick={() => setEnrichTipoComparecencia("PRESENCIAL")}>Presencial</Button>
                                             </div>
                                         </motion.div>
                                     )}
@@ -995,11 +994,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Abierto / Cerrado</Label>
                 <div className="flex gap-2">
-                    {["ABIERTO","CERRADO"].map(v => (
-                        <Button key={v} size="sm" variant={data.abierto_cerrado === v ? "default" : "outline"}
-                            className={data.abierto_cerrado === v ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
-                            onClick={() => update("abierto_cerrado", v)}>{v}</Button>
-                    ))}
+                    <Button variant={data.abierto_cerrado === "ABIERTO" ? "enrich-active-green" : "enrich-inactive"} size="sm"
+                        onClick={() => update("abierto_cerrado", "ABIERTO")}>ABIERTO</Button>
+                    <Button variant={data.abierto_cerrado === "CERRADO" ? "enrich-active-green" : "enrich-inactive"} size="sm"
+                        onClick={() => update("abierto_cerrado", "CERRADO")}>CERRADO</Button>
                 </div>
             </div>
 
@@ -1007,11 +1005,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Ordinario / Especial</Label>
                 <div className="flex gap-2">
-                    {["ORDINARIO","ESPECIAL"].map(v => (
-                        <Button key={v} size="sm" variant={data.ordinario_especial === v ? "default" : "outline"}
-                            className={data.ordinario_especial === v ? "bg-blue-600 hover:bg-blue-700" : "border-slate-600 text-slate-300"}
-                            onClick={() => update("ordinario_especial", v)}>{v}</Button>
-                    ))}
+                    <Button variant={data.ordinario_especial === "ORDINARIO" ? "enrich-active-blue" : "enrich-inactive"} size="sm"
+                        onClick={() => update("ordinario_especial", "ORDINARIO")}>ORDINARIO</Button>
+                    <Button variant={data.ordinario_especial === "ESPECIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm"
+                        onClick={() => update("ordinario_especial", "ESPECIAL")}>ESPECIAL</Button>
                 </div>
             </div>
 
@@ -1019,11 +1016,9 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="space-y-1.5">
                 <Label className="text-slate-400">¿Máquina Fiscal?</Label>
                 <div className="flex gap-2">
-                    <Button size="sm" variant={data.tiene_maquina_fiscal === "Sí" ? "default" : "outline"}
-                        className={data.tiene_maquina_fiscal === "Sí" ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
+                    <Button variant={data.tiene_maquina_fiscal === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm"
                         onClick={() => { update("tiene_maquina_fiscal", "Sí"); update("tipo_facturacion", "IMPRESORA FISCAL"); }}>Sí</Button>
-                    <Button size="sm" variant={data.tiene_maquina_fiscal === "No" ? "default" : "outline"}
-                        className={data.tiene_maquina_fiscal === "No" ? "bg-emerald-600 hover:bg-emerald-700" : "border-slate-600 text-slate-300"}
+                    <Button variant={data.tiene_maquina_fiscal === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm"
                         onClick={() => { update("tiene_maquina_fiscal", "No"); if (data.tipo_facturacion === "IMPRESORA FISCAL") update("tipo_facturacion", ""); }}>No</Button>
                 </div>
             </div>
@@ -1034,8 +1029,7 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                     <Label className="text-slate-400">Tipo Facturación</Label>
                     <div className="flex flex-wrap gap-2">
                         {["IMPRESORA FISCAL","REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
-                            <Button key={v} size="sm" variant={data.tipo_facturacion === v ? "default" : "outline"}
-                                className={data.tipo_facturacion === v ? "bg-violet-600 hover:bg-violet-700" : "border-slate-600 text-slate-300"}
+                            <Button key={v} variant={data.tipo_facturacion === v ? "enrich-active-violet" : "enrich-inactive"} size="sm"
                                 onClick={() => update("tipo_facturacion", v)}>{v.replace("IMPRESORA FISCAL","Impresora Fiscal").replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
                         ))}
                     </div>
@@ -1047,11 +1041,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">¿Sistema Homologado?</Label>
                     <div className="flex gap-2">
-                        {[["Sí","bg-emerald-600 hover:bg-emerald-700"],["No","bg-slate-600 hover:bg-slate-500"]].map(([v,c]) => (
-                            <Button key={v} size="sm" variant={data.sistema_homologado === v ? "default" : "outline"}
-                                className={data.sistema_homologado === v ? c : "border-slate-600 text-slate-300"}
-                                onClick={() => update("sistema_homologado", v)}>{v}</Button>
-                        ))}
+                        <Button variant={data.sistema_homologado === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm"
+                            onClick={() => update("sistema_homologado", "Sí")}>Sí</Button>
+                        <Button variant={data.sistema_homologado === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm"
+                            onClick={() => update("sistema_homologado", "No")}>No</Button>
                     </div>
                 </div>
             )}
@@ -1060,11 +1053,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
             <div className="space-y-1.5">
                 <Label className="text-slate-400">Boleta Comparecencia</Label>
                 <div className="flex gap-2">
-                    {[["SÍ","bg-amber-600 hover:bg-amber-700"],["NO","bg-slate-600 hover:bg-slate-500"]].map(([v,c]) => (
-                        <Button key={v} size="sm" variant={data.boleta_comparecencia === v ? "default" : "outline"}
-                            className={data.boleta_comparecencia === v ? c : "border-slate-600 text-slate-300"}
-                            onClick={() => { update("boleta_comparecencia", v); if (v !== "SÍ") update("tipo_comparecencia", ""); }}>{v}</Button>
-                    ))}
+                    <Button variant={data.boleta_comparecencia === "SÍ" ? "enrich-active-amber" : "enrich-inactive"} size="sm"
+                        onClick={() => { update("boleta_comparecencia", "SÍ"); }}>SÍ</Button>
+                    <Button variant={data.boleta_comparecencia === "NO" ? "enrich-active-amber" : "enrich-inactive"} size="sm"
+                        onClick={() => { update("boleta_comparecencia", "NO"); update("tipo_comparecencia", ""); }}>NO</Button>
                 </div>
             </div>
 
@@ -1073,11 +1065,10 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                 <div className="space-y-1.5">
                     <Label className="text-slate-400">Tipo Comparecencia</Label>
                     <div className="flex gap-2">
-                        {[["CORREO","bg-cyan-600 hover:bg-cyan-700"],["PRESENCIAL","bg-purple-600 hover:bg-purple-700"]].map(([v,c]) => (
-                            <Button key={v} size="sm" variant={data.tipo_comparecencia === v ? "default" : "outline"}
-                                className={data.tipo_comparecencia === v ? c : "border-slate-600 text-slate-300"}
-                                onClick={() => update("tipo_comparecencia", v)}>{v}</Button>
-                        ))}
+                        <Button variant={data.tipo_comparecencia === "CORREO" ? "enrich-active-cyan" : "enrich-inactive"} size="sm"
+                            onClick={() => update("tipo_comparecencia", "CORREO")}>CORREO</Button>
+                        <Button variant={data.tipo_comparecencia === "PRESENCIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm"
+                            onClick={() => update("tipo_comparecencia", "PRESENCIAL")}>PRESENCIAL</Button>
                     </div>
                 </div>
             )}
