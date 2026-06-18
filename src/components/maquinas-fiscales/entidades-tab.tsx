@@ -951,155 +951,165 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
     };
 
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">RIF *</Label>
-                <Input value={data.rif} onChange={(e) => update("rif", e.target.value)} placeholder="Ej: J-12345678-9" className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Razón Social *</Label>
-                <Input value={data.razon_social} onChange={(e) => update("razon_social", e.target.value)} placeholder="Nombre de la empresa" className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Gerencia / Dependencia</Label>
-                <Input value={data.gerencia_dependencia || ""} onChange={(e) => update("gerencia_dependencia", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Parroquia</Label>
-                <Input value={data.parroquia || ""} onChange={(e) => update("parroquia", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Municipio</Label>
-                <Input value={data.municipio || ""} onChange={(e) => update("municipio", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Estado</Label>
-                <Input value={data.estado || ""} onChange={(e) => update("estado", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Tipo Contribuyente</Label>
-                <Input value={data.tipo_contribuyente || ""} onChange={(e) => update("tipo_contribuyente", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Situación</Label>
-                <Input value={data.situacion || ""} onChange={(e) => update("situacion", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-
-            {/* Enrichment Fields */}
-            <div className="sm:col-span-2 border-t border-slate-700 pt-4 mt-2">
-                <p className="text-xs text-slate-500 mb-3 uppercase tracking-wider">Campos de Enriquecimiento</p>
-            </div>
-
-            {/* 1. Abierto / Cerrado */}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Abierto / Cerrado</Label>
-                <div className="flex gap-2">
-                    <Button variant={data.abierto_cerrado === "ABIERTO" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                        onClick={() => update("abierto_cerrado", "ABIERTO")}>ABIERTO</Button>
-                    <Button variant={data.abierto_cerrado === "CERRADO" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                        onClick={() => update("abierto_cerrado", "CERRADO")}>CERRADO</Button>
-                </div>
-            </div>
-
-            {/* 2. Ordinario / Especial */}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Ordinario / Especial</Label>
-                <div className="flex gap-2">
-                    <Button variant={data.ordinario_especial === "ORDINARIO" ? "enrich-active-blue" : "enrich-inactive"} size="sm"
-                        onClick={() => update("ordinario_especial", "ORDINARIO")}>ORDINARIO</Button>
-                    <Button variant={data.ordinario_especial === "ESPECIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm"
-                        onClick={() => update("ordinario_especial", "ESPECIAL")}>ESPECIAL</Button>
-                </div>
-            </div>
-
-            {/* 3. ¿Máquina Fiscal? */}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">¿Máquina Fiscal?</Label>
-                <div className="flex gap-2">
-                    <Button variant={data.tiene_maquina_fiscal === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                        onClick={() => { update("tiene_maquina_fiscal", "Sí"); update("tipo_facturacion", "IMPRESORA FISCAL"); }}>Sí</Button>
-                    <Button variant={data.tiene_maquina_fiscal === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                        onClick={() => { update("tiene_maquina_fiscal", "No"); if (data.tipo_facturacion === "IMPRESORA FISCAL") update("tipo_facturacion", ""); }}>No</Button>
-                </div>
-            </div>
-
-            {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
-            {data.tiene_maquina_fiscal !== "Sí" && (
+        <div className="space-y-5">
+            {/* ─── Identity ─── */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-1.5">
-                    <Label className="text-slate-400">Tipo Facturación</Label>
-                    <div className="flex flex-wrap gap-2">
-                        {["IMPRESORA FISCAL","REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
-                            <Button key={v} variant={data.tipo_facturacion === v ? "enrich-active-violet" : "enrich-inactive"} size="sm"
-                                onClick={() => update("tipo_facturacion", v)}>{v.replace("IMPRESORA FISCAL","Impresora Fiscal").replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
-                        ))}
+                    <Label className="text-slate-400 text-xs">RIF *</Label>
+                    <Input value={data.rif} onChange={(e) => update("rif", e.target.value)} placeholder="Ej: J-12345678-9" className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs">Razón Social *</Label>
+                    <Input value={data.razon_social} onChange={(e) => update("razon_social", e.target.value)} placeholder="Nombre de la empresa" className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+                <div className="space-y-1.5 sm:col-span-2">
+                    <Label className="text-slate-400 text-xs">Gerencia / Dependencia</Label>
+                    <Input value={data.gerencia_dependencia || ""} onChange={(e) => update("gerencia_dependencia", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+            </div>
+
+            {/* ─── Location ─── */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs">Parroquia</Label>
+                    <Input value={data.parroquia || ""} onChange={(e) => update("parroquia", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs">Municipio</Label>
+                    <Input value={data.municipio || ""} onChange={(e) => update("municipio", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+                <div className="space-y-1.5">
+                    <Label className="text-slate-400 text-xs">Estado</Label>
+                    <Input value={data.estado || ""} onChange={(e) => update("estado", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                </div>
+            </div>
+
+            {/* ─── Enrichment Fields ─── */}
+            <div className="border-t border-slate-700 pt-4">
+                <p className="text-xs text-slate-500 mb-4 uppercase tracking-wider">Campos de Enriquecimiento</p>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
+                    {/* 1. Abierto / Cerrado */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Abierto / Cerrado</Label>
+                        <div className="flex gap-2">
+                            <Button variant={data.abierto_cerrado === "ABIERTO" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => update("abierto_cerrado", "ABIERTO")}>Abierto</Button>
+                            <Button variant={data.abierto_cerrado === "CERRADO" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => update("abierto_cerrado", "CERRADO")}>Cerrado</Button>
+                        </div>
+                    </div>
+
+                    {/* 2. Ordinario / Especial */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Ordinario / Especial</Label>
+                        <div className="flex gap-2">
+                            <Button variant={data.ordinario_especial === "ORDINARIO" ? "enrich-active-blue" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => update("ordinario_especial", "ORDINARIO")}>Ordinario</Button>
+                            <Button variant={data.ordinario_especial === "ESPECIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => update("ordinario_especial", "ESPECIAL")}>Especial</Button>
+                        </div>
+                    </div>
+
+                    {/* 3. ¿Máquina Fiscal? */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">¿Máquina Fiscal?</Label>
+                        <div className="flex gap-2">
+                            <Button variant={data.tiene_maquina_fiscal === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => { update("tiene_maquina_fiscal", "Sí"); update("tipo_facturacion", "IMPRESORA FISCAL"); }}>Sí</Button>
+                            <Button variant={data.tiene_maquina_fiscal === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => { update("tiene_maquina_fiscal", "No"); if (data.tipo_facturacion === "IMPRESORA FISCAL") update("tipo_facturacion", ""); }}>No</Button>
+                        </div>
+                    </div>
+
+                    {/* 4. Tipo Facturación — solo si NO tiene máquina fiscal */}
+                    {data.tiene_maquina_fiscal === "No" && (
+                        <div className="space-y-1.5 sm:col-span-2">
+                            <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
+                            <div className="flex flex-wrap gap-2">
+                                {["IMPRESORA FISCAL","REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
+                                    <Button key={v} variant={data.tipo_facturacion === v ? "enrich-active-violet" : "enrich-inactive"} size="sm" className="h-8 text-xs"
+                                        onClick={() => update("tipo_facturacion", v)}>{v.replace("IMPRESORA FISCAL","Impresora Fiscal").replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
+                    {data.tipo_facturacion === "FORMA LIBRE" && (
+                        <div className="space-y-1.5">
+                            <Label className="text-slate-400 text-xs">¿Sistema Homologado?</Label>
+                            <div className="flex gap-2">
+                                <Button variant={data.sistema_homologado === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                    onClick={() => update("sistema_homologado", "Sí")}>Sí</Button>
+                                <Button variant={data.sistema_homologado === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                    onClick={() => update("sistema_homologado", "No")}>No</Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 6. Boleta Comparecencia */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Boleta Comparecencia</Label>
+                        <div className="flex gap-2">
+                            <Button variant={data.boleta_comparecencia === "SÍ" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => { update("boleta_comparecencia", "SÍ"); if (!data.tipo_comparecencia) update("tipo_comparecencia", "CORREO"); }}>Sí</Button>
+                            <Button variant={data.boleta_comparecencia === "NO" ? "enrich-active-amber" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                onClick={() => { update("boleta_comparecencia", "NO"); update("tipo_comparecencia", ""); }}>No</Button>
+                        </div>
+                    </div>
+
+                    {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
+                    {data.boleta_comparecencia === "SÍ" && (
+                        <div className="space-y-1.5">
+                            <Label className="text-slate-400 text-xs">Tipo Comparecencia</Label>
+                            <div className="flex gap-2">
+                                <Button variant={data.tipo_comparecencia === "CORREO" ? "enrich-active-cyan" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                    onClick={() => update("tipo_comparecencia", "CORREO")}>Correo</Button>
+                                <Button variant={data.tipo_comparecencia === "PRESENCIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm" className="flex-1 h-8 text-xs"
+                                    onClick={() => update("tipo_comparecencia", "PRESENCIAL")}>Presencial</Button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* 8. Grupo */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Grupo</Label>
+                        <Select value={data.grupo || ""} onValueChange={(v) => update("grupo", v)}>
+                            <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200 h-9"><SelectValue placeholder="Seleccionar..." /></SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-slate-700">
+                                {["GRUPO 1","GRUPO 2","GRUPO 3","GRUPO 4","GRUPO 5","GRUPO 6","GRUPO 7"].map(g => (
+                                    <SelectItem key={g} value={g}>{g}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* 9. Fecha Notificado */}
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Fecha Notificado</Label>
+                        <Input type="date" value={data.fecha_censo || ""} onChange={(e) => update("fecha_censo", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
                     </div>
                 </div>
-            )}
+            </div>
 
-            {/* 5. Sistema Homologado — solo si tipo = FORMA LIBRE */}
-            {data.tipo_facturacion === "FORMA LIBRE" && (
-                <div className="space-y-1.5">
-                    <Label className="text-slate-400">¿Sistema Homologado?</Label>
-                    <div className="flex gap-2">
-                        <Button variant={data.sistema_homologado === "Sí" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                            onClick={() => update("sistema_homologado", "Sí")}>Sí</Button>
-                        <Button variant={data.sistema_homologado === "No" ? "enrich-active-green" : "enrich-inactive"} size="sm"
-                            onClick={() => update("sistema_homologado", "No")}>No</Button>
+            {/* ─── Contact & Notes ─── */}
+            <div className="border-t border-slate-700 pt-4">
+                <p className="text-xs text-slate-500 mb-4 uppercase tracking-wider">Contacto</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Teléfono</Label>
+                        <Input value={data.telefono || ""} onChange={(e) => update("telefono", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                    </div>
+                    <div className="space-y-1.5">
+                        <Label className="text-slate-400 text-xs">Correo</Label>
+                        <Input value={data.correo || ""} onChange={(e) => update("correo", e.target.value)} placeholder="correo@ejemplo.com" className="bg-slate-900 border-slate-700 text-slate-200 h-9" />
+                    </div>
+                    <div className="space-y-1.5 sm:col-span-2">
+                        <Label className="text-slate-400 text-xs">Observación</Label>
+                        <Textarea value={data.observacion || ""} onChange={(e) => update("observacion", e.target.value)} rows={3} className="bg-slate-900 border-slate-700 text-slate-200 resize-none" />
                     </div>
                 </div>
-            )}
-
-            {/* 6. Boleta Comparecencia */}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Boleta Comparecencia</Label>
-                <div className="flex gap-2">
-                    <Button variant={data.boleta_comparecencia === "SÍ" ? "enrich-active-amber" : "enrich-inactive"} size="sm"
-                        onClick={() => { update("boleta_comparecencia", "SÍ"); }}>SÍ</Button>
-                    <Button variant={data.boleta_comparecencia === "NO" ? "enrich-active-amber" : "enrich-inactive"} size="sm"
-                        onClick={() => { update("boleta_comparecencia", "NO"); update("tipo_comparecencia", ""); }}>NO</Button>
-                </div>
-            </div>
-
-            {/* 7. Tipo Comparecencia — solo si boleta = SÍ */}
-            {data.boleta_comparecencia === "SÍ" && (
-                <div className="space-y-1.5">
-                    <Label className="text-slate-400">Tipo Comparecencia</Label>
-                    <div className="flex gap-2">
-                        <Button variant={data.tipo_comparecencia === "CORREO" ? "enrich-active-cyan" : "enrich-inactive"} size="sm"
-                            onClick={() => update("tipo_comparecencia", "CORREO")}>CORREO</Button>
-                        <Button variant={data.tipo_comparecencia === "PRESENCIAL" ? "enrich-active-purple" : "enrich-inactive"} size="sm"
-                            onClick={() => update("tipo_comparecencia", "PRESENCIAL")}>PRESENCIAL</Button>
-                    </div>
-                </div>
-            )}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Grupo</Label>
-                <Select value={data.grupo || ""} onValueChange={(v) => update("grupo", v)}>
-                    <SelectTrigger className="bg-slate-900 border-slate-700 text-slate-200"><SelectValue placeholder="..." /></SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
-                        {["GRUPO 1","GRUPO 2","GRUPO 3","GRUPO 4","GRUPO 5","GRUPO 6","GRUPO 7"].map(g => (
-                            <SelectItem key={g} value={g}>{g}</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Fecha Notificado</Label>
-                <Input type="date" value={data.fecha_censo || ""} onChange={(e) => update("fecha_censo", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-
-            {/* Contact & Notes */}
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Teléfono</Label>
-                <Input value={data.telefono || ""} onChange={(e) => update("telefono", e.target.value)} className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5">
-                <Label className="text-slate-400">Correo</Label>
-                <Input value={data.correo || ""} onChange={(e) => update("correo", e.target.value)} placeholder="correo@ejemplo.com" className="bg-slate-900 border-slate-700 text-slate-200" />
-            </div>
-            <div className="space-y-1.5 sm:col-span-2">
-                <Label className="text-slate-400">Observación</Label>
-                <Textarea value={data.observacion || ""} onChange={(e) => update("observacion", e.target.value)} rows={3} className="bg-slate-900 border-slate-700 text-slate-200 resize-none" />
             </div>
         </div>
     );
