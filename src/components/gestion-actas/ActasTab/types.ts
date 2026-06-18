@@ -49,6 +49,7 @@ export type ActasAdvancedFilters = {
     supervisorUserId: string;
     supervisorName: string;
     estado: '' | EstadoVinculado;
+    estadoReparo: string;
 };
 
 export const defaultActasAdvancedFilters: ActasAdvancedFilters = {
@@ -60,6 +61,7 @@ export const defaultActasAdvancedFilters: ActasAdvancedFilters = {
     supervisorUserId: '',
     supervisorName: '',
     estado: '',
+    estadoReparo: '',
 };
 
 /* -------------------------------------------------------------------------- */
@@ -87,8 +89,15 @@ export type ActaFormState = {
     fechaNotificado: string;
     montoIslr: string;
     montoIva: string;
-    montoAceptacionPago: string;
     montoTotal: string;
+    /** El acta incluye débito fiscal (aplica si impuestoTipo es IVA-ISLR o IVA). */
+    esDebitoFiscal: boolean;
+    /** El acta incluye crédito fiscal (aplica si impuestoTipo es IVA-ISLR o IVA). */
+    esCreditoFiscal: boolean;
+    /** Años fiscales cubiertos por el acta ISLR. Aplica si impuestoTipo es IVA-ISLR o ISLR. */
+    periodYears: number[];
+    /** Etiqueta opcional del periodo ISLR (ej. "ANUAL", "1", "2"). */
+    periodLabel: string;
 };
 
 /** Factory para estado vacío del formulario de acta. */
@@ -101,6 +110,9 @@ export const emptyActaForm = (): ActaFormState => ({
     fechaNotificado: '',
     montoIslr: '',
     montoIva: '',
-    montoAceptacionPago: '',
     montoTotal: '',
+    esDebitoFiscal: false,
+    esCreditoFiscal: false,
+    periodYears: [],
+    periodLabel: 'ANUAL',
 });

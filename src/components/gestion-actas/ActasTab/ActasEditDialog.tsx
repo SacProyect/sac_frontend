@@ -48,8 +48,15 @@ function rowToFormState(r: ActaReparo): ActaFormState {
         fechaNotificado: isoToDateInput(r.fechaNotificado),
         montoIslr: r.montoIslr != null ? String(r.montoIslr) : '',
         montoIva: r.montoIva != null ? String(r.montoIva) : '',
-        montoAceptacionPago: r.montoAceptacionPago != null ? String(r.montoAceptacionPago) : '',
         montoTotal: r.montoTotal != null ? String(r.montoTotal) : '',
+        esDebitoFiscal: r.esDebitoFiscal === true,
+        esCreditoFiscal: r.esCreditoFiscal === true,
+        periodYears: Array.isArray((r as any).periods)
+            ? ((r as any).periods as Array<{ year: number }>).map((p) => p.year)
+            : [],
+        periodLabel: Array.isArray((r as any).periods) && (r as any).periods[0]?.periodo
+            ? String((r as any).periods[0].periodo)
+            : 'ANUAL',
     };
 }
 
@@ -66,10 +73,20 @@ function buildMeta(state: ActaFormState): RepairReportUploadMeta {
     if (montoIslr !== undefined) m.montoIslr = montoIslr;
     const montoIva = toAmountString(state.montoIva);
     if (montoIva !== undefined) m.montoIva = montoIva;
-    const montoAceptacion = toAmountString(state.montoAceptacionPago);
-    if (montoAceptacion !== undefined) m.montoAceptacionPago = montoAceptacion;
     const montoTotal = toAmountString(state.montoTotal);
     if (montoTotal !== undefined) m.montoTotal = montoTotal;
+    if (state.impuestoTipo === 'IVA' || state.impuestoTipo === 'IVA-ISLR') {
+        if (state.esDebitoFiscal) m.esDebitoFiscal = true;
+        if (state.esCreditoFiscal) m.esCreditoFiscal = true;
+    }
+    if (state.impuestoTipo === 'ISLR' || state.impuestoTipo === 'IVA-ISLR') {
+        if (state.periodYears.length > 0) {
+            m.periods = state.periodYears.map((year) => ({
+                year,
+                periodo: state.periodLabel.trim() || null,
+            }));
+        }
+    }
     // NOTA: los campos `fiscalActuanteUserId` / `supervisorUserId` /
     // `fiscalActuante` / `supervisorNombre` se omiten intencionalmente: el
     // PATCH trata los campos ausentes como "preservar valor actual", por lo
@@ -520,29 +537,6 @@ export function ActasEditDialog({
                                     className="bg-background border-border"
                                     placeholder="0,00"
                                     data-testid="actas-edit-montoIva"
-                                    disabled={saving}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="actas-meta-montoAceptacionPago"
-                                    className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
-                                >
-                                    Aceptación y pago del reparo
-                                </Label>
-                                <Input
-                                    id="actas-meta-montoAceptacionPago"
-                                    inputMode="decimal"
-                                    value={form.montoAceptacionPago}
-                                    onChange={(e) =>
-                                        setForm((s) => ({
-                                            ...s,
-                                            montoAceptacionPago: e.target.value,
-                                        }))
-                                    }
-                                    className="bg-background border-border"
-                                    placeholder="0,00"
-                                    data-testid="actas-edit-montoAceptacionPago"
                                     disabled={saving}
                                 />
                             </div>

@@ -669,6 +669,11 @@ export const checkTaxpayerByRif = async (rif: string): Promise<TaxpayerCheckResp
 }
 
 /** Metadatos opcionales alineados a la plantilla «ACTAS DE REPARO» (fechas en ISO yyyy-mm-dd). */
+export type RepairReportPeriodInput = {
+	year: number;
+	periodo?: string | null;
+};
+
 export type RepairReportUploadMeta = {
 	fechaEntrega?: string;
 	/** UUID de usuario fiscal (rol FISCAL) enlazado al acta. */
@@ -686,28 +691,36 @@ export type RepairReportUploadMeta = {
 	montoIva?: string;
 	montoAceptacionPago?: string;
 	montoTotal?: string;
+	/** El acta incluye débito fiscal (IVA sobre ventas). Aplica si `impuestoTipo` es IVA-ISLR o IVA. */
+	esDebitoFiscal?: boolean;
+	/** El acta incluye crédito fiscal (IVA sobre compras). Aplica si `impuestoTipo` es IVA-ISLR o IVA. */
+	esCreditoFiscal?: boolean;
+	/** Periodos fiscales cubiertos por el acta ISLR. Aplica si `impuestoTipo` es IVA-ISLR o ISLR. */
+	periods?: RepairReportPeriodInput[];
+	/** Opcional: cuando se crea un contribuyente on-the-fly junto con el acta. */
+	taxpayerRif?: string;
+	/** Opcional: cuando se crea un contribuyente on-the-fly junto con el acta. */
+	taxpayerName?: string;
+	/** Opcional: cuando se crea un contribuyente on-the-fly junto con el acta. */
+	taxpayerProvidenceNum?: number;
 };
 
-export const uploadRepairReport = async (taxpayerId: string, file: File, meta?: RepairReportUploadMeta) => {
+export const uploadRepairReport = async (
+	taxpayerId: string | null,
+	meta?: RepairReportUploadMeta,
+) => {
 	try {
-		const formData = new FormData();
-		formData.append("repairReport", file);
-		if (meta) {
-			for (const [key, val] of Object.entries(meta)) {
-				if (val !== undefined && val !== "") formData.append(key, val);
-			}
-		}
-
-		const response = await apiConnection.post(`/taxpayer/repair-report/${taxpayerId}`, formData, {
-			headers: {
-				"Content-Type": "multipart/form-data"
-			}
-		});
+		const response = await apiConnection.post(
+			taxpayerId
+				? `/taxpayer/repair-report/${taxpayerId}`
+				: "/taxpayer/repair-report",
+			meta ?? {},
+		);
 
 		return response.data;
 	} catch (e) {
 		console.error(e);
-		throw new Error("Error subiendo acta de reparación");
+		throw new Error("Error creando acta de reparo");
 	}
 };
 

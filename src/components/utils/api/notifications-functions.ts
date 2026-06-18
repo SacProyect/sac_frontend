@@ -221,3 +221,41 @@ export const updateEscalationConfig = async (
     throw normalizeApiError(error, "No se pudo actualizar la configuración de escalamiento.");
   }
 };
+
+export interface ReparosStats {
+  actasTotales: number;
+  expedientesAsignados: number;
+  culminados: number;
+  enProceso: number;
+  anulados: number;
+  montoTotalReparos: number;
+}
+
+const DEFAULT_REPAROS_STATS: ReparosStats = {
+  actasTotales: 0,
+  expedientesAsignados: 0,
+  culminados: 0,
+  enProceso: 0,
+  anulados: 0,
+  montoTotalReparos: 0,
+};
+
+/**
+ * KPIs del Command Center de Actas de Reparo desde el flujo de notificación.
+ * Devuelve conteos por status (culminados, en proceso, anulados) y suma de
+ * `montoTotal` para alimentar los Ledger Blocks de /gestion-actas.
+ */
+export const getReparosStats = async (): Promise<ReparosStats> => {
+  if (!isNotificationsFeatureEnabled) {
+    return DEFAULT_REPAROS_STATS;
+  }
+
+  try {
+    const response = await apiConnection.get<{ success: boolean; data?: ReparosStats }>(
+      "/notifications/stats"
+    );
+    return response.data?.data ?? DEFAULT_REPAROS_STATS;
+  } catch (error) {
+    throw normalizeApiError(error, "No se pudieron obtener las estadísticas de actas de reparo.");
+  }
+};

@@ -109,12 +109,23 @@ export interface RepairReportResumenItem {
     montoIva: number | null;
     montoAceptacionPago: number | null;
     montoTotal: number | null;
+    status: string;
+    fechaVencimiento: string | null;
+    /** El acta incluye débito fiscal (IVA sobre ventas). */
+    esDebitoFiscal?: boolean;
+    /** El acta incluye crédito fiscal (IVA sobre compras). */
+    esCreditoFiscal?: boolean;
+    /** Periodos fiscales cubiertos por el acta (ISLR). */
+    periods?: Array<{ id?: string; year: number; periodo?: string | null }>;
 }
 
-export async function listRepairReportsResumen(params?: { q?: string; limit?: number }) {
+export async function listRepairReportsResumen(params?: { q?: string; limit?: number; page?: number }) {
     const res = await apiConnection.get<{
         success: boolean;
         items: RepairReportResumenItem[];
+        total: number;
+        page: number;
+        pageSize: number;
     }>(`${base}/reparos`, { params });
     return res.data;
 }
@@ -131,7 +142,16 @@ export interface ContribuyenteReparoBusquedaItem {
     contract_type: string;
     parish: { id: string; name: string } | null;
     category: { id: string; name: string } | null;
-    fiscalAsignado: { id: string; name: string } | null;
+    fiscalAsignado: {
+        id: string;
+        name: string;
+        personId: number | null;
+        supervisorId: string | null;
+        supervisorName: string | null;
+        groupId: string | null;
+        groupName: string | null;
+    } | null;
+    supervisorAsignado: { id: string; name: string; personId: number | null } | null;
 }
 
 /** Fiscal o supervisor seleccionable en el acta (con grupo / supervisor en cadena). */
@@ -491,4 +511,27 @@ export async function downloadCasosPorFiscalExcel(year: number): Promise<void> {
         }
         throw e;
     }
+}
+
+/**
+ * Ejecuta manualmente el check de notificaciones WhatsApp.
+ * Solo ADMIN puede ejecutar esto.
+ */
+export async function runNotificationCheck(): Promise<{ success: boolean; message: string }> {
+  const response = await apiConnection.post('/notifications/run-check');
+  return response.data;
+}
+
+/**
+ * Obtiene estadísticas de la cola de notificaciones.
+ */
+export async function getNotificationStats(): Promise<{
+  total: number;
+  pending: number;
+  sending: number;
+  sent: number;
+  failed: number;
+}> {
+  const response = await apiConnection.get('/notifications/stats');
+  return response.data.data;
 }

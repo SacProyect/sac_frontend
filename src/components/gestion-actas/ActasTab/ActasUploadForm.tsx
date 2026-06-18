@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react';
-import { useDropzone, type FileRejection } from 'react-dropzone';
 import {
     FileUp,
     Search,
-    Trash2,
-    Upload,
     User,
     UserSearch,
+    Wallet,
+    CheckCircle2,
 } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { Card, CardContent } from '@/components/UI/card';
@@ -21,7 +20,8 @@ import {
 } from '@/components/UI/select';
 import { Textarea } from '@/components/UI/textarea';
 import { useDebounce } from '@/hooks/use-debounce';
-import { usePrefersReducedMotion } from '@/hooks/use-prefers-reduced-motion';
+import { cn } from '@/lib/utils';
+
 import {
     searchContribuyentesParaActaReparo,
     searchUsuariosParaActaReparo,
@@ -44,9 +44,6 @@ import toast from 'react-hot-toast';
 const UUID_RE =
     /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB (guía §4.1.1)
-const MAX_FILE_SIZE_MB = 20;
-
 function buildUploadMeta(
     state: ActaFormState,
     fiscal: UsuarioActaReparoRow | null,
@@ -64,104 +61,25 @@ function buildUploadMeta(
     if (montoIslr !== undefined) m.montoIslr = montoIslr;
     const montoIva = toAmountString(state.montoIva);
     if (montoIva !== undefined) m.montoIva = montoIva;
-    const montoAceptacion = toAmountString(state.montoAceptacionPago);
-    if (montoAceptacion !== undefined) m.montoAceptacionPago = montoAceptacion;
     const montoTotal = toAmountString(state.montoTotal);
     if (montoTotal !== undefined) m.montoTotal = montoTotal;
     if (fiscal) m.fiscalActuanteUserId = fiscal.id;
     if (supervisor) m.supervisorUserId = supervisor.id;
-    return m;
-}
-
-function formatBytes(n: number): string {
-    if (n < 1024) return `${n} B`;
-    if (n < 1024 * 1024) return `${(n / 1024).toFixed(1)} KB`;
-    return `${(n / (1024 * 1024)).toFixed(1)} MB`;
-}
-
-/* -------------------------------------------------------------------------- */
-/* Sub-componente: Dropzone de PDF                                            */
-/* -------------------------------------------------------------------------- */
-
-type PdfDropzoneProps = {
-    file: File | null;
-    onFileAccepted: (f: File) => void;
-    onFileRejected: (r: FileRejection) => void;
-    onClear: () => void;
-};
-
-function PdfDropzone({ file, onFileAccepted, onFileRejected, onClear }: PdfDropzoneProps) {
-    const reducedMotion = usePrefersReducedMotion();
-    const { getRootProps, getInputProps, isDragActive } = useDropzone({
-        accept: { 'application/pdf': ['.pdf'] },
-        maxSize: MAX_FILE_SIZE,
-        maxFiles: 1,
-        onDrop: (acceptedFiles, fileRejections) => {
-            if (acceptedFiles.length > 0) onFileAccepted(acceptedFiles[0]);
-            if (fileRejections.length > 0) onFileRejected(fileRejections[0]);
-        },
-    });
-
-    // `animate-pulse` se aplica solo si el usuario no ha solicitado reducir
-    // movimiento (WCAG 2.3.3 + guía §9.1 / §6).
-    const pulseClass = isDragActive && !reducedMotion ? 'animate-pulse' : '';
-
-    if (file) {
-        return (
-            <div className="rounded-md border border-emerald-500/40 bg-emerald-500/5 p-3 flex items-center justify-between gap-2">
-                <div className="min-w-0">
-                    <p className="text-sm font-medium text-foreground truncate" title={file.name}>
-                        {file.name}
-                    </p>
-                    <p className="text-[10px] text-muted-foreground">
-                        PDF · {formatBytes(file.size)}
-                    </p>
-                </div>
-                <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={onClear}
-                    data-testid="actas-upload-file-clear"
-                    className="gap-1.5"
-                >
-                    <Trash2 className="h-3.5 w-3.5" />
-                    Quitar
-                </Button>
-            </div>
-        );
+    // Tipo de IVA (solo si el impuesto es IVA-ISLR o IVA)
+    if (state.impuestoTipo === 'IVA' || state.impuestoTipo === 'IVA-ISLR') {
+        if (state.esDebitoFiscal) m.esDebitoFiscal = true;
+        if (state.esCreditoFiscal) m.esCreditoFiscal = true;
     }
-
-    return (
-        <div
-            {...getRootProps()}
-            data-testid="actas-upload-dropzone"
-            aria-live="polite"
-            className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-colors ${
-                isDragActive
-                    ? `border-indigo-500 bg-indigo-500/5 ${pulseClass}`
-                    : 'border-border/60 hover:border-indigo-400'
-            }`}
-        >
-            <input
-                {...getInputProps()}
-                data-testid="actas-upload-input"
-                aria-label="Cargar PDF del acta de reparo"
-            />
-            <Upload
-                className="h-8 w-8 mx-auto text-muted-foreground mb-2"
-                aria-hidden="true"
-            />
-            <p className="text-sm font-medium text-foreground">
-                {isDragActive
-                    ? 'Suelte el PDF para adjuntarlo'
-                    : 'Arrastre el PDF del acta de reparo'}
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-                o haga clic para seleccionar · máx. {MAX_FILE_SIZE_MB} MB
-            </p>
-        </div>
-    );
+    // Periodos ISLR (solo si el impuesto es IVA-ISLR o ISLR)
+    if (state.impuestoTipo === 'ISLR' || state.impuestoTipo === 'IVA-ISLR') {
+        if (state.periodYears.length > 0) {
+            m.periods = state.periodYears.map((year) => ({
+                year,
+                periodo: state.periodLabel.trim() || null,
+            }));
+        }
+    }
+    return m;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -172,10 +90,19 @@ function TaxpayerPicker({
     value,
     onPick,
     onClear,
+    onCreateNew,
+    onAutoFillFiscal,
+    onAutoFillSupervisor,
 }: {
     value: ContribuyenteReparoBusquedaItem | null;
     onPick: (c: ContribuyenteReparoBusquedaItem) => void;
     onClear: () => void;
+    /** Si se define, se muestra un botón «Crear nuevo contribuyente» cuando no hay resultados. */
+    onCreateNew?: (currentQuery: string) => void;
+    /** Auto-poblar fiscal a partir del `officerId` del contribuyente seleccionado. */
+    onAutoFillFiscal: (fiscal: UsuarioActaReparoRow | null) => void;
+    /** Auto-poblar supervisor a partir del `supervisorId` del fiscal del contribuyente. */
+    onAutoFillSupervisor: (supervisor: UsuarioActaReparoRow | null) => void;
 }) {
     const [q, setQ] = useState('');
     const debouncedQ = useDebounce(q.trim(), 350);
@@ -211,6 +138,46 @@ function TaxpayerPicker({
         };
     }, [debouncedQ, value]);
 
+    function pick(c: ContribuyenteReparoBusquedaItem) {
+        onPick(c);
+        if (c.fiscalAsignado) {
+            const fiscalRow: UsuarioActaReparoRow = {
+                id: c.fiscalAsignado.id,
+                name: c.fiscalAsignado.name,
+                personId: c.fiscalAsignado.personId ?? 0,
+                role: 'FISCAL',
+                groupId: c.fiscalAsignado.groupId ?? null,
+                groupName: c.fiscalAsignado.groupName ?? null,
+                supervisorId: c.fiscalAsignado.supervisorId ?? null,
+                supervisorName: c.fiscalAsignado.supervisorName ?? null,
+            };
+            onAutoFillFiscal(fiscalRow);
+        } else {
+            onAutoFillFiscal(null);
+        }
+        if (c.supervisorAsignado) {
+            const supervisorRow: UsuarioActaReparoRow = {
+                id: c.supervisorAsignado.id,
+                name: c.supervisorAsignado.name,
+                personId: c.supervisorAsignado.personId ?? 0,
+                role: 'SUPERVISOR',
+                groupId: null,
+                groupName: null,
+                supervisorId: null,
+                supervisorName: null,
+            };
+            onAutoFillSupervisor(supervisorRow);
+        } else {
+            onAutoFillSupervisor(null);
+        }
+    }
+
+    function clear() {
+        onClear();
+        onAutoFillFiscal(null);
+        onAutoFillSupervisor(null);
+    }
+
     if (value) {
         return (
             <div
@@ -234,7 +201,7 @@ function TaxpayerPicker({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={onClear}
+                        onClick={clear}
                         data-testid="actas-contribuyente-clear"
                     >
                         Cambiar
@@ -268,8 +235,22 @@ function TaxpayerPicker({
                     {loading ? (
                         <div className="p-3 text-muted-foreground text-xs">Buscando…</div>
                     ) : results.length === 0 ? (
-                        <div className="p-3 text-muted-foreground text-xs">
-                            Sin coincidencias en su alcance.
+                        <div className="p-3 space-y-2">
+                            <div className="text-muted-foreground text-xs">
+                                Sin coincidencias en su alcance.
+                            </div>
+                            {onCreateNew && (
+                                <Button
+                                    type="button"
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => onCreateNew(q)}
+                                    className="w-full gap-1.5"
+                                    data-testid="actas-contribuyente-create-new"
+                                >
+                                    + Crear nuevo contribuyente
+                                </Button>
+                            )}
                         </div>
                     ) : (
                         <ul className="divide-y divide-border">
@@ -278,7 +259,7 @@ function TaxpayerPicker({
                                     <button
                                         type="button"
                                         className="w-full text-left px-3 py-2 hover:bg-muted/60 transition-colors"
-                                        onClick={() => onPick(t)}
+                                        onClick={() => pick(t)}
                                     >
                                         <span className="font-medium text-foreground">
                                             {t.name}
@@ -296,6 +277,91 @@ function TaxpayerPicker({
                 </div>
             )}
         </div>
+    );
+}
+
+/* -------------------------------------------------------------------------- */
+/* Sub-componente: Formulario para crear contribuyente on-the-fly             */
+/* -------------------------------------------------------------------------- */
+
+function NewTaxpayerForm({
+    value,
+    onChange,
+    onCancel,
+}: {
+    value: { rif: string; name: string; providenceNum: string };
+    onChange: (data: { rif: string; name: string; providenceNum: string }) => void;
+    onCancel: () => void;
+}) {
+    return (
+        <Card className="border-amber-500/40 bg-amber-500/5" data-testid="actas-new-taxpayer-form">
+            <CardContent className="pt-3 pb-3 space-y-2">
+                <div className="flex justify-between items-start gap-2">
+                    <div className="min-w-0">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-amber-600 dark:text-amber-400">
+                            Nuevo contribuyente
+                        </p>
+                        <p className="text-[11px] text-muted-foreground leading-snug">
+                            Complete los datos mínimos; el acta y el contribuyente se crearán
+                            en una sola acción.
+                        </p>
+                    </div>
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={onCancel}
+                        data-testid="actas-new-taxpayer-cancel"
+                    >
+                        Cancelar
+                    </Button>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3">
+                    <div className="space-y-1">
+                        <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                            RIF
+                        </Label>
+                        <Input
+                            value={value.rif}
+                            onChange={(e) => onChange({ ...value, rif: e.target.value })}
+                            placeholder="J123456789"
+                            className="bg-background"
+                            data-testid="actas-new-taxpayer-rif"
+                        />
+                    </div>
+                    <div className="space-y-1 sm:col-span-2">
+                        <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                            Nombre
+                        </Label>
+                        <Input
+                            value={value.name}
+                            onChange={(e) => onChange({ ...value, name: e.target.value })}
+                            placeholder="Razón social del contribuyente"
+                            className="bg-background"
+                            data-testid="actas-new-taxpayer-name"
+                        />
+                    </div>
+                    <div className="space-y-1 sm:col-span-3">
+                        <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                            N.º Providencia
+                        </Label>
+                        <Input
+                            inputMode="numeric"
+                            value={value.providenceNum}
+                            onChange={(e) =>
+                                onChange({
+                                    ...value,
+                                    providenceNum: e.target.value.replace(/[^0-9]/g, ''),
+                                })
+                            }
+                            placeholder="Ej. 12345"
+                            className="bg-background"
+                            data-testid="actas-new-taxpayer-providenceNum"
+                        />
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
     );
 }
 
@@ -569,22 +635,6 @@ function MetadataFields({
 
             <div className="space-y-1">
                 <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Aceptación y pago del reparo
-                </Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoAceptacionPago}
-                    onChange={(e) =>
-                        setForm((s) => ({ ...s, montoAceptacionPago: e.target.value }))
-                    }
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                    data-testid="actas-meta-montoAceptacionPago"
-                />
-            </div>
-
-            <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                     Total
                 </Label>
                 <Input
@@ -596,6 +646,110 @@ function MetadataFields({
                     data-testid="actas-meta-montoTotal"
                 />
             </div>
+
+            {(form.impuestoTipo === 'IVA' || form.impuestoTipo === 'IVA-ISLR') && (
+                <div className="space-y-2 sm:col-span-2 lg:col-span-3 p-3 rounded-md border border-border bg-muted/20">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                            <Wallet className="h-3.5 w-3.5" /> Tipo de IVA en el reparo
+                        </p>
+                        <span className="text-[10px] text-muted-foreground">Marca ambos si aplica</span>
+                    </div>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label
+                            className={cn(
+                                "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                                form.esDebitoFiscal
+                                    ? "bg-indigo-500/10 border-indigo-500/40 text-indigo-700 dark:text-indigo-300"
+                                    : "bg-background border-border text-muted-foreground hover:border-indigo-500/30"
+                            )}
+                        >
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-border bg-background text-indigo-600 focus:ring-indigo-500"
+                                checked={form.esDebitoFiscal}
+                                onChange={(e) => setForm((s) => ({ ...s, esDebitoFiscal: e.target.checked }))}
+                                data-testid="actas-meta-esDebitoFiscal"
+                            />
+                            <div>
+                                <p className="text-xs font-bold">Débito fiscal</p>
+                                <p className="text-[10px] text-muted-foreground">IVA sobre ventas</p>
+                            </div>
+                        </label>
+                        <label
+                            className={cn(
+                                "flex items-center gap-2 p-2 rounded-md border cursor-pointer transition-colors",
+                                form.esCreditoFiscal
+                                    ? "bg-emerald-500/10 border-emerald-500/40 text-emerald-700 dark:text-emerald-300"
+                                    : "bg-background border-border text-muted-foreground hover:border-emerald-500/30"
+                            )}
+                        >
+                            <input
+                                type="checkbox"
+                                className="h-4 w-4 rounded border-border bg-background text-emerald-600 focus:ring-emerald-500"
+                                checked={form.esCreditoFiscal}
+                                onChange={(e) => setForm((s) => ({ ...s, esCreditoFiscal: e.target.checked }))}
+                                data-testid="actas-meta-esCreditoFiscal"
+                            />
+                            <div>
+                                <p className="text-xs font-bold">Crédito fiscal</p>
+                                <p className="text-[10px] text-muted-foreground">IVA sobre compras</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            )}
+
+            {(form.impuestoTipo === 'ISLR' || form.impuestoTipo === 'IVA-ISLR') && (
+                <div className="space-y-2 sm:col-span-2 lg:col-span-3 p-3 rounded-md border border-border bg-muted/20">
+                    <div className="flex items-center justify-between">
+                        <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground flex items-center gap-1.5">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Periodos fiscales cubiertos (ISLR)
+                        </p>
+                        <span className="text-[10px] text-muted-foreground">Marca uno o varios años</span>
+                    </div>
+                    <div className="flex flex-wrap gap-1.5">
+                        {[2024, 2025].map((y) => {
+                            const active = form.periodYears.includes(y);
+                            return (
+                                <button
+                                    key={y}
+                                    type="button"
+                                    onClick={() => {
+                                        setForm((s) => ({
+                                            ...s,
+                                            periodYears: active
+                                                ? s.periodYears.filter((v) => v !== y)
+                                                : [...s.periodYears, y].sort((a, b) => b - a),
+                                        }));
+                                    }}
+                                    data-testid={`actas-meta-periodYear-${y}`}
+                                    className={cn(
+                                        "px-2.5 py-1 rounded-md text-xs font-mono font-semibold border transition-colors",
+                                        active
+                                            ? "bg-emerald-500/15 border-emerald-500/50 text-emerald-700 dark:text-emerald-300"
+                                            : "bg-background border-border text-muted-foreground hover:border-emerald-500/30"
+                                    )}
+                                >
+                                    {y}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="space-y-1">
+                        <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                            Etiqueta del periodo (opcional)
+                        </Label>
+                        <Input
+                            value={form.periodLabel}
+                            onChange={(e) => setForm((s) => ({ ...s, periodLabel: e.target.value }))}
+                            placeholder='Ej. "ANUAL", "1", "2"'
+                            className="bg-background border-border text-sm"
+                            data-testid="actas-meta-periodLabel"
+                        />
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -633,72 +787,72 @@ type Props = {
  *  - Diálogos de edición / vinculación / eliminación (TASK-004c).
  */
 export function ActasUploadForm({ onUploadComplete }: Props) {
-    const [file, setFile] = useState<File | null>(null);
     const [taxpayer, setTaxpayer] = useState<ContribuyenteReparoBusquedaItem | null>(null);
     const [fiscal, setFiscal] = useState<UsuarioActaReparoRow | null>(null);
     const [supervisor, setSupervisor] = useState<UsuarioActaReparoRow | null>(null);
     const [form, setForm] = useState<ActaFormState>(emptyActaForm);
     const [uploading, setUploading] = useState(false);
+    const [creatingNewTaxpayer, setCreatingNewTaxpayer] = useState(false);
+    const [newTaxpayerData, setNewTaxpayerData] = useState<{
+        rif: string;
+        name: string;
+        providenceNum: string;
+    }>({ rif: '', name: '', providenceNum: '' });
 
     function reset() {
-        setFile(null);
         setTaxpayer(null);
         setFiscal(null);
         setSupervisor(null);
         setForm(emptyActaForm());
+        setCreatingNewTaxpayer(false);
+        setNewTaxpayerData({ rif: '', name: '', providenceNum: '' });
     }
 
-    function handleAcceptFile(f: File) {
-        setFile(f);
-        toast.success(`PDF cargado: ${f.name}`);
-    }
-
-    function handleRejectFile(r: FileRejection) {
-        // Mapear el error más relevante a un mensaje legible.
-        const first = r.errors[0];
-        const msg =
-            first?.code === 'file-too-large'
-                ? `El PDF excede el tamaño máximo (${MAX_FILE_SIZE_MB} MB).`
-                : first?.code === 'file-invalid-type'
-                    ? 'Solo se aceptan archivos PDF.'
-                    : (first?.message ?? 'PDF inválido.');
-        toast.error(msg);
+    function handleCancelNewTaxpayer() {
+        setCreatingNewTaxpayer(false);
+        setNewTaxpayerData({ rif: '', name: '', providenceNum: '' });
     }
 
     async function handleSubmit() {
-        // 1. Validaciones client-side.
-        if (!taxpayer) {
-            toast.error('Debe seleccionar un contribuyente.');
-            return;
-        }
-        if (!UUID_RE.test(taxpayer.id)) {
-            toast.error('El UUID del contribuyente no tiene un formato válido.');
-            return;
-        }
-        if (!file) {
-            toast.error('Debe adjuntar el PDF del acta.');
-            return;
-        }
-        if (file.type !== 'application/pdf') {
-            toast.error('El archivo adjunto debe ser un PDF.');
-            return;
-        }
-        if (file.size > MAX_FILE_SIZE) {
-            toast.error(`El PDF excede el tamaño máximo (${MAX_FILE_SIZE_MB} MB).`);
-            return;
+        let taxpayerId: string | null = null;
+        let meta = buildUploadMeta(form, fiscal, supervisor);
+
+        if (creatingNewTaxpayer) {
+            if (!newTaxpayerData.rif || !newTaxpayerData.name || !newTaxpayerData.providenceNum) {
+                toast.error('Complete todos los datos del nuevo contribuyente.');
+                return;
+            }
+            const provNum = Number(newTaxpayerData.providenceNum);
+            if (!Number.isFinite(provNum) || Number.isNaN(provNum)) {
+                toast.error('El N.º Providencia del nuevo contribuyente debe ser un número válido.');
+                return;
+            }
+            meta = {
+                ...meta,
+                taxpayerRif: newTaxpayerData.rif,
+                taxpayerName: newTaxpayerData.name,
+                taxpayerProvidenceNum: provNum,
+            };
+        } else {
+            if (!taxpayer) {
+                toast.error('Debe seleccionar un contribuyente.');
+                return;
+            }
+            if (!UUID_RE.test(taxpayer.id)) {
+                toast.error('El UUID del contribuyente no tiene un formato válido.');
+                return;
+            }
+            taxpayerId = taxpayer.id;
         }
 
-        // 2. Construcción del meta + submit.
         setUploading(true);
         try {
-            const meta = buildUploadMeta(form, fiscal, supervisor);
-            await uploadRepairReport(taxpayer.id, file, meta);
-            toast.success('Acta cargada correctamente.');
+            await uploadRepairReport(taxpayerId, meta);
+            toast.success('Acta creada correctamente.');
             reset();
             onUploadComplete();
         } catch (e) {
-            // EARS: mantener el formulario abierto. NO reset.
-            const msg = e instanceof Error ? e.message : 'No se pudo subir el acta.';
+            const msg = e instanceof Error ? e.message : 'No se pudo crear el acta.';
             toast.error(msg);
         } finally {
             setUploading(false);
@@ -707,11 +861,33 @@ export function ActasUploadForm({ onUploadComplete }: Props) {
 
     return (
         <div className="space-y-4">
-            <TaxpayerPicker
-                value={taxpayer}
-                onPick={setTaxpayer}
-                onClear={() => setTaxpayer(null)}
-            />
+            {creatingNewTaxpayer ? (
+                <NewTaxpayerForm
+                    value={newTaxpayerData}
+                    onChange={setNewTaxpayerData}
+                    onCancel={handleCancelNewTaxpayer}
+                />
+            ) : (
+                <TaxpayerPicker
+                    value={taxpayer}
+                    onPick={setTaxpayer}
+                    onClear={() => {
+                        setTaxpayer(null);
+                        setFiscal(null);
+                        setSupervisor(null);
+                    }}
+                    onCreateNew={(currentQuery) => {
+                        setNewTaxpayerData({
+                            rif: currentQuery,
+                            name: '',
+                            providenceNum: '',
+                        });
+                        setCreatingNewTaxpayer(true);
+                    }}
+                    onAutoFillFiscal={setFiscal}
+                    onAutoFillSupervisor={setSupervisor}
+                />
+            )}
 
             <div className="grid gap-3 sm:grid-cols-2">
                 <UsuarioActaPicker
@@ -744,18 +920,6 @@ export function ActasUploadForm({ onUploadComplete }: Props) {
             </div>
 
             <MetadataFields form={form} setForm={setForm} />
-
-            <div className="space-y-2">
-                <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Archivo PDF
-                </Label>
-                <PdfDropzone
-                    file={file}
-                    onFileAccepted={handleAcceptFile}
-                    onFileRejected={handleRejectFile}
-                    onClear={() => setFile(null)}
-                />
-            </div>
 
             <div className="flex flex-wrap gap-2 pt-1">
                 <Button
