@@ -127,6 +127,7 @@ export function EntidadesTab() {
     const [filterOrdinarioEspecial, setFilterOrdinarioEspecial] = useState<string>("");
     const [filterFechaDesde, setFilterFechaDesde] = useState<string>("");
     const [filterFechaHasta, setFilterFechaHasta] = useState<string>("");
+    const [filterSort, setFilterSort] = useState<"rif_asc" | "updated_desc">("rif_asc");
 
     // Parroquia list for filter dropdown
     const [parroquias, setParroquias] = useState<string[]>([]);
@@ -192,6 +193,7 @@ export function EntidadesTab() {
             if (filterOrdinarioEspecial && filterOrdinarioEspecial !== "all") filters.ordinario_especial = filterOrdinarioEspecial;
             if (filterFechaDesde) filters.fecha_censo_desde = filterFechaDesde;
             if (filterFechaHasta) filters.fecha_censo_hasta = filterFechaHasta;
+            if (filterSort === "updated_desc") filters.sort = "updated_desc";
 
             const result = await listEntidades(filters, signal);
             setEntidades(result.data);
@@ -203,12 +205,12 @@ export function EntidadesTab() {
         } finally {
             if (!signal?.aborted) setIsLoading(false);
         }
-    }, [page, limit, debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta]);
+    }, [page, limit, debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta, filterSort]);
 
     // Reset page when filters change
     useEffect(() => {
         setPage(1);
-    }, [debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta]);
+    }, [debouncedSearch, filterParroquia, filterMunicipio, filterEstado, filterSituacion, filterGrupo, filterMaquinaFiscal, filterTipoFacturacion, filterAbiertoCerrado, filterOrdinarioEspecial, filterFechaDesde, filterFechaHasta, filterSort]);
 
     // Fetch data with cancellation
     useEffect(() => {
@@ -450,6 +452,7 @@ export function EntidadesTab() {
                 estado: filterEstado && filterEstado !== "all" ? filterEstado : undefined,
                 situacion: filterSituacion && filterSituacion !== "all" ? filterSituacion : undefined,
                 grupo: filterGrupo && filterGrupo !== "all" ? filterGrupo : undefined,
+                sort: filterSort === "updated_desc" ? "updated_desc" : undefined,
             });
             toast.success("Archivo descargado correctamente");
         } catch (error) {
@@ -558,6 +561,16 @@ export function EntidadesTab() {
                             placeholder="Hasta"
                             className="w-36 bg-slate-800 border border-slate-700 text-slate-200 rounded-md px-3 py-2 text-sm"
                         />
+
+                        <Select value={filterSort} onValueChange={(v) => setFilterSort(v as "rif_asc" | "updated_desc")}>
+                            <SelectTrigger className="w-44 bg-slate-800 border-slate-700 text-slate-200">
+                                <SelectValue placeholder="Ordenar por" />
+                            </SelectTrigger>
+                            <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectItem value="rif_asc">RIF (A-Z)</SelectItem>
+                                <SelectItem value="updated_desc">Editados primero</SelectItem>
+                            </SelectContent>
+                        </Select>
                     </div>
                 )}
 

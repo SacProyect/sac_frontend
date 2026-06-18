@@ -49,6 +49,7 @@ export interface EntidadFilters {
     fecha_censo_desde?: string;
     fecha_censo_hasta?: string;
     pending_enrichment?: boolean;
+    sort?: "rif_asc" | "updated_desc";
     page?: number;
     limit?: number;
 }
