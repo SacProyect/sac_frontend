@@ -1031,9 +1031,9 @@ function EntityForm({ data, onChange }: { data: CreateEntidadPayload; onChange: 
                         <div className="space-y-1.5 sm:col-span-2">
                             <Label className="text-slate-400 text-xs">Tipo Facturación</Label>
                             <div className="flex flex-wrap gap-2">
-                                {["IMPRESORA FISCAL","REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
+                                {["REGISTRADORA","FACTURACIÓN DIGITAL","FORMA LIBRE"].map(v => (
                                     <Button key={v} variant={data.tipo_facturacion === v ? "enrich-active-violet" : "enrich-inactive"} size="sm" className="h-8 text-xs"
-                                        onClick={() => update("tipo_facturacion", v)}>{v.replace("IMPRESORA FISCAL","Impresora Fiscal").replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
+                                        onClick={() => update("tipo_facturacion", v)}>{v.replace("FACTURACIÓN DIGITAL","Digital").replace("FORMA LIBRE","Forma Libre")}</Button>
                                 ))}
                             </div>
                         </div>
