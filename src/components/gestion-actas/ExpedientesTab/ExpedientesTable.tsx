@@ -434,8 +434,9 @@ export function ExpedientesTable({ rows, isLoading = false }: Props) {
                 aria-rowcount={rowCount}
                 aria-colcount={COL_COUNT}
                 aria-busy={isLoading}
-                className="w-full"
+                className="w-full overflow-x-auto scrollbar-thin"
             >
+                <div className="min-w-[1800px]">
                 <TableHeader />
                 {isLoading ? (
                     <SkeletonRows />
@@ -467,6 +468,7 @@ export function ExpedientesTable({ rows, isLoading = false }: Props) {
                         <TotalsRow totals={totals} />
                     </>
                 )}
+                </div>
             </div>
         </div>
     );

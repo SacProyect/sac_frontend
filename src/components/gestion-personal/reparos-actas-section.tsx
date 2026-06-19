@@ -36,6 +36,7 @@ import {
     DialogTitle,
 } from "@/components/UI/dialog";
 import { Textarea } from "@/components/UI/textarea";
+import { MontoInput } from "@/components/gestion-actas/MontoInput";
 import {
     Table,
     TableBody,
@@ -389,46 +390,26 @@ function ActaMetadataFields({
                     className="bg-background border-border"
                 />
             </div>
-            <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Monto ISLR</Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoIslr}
-                    onChange={(e) => setForm((s) => ({ ...s, montoIslr: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                />
-            </div>
-            <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Monto IVA</Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoIva}
-                    onChange={(e) => setForm((s) => ({ ...s, montoIva: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                />
-            </div>
-            <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Aceptación y pago del reparo</Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoAceptacionPago}
-                    onChange={(e) => setForm((s) => ({ ...s, montoAceptacionPago: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                />
-            </div>
-            <div className="space-y-1">
-                <Label className="text-xs text-muted-foreground">Total</Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoTotal}
-                    onChange={(e) => setForm((s) => ({ ...s, montoTotal: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                />
-            </div>
+            <MontoInput
+                label="Monto ISLR"
+                value={form.montoIslr}
+                onChange={(v) => setForm((s) => ({ ...s, montoIslr: v }))}
+            />
+            <MontoInput
+                label="Monto IVA"
+                value={form.montoIva}
+                onChange={(v) => setForm((s) => ({ ...s, montoIva: v }))}
+            />
+            <MontoInput
+                label="Aceptación y pago del reparo"
+                value={form.montoAceptacionPago}
+                onChange={(v) => setForm((s) => ({ ...s, montoAceptacionPago: v }))}
+            />
+            <MontoInput
+                label="Total"
+                value={form.montoTotal}
+                onChange={(v) => setForm((s) => ({ ...s, montoTotal: v }))}
+            />
         </div>
     );
 }

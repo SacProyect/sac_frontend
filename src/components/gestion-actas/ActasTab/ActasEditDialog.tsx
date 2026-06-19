@@ -20,6 +20,7 @@ import {
     SelectValue,
 } from '@/components/UI/select';
 import { Textarea } from '@/components/UI/textarea';
+import { MontoInput } from '@/components/gestion-actas/MontoInput';
 import { adminUpdateReparoActa } from '@/components/utils/api/fiscal-operaciones-functions';
 import type { RepairReportUploadMeta } from '@/components/utils/api/taxpayer-functions';
 import type { ActaReparo, ImpuestoTipo, ActaFormState } from './types';
@@ -494,75 +495,30 @@ export function ActasEditDialog({
                                     disabled={saving}
                                 />
                             </div>
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="actas-meta-montoIslr"
-                                    className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
-                                >
-                                    Monto ISLR
-                                </Label>
-                                <Input
-                                    id="actas-meta-montoIslr"
-                                    inputMode="decimal"
-                                    value={form.montoIslr}
-                                    onChange={(e) =>
-                                        setForm((s) => ({
-                                            ...s,
-                                            montoIslr: e.target.value,
-                                        }))
-                                    }
-                                    className="bg-background border-border"
-                                    placeholder="0,00"
-                                    data-testid="actas-edit-montoIslr"
-                                    disabled={saving}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="actas-meta-montoIva"
-                                    className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
-                                >
-                                    Monto IVA
-                                </Label>
-                                <Input
-                                    id="actas-meta-montoIva"
-                                    inputMode="decimal"
-                                    value={form.montoIva}
-                                    onChange={(e) =>
-                                        setForm((s) => ({
-                                            ...s,
-                                            montoIva: e.target.value,
-                                        }))
-                                    }
-                                    className="bg-background border-border"
-                                    placeholder="0,00"
-                                    data-testid="actas-edit-montoIva"
-                                    disabled={saving}
-                                />
-                            </div>
-                            <div className="space-y-1">
-                                <Label
-                                    htmlFor="actas-meta-montoTotal"
-                                    className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
-                                >
-                                    Total
-                                </Label>
-                                <Input
-                                    id="actas-meta-montoTotal"
-                                    inputMode="decimal"
-                                    value={form.montoTotal}
-                                    onChange={(e) =>
-                                        setForm((s) => ({
-                                            ...s,
-                                            montoTotal: e.target.value,
-                                        }))
-                                    }
-                                    className="bg-background border-border"
-                                    placeholder="0,00"
-                                    data-testid="actas-edit-montoTotal"
-                                    disabled={saving}
-                                />
-                            </div>
+                            <MontoInput
+                                label="Monto ISLR"
+                                value={form.montoIslr}
+                                onChange={(v) => setForm((s) => ({ ...s, montoIslr: v }))}
+                                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                                testId="actas-edit-montoIslr"
+                                disabled={saving}
+                            />
+                            <MontoInput
+                                label="Monto IVA"
+                                value={form.montoIva}
+                                onChange={(v) => setForm((s) => ({ ...s, montoIva: v }))}
+                                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                                testId="actas-edit-montoIva"
+                                disabled={saving}
+                            />
+                            <MontoInput
+                                label="Total"
+                                value={form.montoTotal}
+                                onChange={(v) => setForm((s) => ({ ...s, montoTotal: v }))}
+                                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                                testId="actas-edit-montoTotal"
+                                disabled={saving}
+                            />
                         </div>
                     </div>
                 )}

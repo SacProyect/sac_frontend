@@ -19,6 +19,7 @@ import {
     SelectValue,
 } from '@/components/UI/select';
 import { Textarea } from '@/components/UI/textarea';
+import { MontoInput } from '@/components/gestion-actas/MontoInput';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
 
@@ -605,47 +606,29 @@ function MetadataFields({
                 />
             </div>
 
-            <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Monto ISLR
-                </Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoIslr}
-                    onChange={(e) => setForm((s) => ({ ...s, montoIslr: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                    data-testid="actas-meta-montoIslr"
-                />
-            </div>
+            <MontoInput
+                label="Monto ISLR"
+                value={form.montoIslr}
+                onChange={(v) => setForm((s) => ({ ...s, montoIslr: v }))}
+                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                testId="actas-meta-montoIslr"
+            />
 
-            <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Monto IVA
-                </Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoIva}
-                    onChange={(e) => setForm((s) => ({ ...s, montoIva: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                    data-testid="actas-meta-montoIva"
-                />
-            </div>
+            <MontoInput
+                label="Monto IVA"
+                value={form.montoIva}
+                onChange={(v) => setForm((s) => ({ ...s, montoIva: v }))}
+                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                testId="actas-meta-montoIva"
+            />
 
-            <div className="space-y-1">
-                <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                    Total
-                </Label>
-                <Input
-                    inputMode="decimal"
-                    value={form.montoTotal}
-                    onChange={(e) => setForm((s) => ({ ...s, montoTotal: e.target.value }))}
-                    className="bg-background border-border"
-                    placeholder="0,00"
-                    data-testid="actas-meta-montoTotal"
-                />
-            </div>
+            <MontoInput
+                label="Total"
+                value={form.montoTotal}
+                onChange={(v) => setForm((s) => ({ ...s, montoTotal: v }))}
+                labelClassName="text-[10px] font-bold uppercase tracking-wide text-muted-foreground"
+                testId="actas-meta-montoTotal"
+            />
 
             {(form.impuestoTipo === 'IVA' || form.impuestoTipo === 'IVA-ISLR') && (
                 <div className="space-y-2 sm:col-span-2 lg:col-span-3 p-3 rounded-md border border-border bg-muted/20">

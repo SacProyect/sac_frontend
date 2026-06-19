@@ -404,8 +404,9 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
                 aria-rowcount={rowCount}
                 aria-colcount={COL_COUNT}
                 aria-busy={isLoading}
-                className="w-full"
+                className="w-full overflow-x-auto scrollbar-thin"
             >
+                <div className="min-w-[700px]">
                 <ActasHeader />
                 {isLoading ? (
                     <SkeletonRows />
@@ -437,6 +438,7 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
                         />
                     ))
                 )}
+                </div>
             </div>
 
             <ActasEditDialog

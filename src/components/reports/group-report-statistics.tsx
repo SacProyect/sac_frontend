@@ -127,7 +127,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCollected.toLocaleString()}</p>
+                                            <p>{data.totalCollected.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -138,7 +138,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalIVA.toLocaleString()}</p>
+                                            <p>{data.totalIVA.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -149,7 +149,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalISLR.toLocaleString()}</p>
+                                            <p>{data.totalISLR.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -160,7 +160,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalWarnings.toLocaleString()}</p>
+                                            <p>{data.totalWarnings.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -171,7 +171,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalFines.toLocaleString()}</p>
+                                            <p>{data.totalFines.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -182,7 +182,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p>{data.totalCompromises.toLocaleString()}</p>
+                                            <p>{data.totalCompromises.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>
@@ -195,7 +195,7 @@ function GroupReportStatistics({ groupData, pdfMode = false, forceType }: GroupR
                                     </div>
                                     {sortedData?.map((data, idx) => (
                                         <div key={idx} className="flex flex-col items-center py-2 bg-gray-200 border-t-2 border-gray-300">
-                                            <p className="text-xs">{data.totalTaxpayers.toLocaleString()}</p>
+                                            <p className="text-xs">{data.totalTaxpayers.toLocaleString('es-VE')}</p>
                                         </div>
                                     ))}
                                 </div>

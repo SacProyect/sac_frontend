@@ -60,28 +60,28 @@ export function GroupKpiCards({ data }: GroupKpiCardsProps) {
       <KpiCard
         icon={<Scale className="w-4 h-4 text-red-400" />}
         label="Multas"
-        value={kpis.totalFines.toLocaleString()}
+        value={kpis.totalFines.toLocaleString('es-VE')}
         sub="Total registradas"
         color="bg-red-500/10"
       />
       <KpiCard
         icon={<AlertTriangle className="w-4 h-4 text-amber-400" />}
         label="Avisos"
-        value={kpis.totalWarnings.toLocaleString()}
+        value={kpis.totalWarnings.toLocaleString('es-VE')}
         sub="Total emitidos"
         color="bg-amber-500/10"
       />
       <KpiCard
         icon={<Handshake className="w-4 h-4 text-blue-400" />}
         label="Compromisos"
-        value={kpis.totalCompromises.toLocaleString()}
+        value={kpis.totalCompromises.toLocaleString('es-VE')}
         sub="Total registrados"
         color="bg-blue-500/10"
       />
       <KpiCard
         icon={<Users className="w-4 h-4 text-indigo-400" />}
         label="Contribuyentes"
-        value={kpis.totalTaxpayers.toLocaleString()}
+        value={kpis.totalTaxpayers.toLocaleString('es-VE')}
         sub="Asignados al grupo"
         color="bg-indigo-500/10"
       />

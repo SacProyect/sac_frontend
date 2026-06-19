@@ -560,18 +560,18 @@ export default function AdminPageV2() {
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4 mb-6">
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Total Contribuyentes</p>
-          <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString()}</p>
+          <p className="text-2xl font-bold text-white mt-2">{loading ? '—' : total.toLocaleString('es-VE')}</p>
         </Card>
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Especiales</p>
           <p className="text-2xl font-bold text-purple-400 mt-2">
-            {loading ? '—' : totalSpecial.toLocaleString()}
+            {loading ? '—' : totalSpecial.toLocaleString('es-VE')}
           </p>
         </Card>
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
           <p className="text-slate-400 text-sm">Ordinarios</p>
           <p className="text-2xl font-bold text-blue-400 mt-2">
-            {loading ? '—' : totalOrdinary.toLocaleString()}
+            {loading ? '—' : totalOrdinary.toLocaleString('es-VE')}
           </p>
         </Card>
         <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">
@@ -586,7 +586,7 @@ export default function AdminPageV2() {
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-2">
         <p className="text-sm text-slate-400">
           {loading ? 'Cargando...' : total > 0 ? (
-            <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total.toLocaleString()}</span> contribuyentes</>
+            <>Vista <span className="text-indigo-400 font-bold">{((currentPage - 1) * limit + 1)}–{Math.min(currentPage * limit, total)}</span> de <span className="text-slate-200 font-bold">{total.toLocaleString('es-VE')}</span> contribuyentes</>
           ) : '0 resultados'}
         </p>
         <div className="flex items-center gap-1 bg-slate-900/60 p-1 rounded-xl border border-slate-700">
