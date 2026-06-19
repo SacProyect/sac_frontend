@@ -1,5 +1,5 @@
 import { Outlet, Link, useLocation, useNavigate, useNavigation } from "react-router-dom";
-import { useState } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import { GlobalLoader } from '@/components/UI/global-loader';
 import { useAuth } from '@/hooks/use-auth';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/UI/sheet';
@@ -7,16 +7,24 @@ import { Button } from '@/components/UI/button';
 import { Breadcrumb, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator } from '@/components/UI/breadcrumb';
 import { Avatar, AvatarFallback } from '@/components/UI/avatar';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/UI/dropdown-menu';
-import { Menu, LogOut, Settings, Landmark, Moon, Sun } from 'lucide-react';
-import { useNavItems } from '@/hooks/use-nav-items';
+import { Menu, LogOut, Settings, Moon, Sun, CreditCard } from 'lucide-react';
+import { useNavStructure } from '@/hooks/use-nav-items';
 import { useTheme } from '@/hooks/theme-provider';
 import { isInternalAuditFeatureEnabled, isThemeToggleEnabled } from '@/config/feature-flags';
 import { NotificationBell } from "@/components/Navigation/notification-bell";
 import { MaintenanceNotice } from "@/components/maintenance/maintenance-notice";
+import { DevSubscriptionBanner } from "@/components/subscription/dev-subscription-banner";
 import { useDemoMode } from '@/hooks/use-demo-mode';
 import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
 import DevFiscalGroupSwitcher from "@/components/dev/debug-fiscal-group-switcher";
+<<<<<<< Updated upstream
 import { AnnouncementQueue } from "@/components/announcements/AnnouncementQueue";
+=======
+import { FiscalAiAssistant } from "@/components/subscription/fiscal-ai-assistant";
+import { AppSidebarContent } from '@/components/Navigation/app-sidebar-content';
+import { isSubscriptionAdmin } from '@/config/subscription-admin';
+import { usePendingSubscriptionCount } from '@/hooks/use-pending-subscription-count';
+>>>>>>> Stashed changes
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0
@@ -33,7 +41,7 @@ import { AnnouncementQueue } from "@/components/announcements/AnnouncementQueue"
 const MainLayoutV2 = () => {
     const location = useLocation();
     const navigate = useNavigate();
-    const { user, logout } = useAuth();
+    const { user, logout, devRoleOverride } = useAuth();
     const { isDemoModeActive } = useDemoMode();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -41,14 +49,40 @@ const MainLayoutV2 = () => {
         enabled: Boolean(user && !isDemoModeActive),
     });
 
-    // Ítems de navegación resueltos según el rol del usuario (Strategy Pattern)
-    const navItems = useNavItems();
+    // Navegación agrupada según el rol del usuario
+    const navStructure = useNavStructure();
+    const { groups: navGroups, settings: settingsItem } = navStructure;
 
     const isRouteActive = (currentPath: string, targetPath: string): boolean => {
         if (currentPath === targetPath) return true;
         if (targetPath === "/") return currentPath === "/";
         return currentPath.startsWith(`${targetPath}/`);
     };
+
+    const activeGroupId = useMemo(() => {
+        for (const group of navGroups) {
+            if (group.items.some((item) => isRouteActive(location.pathname, item.href))) {
+                return group.id;
+            }
+        }
+        return null;
+    }, [navGroups, location.pathname]);
+
+    const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({});
+
+    useEffect(() => {
+        if (!activeGroupId) return;
+        setOpenGroups((prev) => {
+            if (prev[activeGroupId]) return prev;
+            return { ...prev, [activeGroupId]: true };
+        });
+    }, [location.pathname, activeGroupId]);
+
+    const toggleGroup = useCallback((groupId: string) => {
+        setOpenGroups((prev) => ({ ...prev, [groupId]: !prev[groupId] }));
+    }, []);
+
+    const closeSidebar = useCallback(() => setSidebarOpen(false), []);
 
     const isInternalAuditRoute = location.pathname === "/auditoria-interna";
 
@@ -66,60 +100,6 @@ const MainLayoutV2 = () => {
         navigate('/login');
     };
 
-    // Contenido del panel lateral (Sheet en todas las resoluciones)
-    const SidebarContent = () => (
-        <div className="flex flex-col h-full text-card-foreground">
-            <div className="p-6">
-                <div className="flex items-center gap-3 px-2">
-                    <div className="w-8 h-8 rounded-lg bg-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/20 text-white">
-                        <Landmark className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <h1 className="text-sm font-bold text-foreground tracking-tight leading-none">SAC FISCAL</h1>
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">Plataforma v2.0</p>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex-1 px-4 py-2 overflow-y-auto invisible-scrollbar">
-                <div className="space-y-1">
-                    <p className="px-3 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">Menú Principal</p>
-                    {navItems.map((item) => {
-                        const isActive = isRouteActive(location.pathname, item.href);
-                        return (
-                            <Link
-                                key={item.href}
-                                to={item.href}
-                                onClick={() => setSidebarOpen(false)}
-                                className={`group flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 relative ${isActive
-                                        ? 'bg-indigo-600/10 text-indigo-700 dark:text-indigo-400 font-medium'
-                                        : 'hover:bg-muted/60 text-muted-foreground hover:text-foreground'
-                                    }`}
-                            >
-                                {isActive && (
-                                    <div className="absolute left-0 w-1 h-5 bg-indigo-600 dark:bg-indigo-500 rounded-r-full" />
-                                )}
-                                <span className={`${isActive ? 'text-indigo-700 dark:text-indigo-400' : 'text-muted-foreground group-hover:text-foreground'} transition-colors`}>
-                                    {item.icon}
-                                </span>
-                                <span className="text-sm">{item.label}</span>
-                            </Link>
-                        );
-                    })}
-                </div>
-            </div>
-
-            <div className="p-4 mt-auto">
-                <div className="bg-muted/50 dark:bg-slate-800/40 rounded-xl p-3 border border-border">
-                    <p className="text-[10px] text-muted-foreground text-center font-medium italic">
-                        Sistema Automatizado de Contribuyentes
-                    </p>
-                </div>
-            </div>
-        </div>
-    );
-
-    /** Navegación lateral: mismo Sheet en móvil, tablet y escritorio (sidebar no fijo en PC). */
     const SidebarMenu = () => (
         <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
             <SheetTrigger asChild>
@@ -133,7 +113,14 @@ const MainLayoutV2 = () => {
                 </Button>
             </SheetTrigger>
             <SheetContent side="left" className="p-0 w-64 sm:w-72 max-w-[min(100vw,20rem)]">
-                <SidebarContent />
+                <AppSidebarContent
+                    navGroups={navGroups}
+                    settingsItem={settingsItem}
+                    pathname={location.pathname}
+                    openGroups={openGroups}
+                    onToggleGroup={toggleGroup}
+                    onNavigate={closeSidebar}
+                />
             </SheetContent>
         </Sheet>
     );
@@ -141,6 +128,8 @@ const MainLayoutV2 = () => {
     // Header con breadcrumbs y menú de usuario
     const Header = ({ breadcrumbs }: { breadcrumbs?: Array<{ label: string; href?: string }> }) => {
         const { theme, toggleTheme } = useTheme();
+        const { count: pendingApprovals } = usePendingSubscriptionCount();
+        const showApprovalsLink = isSubscriptionAdmin(user, devRoleOverride);
         const userInitials = user?.name
             ?.split(' ')
             .map(n => n[0])
@@ -240,6 +229,20 @@ const MainLayoutV2 = () => {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end" className="w-56">
                                     <div className="px-2 py-1.5 text-xs font-semibold text-muted-foreground mb-1 border-b border-border">Mi Cuenta</div>
+                                    {showApprovalsLink && (
+                                        <DropdownMenuItem
+                                            onClick={() => navigate('/aprobaciones-suscripcion')}
+                                            className="gap-2 cursor-pointer py-2.5"
+                                        >
+                                            <CreditCard className="h-4 w-4" />
+                                            <span className="text-sm font-medium flex-1">Aprobaciones de pago</span>
+                                            {pendingApprovals > 0 && (
+                                                <span className="min-w-[1.25rem] h-5 px-1.5 rounded-full bg-amber-500 text-[10px] font-bold text-white flex items-center justify-center">
+                                                    {pendingApprovals > 9 ? '9+' : pendingApprovals}
+                                                </span>
+                                            )}
+                                        </DropdownMenuItem>
+                                    )}
                                     {isThemeToggleEnabled && (
                                         <DropdownMenuItem
                                             onClick={toggleTheme}
@@ -316,9 +319,11 @@ const MainLayoutV2 = () => {
 
                     <div className="px-4 py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 max-w-full relative z-10 transition-all duration-500">
                         {!isDemoModeActive && <MaintenanceNotice />}
+                        {!isDemoModeActive && <DevSubscriptionBanner />}
                         <Outlet />
                     </div>
                 </main>
+                <FiscalAiAssistant />
             </div>
         </div>
     );

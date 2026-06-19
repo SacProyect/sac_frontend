@@ -1,3 +1,4 @@
+import { AutomationPromoBanner } from '@/components/subscription/automation-promo-banner';
 import { useState, useEffect, useMemo } from 'react';
 import { getTaxpayerCensus } from '@/components/utils/api/taxpayer-census-functions';
 import { deleteTaxpayerCensus } from '@/components/utils/api/taxpayer-census-functions';
@@ -116,6 +117,8 @@ export default function CensusTablePageV2() {
           Volver
         </Button>}
       />
+
+      <AutomationPromoBanner className="mb-2" />
 
       {/* Filtros */}
       <Card className="bg-slate-800 border-slate-700 p-4 transition-all duration-200 hover:border-slate-600 hover:shadow-md">

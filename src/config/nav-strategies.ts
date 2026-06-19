@@ -1,7 +1,13 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
+<<<<<<< Updated upstream
 import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem, gestionActasNavItem } from '@/config/nav-routes';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
+=======
+import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem } from '@/config/nav-routes';
+import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
+import { isSubscriptionAdmin } from '@/config/subscription-admin';
+>>>>>>> Stashed changes
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.
@@ -114,7 +120,7 @@ const applyFeatureFlags = (items: NavItem[]): NavItem[] => {
  * @param user - El usuario autenticado
  * @returns Lista de NavItems filtrada según rol y restricciones del usuario
  */
-export const resolveNavItems = (user: User | null): NavItem[] => {
+export const resolveNavItems = (user: User | null, devRoleOverride?: string | null): NavItem[] => {
     if (!user) return [];
 
     const strategy = NAV_STRATEGIES[user.role];
@@ -127,6 +133,10 @@ export const resolveNavItems = (user: User | null): NavItem[] => {
     const items = strategy(user);
     const filtered = applyFeatureFlags(applyUserRestrictions(items, user.id));
 
+    const withApprovals = isSubscriptionAdmin(user, devRoleOverride)
+        ? [...filtered, ...routeBlocks.subscriptionApprovals]
+        : filtered;
+
     // Ajustes siempre al último, visible para todos los roles
-    return [...filtered, settingsRoute];
+    return [...withApprovals, settingsRoute];
 };

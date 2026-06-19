@@ -1,5 +1,6 @@
-import { ProtectedRoute } from '@/components/Navigation/protected-route';
+import { SubscriptionAdminOnly } from '@/components/Navigation/subscription-admin-only';
 import { AdminOnly } from '@/components/Navigation/admin-only';
+import { ProtectedRoute } from '@/components/Navigation/protected-route';
 
 /**
  * Permite el render solo a usuarios ADMIN o COORDINATOR.
@@ -140,6 +141,7 @@ const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion
 const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
 const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
 const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
+<<<<<<< Updated upstream
 const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmin"));
 const MaquinasFiscalesDashboard = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-dashboard"));
 const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-detail"));
@@ -149,6 +151,11 @@ const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingre
 const CensusQuickCapturePage = lazyWithRetry(() => import("@/pages/Census/census-quick-capture-page"));
 const CensusMapPage = lazyWithRetry(() => import("@/pages/Census/census-map-page"));
 const CensusGroupPage = lazyWithRetry(() => import("@/pages/Census/census-group-page"));
+=======
+const AutomationPlansPage = lazyWithRetry(() => import("@/pages/subscription/automation-plans-page"));
+const SubscriptionApprovalsPage = lazyWithRetry(() => import("@/pages/subscription/subscription-approvals-page"));
+
+>>>>>>> Stashed changes
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -257,6 +264,24 @@ export const router = createBrowserRouter([
                     {
                         path: "settings",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Ajustes..." />}><SettingsPageV2 /></Suspense>,
+                    },
+                    {
+                        path: "automatizacion/planes",
+                        element: (
+                            <Suspense fallback={<GlobalLoader message="Cargando planes..." />}>
+                                <AutomationPlansPage />
+                            </Suspense>
+                        ),
+                    },
+                    {
+                        path: "aprobaciones-suscripcion",
+                        element: (
+                            <SubscriptionAdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando aprobaciones..." />}>
+                                    <SubscriptionApprovalsPage />
+                                </Suspense>
+                            </SubscriptionAdminOnly>
+                        ),
                     },
                     {
                         path: "stats",

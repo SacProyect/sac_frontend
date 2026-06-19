@@ -15,7 +15,11 @@ import {
     Shield,
     Telescope,
     Megaphone,
+<<<<<<< Updated upstream
     Cpu,
+=======
+    CreditCard,
+>>>>>>> Stashed changes
 } from 'lucide-react';
 import { NavItem } from '@/types/nav';
 
@@ -108,9 +112,15 @@ export const routeBlocks = {
         { href: '/divulgacion-presencia-fiscal', label: 'Divulgación y Presencia Fiscal', icon: <Megaphone className="w-4 h-4" /> },
     ] as NavItem[],
 
+<<<<<<< Updated upstream
     /** Solo ADMIN — módulo de Controles de Ingresos. */
     controlesIngreso: [
         { href: '/controles-de-ingreso', label: 'Controles de Ingresos', icon: <ClipboardCheck className="w-4 h-4" /> },
+=======
+    /** Solo admin de suscripciones (glonga) — aprobaciones de pago. */
+    subscriptionApprovals: [
+        { href: '/aprobaciones-suscripcion', label: 'Aprobaciones de pago', icon: <CreditCard className="w-4 h-4" /> },
+>>>>>>> Stashed changes
     ] as NavItem[],
 
     /** Genera la ruta de estadísticas personalizada con el ID del usuario */

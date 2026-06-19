@@ -61,6 +61,7 @@ export default function DevRoleSwitcher() {
 									key={r.id}
 									onClick={() => {
 										setDevRoleOverride(r.id);
+										window.dispatchEvent(new Event('sac-subscription-changed'));
 									}}
 									className={`group flex items-center justify-between p-3 rounded-xl border transition-all active:scale-[0.98] ${
 										isActive
@@ -82,7 +83,10 @@ export default function DevRoleSwitcher() {
 
 					<div className="mt-5 pt-4 border-t border-slate-800/50 flex items-center justify-between">
 						<button
-							onClick={() => setDevRoleOverride(null)}
+							onClick={() => {
+								setDevRoleOverride(null);
+								window.dispatchEvent(new Event('sac-subscription-changed'));
+							}}
 							className="flex items-center gap-2 text-[10px] font-bold text-slate-500 hover:text-rose-400 transition-colors"
 						>
 							<RotateCcw className="w-3 w-3" />

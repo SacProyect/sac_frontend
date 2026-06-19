@@ -1,5 +1,8 @@
+import { AutomationPromoBanner } from '@/components/subscription/automation-promo-banner';
+import { BulkTaxpayerImportDialog } from '@/components/subscription/bulk-taxpayer-import-dialog';
+import { useSubscriptionFeatures } from '@/hooks/use-subscription-features';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/use-auth';
 import { Card } from '@/components/UI/card';
 import { Button } from '@/components/UI/button';
@@ -46,6 +49,8 @@ import {
   Plus,
   FileText,
   Scale,
+  FileSpreadsheet,
+  Lock,
 } from 'lucide-react';
 import type { Taxpayer } from '@/types/taxpayer';
 import { Skeleton } from '@/components/UI/skeleton';
@@ -78,6 +83,8 @@ export default function AdminPageV2() {
   const [isAddContribuyenteOpen, setIsAddContribuyenteOpen] = useState(false);
   const [isAddAvisoOpen, setIsAddAvisoOpen] = useState(false);
   const [isAddMultaOpen, setIsAddMultaOpen] = useState(false);
+  const [isBulkImportOpen, setIsBulkImportOpen] = useState(false);
+  const { features: subFeatures, loading: subLoading } = useSubscriptionFeatures();
   const [searchFocused, setSearchFocused] = useState(false);
   const searchContainerRef = useRef<HTMLDivElement>(null);
 
@@ -404,15 +411,37 @@ export default function AdminPageV2() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-white tracking-tight">Administración</h1>
-          <p className="text-slate-400 mt-1">Gestión integral de contribuyentes y providencias</p>
-        </div>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div className="shrink-0 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold text-white tracking-tight">Administración</h1>
+            <p className="text-slate-400 mt-1 text-sm sm:text-base">Gestión integral de contribuyentes y providencias</p>
+          </div>
 
-        {/* Acciones Rápidas (Ahora en el Top-Right) */}
-        <div className="flex flex-wrap items-center gap-2.5">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full md:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 shrink-0 w-full lg:w-auto">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full lg:w-auto">
+            {subFeatures.bulkImport ? (
+              <Button
+                onClick={() => setIsBulkImportOpen(true)}
+                size="sm"
+                className="bg-violet-600 hover:bg-violet-500 text-white font-semibold rounded-lg shadow-md shadow-violet-900/30 transition-all duration-200 active:scale-95 flex items-center justify-center gap-1.5 px-3 h-9 text-xs"
+              >
+                <FileSpreadsheet className="w-3.5 h-3.5 shrink-0" />
+                <span className="truncate">Importar</span>
+              </Button>
+            ) : !subLoading ? (
+              <Button
+                asChild
+                size="sm"
+                variant="outline"
+                className="border-violet-500/40 text-violet-300 h-9 text-xs"
+              >
+                <Link to="/automatizacion/planes">
+                  <Lock className="w-3.5 h-3.5 shrink-0 mr-1" />
+                  <span className="truncate">Importar</span>
+                </Link>
+              </Button>
+            ) : null}
             <Button
               onClick={() => setIsAddContribuyenteOpen(true)}
               size="sm"
@@ -440,8 +469,10 @@ export default function AdminPageV2() {
               <span className="truncate">Multa</span>
             </Button>
           </div>
+          </div>
         </div>
 
+        <AutomationPromoBanner />
       </div>
 
       {/* Filtros y Búsqueda (Arriba) */}
@@ -664,6 +695,25 @@ export default function AdminPageV2() {
       </Dialog>
 
       {/* Modales de Acciones Rápidas */}
+      <BulkTaxpayerImportDialog
+        open={isBulkImportOpen}
+        onOpenChange={setIsBulkImportOpen}
+        onComplete={async () => {
+          try {
+            const yearFilter = yearValue !== 'Todos' ? parseInt(yearValue, 10) : undefined;
+            const searchFilter = debouncedSearch.trim() || undefined;
+            const response = await getTaxpayers(currentPage, limit, yearFilter, searchFilter);
+            setTaxpayers(response.data ?? []);
+            setTotal(response.total ?? 0);
+            setTotalPages(response.totalPages ?? 1);
+            setTotalSpecial(response.totalSpecial ?? 0);
+            setTotalOrdinary(response.totalOrdinary ?? 0);
+          } catch (e) {
+            console.error(e);
+          }
+        }}
+      />
+
       <AddContribuyenteModalV2
         isOpen={isAddContribuyenteOpen}
         onClose={() => setIsAddContribuyenteOpen(false)}

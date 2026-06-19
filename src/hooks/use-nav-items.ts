@@ -1,18 +1,26 @@
 import { useMemo } from 'react';
 import { useAuth } from '@/hooks/use-auth';
 import { resolveNavItems } from '@/config/nav-strategies';
-import { NavItem } from '@/types/nav';
+import { groupNavItems } from '@/config/nav-groups';
+import { NavStructure } from '@/types/nav';
 
 /**
- * Hook que expone los ítems de navegación del usuario autenticado.
- * 
- * Usa `useMemo` para evitar recalcular las rutas en cada render.
- * La lógica real vive en `nav-strategies.ts` (Strategy Pattern).
- * 
- * @returns Lista de NavItems calculada según el rol y restricciones del usuario.
+ * Hook que expone la estructura de navegación agrupada del usuario autenticado.
  */
-export const useNavItems = (): NavItem[] => {
-    const { user } = useAuth();
+export const useNavStructure = (): NavStructure => {
+    const { user, devRoleOverride } = useAuth();
 
-    return useMemo(() => resolveNavItems(user ?? null), [user]);
+    return useMemo(() => {
+        const items = resolveNavItems(user ?? null, devRoleOverride);
+        return groupNavItems(items);
+    }, [user, devRoleOverride]);
+};
+
+/** @deprecated Usar useNavStructure para menú con grupos */
+export const useNavItems = () => {
+    const { groups, settings } = useNavStructure();
+    return useMemo(
+        () => [...groups.flatMap((g) => g.items), ...(settings ? [settings] : [])],
+        [groups, settings],
+    );
 };

@@ -1,5 +1,7 @@
 import { Card } from '@/components/UI/card';
 import { PageHeader } from '@/components/UI/v2';
+import { AutomationPromoBanner } from '@/components/subscription/automation-promo-banner';
+import { BulkIvaImportPanel } from '@/components/subscription/bulk-iva-import-panel';
 import IvaForm from '@/components/iva/iva-form';
 import { Button } from '@/components/UI/button';
 import { ArrowLeft } from 'lucide-react';
@@ -19,6 +21,11 @@ export default function IvaReportV2() {
           Volver
         </Button>}
       />
+
+      <AutomationPromoBanner className="mb-2" />
+
+      <BulkIvaImportPanel />
+
       <div className="w-full">
         <IvaForm />
       </div>
