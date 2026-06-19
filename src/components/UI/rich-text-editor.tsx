@@ -105,7 +105,7 @@ const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>(
     // WHY: sync external value changes (e.g. when editing an announcement)
     useEffect(() => {
       if (editor && value !== editor.getHTML()) {
-        editor.commands.setContent(value, false)
+        editor.commands.setContent(value, { emitUpdate: false })
       }
     }, [value]) // intentionally not including editor to avoid loop
 

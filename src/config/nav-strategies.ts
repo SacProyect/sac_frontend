@@ -1,13 +1,8 @@
 import { NavItem } from '@/types/nav';
 import { User } from '@/types/user';
-<<<<<<< Updated upstream
 import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem, maquinasFiscalesNavItem, gestionActasNavItem } from '@/config/nav-routes';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
-=======
-import { sharedRoutes, routeBlocks, settingsRoute, RESTRICTED_ROUTES, RESTRICTED_USER_IDS, auditTrailNavItem, internalAuditNavItem, visitsRoute, documentosNavItem } from '@/config/nav-routes';
-import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled } from '@/config/feature-flags';
 import { isSubscriptionAdmin } from '@/config/subscription-admin';
->>>>>>> Stashed changes
 
 /**
  * Contrato que debe cumplir cada estrategia de navegación.

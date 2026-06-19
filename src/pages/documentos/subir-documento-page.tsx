@@ -81,7 +81,6 @@ export default function SubirDocumentoPage() {
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-<<<<<<< Updated upstream
   // Categorías
   const [categories, setCategories] = useState<DocumentCategoryInfo[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
@@ -90,24 +89,6 @@ export default function SubirDocumentoPage() {
   const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
   const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
   const [loadingGroups, setLoadingGroups] = useState(false);
-=======
-	// Estado para coordinaciones
-	const [fiscalGroups, setFiscalGroups] = useState<FiscalGroupInfo[]>([]);
-	const [selectedGroups, setSelectedGroups] = useState<string[]>([]);
-	const [loadingGroups, setLoadingGroups] = useState(false);
-
-	// Cargar coordinaciones al montar
-	useEffect(() => {
-		if (role === "ADMIN") {
-			setLoadingGroups(true);
-			listFiscalGroups()
-				.then((res) => setFiscalGroups(res.data ?? []))
-				.catch(() => {})
-				.finally(() => setLoadingGroups(false));
-		}
-		// COORDINATOR: listFiscalGroups devuelve solo su grupo
-	}, [role]);
->>>>>>> Stashed changes
 
   // Compartición con Unidades Administrativas
   const [adminUnits, setAdminUnits] = useState<AdminUnitInfo[]>([]);

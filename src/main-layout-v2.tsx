@@ -17,14 +17,11 @@ import { DevSubscriptionBanner } from "@/components/subscription/dev-subscriptio
 import { useDemoMode } from '@/hooks/use-demo-mode';
 import { usePresenceHeartbeat } from '@/hooks/use-presence-heartbeat';
 import DevFiscalGroupSwitcher from "@/components/dev/debug-fiscal-group-switcher";
-<<<<<<< Updated upstream
 import { AnnouncementQueue } from "@/components/announcements/AnnouncementQueue";
-=======
 import { FiscalAiAssistant } from "@/components/subscription/fiscal-ai-assistant";
 import { AppSidebarContent } from '@/components/Navigation/app-sidebar-content';
 import { isSubscriptionAdmin } from '@/config/subscription-admin';
 import { usePendingSubscriptionCount } from '@/hooks/use-pending-subscription-count';
->>>>>>> Stashed changes
 
 /**
  * ./main-layout-v2 - Layout con diseño Shadcn UI v2.0

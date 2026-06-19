@@ -311,13 +311,14 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
         setShowModal(false);
     };
 
-    const handleDownloadRepair = async (pdf_url: string) => {
+    const handleDownloadRepair = async (pdfOrKey: string) => {
         if (loading === true) return;
         setLoading(true);
 
         try {
-            // Extraer la key del URL completo
-            const key = pdf_url.replace("https://sacbucketgeneral.s3.amazonaws.com/", "");
+            const key = pdfOrKey.startsWith("http://") || pdfOrKey.startsWith("https://")
+                ? pdfOrKey.replace("https://sacbucketgeneral.s3.amazonaws.com/", "")
+                : pdfOrKey;
 
             const response = await downloadRepairPdf(encodeURIComponent(key));
 
@@ -721,7 +722,7 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
                   {taxpayerData?.process === 'AF' && (
                     <>
                       {taxpayerData.RepairReports.length > 0 ? (
-                        <button type="button" className="is-action-btn ghost" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url)}>
+                        <button type="button" className="is-action-btn ghost" onClick={() => handleDownloadRepair(taxpayerData.RepairReports[0].pdf_url ?? taxpayerData.RepairReports[0].object_key ?? "")}>
                           Descargar acta de reparo
                         </button>
                       ) : (

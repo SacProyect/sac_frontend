@@ -69,7 +69,8 @@ export async function listOperativosFiscales(params: {
 /** Crea operativo ACTA_REPARO vinculado a un reporte de reparo existente. */
 export interface RepairReportListItem {
     id: string;
-    pdf_url: string;
+    object_key: string | null;
+    pdf_url: string | null;
     taxpayerId: string;
     vinculadoAOperativo: boolean;
 }
@@ -86,7 +87,8 @@ export async function listRepairReportsForTaxpayer(taxpayerId: string) {
 /** Actas de reparo visibles en el módulo (admin / coordinador). */
 export interface RepairReportResumenItem {
     id: string;
-    pdf_url: string;
+    object_key: string | null;
+    pdf_url: string | null;
     taxpayerId: string;
     contribuyente: string;
     rif: string;

@@ -1,7 +1,8 @@
 
 
 export type RepairReports = {
-    pdf_url: string;
+    object_key?: string | null;
+    pdf_url: string | null;
     taxpayerId: string;
 }
 

@@ -1025,7 +1025,7 @@ export function ReparosActasSection() {
                                             </TableCell>
                                             <TableCell className="text-right">
                                                 <Button variant="ghost" size="sm" className="h-8 gap-1" asChild>
-                                                    <a href={r.pdf_url} target="_blank" rel="noopener noreferrer">
+                                                    <a href={r.pdf_url ?? r.object_key ?? "#"} target="_blank" rel="noopener noreferrer">
                                                         <ExternalLink className="h-3.5 w-3.5" />
                                                         Abrir
                                                     </a>

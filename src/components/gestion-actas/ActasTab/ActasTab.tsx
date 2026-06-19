@@ -90,7 +90,7 @@ export function ActasTab() {
                 pageSize,
             });
             setItems(data.items);
-            setServerTotal(data.total);
+            setServerTotal(data.total ?? 0);
         } catch (e) {
             // TASK-004a (issue menor #4): persistir el error para que el
             // banner pueda anunciarlo. El `finally` apaga el loading.

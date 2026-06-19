@@ -17,13 +17,28 @@ import {
     Zap,
 } from 'lucide-react';
 import { Button } from '@/components/UI/button';
-import { fiscalAiChatWithTools } from '@/components/utils/api/subscription-functions';
+import {
+    fiscalAiAgent,
+    type AgentAttachment,
+    type AgentPreview,
+} from '@/components/utils/api/subscription-functions';
 import { useSubscriptionFeatures } from '@/hooks/use-subscription-features';
 import { useAuth } from '@/hooks/use-auth';
+import { useAgentPageContext } from '@/hooks/use-agent-page-context';
 import { cn } from '@/lib/utils';
 import toast from 'react-hot-toast';
+import { Download, Table2 } from 'lucide-react';
 
-type ChatMessage = { role: 'user' | 'assistant'; content: string; toolUsed?: boolean };
+const SESSION_STORAGE_KEY = 'sac-ai-session-id';
+
+type ChatMessage = {
+    role: 'user' | 'assistant';
+    content: string;
+    toolUsed?: boolean;
+    stepCount?: number;
+    attachments?: AgentAttachment[];
+    previews?: AgentPreview[];
+};
 
 const WELCOME =
     'Soy tu **Asistente Fiscal IA**. Consulto datos reales de SAC — RIF, cartera, IVA y normativa. ¿Qué necesitas?';
@@ -49,9 +64,9 @@ const SUGGESTIONS_BY_ROLE: Record<string, string[]> = {
     ],
     ADMIN: [
         'Resume mi cartera de contribuyentes',
-        'Contribuyentes sin reporte IVA este mes',
-        'Indicadores globales del sistema',
+        'Excel: sin máquina fiscal y sin IVA 6 meses',
         'Buscar contribuyente por RIF',
+        '¿Qué debe llevar una providencia VDF?',
     ],
 };
 
@@ -78,10 +93,16 @@ function TypingIndicator() {
 function AssistantMessage({
     content,
     toolUsed,
+    stepCount,
+    attachments,
+    previews,
     index,
 }: {
     content: string;
     toolUsed?: boolean;
+    stepCount?: number;
+    attachments?: AgentAttachment[];
+    previews?: AgentPreview[];
     index: number;
 }) {
     const [expanded, setExpanded] = useState(false);
@@ -139,11 +160,13 @@ function AssistantMessage({
                         </button>
                     )}
                 </div>
-                <div className="mt-1 flex items-center gap-2 px-1">
+                <div className="mt-1 flex flex-wrap items-center gap-2 px-1">
                     {toolUsed && (
                         <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-0.5 text-[10px] font-medium text-emerald-400 ring-1 ring-emerald-500/20">
                             <Zap className="h-2.5 w-2.5" />
-                            Verificado en SAC
+                            {stepCount && stepCount > 0
+                                ? `Consultó ${stepCount} fuente${stepCount > 1 ? 's' : ''}`
+                                : 'Verificado en SAC'}
                         </span>
                     )}
                     <button
@@ -163,6 +186,54 @@ function AssistantMessage({
                         )}
                     </button>
                 </div>
+                {attachments && attachments.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-2 px-1">
+                        {attachments.map((a) => (
+                            <a
+                                key={a.downloadUrl}
+                                href={a.downloadUrl}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 rounded-lg border border-violet-500/30 bg-violet-500/10 px-2.5 py-1 text-[11px] font-medium text-violet-300 hover:bg-violet-500/20"
+                            >
+                                <Download className="h-3 w-3" />
+                                {a.filename}
+                            </a>
+                        ))}
+                    </div>
+                )}
+                {previews && previews.length > 0 && (
+                    <details className="mt-2 px-1 text-[11px] text-muted-foreground">
+                        <summary className="cursor-pointer inline-flex items-center gap-1 text-violet-400">
+                            <Table2 className="h-3 w-3" />
+                            Vista previa ({previews[0].rows.length} filas)
+                        </summary>
+                        <div className="mt-2 overflow-x-auto rounded border border-border/50">
+                            <table className="min-w-full text-left text-[10px]">
+                                <thead>
+                                    <tr>
+                                        {previews[0].columns.map((c) => (
+                                            <th key={c} className="border-b px-2 py-1 font-medium">
+                                                {c}
+                                            </th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {previews[0].rows.map((row, ri) => (
+                                        <tr key={ri}>
+                                            {row.map((cell, ci) => (
+                                                <td key={ci} className="border-b px-2 py-1">
+                                                    {String(cell ?? '')}
+                                                </td>
+                                            ))}
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    </details>
+                )}
             </div>
         </div>
     );
@@ -171,10 +242,16 @@ function AssistantMessage({
 export function FiscalAiAssistant() {
     const { features, loading } = useSubscriptionFeatures();
     const { user } = useAuth();
+    const pageContext = useAgentPageContext();
     const [open, setOpen] = useState(false);
     const [minimized, setMinimized] = useState(false);
     const [input, setInput] = useState('');
     const [sending, setSending] = useState(false);
+    const [sessionId, setSessionId] = useState<string | undefined>(() =>
+        typeof sessionStorage !== 'undefined'
+            ? sessionStorage.getItem(SESSION_STORAGE_KEY) ?? undefined
+            : undefined,
+    );
     const [messages, setMessages] = useState<ChatMessage[]>([
         { role: 'assistant', content: WELCOME },
     ]);
@@ -192,6 +269,8 @@ export function FiscalAiAssistant() {
     const resetChat = useCallback(() => {
         setMessages([{ role: 'assistant', content: WELCOME }]);
         setInput('');
+        setSessionId(undefined);
+        sessionStorage.removeItem(SESSION_STORAGE_KEY);
     }, []);
 
     if (loading || !features.aiAssistant) return null;
@@ -210,11 +289,20 @@ export function FiscalAiAssistant() {
         setSending(true);
 
         try {
-            const result = await fiscalAiChatWithTools(message);
-            const hasTools = result.toolResults.length > 0;
+            const result = await fiscalAiAgent(message, { sessionId, pageContext });
+            setSessionId(result.sessionId);
+            sessionStorage.setItem(SESSION_STORAGE_KEY, result.sessionId);
+            const hasTools = result.steps.length > 0;
             setMessages((prev) => [
                 ...prev,
-                { role: 'assistant', content: result.reply, toolUsed: hasTools },
+                {
+                    role: 'assistant',
+                    content: result.reply,
+                    toolUsed: hasTools,
+                    stepCount: result.steps.length,
+                    attachments: result.attachments,
+                    previews: result.previews,
+                },
             ]);
         } catch (err: unknown) {
             const axiosErr = err as {
@@ -324,6 +412,9 @@ export function FiscalAiAssistant() {
                                     key={i}
                                     content={msg.content}
                                     toolUsed={msg.toolUsed}
+                                    stepCount={msg.stepCount}
+                                    attachments={msg.attachments}
+                                    previews={msg.previews}
                                     index={i}
                                 />
                             ),

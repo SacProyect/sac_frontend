@@ -71,7 +71,20 @@ export async function getNextEnrichmentEntity(): Promise<EnrichmentNextResponse>
 
 export async function updateEnrichmentFields(
     id: number,
-    data: { tiene_maquina_fiscal?: string; tipo_facturacion?: string; abierto_cerrado?: string }
+    data: {
+        tiene_maquina_fiscal?: string;
+        tipo_facturacion?: string;
+        abierto_cerrado?: string;
+        fecha_censo?: string;
+        grupo?: string;
+        ordinario_especial?: string;
+        sistema_homologado?: string;
+        boleta_comparecencia?: string;
+        tipo_comparecencia?: string;
+        observacion?: string;
+        correo?: string;
+        telefono?: string;
+    }
 ): Promise<{ success: boolean; data: Entidad }> {
     const res = await apiConnection.patch<{ success: boolean; data: Entidad }>(`${BASE}/enrichment/${id}`, data);
     return res.data;

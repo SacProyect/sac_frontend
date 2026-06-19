@@ -39,6 +39,13 @@ import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
+import CensusGroupPage from '@/pages/Census/census-group-page';
+import AnnouncementsAdmin from '@/pages/AnnouncementsAdmin';
+import MaquinasFiscalesDashboard from '@/pages/maquinas-fiscales/maquinas-fiscales-dashboard';
+import MaquinasFiscalesStats from '@/pages/maquinas-fiscales/maquinas-fiscales-stats';
+import MaquinasFiscalesDetail from '@/pages/maquinas-fiscales/maquinas-fiscales-detail';
+import ControlesDashboardPage from '@/pages/controles-ingreso/controles-dashboard-page';
+import ControlesDetallePage from '@/pages/controles-ingreso/controles-detalle-page';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
 // const ComitmentPage = lazy(() => import('@/pages/Events/ComitmentPage'));
@@ -141,21 +148,10 @@ const DivulgacionPresenciaPage = lazyWithRetry(() => import("@/pages/divulgacion
 const DivulgacionDetallePage = lazyWithRetry(() => import("@/pages/divulgacion/divulgacion-detalle-page"));
 const DocumentosPage = lazyWithRetry(() => import("@/pages/documentos/documentos-page"));
 const SubirDocumentoPage = lazyWithRetry(() => import("@/pages/documentos/subir-documento-page"));
-<<<<<<< Updated upstream
-const AnnouncementsAdmin = lazyWithRetry(() => import("@/pages/AnnouncementsAdmin"));
-const MaquinasFiscalesDashboard = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-dashboard"));
-const MaquinasFiscalesDetail = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-detail"));
-const MaquinasFiscalesStats = lazyWithRetry(() => import("@/pages/maquinas-fiscales/maquinas-fiscales-stats"));
-const ControlesDashboardPage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-dashboard-page"));
-const ControlesDetallePage = lazyWithRetry(() => import("@/pages/controles-ingreso/controles-detalle-page"));
-const CensusQuickCapturePage = lazyWithRetry(() => import("@/pages/Census/census-quick-capture-page"));
-const CensusMapPage = lazyWithRetry(() => import("@/pages/Census/census-map-page"));
-const CensusGroupPage = lazyWithRetry(() => import("@/pages/Census/census-group-page"));
-=======
 const AutomationPlansPage = lazyWithRetry(() => import("@/pages/subscription/automation-plans-page"));
 const SubscriptionApprovalsPage = lazyWithRetry(() => import("@/pages/subscription/subscription-approvals-page"));
+const AiKnowledgeAdminPage = lazyWithRetry(() => import("@/pages/Admin/ai-knowledge-admin-page"));
 
->>>>>>> Stashed changes
 type LoaderData = {
     events: Event[],
     payments: Payment[],
@@ -527,6 +523,16 @@ export const router = createBrowserRouter([
                                 <AnnouncementsAdmin />
                             </Suspense>
                         </AdminOnly>
+                        ),
+                    },
+                    {
+                        path: "admin/conocimiento-ia",
+                        element: (
+                            <AdminOnly>
+                                <Suspense fallback={<GlobalLoader message="Cargando conocimiento IA..." />}>
+                                    <AiKnowledgeAdminPage />
+                                </Suspense>
+                            </AdminOnly>
                         ),
                     },
                     {

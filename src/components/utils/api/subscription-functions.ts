@@ -91,14 +91,69 @@ export async function fiscalAiChat(message: string, context?: string) {
     return data.reply;
 }
 
-export async function fiscalAiChatWithTools(message: string) {
-    if (isDevSubscriptionSandbox()) return { reply: await devFiscalAiChat(message), toolResults: [] };
+export type AgentPageContext = {
+    taxpayerId?: string;
+    module?: string;
+};
+
+export type AgentAttachment = {
+    type: 'xlsx' | 'csv';
+    filename: string;
+    downloadUrl: string;
+};
+
+export type AgentPreview = {
+    title: string;
+    columns: string[];
+    rows: unknown[][];
+};
+
+export type FiscalAgentResponse = {
+    reply: string;
+    sessionId: string;
+    steps: Array<{ tool: string; summary: string }>;
+    attachments?: AgentAttachment[];
+    previews?: AgentPreview[];
+};
+
+export async function fiscalAiAgent(
+    message: string,
+    options?: { sessionId?: string; pageContext?: AgentPageContext },
+): Promise<FiscalAgentResponse> {
+    if (isDevSubscriptionSandbox()) {
+        return {
+            reply: await devFiscalAiChat(message),
+            sessionId: options?.sessionId ?? 'dev-session',
+            steps: [],
+        };
+    }
     const { data } = await apiConnection.post<{
         success: boolean;
         reply: string;
-        toolResults: Array<{ tool: string; content: string }>;
-    }>('/ai/chat/with-tools', { message });
-    return { reply: data.reply, toolResults: data.toolResults ?? [] };
+        sessionId: string;
+        steps: Array<{ tool: string; summary: string }>;
+        attachments?: AgentAttachment[];
+        previews?: AgentPreview[];
+    }>('/ai/agent', {
+        message,
+        sessionId: options?.sessionId,
+        pageContext: options?.pageContext,
+    });
+    return {
+        reply: data.reply,
+        sessionId: data.sessionId,
+        steps: data.steps ?? [],
+        attachments: data.attachments,
+        previews: data.previews,
+    };
+}
+
+export async function fiscalAiChatWithTools(message: string) {
+    const result = await fiscalAiAgent(message);
+    return {
+        reply: result.reply,
+        toolResults: result.steps.map((s) => ({ tool: s.tool, content: s.summary })),
+    };
 }
 
 export async function createTaxpayerBulkRow(payload: Record<string, unknown>) {

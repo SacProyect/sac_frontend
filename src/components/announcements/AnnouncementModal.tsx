@@ -30,14 +30,17 @@ export const AnnouncementModal: React.FC<AnnouncementModalProps> = ({
 
         {/* Centering wrapper — flex centers the content without transforms */}
         <div className="fixed inset-0 z-[151] flex items-center justify-center p-4 pointer-events-none">
-          <Dialog.Content asChild forceMount>
+          <Dialog.Content
+            asChild
+            forceMount
+            onPointerDownOutside={(e: Event) => e.preventDefault()}
+          >
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ type: 'spring', damping: 25, stiffness: 300 }}
               className="w-full max-w-lg rounded-xl bg-slate-900 border border-slate-700/80 p-0 shadow-2xl overflow-hidden max-h-[85vh] flex flex-col pointer-events-auto"
-              onPointerDownOutside={(e) => e.preventDefault()}
             >
               {/* Scrollable content area */}
               <div className="overflow-y-auto custom-scrollbar flex-1">

@@ -4,7 +4,7 @@ export type ParishName =
   | 'Antimano'
   | 'Coche'
   | 'San Bernardino'
-  | 'Santa Rosalia'
+  | 'Santa Rosalía'
   | 'Santa Teresa'
   | 'Sucre'
   | 'San Jose'
