@@ -11,6 +11,7 @@ import { ActasPagination } from './ActasPagination';
 import { ActasSearchBar } from './ActasSearchBar';
 import { ActasTable } from './ActasTable';
 import { ActasUploadForm } from './ActasUploadForm';
+import { NotificationsAdminPanel } from './NotificationsAdminPanel';
 import {
     defaultActasAdvancedFilters,
     type ActaReparo,
@@ -56,6 +57,7 @@ export function ActasTab() {
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(PAGE_SIZE);
     const [items, setItems] = useState<ActaReparo[]>([]);
+    const [serverTotal, setServerTotal] = useState(0);
     const [loading, setLoading] = useState(false);
     // TASK-004a (issue menor #4): estado de error de carga para mostrar
     // un banner discreto. Anteriormente el `catch` de `load()` era
@@ -88,6 +90,7 @@ export function ActasTab() {
                 pageSize,
             });
             setItems(data.items);
+            setServerTotal(data.total);
         } catch (e) {
             // TASK-004a (issue menor #4): persistir el error para que el
             // banner pueda anunciarlo. El `finally` apaga el loading.
@@ -157,6 +160,9 @@ export function ActasTab() {
                 if (advancedFilters.estado === 'VINCULADO' && !isVinculado) return false;
                 if (advancedFilters.estado === 'PENDIENTE' && isVinculado) return false;
             }
+            if (advancedFilters.estadoReparo) {
+                if (item.status !== advancedFilters.estadoReparo) return false;
+            }
             return true;
         });
     }, [items, advancedFilters]);
@@ -170,6 +176,7 @@ export function ActasTab() {
         if (advancedFilters.fiscalUserId) n++;
         if (advancedFilters.supervisorUserId) n++;
         if (advancedFilters.estado) n++;
+        if (advancedFilters.estadoReparo) n++;
         return n;
     }, [advancedFilters]);
 
@@ -241,6 +248,8 @@ export function ActasTab() {
                     )}
                 </AnimatePresence>
             </div>
+
+            <NotificationsAdminPanel />
 
             {/* Barra de búsqueda + botón Filtros */}
             <div className="flex flex-wrap items-center justify-between gap-2">
@@ -334,7 +343,7 @@ export function ActasTab() {
             <ActasPagination
                 page={page}
                 pageSize={pageSize}
-                total={filteredItems.length}
+                total={serverTotal}
                 onPageChange={setPage}
                 onPageSizeChange={(s) => {
                     setPageSize(s);

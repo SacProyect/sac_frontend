@@ -63,3 +63,8 @@ export const isActasExpedientesEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_ACTAS_EXPEDIENTES_ENABLED,
   false
 );
+
+export const isWhatsAppNotificationsEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_WHATSAPP_NOTIFICATIONS_ENABLED,
+  false
+);

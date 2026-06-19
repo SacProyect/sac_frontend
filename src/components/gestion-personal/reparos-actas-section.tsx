@@ -575,7 +575,7 @@ export function ReparosActasSection() {
         setUploading(true);
         try {
             const meta = mergeActaPersonnel(buildUploadMeta(actaForm), fiscalPick, supPick);
-            await uploadRepairReport(tid, file, meta);
+            await uploadRepairReport(tid, meta);
             toast.success("Acta de reparo cargada.");
             setFile(null);
             setActaForm(emptyActaForm());
