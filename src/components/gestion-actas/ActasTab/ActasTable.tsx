@@ -1,14 +1,16 @@
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import { FixedSizeList, type ListChildComponentProps } from 'react-window';
-import { ExternalLink, FileText } from 'lucide-react';
-import { Badge } from '@/components/UI/badge';
+import { Eye, FileText } from 'lucide-react';
 import { Button } from '@/components/UI/button';
 import { Skeleton } from '@/components/UI/skeleton';
 import { ActasDeleteDialog } from './ActasDeleteDialog';
 import { ActasEditDialog } from './ActasEditDialog';
 import { ActasLinkDialog } from './ActasLinkDialog';
 import { ActasRowMenu } from './ActasRowMenu';
+import { ExpirationIndicator } from './ExpirationIndicator';
+import { RepairStatusBadge } from './RepairStatusBadge';
 import type { ActaReparo } from './types';
+import { ActasDetailDialog } from './ActasDetailDialog';
 
 type Props = {
     items: ActaReparo[];
@@ -24,7 +26,7 @@ type Props = {
     onRefresh?: () => void;
 };
 
-const COL_COUNT = 11;
+const COL_COUNT = 6;
 const ROW_HEIGHT = 56;
 // TASK-004a (issue menor #1): el umbral original de 200 filas era
 // demasiado alto; para tablas fiscales típicas se prefiere virtualizar
@@ -36,41 +38,23 @@ const SKELETON_ROW_COUNT = 5;
 
 const GRID_TEMPLATE = [
     'minmax(180px,1.5fr)', // 1. Contribuyente
-    'minmax(110px,1fr)', // 2. RIF
-    'minmax(90px,auto)', // 3. N.º exp.
-    'minmax(100px,auto)', // 4. N.º reparo
-    'minmax(90px,auto)', // 5. Impuesto
-    'minmax(110px,auto)', // 6. Total
-    'minmax(120px,1fr)', // 7. Fiscal (acta)
-    'minmax(120px,1fr)', // 8. Fiscal SAC
-    'minmax(95px,auto)', // 9. Operativo
-    'minmax(75px,auto)', // 10. PDF
-    'minmax(220px,auto)', // 11. Acciones
+    'minmax(110px,1fr)',   // 2. RIF
+    'minmax(110px,auto)',  // 3. Fecha entrega
+    'minmax(100px,auto)',  // 4. Estado
+    'minmax(110px,auto)',  // 5. Vencimiento
+    'minmax(80px,auto)',   // 6. Acciones
 ].join(' ');
 
 const ROW_CLASS =
     'grid items-center gap-2 px-3 border-b border-border/40 ' +
     'hover:bg-muted/40 transition-none';
 
-function fmtMoney(n: number | null | undefined): string {
-    if (n == null || Number.isNaN(n)) return '—';
-    return n.toLocaleString('es-VE', {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
-    });
-}
-
 const HEADER_CELLS: ReadonlyArray<{ label: string; align: 'left' | 'right' }> = [
     { label: 'Contribuyente', align: 'left' },
     { label: 'RIF', align: 'left' },
-    { label: 'N.º exp.', align: 'left' },
-    { label: 'N.º reparo', align: 'left' },
-    { label: 'Impuesto', align: 'left' },
-    { label: 'Total', align: 'right' },
-    { label: 'Fiscal (acta)', align: 'left' },
-    { label: 'Fiscal SAC', align: 'left' },
-    { label: 'Operativo', align: 'left' },
-    { label: 'PDF', align: 'right' },
+    { label: 'Fecha entrega', align: 'left' },
+    { label: 'Estado', align: 'left' },
+    { label: 'Vencimiento', align: 'left' },
     { label: 'Acciones', align: 'right' },
 ];
 
@@ -83,6 +67,7 @@ type RowData = {
     onEdit: (row: ActaReparo) => void;
     onLink: (row: ActaReparo) => void;
     onDelete: (row: ActaReparo) => void;
+    onDetail: (row: ActaReparo) => void;
 };
 
 const ActaRowVirtualized = memo(function ActaRowVirtualized({
@@ -100,6 +85,7 @@ const ActaRowVirtualized = memo(function ActaRowVirtualized({
             onEdit={data.onEdit}
             onLink={data.onLink}
             onDelete={data.onDelete}
+            onDetail={data.onDetail}
         />
     );
 });
@@ -114,12 +100,14 @@ function ActaRowFlat({
     onEdit,
     onLink,
     onDelete,
+    onDetail,
 }: {
     item: ActaReparo;
     index: number;
     onEdit: (row: ActaReparo) => void;
     onLink: (row: ActaReparo) => void;
     onDelete: (row: ActaReparo) => void;
+    onDetail: (row: ActaReparo) => void;
 }) {
     return (
         <ActaRowContent
@@ -128,6 +116,7 @@ function ActaRowFlat({
             onEdit={onEdit}
             onLink={onLink}
             onDelete={onDelete}
+            onDetail={onDetail}
         />
     );
 }
@@ -142,7 +131,6 @@ function ActaRowFlat({
  * (default `min-width: auto` impide el shrink).
  */
 const cellSingle = 'text-xs min-w-0 truncate';
-const cellRight = 'text-xs min-w-0 truncate text-right font-mono tabular-nums';
 
 type ActaRowContentProps = {
     item: ActaReparo;
@@ -151,6 +139,7 @@ type ActaRowContentProps = {
     onEdit: (row: ActaReparo) => void;
     onLink: (row: ActaReparo) => void;
     onDelete: (row: ActaReparo) => void;
+    onDetail: (row: ActaReparo) => void;
 };
 
 function ActaRowContent({
@@ -160,11 +149,18 @@ function ActaRowContent({
     onEdit,
     onLink,
     onDelete,
+    onDetail,
 }: ActaRowContentProps) {
-    // aria-rowindex es 1-based: la fila 1 es la cabecera, las de datos
-    // empiezan en 2.
     const ariaRowIndex = index + 2;
-    const vinculado = item.vinculadoAOperativo;
+
+    function fmtDate(s: string | null | undefined): string {
+        if (!s) return '—';
+        return new Date(s).toLocaleDateString('es-VE', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+        });
+    }
 
     return (
         <div
@@ -190,70 +186,25 @@ function ActaRowContent({
                 {item.rif}
             </div>
             <div role="gridcell" className={cellSingle}>
-                {item.numeroExpediente ?? '—'}
-            </div>
-            <div role="gridcell" className={cellSingle}>
-                {item.numeroReparo ?? '—'}
-            </div>
-            <div role="gridcell" className={cellSingle}>
-                {item.impuestoTipo ?? '—'}
-            </div>
-            <div role="gridcell" className={cellRight}>
-                {fmtMoney(item.montoTotal)}
-            </div>
-            <div
-                role="gridcell"
-                className={`${cellSingle} text-muted-foreground`}
-                title={item.fiscalActuante ?? undefined}
-            >
-                {item.fiscalActuante ?? '—'}
-            </div>
-            <div
-                role="gridcell"
-                className={`${cellSingle} text-muted-foreground`}
-                title={item.fiscalNombre ?? undefined}
-            >
-                {item.fiscalNombre ?? '—'}
+                {fmtDate(item.fechaEntrega)}
             </div>
             <div role="gridcell" className="min-w-0 text-xs">
-                {vinculado ? (
-                    <Badge
-                        variant="secondary"
-                        className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
-                        data-testid={`actas-row-${item.id}-status`}
-                    >
-                        Vinculado
-                    </Badge>
-                ) : (
-                    <Badge
-                        variant="outline"
-                        className="text-amber-700 dark:text-amber-400 border-amber-600/40"
-                        data-testid={`actas-row-${item.id}-status`}
-                    >
-                        Pendiente
-                    </Badge>
-                )}
+                <RepairStatusBadge status={item.status} />
+            </div>
+            <div role="gridcell" className="min-w-0 text-xs">
+                <ExpirationIndicator fechaVencimiento={item.fechaVencimiento} />
             </div>
             <div role="gridcell" className="text-right">
-                <Button
-                    variant="ghost"
-                    size="icon-sm"
-                    className="h-7 w-7"
-                    asChild
-                    aria-label={`Abrir PDF del acta ${item.contribuyente}`}
-                >
-                    <a
-                        href={item.pdf_url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        data-testid={`actas-row-${item.id}-open-pdf`}
+                <div className="flex justify-end gap-1">
+                    <Button
+                        variant="ghost"
+                        size="icon-sm"
+                        className="h-7 w-7"
+                        aria-label={`Ver detalle del acta ${item.contribuyente}`}
+                        onClick={() => onDetail(item)}
                     >
-                        <ExternalLink className="h-3.5 w-3.5" aria-hidden="true" />
-                    </a>
-                </Button>
-            </div>
-            <div role="gridcell" className="text-right">
-                <div className="flex justify-end">
+                        <Eye className="h-3.5 w-3.5" aria-hidden="true" />
+                    </Button>
                     <ActasRowMenu
                         row={item}
                         onEdit={() => onEdit(item)}
@@ -359,38 +310,28 @@ function ActasHeader() {
 /* ------------------------------------------------------------------ */
 
 /**
- * Tabla virtualizada de Actas de Reparo.
+ * Tabla virtualizada de Actas de Reparo (simplificada: 6 columnas).
  *
- * - 11 columnas según guía §4.1.2.
+ * - 6 columnas: Contribuyente, RIF, Fecha entrega, Estado, Vencimiento, Acciones.
  * - Virtualización con `react-window` `FixedSizeList` cuando
- *   `items.length > VIRT_THRESHOLD` (TASK-004c: ahora 100, antes 200).
- *   Por debajo del threshold, render plano (mejor accesibilidad de
- *   screen readers, sin virtualización).
+ *   `items.length > VIRT_THRESHOLD` (100 filas).
+ *   Por debajo del threshold, render plano (mejor accesibilidad).
  * - ARIA grid pattern (W3C) con `role="grid"`, `aria-rowcount`,
- *   `aria-colcount={11}` y `aria-rowindex` por fila.
- * - Header sticky fuera del scroll container del `FixedSizeList` (siempre
- *   visible al scrollear la lista).
- * - Loading: 5 filas skeleton (`h-9` cada una).
+ *   `aria-colcount` y `aria-rowindex` por fila.
+ * - Header sticky fuera del scroll container del `FixedSizeList`.
+ * - Loading: 5 filas skeleton.
  * - Empty: estado central con icono + texto.
- * - Tres dialogs controlados desde aquí (Edición, Vinculación,
- *   Eliminación) y un menú de fila (ActasRowMenu) que dispara los
- *   callbacks de apertura.
- *
- * Nota sobre el header sticky: en esta implementación el header está fuera
- * del `FixedSizeList` (que crea su propio scroll container), por lo que
- * `position: sticky` opera contra el scroll del documento, no contra el
- * scroll interno. Como el header es hermano del FixedSizeList dentro del
- * grid wrapper, permanece visible mientras el cuerpo scrollea — efecto
- * visual equivalente al original sin la complejidad de un nested sticky.
+ * - Cuatro dialogs: Edición, Vinculación, Eliminación y Detalle.
  */
 export function ActasTable({ items, isLoading, onRefresh }: Props) {
     const useVirt = items.length > VIRT_THRESHOLD;
     const [listHeight, setListHeight] = useState(DEFAULT_LIST_HEIGHT);
 
-    // Estado de los 3 dialogs. Cada uno guarda la fila objetivo (o null).
+    // Estado de los 4 dialogs. Cada uno guarda la fila objetivo (o null).
     const [editingRow, setEditingRow] = useState<ActaReparo | null>(null);
     const [linkingRow, setLinkingRow] = useState<ActaReparo | null>(null);
     const [deletingRow, setDeletingRow] = useState<ActaReparo | null>(null);
+    const [detailRow, setDetailRow] = useState<ActaReparo | null>(null);
 
     // Refresca la fila activa cuando un re-fetch del padre entrega nuevos
     // datos: si la fila en `items` cambió (mismo id, datos nuevos), el
@@ -420,6 +361,7 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
     const handleEdit = useCallback((row: ActaReparo) => setEditingRow(row), []);
     const handleLink = useCallback((row: ActaReparo) => setLinkingRow(row), []);
     const handleDelete = useCallback((row: ActaReparo) => setDeletingRow(row), []);
+    const handleDetail = useCallback((row: ActaReparo) => setDetailRow(row), []);
 
     const handleActionCompleted = useCallback(() => {
         if (onRefresh) void onRefresh();
@@ -436,8 +378,8 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
     }, []);
 
     const itemData = useMemo<RowData>(
-        () => ({ items, onEdit: handleEdit, onLink: handleLink, onDelete: handleDelete }),
-        [items, handleEdit, handleLink, handleDelete],
+        () => ({ items, onEdit: handleEdit, onLink: handleLink, onDelete: handleDelete, onDetail: handleDetail }),
+        [items, handleEdit, handleLink, handleDelete, handleDetail],
     );
 
     // aria-rowcount incluye la fila de cabecera. Cuando el total es
@@ -492,6 +434,7 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
                             onEdit={handleEdit}
                             onLink={handleLink}
                             onDelete={handleDelete}
+                            onDetail={handleDetail}
                         />
                     ))
                 )}
@@ -521,6 +464,13 @@ export function ActasTable({ items, isLoading, onRefresh }: Props) {
                     if (!open) setDeletingRow(null);
                 }}
                 onDeleted={handleActionCompleted}
+            />
+            <ActasDetailDialog
+                row={detailRow}
+                open={detailRow !== null}
+                onOpenChange={(open) => {
+                    if (!open) setDetailRow(null);
+                }}
             />
         </div>
     );

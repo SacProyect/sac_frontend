@@ -286,7 +286,7 @@ export const IndividualStats = ({ events, IVAReports, taxpayerData: taxpayerData
         }
 
         try {
-            await uploadRepairReport(taxpayer, selectedFile);
+            await uploadRepairReport(taxpayer, {});
             toast.success("Acta de reparación subida correctamente.");
             setSelectedFile(null);
 

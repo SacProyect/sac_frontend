@@ -22,6 +22,7 @@ import {
     type UsuarioActaReparoRow,
 } from '@/components/utils/api/fiscal-operaciones-functions';
 import { useDebounce } from '@/hooks/use-debounce';
+import { REPAIR_STATUS_CONFIG } from '@/types/repair-reports';
 import {
     defaultActasAdvancedFilters,
     IMPUESTO_OPTIONS,
@@ -311,7 +312,38 @@ export function ActasFiltersDrawer({ open, onOpenChange, filters, onApply, onCle
                         testId="actas-filters-supervisor-search"
                     />
 
-                    {/* Estado */}
+                    {/* Estado de reparo */}
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                            Estado de reparo
+                        </Label>
+                        <Select
+                            value={local.estadoReparo || '__empty__'}
+                            onValueChange={(v) =>
+                                setLocal((s) => ({
+                                    ...s,
+                                    estadoReparo: v === '__empty__' ? '' : v,
+                                }))
+                            }
+                        >
+                            <SelectTrigger
+                                className="bg-background"
+                                data-testid="actas-filters-estado-reparo"
+                            >
+                                <SelectValue placeholder="Todos" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="__empty__">Todos</SelectItem>
+                                {Object.entries(REPAIR_STATUS_CONFIG).map(([key, config]) => (
+                                    <SelectItem key={key} value={key}>
+                                        {config.label}
+                                    </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+
+                    {/* Estado de vinculación */}
                     <div className="space-y-2">
                         <Label className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                             Estado

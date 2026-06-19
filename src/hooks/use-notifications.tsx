@@ -287,14 +287,29 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
   );
 
   const startSocket = useCallback(() => {
+    console.log("[useNotifications] startSocket called", {
+      isEnabled: isNotificationsFeatureEnabled,
+      hasToken: !!token,
+      tokenStart: token?.substring(0, 20),
+      hasExistingSocket: !!socketRef.current,
+    });
+
     if (!isNotificationsFeatureEnabled || !token || socketRef.current) {
+      console.log("[useNotifications] startSocket early-return", {
+        isEnabled: isNotificationsFeatureEnabled,
+        hasToken: !!token,
+        hasExistingSocket: !!socketRef.current,
+      });
       return;
     }
 
     setConnectionStatus("connecting");
 
-    const socket = io(getSocketUrl(), {
-      transports: ["websocket","polling"],
+    const url = getSocketUrl();
+    console.log("[useNotifications] Connecting to Socket.IO at:", url);
+
+    const socket = io(url, {
+      transports: ["websocket", "polling"],
       auth: { token },
       reconnection: true,
       reconnectionAttempts: Infinity,
@@ -303,10 +318,23 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     });
 
     socket.on("connect", () => {
+      console.log("[useNotifications] Socket CONNECTED", socket.id);
       setConnectionStatus("connected");
       stopPolling();
       void refreshUnread();
       void loadPage(DEFAULT_PAGE, DEFAULT_LIMIT);
+    });
+
+    socket.on("disconnect", (reason) => {
+      console.log("[useNotifications] Socket DISCONNECTED:", reason);
+      setConnectionStatus("disconnected");
+      startPollingFallback();
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("[useNotifications] Socket CONNECT ERROR:", error.message);
+      setConnectionStatus("error");
+      startPollingFallback();
     });
 
     socket.on("notification:new", (payload: NotificationItem) => {
@@ -333,16 +361,6 @@ export const NotificationsProvider = ({ children }: { children: ReactNode }) => 
     socket.on("maintenance:start", (payload: MaintenanceStartPayload) => {
       setMaintenanceStart(payload);
       toast.error(payload.title ?? payload.message ?? "Mantenimiento en curso");
-    });
-
-    socket.on("connect_error", () => {
-      setConnectionStatus("error");
-      startPollingFallback();
-    });
-
-    socket.on("disconnect", () => {
-      setConnectionStatus("disconnected");
-      startPollingFallback();
     });
 
     socketRef.current = socket;
