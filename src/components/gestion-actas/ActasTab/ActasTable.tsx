@@ -37,22 +37,22 @@ const DEFAULT_LIST_HEIGHT = 560;
 const SKELETON_ROW_COUNT = 5;
 
 const GRID_TEMPLATE = [
-    'minmax(180px,1.5fr)', // 1. Contribuyente
-    'minmax(110px,1fr)',   // 2. RIF
-    'minmax(110px,auto)',  // 3. Fecha entrega
-    'minmax(100px,auto)',  // 4. Estado
-    'minmax(110px,auto)',  // 5. Vencimiento
-    'minmax(80px,auto)',   // 6. Acciones
+    'minmax(140px,1.5fr)', // 1. Contribuyente
+    'minmax(90px,1fr)',    // 2. RIF (hidden on mobile)
+    'minmax(90px,auto)',   // 3. Fecha entrega (hidden on mobile)
+    'minmax(80px,auto)',   // 4. Estado
+    'minmax(100px,auto)',  // 5. Vencimiento
+    'minmax(60px,auto)',   // 6. Acciones
 ].join(' ');
 
 const ROW_CLASS =
     'grid items-center gap-2 px-3 border-b border-border/40 ' +
     'hover:bg-muted/40 transition-none';
 
-const HEADER_CELLS: ReadonlyArray<{ label: string; align: 'left' | 'right' }> = [
+const HEADER_CELLS: ReadonlyArray<{ label: string; align: 'left' | 'right'; hideOnMobile?: boolean }> = [
     { label: 'Contribuyente', align: 'left' },
-    { label: 'RIF', align: 'left' },
-    { label: 'Fecha entrega', align: 'left' },
+    { label: 'RIF', align: 'left', hideOnMobile: true },
+    { label: 'Fecha entrega', align: 'left', hideOnMobile: true },
     { label: 'Estado', align: 'left' },
     { label: 'Vencimiento', align: 'left' },
     { label: 'Acciones', align: 'right' },
@@ -155,11 +155,9 @@ function ActaRowContent({
 
     function fmtDate(s: string | null | undefined): string {
         if (!s) return '—';
-        return new Date(s).toLocaleDateString('es-VE', {
-            day: '2-digit',
-            month: '2-digit',
-            year: 'numeric',
-        });
+        const parts = s.slice(0, 10).split('-');
+        if (parts.length !== 3) return s;
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
     }
 
     return (
@@ -180,12 +178,12 @@ function ActaRowContent({
             </div>
             <div
                 role="gridcell"
-                className={`${cellSingle} font-mono text-muted-foreground`}
+                className={`${cellSingle} font-mono text-muted-foreground hidden sm:block`}
                 title={item.rif}
             >
                 {item.rif}
             </div>
-            <div role="gridcell" className={cellSingle}>
+            <div role="gridcell" className={`${cellSingle} hidden sm:block`}>
                 {fmtDate(item.fechaEntrega)}
             </div>
             <div role="gridcell" className="min-w-0 text-xs">
@@ -294,7 +292,8 @@ function ActasHeader() {
                         className={
                             'text-[10px] font-bold uppercase tracking-widest text-muted-foreground whitespace-nowrap ' +
                             (cell.align === 'right' ? 'text-right' : 'text-left') +
-                            (isLast ? ' min-w-[200px]' : '')
+                            (isLast ? ' min-w-[200px]' : '') +
+                            (cell.hideOnMobile ? ' hidden sm:block' : '')
                         }
                     >
                         {cell.label}

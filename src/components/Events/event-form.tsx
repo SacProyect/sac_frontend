@@ -64,12 +64,15 @@ function AmountInput({ control, name, label, iconColor, error, validate }: Amoun
                     if (parts.length > 2) {
                         raw = parts[0] + ',' + parts.slice(1).join('');
                     }
-                    setDisplayValue(raw);
                     const numeric = parseBs(raw);
                     if (!isNaN(numeric)) {
+                        setDisplayValue(formatBs(numeric, raw.includes(',') || raw.includes('.') ? 2 : 0));
                         onChange(numeric);
                     } else if (raw === '' || raw === ',') {
+                        setDisplayValue(raw === ',' ? ',' : '');
                         onChange(0);
+                    } else {
+                        setDisplayValue(raw);
                     }
                 };
 

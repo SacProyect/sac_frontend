@@ -15,6 +15,7 @@ import { ModalFooter } from '@/components/UI/v2';
 import toast from 'react-hot-toast';
 import { useAuth } from '@/hooks/use-auth';
 import { cn } from "@/lib/utils";
+import { formatBs, parseBs } from '@/components/utils/number.utils';
 
 interface AddAvisoModalV2Props {
   isOpen: boolean;
@@ -41,6 +42,7 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [amountDisplay, setAmountDisplay] = useState('');
   const [searchTaxpayer, setSearchTaxpayer] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -151,6 +153,7 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
           amount: '',
           fineEventId: '',
         });
+        setAmountDisplay('');
         setSearchTaxpayer('');
         setErrors({});
         onSuccess?.();
@@ -326,11 +329,22 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
                 <Input
                   id="amount"
                   type="text"
-                  placeholder="0.00"
-                  value={formData.amount}
+                  inputMode="decimal"
+                  placeholder="0,00"
+                  value={amountDisplay}
                   onChange={(e) => {
-                    const val = e.target.value.replace(/[^\d.]/g, '');
-                    handleChange('amount', val);
+                    let raw = e.target.value.replace(/[^0-9.,]/g, '');
+                    const num = parseBs(raw);
+                    if (!isNaN(num)) {
+                      setAmountDisplay(formatBs(num, raw.includes(',') || (raw.includes('.') && raw.split('.').pop()?.length === 2) ? 2 : 0));
+                      setFormData((prev) => ({ ...prev, amount: String(num) }));
+                    } else if (raw === '' || raw === ',') {
+                      setAmountDisplay(raw === ',' ? ',' : '');
+                      setFormData((prev) => ({ ...prev, amount: '' }));
+                    } else {
+                      setAmountDisplay(raw);
+                    }
+                    if (errors.amount) setErrors((prev) => ({ ...prev, amount: '' }));
                   }}
                   className={cn(
                     "pl-10 bg-slate-950/30 border-slate-700 focus:ring-indigo-500/30 rounded-xl h-12 text-slate-200 transition-all",
@@ -339,9 +353,9 @@ export function AddAvisoModalV2({ isOpen, onClose, onSuccess }: AddAvisoModalV2P
                 />
               </div>
               {errors.amount && <p className="text-[10px] font-bold text-rose-500 uppercase px-1">{errors.amount}</p>}
-              {!errors.amount && formData.amount && (
+              {!errors.amount && amountDisplay && !isNaN(parseBs(amountDisplay)) && parseBs(amountDisplay) > 0 && (
                 <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider px-1">
-                  Vista previa: {formatCurrency(formData.amount)}
+                  Vista previa: {formatBs(parseBs(amountDisplay), 2, true)} bolívares
                 </p>
               )}
             </div>

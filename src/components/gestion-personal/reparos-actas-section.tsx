@@ -79,15 +79,11 @@ function fmtMoney(n: number | null | undefined): string {
 
 function fmtDateShort(iso: string | null | undefined): string {
     if (!iso) return "—";
-    try {
-        return new Date(iso).toLocaleDateString("es-VE", {
-            day: "2-digit",
-            month: "short",
-            year: "numeric",
-        });
-    } catch {
-        return iso;
-    }
+    const parts = iso.slice(0, 10).split("-");
+    if (parts.length !== 3) return iso;
+    const monthShort = ["", "ene.", "feb.", "mar.", "abr.", "may.", "jun.", "jul.", "ago.", "sep.", "oct.", "nov.", "dic."];
+    const m = parseInt(parts[1], 10);
+    return `${parts[2]} ${monthShort[m] ?? parts[1]} ${parts[0]}`;
 }
 
 function buildUploadMeta(state: ActaFormState): RepairReportUploadMeta {

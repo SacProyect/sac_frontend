@@ -25,11 +25,9 @@ function fmtMoney(n: number | null | undefined): string {
 
 function fmtDate(s: string | null | undefined): string {
   if (!s) return '—';
-  return new Date(s).toLocaleDateString('es-VE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
+  const parts = s.slice(0, 10).split('-');
+  if (parts.length !== 3) return s;
+  return `${parts[2]}/${parts[1]}/${parts[0]}`;
 }
 
 function DetailRow({ label, value }: { label: string; value: React.ReactNode }) {
