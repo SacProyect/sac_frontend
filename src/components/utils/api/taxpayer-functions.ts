@@ -672,6 +672,7 @@ export const checkTaxpayerByRif = async (rif: string): Promise<TaxpayerCheckResp
 export type RepairReportPeriodInput = {
 	year: number;
 	periodo?: string | null;
+	monto?: string;
 };
 
 export type RepairReportUploadMeta = {

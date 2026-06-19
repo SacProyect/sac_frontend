@@ -116,7 +116,7 @@ export interface RepairReportResumenItem {
     /** El acta incluye crédito fiscal (IVA sobre compras). */
     esCreditoFiscal?: boolean;
     /** Periodos fiscales cubiertos por el acta (ISLR). */
-    periods?: Array<{ id?: string; year: number; periodo?: string | null }>;
+    periods?: Array<{ id?: string; year: number; periodo?: string | null; monto?: number | null }>;
 }
 
 export async function listRepairReportsResumen(params?: { q?: string; limit?: number; page?: number }) {

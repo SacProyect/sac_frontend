@@ -98,6 +98,8 @@ export type ActaFormState = {
     periodYears: number[];
     /** Etiqueta opcional del periodo ISLR (ej. "ANUAL", "1", "2"). */
     periodLabel: string;
+    /** Montos individuales por período ISLR. Key = year, value = monto en formato string. */
+    periodMontos: Record<number, string>;
 };
 
 /** Factory para estado vacío del formulario de acta. */
@@ -115,4 +117,5 @@ export const emptyActaForm = (): ActaFormState => ({
     esCreditoFiscal: false,
     periodYears: [],
     periodLabel: 'ANUAL',
+    periodMontos: {},
 });

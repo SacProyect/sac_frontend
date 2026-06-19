@@ -25,6 +25,7 @@ import { adminUpdateReparoActa } from '@/components/utils/api/fiscal-operaciones
 import type { RepairReportUploadMeta } from '@/components/utils/api/taxpayer-functions';
 import type { ActaReparo, ImpuestoTipo, ActaFormState } from './types';
 import { IMPUESTO_OPTIONS, emptyActaForm } from './types';
+import ActaTaxSections from './ActaTaxSections';
 import { extractMessage, toAmountString } from '../shared/utils';
 
 /* -------------------------------------------------------------------------- */
@@ -52,12 +53,19 @@ function rowToFormState(r: ActaReparo): ActaFormState {
         montoTotal: r.montoTotal != null ? String(r.montoTotal) : '',
         esDebitoFiscal: r.esDebitoFiscal === true,
         esCreditoFiscal: r.esCreditoFiscal === true,
-        periodYears: Array.isArray((r as any).periods)
-            ? ((r as any).periods as Array<{ year: number }>).map((p) => p.year)
+        periodYears: Array.isArray(r.periods)
+            ? r.periods.map((p) => p.year)
             : [],
-        periodLabel: Array.isArray((r as any).periods) && (r as any).periods[0]?.periodo
-            ? String((r as any).periods[0].periodo)
+        periodLabel: Array.isArray(r.periods) && r.periods[0]?.periodo
+            ? String(r.periods[0].periodo)
             : 'ANUAL',
+        periodMontos: Array.isArray(r.periods)
+            ? Object.fromEntries(
+                r.periods
+                    .filter((p) => p.monto != null)
+                    .map((p) => [p.year, String(p.monto)])
+            )
+            : {},
     };
 }
 
@@ -85,6 +93,7 @@ function buildMeta(state: ActaFormState): RepairReportUploadMeta {
             m.periods = state.periodYears.map((year) => ({
                 year,
                 periodo: state.periodLabel.trim() || null,
+                monto: state.periodMontos[year] || undefined,
             }));
         }
     }
@@ -520,6 +529,8 @@ export function ActasEditDialog({
                                 disabled={saving}
                             />
                         </div>
+
+                        <ActaTaxSections form={form} setForm={setForm} disabled={saving} testIdPrefix="actas-edit" />
                     </div>
                 )}
 
