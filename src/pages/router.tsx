@@ -38,6 +38,7 @@ import { NotificationsProvider } from "@/hooks/use-notifications";
 import { GlobalLoader } from '@/components/UI/global-loader';
 import { isInternalAuditFeatureEnabled, isNotificationsFeatureEnabled, isTaxpayerDashboardFeatureEnabled, isMaquinasFiscalesFeatureEnabled, isControlesIngresoEnabled, isActasExpedientesEnabled } from '@/config/feature-flags';
 import { ChunkErrorBoundary } from '@/components/UI/chunk-error-boundary';
+import { MaintenanceGate } from '@/components/maintenance/maintenance-gate';
 
 // const FinePage = lazy(() => import('@/pages/Events/FinePage'));
 // const ComitmentPage = lazy(() => import('@/pages/Events/ComitmentPage'));
@@ -206,6 +207,9 @@ export const router = createBrowserRouter([
     {
         element: <AuthLayout />,
         children: [
+            {
+                element: <MaintenanceGate />,
+                children: [
             {
                 path: "/login",
                 element: <Suspense fallback={<GlobalLoader message="Iniciando sesión..." />}><LoginPageV2 /></Suspense>,
@@ -672,6 +676,8 @@ export const router = createBrowserRouter([
                             }
                         },
                     },
+                ],
+            },
                 ],
             },
         ],

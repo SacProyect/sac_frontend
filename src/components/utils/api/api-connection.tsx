@@ -1,5 +1,6 @@
 /// <reference types="vite/client" />
 import axios, { AxiosResponse, AxiosError, InternalAxiosRequestConfig } from "axios";
+import { shouldBlockApiDuringMaintenance } from "@/config/feature-flags";
 
 const base_url = import.meta.env.VITE_BASE_URL || import.meta.env.VITE_API_URL || "http://localhost:3000";
 if (import.meta.env.DEV) {
@@ -15,7 +16,13 @@ export const apiConnection = axios.create({
 
 // Interceptor para adjuntar el token en cada petición
 apiConnection.interceptors.request.use(
-	(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig => {
+	(config: InternalAxiosRequestConfig): InternalAxiosRequestConfig | Promise<InternalAxiosRequestConfig> => {
+		if (shouldBlockApiDuringMaintenance()) {
+			return Promise.reject(
+				new axios.CanceledError("Petición bloqueada: modo mantenimiento activo")
+			);
+		}
+
 		const tokenString = localStorage.getItem("authToken");
 
 		// Verificar si el token es válido antes de parsearlo

@@ -9,6 +9,7 @@ import { Label } from '@/components/UI/label';
 import { Eye, EyeOff, Lock, User } from 'lucide-react';
 import { signIn } from '@/components/utils/api/user-functions';
 import toast from 'react-hot-toast';
+import { canAccessAppDuringMaintenance, isMaintenanceModeEnabled } from '@/config/feature-flags';
 
 /**
  * LoginV2 - Componente de Login con diseño Shadcn UI v2.0
@@ -44,6 +45,14 @@ export default function LoginV2() {
     try {
       const response = await signIn(data.personId, data.password);
       const { user, token } = response;
+
+      if (isMaintenanceModeEnabled && !canAccessAppDuringMaintenance(user)) {
+        setError("El sistema está en mantenimiento. Solo administradores pueden acceder.");
+        toast.error("El sistema está en mantenimiento. Solo administradores pueden acceder.");
+        setIsLoading(false);
+        return;
+      }
+
       login(user, token);
       toast.success("¡Inicio de sesión exitoso!");
       navigate(from, { replace: true });
@@ -106,6 +115,14 @@ export default function LoginV2() {
           <div className="mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Bienvenido de nuevo</h2>
             <p className="text-slate-400">Inicia sesión para acceder al sistema</p>
+            {isMaintenanceModeEnabled && (
+              <div className="mt-4 rounded-lg border border-blue-500/30 bg-blue-500/10 px-4 py-3 text-left">
+                <p className="text-sm font-medium text-blue-200">Modo mantenimiento activo</p>
+                <p className="text-xs text-blue-300/80 mt-1">
+                  Solo los administradores pueden ingresar mientras se realizan cambios.
+                </p>
+              </div>
+            )}
           </div>
 
           <form onSubmit={handleSubmit(validateLogin)} className="space-y-6">

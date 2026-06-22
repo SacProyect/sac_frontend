@@ -68,3 +68,42 @@ export const isWhatsAppNotificationsEnabled = normalizeBooleanFlag(
   import.meta.env.VITE_WHATSAPP_NOTIFICATIONS_ENABLED,
   false
 );
+
+/**
+ * Modo mantenimiento global: bloquea la app para todos los usuarios excepto ADMIN.
+ * No monta layout ni providers cuando está activo para usuarios no admin.
+ */
+export const isMaintenanceModeEnabled = normalizeBooleanFlag(
+  import.meta.env.VITE_MAINTENANCE_MODE_ENABLED,
+  false
+);
+
+export const getMaintenanceTitle = (): string =>
+  import.meta.env.VITE_MAINTENANCE_TITLE?.trim() || "Sitio en mantenimiento";
+
+export const getMaintenanceMessage = (): string =>
+  import.meta.env.VITE_MAINTENANCE_MESSAGE?.trim() ||
+  "Estamos realizando actualizaciones en el sistema. Por favor, vuelve a intentarlo más tarde.";
+
+type MaintenanceUser = { role?: string } | null | undefined;
+
+export const canAccessAppDuringMaintenance = (user: MaintenanceUser): boolean =>
+  !isMaintenanceModeEnabled || user?.role === "ADMIN";
+
+/**
+ * Bloquea peticiones HTTP cuando el modo mantenimiento está activo y el usuario
+ * autenticado no es ADMIN. Permite peticiones sin sesión (p. ej. login de admin).
+ */
+export const shouldBlockApiDuringMaintenance = (): boolean => {
+  if (!isMaintenanceModeEnabled) return false;
+
+  try {
+    const raw = localStorage.getItem("user");
+    if (!raw || raw === "null" || raw === "undefined") return false;
+
+    const user = JSON.parse(raw) as { role?: string };
+    return user?.role !== "ADMIN";
+  } catch {
+    return false;
+  }
+};
