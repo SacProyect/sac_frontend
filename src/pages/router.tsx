@@ -181,7 +181,7 @@ function GestionPersonalRoute() {
     return (
         <Suspense
             fallback={
-                <div className="absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-lg items-center text-center justify-center z-50 bg-background text-foreground">
+                <div className="absolute top-0 right-0 inset-0 w-full h-app flex text-lg items-center text-center justify-center z-50 bg-background text-foreground">
                     Cargando Gestión de personal...
                 </div>
             }
@@ -249,7 +249,7 @@ export const router = createBrowserRouter([
                         element: (
                             <AdminOnly>
                                 <Suspense fallback={
-                                    <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                    <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                         Cargando Monitoreo de Visitas...
                                     </div>
                                 }>
@@ -265,7 +265,7 @@ export const router = createBrowserRouter([
                     {
                         path: "stats",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Estadísticas...
                             </div>
                         }>
@@ -450,7 +450,7 @@ export const router = createBrowserRouter([
                         path: "notifications",
                         element: <Suspense
                             fallback={
-                                <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                                <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                     Cargando Notificaciones...
                                 </div>
                             }
@@ -461,7 +461,7 @@ export const router = createBrowserRouter([
                     {
                         path: "gen-reports",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reportes...
                             </div>
                         }>
@@ -471,7 +471,7 @@ export const router = createBrowserRouter([
                     {
                         path: "gen-reports/:taxpayer",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reporte del Contribuyente...
                             </div>
                         }>
@@ -481,7 +481,7 @@ export const router = createBrowserRouter([
                     {
                         path: "getGroupReport/:id",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reporte de Grupo...
                             </div>
                         }>
@@ -491,7 +491,7 @@ export const router = createBrowserRouter([
                     {
                         path: "contributions",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Contribuciones...
                             </div>
                         }>
@@ -555,7 +555,7 @@ export const router = createBrowserRouter([
                     {
                         path: "iva",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reporte IVA...
                             </div>
                         }>
@@ -565,7 +565,7 @@ export const router = createBrowserRouter([
                     {
                         path: "islr",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reporte ISLR...
                             </div>
                         }>
@@ -575,7 +575,7 @@ export const router = createBrowserRouter([
                     {
                         path: "index-iva",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Índice IVA...
                             </div>
                         }>
@@ -585,7 +585,7 @@ export const router = createBrowserRouter([
                     {
                         path: "report/errors",
                         element: <Suspense fallback={
-                            <div className='absolute top-0 right-0 w-[100vw] h-[100vh] lg:w-[82vw] lg:h-[100vh] flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
+                            <div className='absolute top-0 right-0 inset-0 w-full h-app flex text-2xl items-center text-center justify-center z-50 bg-slate-950 text-white'>
                                 Cargando Reporte de Errores...
                             </div>
                         }>

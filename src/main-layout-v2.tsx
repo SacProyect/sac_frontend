@@ -132,7 +132,10 @@ const MainLayoutV2 = () => {
                     <Menu className="h-5 w-5" />
                 </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="p-0 w-64 sm:w-72 max-w-[min(100vw,20rem)]">
+            <SheetContent
+                side="left"
+                className="p-0 w-[min(18rem,calc(100vw-2rem))] sm:w-72 max-w-full pl-safe pt-safe pb-safe"
+            >
                 <SidebarContent />
             </SheetContent>
         </Sheet>
@@ -149,44 +152,44 @@ const MainLayoutV2 = () => {
             .slice(0, 2) || 'U';
 
         return (
-            <header className="bg-card/85 dark:bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300">
-                <div className="flex items-center gap-4 px-4 md:px-8 py-3">
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
+            <header className="bg-card/85 dark:bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300 pt-safe">
+                <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 min-w-0">
+                    <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <SidebarMenu />
                         {breadcrumbs && breadcrumbs.length > 0 ? (
-                            <Breadcrumb>
-                                <BreadcrumbList>
+                            <Breadcrumb className="min-w-0 overflow-hidden">
+                                <BreadcrumbList className="flex-nowrap overflow-hidden">
                                     {breadcrumbs.map((crumb, idx) => (
-                                        <div key={idx} className="flex items-center gap-2">
-                                            {idx > 0 && <BreadcrumbSeparator className="text-muted-foreground" />}
+                                        <div key={idx} className="flex items-center gap-2 min-w-0">
+                                            {idx > 0 && <BreadcrumbSeparator className="text-muted-foreground shrink-0" />}
                                             {crumb.href ? (
                                                 <BreadcrumbLink asChild>
-                                                    <Link to={crumb.href} className="text-xs font-medium text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors">
+                                                    <Link to={crumb.href} className="text-xs font-medium text-muted-foreground hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors truncate max-w-[9rem] sm:max-w-none">
                                                         {crumb.label}
                                                     </Link>
                                                 </BreadcrumbLink>
                                             ) : (
-                                                <BreadcrumbPage className="text-xs font-semibold text-foreground uppercase tracking-wider">{crumb.label}</BreadcrumbPage>
+                                                <BreadcrumbPage className="text-xs font-semibold text-foreground uppercase tracking-wider truncate max-w-[10rem] sm:max-w-none">{crumb.label}</BreadcrumbPage>
                                             )}
                                         </div>
                                     ))}
                                 </BreadcrumbList>
                             </Breadcrumb>
                         ) : (
-                            <div className="flex flex-col">
+                            <div className="flex flex-col min-w-0">
                                 <span className="text-[10px] font-bold text-indigo-600 dark:text-indigo-500 uppercase tracking-[0.2em] leading-tight">Dashboard</span>
-                                <h2 className="text-sm font-bold text-foreground tracking-tight">Resumen General</h2>
+                                <h2 className="text-sm font-bold text-foreground tracking-tight truncate">Resumen General</h2>
                             </div>
                         )}
                     </div>
 
-                    <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
                         {isThemeToggleEnabled && (
                             <Button
                                 type="button"
                                 variant="outline"
                                 size="icon"
-                                className="shrink-0 border-border text-foreground"
+                                className="hidden sm:inline-flex shrink-0 border-border text-foreground"
                                 onClick={toggleTheme}
                                 title={theme === "dark" ? "Modo claro" : "Modo oscuro"}
                             >
@@ -219,12 +222,12 @@ const MainLayoutV2 = () => {
                             </div>
                         )}
 
-                        <div className="flex items-center gap-4 flex-1 justify-end">
+                        <div className="flex items-center gap-1.5 sm:gap-3 shrink-0 justify-end">
                             <NotificationBell />
                             <div className="h-6 w-[1px] bg-border hidden sm:block mx-1" />
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="hover:bg-muted/80 p-1 pl-3 h-10 rounded-full border border-border gap-3 group transition-all">
+                                    <Button variant="ghost" className="hover:bg-muted/80 p-1 sm:pl-3 h-9 sm:h-10 rounded-full border border-border gap-2 sm:gap-3 group transition-all shrink-0">
                                         <div className="text-right hidden sm:block">
                                             <p className="text-xs font-bold text-foreground leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{user?.name || 'Usuario'}</p>
                                             <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter">
@@ -304,19 +307,21 @@ const MainLayoutV2 = () => {
     const isPageLoading = navigation.state === 'loading';
 
     return (
-        <div className="flex h-screen overflow-hidden bg-background text-foreground">          
+        <div className="flex h-app overflow-hidden bg-background text-foreground">
         <AnnouncementQueue />
             <div className="flex-1 flex flex-col min-w-0 min-h-0 w-full">
                 {isPageLoading && <GlobalLoader />}
                 {!isDemoModeActive && <Header />}
-                <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative">
+                <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden custom-scrollbar relative overscroll-y-contain">
                     {/* Subtle glow effect in the corner */}
-                    <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-indigo-500/[0.07] dark:bg-indigo-500/5 blur-[120px] pointer-events-none rounded-full" />
-                    <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-500/[0.06] dark:bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
+                    <div className="absolute top-0 right-0 w-[min(500px,100%)] h-[min(500px,70vh)] bg-indigo-500/[0.07] dark:bg-indigo-500/5 blur-[120px] pointer-events-none rounded-full" />
+                    <div className="absolute bottom-0 left-0 w-[min(500px,100%)] h-[min(500px,70vh)] bg-blue-500/[0.06] dark:bg-blue-500/5 blur-[120px] pointer-events-none rounded-full" />
 
-                    <div className="px-4 py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 max-w-full relative z-10 transition-all duration-500">
+                    <div className="px-3 py-4 sm:px-4 sm:py-6 md:px-6 md:py-7 lg:px-10 lg:py-8 xl:px-12 max-w-full min-w-0 pb-safe relative z-10 transition-all duration-500">
                         {!isDemoModeActive && <MaintenanceNotice />}
-                        <Outlet />
+                        <div className="w-full min-w-0 max-w-full space-y-4 sm:space-y-6">
+                            <Outlet />
+                        </div>
                     </div>
                 </main>
             </div>

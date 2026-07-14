@@ -40,7 +40,7 @@ export function MaquinasQuickDetailDrawer({ machine, open, onOpenChange }: Maqui
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-[380px] sm:w-[420px] bg-slate-900 border-slate-700/50 overflow-y-auto">
+      <SheetContent className="w-[min(100%,24rem)] sm:w-[420px] bg-slate-900 border-slate-700/50 overflow-y-auto pt-safe pb-safe">
         <SheetHeader className="pb-4 border-b border-slate-700/50">
           <SheetTitle className="text-slate-100 text-lg">Detalle Rápido</SheetTitle>
           <SheetDescription className="text-slate-400 text-sm">

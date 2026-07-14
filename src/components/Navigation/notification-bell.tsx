@@ -12,7 +12,7 @@ export function NotificationBell() {
   return (
     <Link
       to="/notifications"
-      className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-700/50 bg-slate-800/40 text-slate-200 transition-all hover:border-indigo-500/60 hover:bg-slate-700/70 hover:text-white"
+      className="relative inline-flex h-9 w-9 sm:h-10 sm:w-10 items-center justify-center rounded-full border border-slate-700/50 bg-slate-800/40 text-slate-200 transition-all hover:border-indigo-500/60 hover:bg-slate-700/70 hover:text-white shrink-0"
       aria-label="Abrir notificaciones"
       title="Notificaciones"
     >

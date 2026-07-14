@@ -72,7 +72,7 @@ export default function LoginV2() {
   }, [user, navigate, from]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex">
+    <div className="min-h-app bg-background text-foreground flex pt-safe pb-safe">
       {/* Left Side - Branding */}
       <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-900 via-blue-800 to-slate-900 flex-col items-center justify-center p-12">
         <div className="text-center max-w-md">
@@ -110,7 +110,7 @@ export default function LoginV2() {
       </div>
 
       {/* Right Side - Login Form */}
-      <div className="w-full min-h-screen lg:min-h-0 lg:w-1/2 bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+      <div className="w-full min-h-app lg:min-h-0 lg:w-1/2 bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="mb-6 sm:mb-8">
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Bienvenido de nuevo</h2>

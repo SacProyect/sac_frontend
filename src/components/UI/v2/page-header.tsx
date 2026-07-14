@@ -25,14 +25,24 @@ export function PageHeader({
   className = '',
 }: PageHeaderProps) {
   return (
-    <div className={`space-y-3 ${className}`}>
+    <div className={`space-y-2 sm:space-y-3 min-w-0 w-full ${className}`}>
       {backTo && <BackButton to={backTo} hideLabelOnMobile />}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">{title}</h1>
-          {description && <p className="text-muted-foreground mt-2">{description}</p>}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-4 min-w-0">
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-foreground leading-tight break-words">
+            {title}
+          </h1>
+          {description && (
+            <p className="text-sm sm:text-base text-muted-foreground mt-1.5 sm:mt-2 break-words">
+              {description}
+            </p>
+          )}
         </div>
-        {action && <div>{action}</div>}
+        {action && (
+          <div className="flex w-full sm:w-auto shrink-0 flex-wrap items-stretch sm:items-center gap-2 [&_button]:w-full sm:[&_button]:w-auto">
+            {action}
+          </div>
+        )}
       </div>
     </div>
   );
