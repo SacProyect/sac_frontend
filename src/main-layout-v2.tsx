@@ -152,7 +152,7 @@ const MainLayoutV2 = () => {
             .slice(0, 2) || 'U';
 
         return (
-            <header className="bg-card/85 dark:bg-card/80 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300 pt-safe">
+            <header className="bg-card/95 dark:bg-card/95 backdrop-blur-md border-b border-border sticky top-0 z-40 transition-all duration-300 pt-safe">
                 <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 md:px-8 py-2.5 sm:py-3 min-w-0">
                     <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
                         <SidebarMenu />
