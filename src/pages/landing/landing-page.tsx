@@ -20,7 +20,9 @@ import {
 import { ArrowDown, ArrowRight, Check, Menu, Plus, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
-/** Revana-like layout · brand S.O.T · black + blue accents */
+/* ═══════════════════════════════════════════════════════
+   S.O.T Landing — Revana-style premium · light/dark rhythm
+   ═══════════════════════════════════════════════════════ */
 
 const fontStyle = {
   "--f-display": '"Syne", system-ui, sans-serif',
@@ -29,7 +31,7 @@ const fontStyle = {
 
 const NAV = [
   { href: "#about", label: "Nosotros" },
-  { href: "#works", label: "Módulos" },
+  { href: "#works", label: "Modulos" },
   { href: "#services", label: "Servicios" },
   { href: "#planes", label: "Planes" },
   { href: "#faq", label: "FAQ" },
@@ -46,14 +48,14 @@ const STRIP = [
 
 const WORKS = [
   {
-    title: "Administración",
+    title: "Administracion",
     desc: "Contribuyentes, providencias y cobranza en un solo panel.",
     year: "2026",
     img: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=80",
     offset: "lg:mt-24",
   },
   {
-    title: "Fiscalización",
+    title: "Fiscalizacion",
     desc: "Campo, censo y mapas con trazabilidad completa.",
     year: "2025",
     img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80",
@@ -68,7 +70,7 @@ const WORKS = [
   },
   {
     title: "Reportes & KPI",
-    desc: "IVA, ISLR y desempeño institucional en tiempo real.",
+    desc: "IVA, ISLR y desempeno institucional en tiempo real.",
     year: "2025",
     img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1400&q=80",
     offset: "lg:mt-8",
@@ -77,13 +79,13 @@ const WORKS = [
 
 const SERVICES = [
   {
-    title: "Gestión tributaria",
+    title: "Gestion tributaria",
     body: "Layouts claros y control total de cada contribuyente — de alta a cobranza.",
     img: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    title: "Fiscalización en campo",
-    body: "Captura móvil, mapas y cuadrillas pensados para el terreno.",
+    title: "Fiscalizacion en campo",
+    body: "Captura movil, mapas y cuadrillas pensados para el terreno.",
     img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80",
   },
   {
@@ -92,106 +94,51 @@ const SERVICES = [
     img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80",
   },
   {
-    title: "Gobierno & auditoría",
-    body: "Roles, bitácora y auditoría interna para equipos exigentes.",
+    title: "Gobierno & auditoria",
+    body: "Roles, bitacora y auditoria interna para equipos exigentes.",
     img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
 const FAQS = [
-  {
-    q: "¿Quién puede usar S.O.T?",
-    a: "Personal autorizado de la administración tributaria según rol: administradores, coordinadores, supervisores y fiscales.",
-  },
-  {
-    q: "¿Hay un tamaño mínimo de equipo?",
-    a: "No. Escala desde equipos compactos hasta direcciones completas con planes flexibles.",
-  },
-  {
-    q: "¿Cómo empiezo con un proyecto?",
-    a: "Accede con tu cédula institucional o escríbenos desde Contacto para alta y capacitación.",
-  },
-  {
-    q: "¿Incluye campo y oficina?",
-    a: "Sí. Censo, fiscalización, cobranza, reportes y control documental en una sola plataforma.",
-  },
-  {
-    q: "¿Qué tan involucrado estaré?",
-    a: "Colaboramos en roles e implementación. Tú defines procesos; S.O.T ejecuta el día a día.",
-  },
-  {
-    q: "¿Cuál es el timeline típico?",
-    a: "De 2 semanas en el plan Esencial hasta un onboarding institucional completo.",
-  },
+  { q: "Quien puede usar S.O.T?", a: "Personal autorizado de la administracion tributaria segun rol: administradores, coordinadores, supervisores y fiscales." },
+  { q: "Hay un tamano minimo de equipo?", a: "No. Escala desde equipos compactos hasta direcciones completas con planes flexibles." },
+  { q: "Como empiezo con un proyecto?", a: "Accede con tu cedula institucional o escribenos desde Contacto para alta y capacitacion." },
+  { q: "Incluye campo y oficina?", a: "Si. Censo, fiscalizacion, cobranza, reportes y control documental en una sola plataforma." },
+  { q: "Que tan involucrado estare?", a: "Colaboramos en roles e implementacion. Tu defines procesos; S.O.T ejecuta el dia a dia." },
+  { q: "Cual es el timeline tipico?", a: "De 2 semanas en el plan Esencial hasta un onboarding institucional completo." },
 ];
 
 const PLANS = [
   {
-    name: "Esencial",
-    blurb: "Un flujo de alto impacto para equipos compactos.",
-    monthly: 499,
-    annual: 399,
-    popular: false,
-    cta: "Empezar",
-    features: [
-      "Contribuyentes y eventos",
-      "Hasta 3 roles",
-      "Implementación 2 semanas",
-      "Soporte por correo 48h",
-    ],
+    name: "Esencial", blurb: "Un flujo de alto impacto para equipos compactos.",
+    monthly: 499, annual: 399, popular: false, cta: "Empezar",
+    features: ["Contribuyentes y eventos", "Hasta 3 roles", "Implementacion 2 semanas", "Soporte por correo 48h"],
   },
   {
-    name: "Profesional",
-    blurb: "Varios procesos en paralelo, con analytics.",
-    monthly: 2500,
-    annual: 2000,
-    popular: true,
-    cta: "Empezar",
-    features: [
-      "Hasta 3 frentes operativos",
-      "Analytics avanzados",
-      "Revisiones trimestrales",
-      "Soporte prioritario",
-    ],
+    name: "Profesional", blurb: "Varios procesos en paralelo, con analytics.",
+    monthly: 2500, annual: 2000, popular: true, cta: "Empezar",
+    features: ["Hasta 3 frentes operativos", "Analytics avanzados", "Revisiones trimestrales", "Soporte prioritario"],
   },
   {
-    name: "Institucional",
-    blurb: "Estrategia completa multi-equipo.",
-    monthly: 6750,
-    annual: 5400,
-    popular: false,
-    cta: "Hablar con ventas",
-    features: [
-      "Flujos ilimitados",
-      "Onboarding acompañado",
-      "SLA + estratega dedicado",
-      "ROI ejecutivo anual",
-    ],
+    name: "Institucional", blurb: "Estrategia completa multi-equipo.",
+    monthly: 6750, annual: 5400, popular: false, cta: "Hablar con ventas",
+    features: ["Flujos ilimitados", "Onboarding acompanado", "SLA + estratega dedicado", "ROI ejecutivo anual"],
   },
 ] as const;
 
-function money(n: number) {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(n);
+/* ── helpers ─────────────────────────────────────────── */
+
+function fmt(n: number) {
+  return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 }).format(n);
 }
 
-function Reveal({
-  children,
-  className = "",
-  delay = 0,
-}: {
-  children: ReactNode;
-  className?: string;
-  delay?: number;
-}) {
+function Reveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 48 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-10% 0px" }}
+      viewport={{ once: true, margin: "-8% 0px" }}
       transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
     >
@@ -200,16 +147,23 @@ function Reveal({
   );
 }
 
-function SectionLabel({ children }: { children: ReactNode }) {
+function BrandMark({ dark }: { dark?: boolean }) {
   return (
     <div className="mb-6 flex items-center gap-3">
-      <span className="sot-mark" />
-      <span className="font-[family-name:var(--f-body)] text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
-        {children}
+      <span className="inline-block h-2 w-2 shrink-0 bg-[#3b82f6]" />
+      <span
+        className="font-[family-name:var(--f-body)] text-[11px] font-medium uppercase tracking-[0.28em]"
+        style={dark ? { color: "rgba(0,0,0,0.4)" } : { color: "rgba(255,255,255,0.4)" }}
+      >
+        S.O.T
       </span>
     </div>
   );
 }
+
+/* ══════════════════════════════════════════════════════════
+   PAGE
+   ══════════════════════════════════════════════════════════ */
 
 export default function LandingPage() {
   const { user } = useAuth();
@@ -224,17 +178,16 @@ export default function LandingPage() {
   const servicesRef = useRef<HTMLElement>(null);
   const worksBgRef = useRef<HTMLDivElement>(null);
 
+  /* ── hero parallax ─────────────────────────────────── */
   const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroImgY = useTransform(heroProgress, [0, 1], ["0%", "28%"]);
-  const heroImgScale = useTransform(heroProgress, [0, 1], [1, 1.15]);
-  const brandY = useSpring(useTransform(heroProgress, [0, 1], [0, -120]), {
-    stiffness: 90,
-    damping: 26,
-  });
+  const heroImgY = useTransform(heroProgress, [0, 1], ["0%", "32%"]);
+  const heroImgScale = useTransform(heroProgress, [0, 1], [1, 1.10]);
+  const brandY = useSpring(useTransform(heroProgress, [0, 1], [0, -130]), { stiffness: 90, damping: 26 });
 
+  /* ── services scrub ────────────────────────────────── */
   const { scrollYProgress: servicesProgress } = useScroll({
     target: servicesRef,
     offset: ["start start", "end end"],
@@ -245,13 +198,15 @@ export default function LandingPage() {
     setServiceIdx((prev) => (prev === next ? prev : next));
   });
 
+  /* ── works bg text drift ───────────────────────────── */
   const { scrollYProgress: worksProgress } = useScroll({
     target: worksBgRef,
     offset: ["start end", "end start"],
   });
-  const worksTextX = useTransform(worksProgress, [0, 1], ["0%", "-18%"]);
+  const worksTextX = useTransform(worksProgress, [0, 1], ["0%", "-15%"]);
 
-  const stripX = useTransform(heroProgress, [0.2, 1], ["0%", "-20%"]);
+  /* ── image strip drift ─────────────────────────────── */
+  const stripX = useTransform(heroProgress, [0.2, 1], ["0%", "-24%"]);
 
   useEffect(() => {
     document.documentElement.classList.add("landing-active");
@@ -262,18 +217,12 @@ export default function LandingPage() {
 
   if (user) return <Navigate to="/admin" replace />;
 
-  const onContact = (e: FormEvent) => {
-    e.preventDefault();
-    setSent(true);
-  };
+  const onContact = (e: FormEvent) => { e.preventDefault(); setSent(true); };
 
   return (
-    <div
-      className="sot-landing bg-[#050505] text-white antialiased"
-      style={fontStyle}
-    >
-      {/* NAV */}
-      <header className="fixed inset-x-0 top-0 z-50 pt-safe">
+    <div className="sot-landing" style={fontStyle}>
+      {/* ═══════ NAV ════════════════════════════════════ */}
+      <header className="fixed inset-x-0 top-0 z-50 pt-safe mix-blend-difference">
         <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-5 sm:px-8">
           <a
             href="#top"
@@ -283,7 +232,7 @@ export default function LandingPage() {
           </a>
           <button
             type="button"
-            aria-label="Menú"
+            aria-label="Menu"
             onClick={() => setMenuOpen(true)}
             className="inline-flex h-10 w-10 items-center justify-center text-white"
           >
@@ -302,11 +251,11 @@ export default function LandingPage() {
           >
             <div className="flex h-full flex-col px-6 pb-safe pt-6">
               <div className="flex items-center justify-between">
-                <span className="font-[family-name:var(--f-display)] text-sm font-bold uppercase tracking-[0.35em]">
+                <span className="font-[family-name:var(--f-display)] text-sm font-bold uppercase tracking-[0.35em] text-white">
                   S.O.T
                 </span>
                 <button type="button" aria-label="Cerrar" onClick={() => setMenuOpen(false)}>
-                  <X className="h-6 w-6" />
+                  <X className="h-6 w-6 text-white" />
                 </button>
               </div>
               <nav className="mt-16 flex flex-1 flex-col gap-5">
@@ -326,11 +275,8 @@ export default function LandingPage() {
               </nav>
               <button
                 type="button"
-                onClick={() => {
-                  setMenuOpen(false);
-                  navigate("/login");
-                }}
-                className="mb-8 rounded-full bg-[#3b82f6] px-6 py-4 font-[family-name:var(--f-body)] text-sm font-semibold uppercase tracking-wider"
+                onClick={() => { setMenuOpen(false); navigate("/login"); }}
+                className="mb-8 rounded-full bg-[#3b82f6] px-6 py-4 font-[family-name:var(--f-body)] text-sm font-semibold uppercase tracking-wider text-white"
               >
                 Acceder al sistema
               </button>
@@ -340,16 +286,17 @@ export default function LandingPage() {
       </AnimatePresence>
 
       <main id="top">
-        {/* HERO — full bleed image + giant brand like Revana */}
-        <section ref={heroRef} className="relative h-[100svh] min-h-[640px] overflow-hidden">
+        {/* ═══════ HERO ═════════════════════════════════ */}
+        <section ref={heroRef} className="relative h-[100svh] min-h-[640px] overflow-hidden bg-[#050505]">
           <motion.div style={{ y: heroImgY, scale: heroImgScale }} className="absolute inset-0">
             <img
               src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=85"
               alt=""
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-black/45" />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#050505]" />
+            {/* ── overlay ligero para que la imagen respire, no la mate ── */}
+            <div className="absolute inset-0 bg-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30" />
           </motion.div>
 
           <div className="relative z-10 flex h-full flex-col items-center justify-between px-5 pb-8 pt-28 sm:px-8">
@@ -359,15 +306,15 @@ export default function LandingPage() {
               transition={{ duration: 0.9, delay: 0.15 }}
               className="mx-auto max-w-2xl text-center"
             >
-              <p className="font-[family-name:var(--f-body)] text-sm leading-relaxed text-white/90 sm:text-base md:text-lg">
+              <p className="font-[family-name:var(--f-body)] text-sm leading-relaxed text-white/85 sm:text-base md:text-lg">
                 Operaciones tributarias rigurosas y funcionales — del campo a los
-                reportes — pensadas para tu institución y su visión.
+                reportes — pensadas para tu institucion y su vision.
               </p>
               <a
                 href="#works"
-                className="mt-8 inline-flex items-center gap-2 font-[family-name:var(--f-body)] text-sm text-white/90 transition hover:text-[#93c5fd]"
+                className="mt-8 inline-flex items-center gap-2 font-[family-name:var(--f-body)] text-sm text-white/85 transition hover:text-[#93c5fd]"
               >
-                Ver módulos <ArrowDown className="h-4 w-4" />
+                Ver modulos <ArrowDown className="h-4 w-4" />
               </a>
             </motion.div>
 
@@ -383,31 +330,28 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* IMAGE STRIP — horizontal parallax as you leave hero */}
-        <section className="relative z-20 -mt-6 bg-[#050505] pb-6 pt-2">
+        {/* ═══════ IMAGE STRIP ══════════════════════════ */}
+        <section className="relative z-20 -mt-6 bg-[#050505] pb-8 pt-2">
           <motion.div style={{ x: stripX }} className="flex w-[140%] gap-3 px-3 sm:gap-4 sm:px-4">
             {STRIP.map((src) => (
-              <div
-                key={src}
-                className="relative h-48 w-[42vw] shrink-0 overflow-hidden rounded-sm sm:h-64 sm:w-[28vw] md:h-80"
-              >
-                <img src={src} alt="" className="h-full w-full object-cover" />
+              <div key={src} className="relative h-48 w-[42vw] shrink-0 overflow-hidden sm:h-64 sm:w-[28vw] md:h-80">
+                <img src={src} alt="" className="h-full w-full object-cover" loading="lazy" />
               </div>
             ))}
           </motion.div>
         </section>
 
-        {/* ABOUT */}
-        <section id="about" className="bg-[#050505] py-28 sm:py-36">
+        {/* ═══════ ABOUT · seccion CLARA ════════════════ */}
+        <section id="about" className="bg-[#f7f5f0] py-28 text-[#111] sm:py-36">
           <div className="mx-auto grid max-w-[1400px] gap-14 px-5 sm:px-8 lg:grid-cols-12">
             <Reveal className="lg:col-span-5">
-              <SectionLabel>Nosotros</SectionLabel>
-              <h2 className="font-[family-name:var(--f-display)] text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
-                Operaciones cotidianas, diseñadas con precisión.
+              <BrandMark dark />
+              <h2 className="font-[family-name:var(--f-display)] text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+                Operaciones cotidianas, disenadas con precision.
               </h2>
             </Reveal>
             <Reveal className="lg:col-span-7" delay={0.1}>
-              <p className="max-w-2xl font-[family-name:var(--f-body)] text-lg leading-relaxed text-white/55 sm:text-xl">
+              <p className="max-w-2xl font-[family-name:var(--f-body)] text-lg leading-relaxed text-black/55 sm:text-xl">
                 Pensado para equipos institucionales: ayuda a oficinas tributarias a transformar
                 el trabajo de campo, la cobranza y los reportes con software claro y durable.
               </p>
@@ -425,7 +369,7 @@ export default function LandingPage() {
                     transition={{ delay: 0.1 * i, duration: 0.7 }}
                     className={`overflow-hidden ${i === 1 ? "mt-8" : ""}`}
                   >
-                    <img src={src} alt="" className="aspect-[3/4] w-full object-cover" />
+                    <img src={src} alt="" className="aspect-[3/4] w-full object-cover" loading="lazy" />
                   </motion.div>
                 ))}
               </div>
@@ -433,21 +377,26 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* SELECTED WORKS — giant bg text + asymmetric cards */}
+        {/* ═══════ WORKS · seccion OSCURA ═══════════════ */}
         <section id="works" ref={worksBgRef} className="relative overflow-hidden bg-[#0a0a0a] py-28 sm:py-36">
           <motion.div
             style={{ x: worksTextX }}
-            className="pointer-events-none absolute left-0 top-24 whitespace-nowrap font-[family-name:var(--f-display)] text-[clamp(5rem,18vw,14rem)] font-bold leading-none tracking-[-0.05em] text-white/[0.05]"
+            className="pointer-events-none absolute left-0 top-24 whitespace-nowrap font-[family-name:var(--f-display)] text-[clamp(5rem,18vw,14rem)] font-bold leading-none tracking-[-0.05em] text-white/[0.04]"
           >
-            Módulos seleccionados · S.O.T · Módulos seleccionados
+            Modulos · S.O.T · Modulos · S.O.T
           </motion.div>
 
           <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
             <Reveal>
-              <SectionLabel>Módulos</SectionLabel>
+              <BrandMark />
+            </Reveal>
+            <Reveal delay={0.05}>
+              <h2 className="mb-2 font-[family-name:var(--f-display)] text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
+                Modulos seleccionados
+              </h2>
             </Reveal>
 
-            <div className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-20">
+            <div className="mt-14 grid gap-10 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-20">
               {WORKS.map((w, i) => (
                 <motion.article
                   key={w.title}
@@ -458,12 +407,14 @@ export default function LandingPage() {
                   className={`group ${w.offset}`}
                 >
                   <div className="relative overflow-hidden">
-                    <div className="pointer-events-none absolute left-3 top-3 z-10 h-5 w-5 border-l border-t border-white/70" />
-                    <div className="pointer-events-none absolute bottom-3 right-3 z-10 h-5 w-5 border-b border-r border-white/70" />
+                    {/* ── crop marks ── */}
+                    <div className="pointer-events-none absolute left-3 top-3 z-10 h-5 w-5 border-l border-t border-white/50" />
+                    <div className="pointer-events-none absolute bottom-3 right-3 z-10 h-5 w-5 border-b border-r border-white/50" />
                     <img
                       src={w.img}
                       alt=""
                       className="aspect-[16/11] w-full object-cover transition duration-700 group-hover:scale-[1.04]"
+                      loading="lazy"
                     />
                   </div>
                   <div className="mt-5 flex items-start justify-between gap-4">
@@ -475,9 +426,7 @@ export default function LandingPage() {
                         {w.desc}
                       </p>
                     </div>
-                    <span className="pt-1 font-[family-name:var(--f-body)] text-xs text-white/35">
-                      {w.year}
-                    </span>
+                    <span className="pt-1 font-[family-name:var(--f-body)] text-xs text-white/35">{w.year}</span>
                   </div>
                 </motion.article>
               ))}
@@ -485,13 +434,13 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* SERVICES — sticky scroll scrub like Revana */}
-        <section ref={servicesRef} className="relative h-[280vh] bg-black">
+        {/* ═══════ SERVICES · sticky scrub ══════════════ */}
+        <section ref={servicesRef} className="relative h-[300vh] bg-black">
           <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
             <div className="mx-auto grid w-full max-w-[1400px] gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-16">
               <div className="lg:col-span-5">
-                <SectionLabel>Servicios</SectionLabel>
-                <ul className="mt-4 space-y-2">
+                <BrandMark />
+                <ul className="mt-4 space-y-1">
                   {SERVICES.map((s, i) => {
                     const active = i === serviceIdx;
                     return (
@@ -502,10 +451,8 @@ export default function LandingPage() {
                           className="group flex w-full items-center gap-4 py-2 text-left"
                         >
                           <span
-                            className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
-                              active
-                                ? "border-white bg-white text-black"
-                                : "border-transparent text-transparent"
+                            className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full border transition ${
+                              active ? "border-white bg-white text-black" : "border-transparent text-transparent"
                             }`}
                           >
                             <ArrowRight className="h-4 w-4" />
@@ -555,17 +502,17 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* PRICING */}
-        <section id="planes" className="border-t border-white/10 bg-[#050505] py-28 sm:py-36">
+        {/* ═══════ PRICING · seccion CLARA ═══════════════ */}
+        <section id="planes" className="bg-[#f7f5f0] py-28 text-[#111] sm:py-36">
           <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
             <Reveal>
-              <SectionLabel>Planes</SectionLabel>
-              <h2 className="max-w-3xl font-[family-name:var(--f-display)] text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
+              <BrandMark dark />
+              <h2 className="max-w-3xl font-[family-name:var(--f-display)] text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
                 Precios flexibles para cualquier escala.
               </h2>
             </Reveal>
 
-            <div className="mt-10 inline-flex rounded-full border border-white/15 p-1">
+            <div className="mt-10 inline-flex rounded-full border border-black/15 bg-white p-1">
               {(["monthly", "annual"] as const).map((k) => (
                 <button
                   key={k}
@@ -580,12 +527,10 @@ export default function LandingPage() {
                       transition={{ type: "spring", stiffness: 400, damping: 32 }}
                     />
                   )}
-                  <span className="relative z-10 font-medium text-white">
+                  <span className={`relative z-10 font-medium ${billing === k ? "text-white" : "text-black/60"}`}>
                     {k === "monthly" ? "Mensual" : "Anual"}
                     {k === "annual" && (
-                      <span className="ml-1 text-[10px] font-bold uppercase text-emerald-200">
-                        −20%
-                      </span>
+                      <span className="ml-1 text-[10px] font-bold uppercase text-emerald-300">-20%</span>
                     )}
                   </span>
                 </button>
@@ -605,19 +550,19 @@ export default function LandingPage() {
                     whileHover={{ y: -8 }}
                     className={`relative flex flex-col rounded-3xl border p-7 ${
                       p.popular
-                        ? "border-[#3b82f6]/60 bg-[#0b1220] shadow-[0_0_80px_rgba(59,130,246,0.2)] lg:-translate-y-3"
-                        : "border-white/10 bg-white/[0.02]"
+                        ? "border-[#3b82f6]/50 bg-white shadow-[0_0_80px_rgba(59,130,246,0.15)] lg:-translate-y-3"
+                        : "border-black/[0.08] bg-white/60"
                     }`}
                   >
                     {p.popular && (
-                      <span className="absolute right-5 top-5 rounded-full bg-[#3b82f6] px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                      <span className="absolute right-5 top-5 rounded-full bg-[#3b82f6] px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white">
                         Destacado
                       </span>
                     )}
-                    <p className="font-[family-name:var(--f-body)] text-xs uppercase tracking-[0.25em] text-white/40">
+                    <p className="font-[family-name:var(--f-body)] text-xs uppercase tracking-[0.25em] text-black/40">
                       {p.name}
                     </p>
-                    <p className="mt-3 text-sm text-white/50">{p.blurb}</p>
+                    <p className="mt-3 text-sm text-black/50">{p.blurb}</p>
                     <div className="mt-8 flex items-end gap-1">
                       <AnimatePresence mode="wait">
                         <motion.span
@@ -625,17 +570,17 @@ export default function LandingPage() {
                           initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
                           animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                           exit={{ opacity: 0, y: -8 }}
-                          className="font-[family-name:var(--f-display)] text-5xl font-semibold"
+                          className="font-[family-name:var(--f-display)] text-5xl font-semibold text-[#111]"
                         >
-                          {money(price)}
+                          {fmt(price)}
                         </motion.span>
                       </AnimatePresence>
-                      <span className="mb-2 text-sm text-white/40">/mo</span>
+                      <span className="mb-2 text-sm text-black/40">/mo</span>
                     </div>
                     <ul className="mt-8 flex-1 space-y-3">
                       {p.features.map((f) => (
-                        <li key={f} className="flex gap-3 text-sm text-white/70">
-                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#60a5fa]" />
+                        <li key={f} className="flex gap-3 text-sm text-black/70">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#3b82f6]" />
                           {f}
                         </li>
                       ))}
@@ -646,7 +591,7 @@ export default function LandingPage() {
                       className={`mt-8 rounded-full py-3.5 text-sm font-semibold ${
                         p.popular
                           ? "bg-[#3b82f6] text-white"
-                          : "border border-white/20 text-white hover:bg-white/5"
+                          : "border border-black/15 bg-white text-[#111] hover:bg-black/5"
                       }`}
                     >
                       {p.cta}
@@ -658,23 +603,18 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* FAQ — light section like Revana, inverted to near-white ink on dark... Revana uses white bg; we use off-black soft */}
-        <section id="faq" className="border-t border-white/10 bg-[#f4f1ea] py-28 text-[#111] sm:py-36">
+        {/* ═══════ FAQ · seccion CLARA ═══════════════════ */}
+        <section id="faq" className="bg-[#f7f5f0] py-28 text-[#111] sm:py-36">
           <div className="mx-auto grid max-w-[1400px] gap-14 px-5 sm:px-8 lg:grid-cols-12">
             <Reveal className="lg:col-span-5">
-              <div className="mb-6 flex items-center gap-3">
-                <span className="sot-mark" />
-                <span className="font-[family-name:var(--f-body)] text-[11px] uppercase tracking-[0.28em] text-black/40">
-                  FAQ
-                </span>
-              </div>
+              <BrandMark dark />
               <h2 className="font-[family-name:var(--f-display)] text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
                 Tus preguntas,
                 <br />
                 respondidas.
               </h2>
               <p className="mt-5 max-w-sm font-[family-name:var(--f-body)] text-sm text-black/50">
-                Respuestas rápidas a lo que más preguntan sobre el sistema y el proceso.
+                Respuestas rapidas a lo que mas preguntan sobre el sistema y el proceso.
               </p>
             </Reveal>
             <div className="lg:col-span-7">
@@ -687,10 +627,8 @@ export default function LandingPage() {
                       onClick={() => setOpenFaq(open ? null : i)}
                       className="flex w-full items-center gap-4 py-5 text-left"
                     >
-                      <Plus
-                        className={`h-4 w-4 shrink-0 text-black/35 transition ${open ? "rotate-45" : ""}`}
-                      />
-                      <span className="font-[family-name:var(--f-body)] text-base font-medium text-black sm:text-lg">
+                      <Plus className={`h-4 w-4 shrink-0 text-black/35 transition ${open ? "rotate-45" : ""}`} />
+                      <span className="font-[family-name:var(--f-body)] text-base font-medium sm:text-lg">
                         {f.q}
                       </span>
                     </button>
@@ -715,20 +653,24 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* CONTACT */}
-        <section id="contact" className="relative overflow-hidden bg-black py-28 sm:py-36">
-          <img
-            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-25"
-          />
-          <div className="absolute inset-0 bg-black/70" />
-          <div className="relative mx-auto grid max-w-[1400px] gap-12 px-5 sm:px-8 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <SectionLabel>Contacto</SectionLabel>
+        {/* ═══════ CONTACT · OSCURO + CLARO ═════════════= */}
+        <section id="contact" className="grid lg:grid-cols-2">
+          <div className="relative flex items-center overflow-hidden bg-[#050505] px-5 py-28 sm:px-10 sm:py-36 lg:px-14">
+            <img
+              src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover opacity-20"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-black/35" />
+            <div className="relative">
+              <BrandMark />
               <h2 className="font-[family-name:var(--f-display)] text-5xl font-semibold tracking-tight text-white sm:text-6xl">
                 Hablemos
               </h2>
+              <p className="mt-5 max-w-sm font-[family-name:var(--f-body)] text-base text-white/55">
+                Escribenos para una demo personalizada o para resolver cualquier duda sobre S.O.T.
+              </p>
               <a
                 href="mailto:noreply@sac-app.com"
                 className="mt-8 inline-block font-[family-name:var(--f-display)] text-2xl text-white underline-offset-4 hover:text-[#93c5fd] hover:underline sm:text-3xl"
@@ -736,33 +678,37 @@ export default function LandingPage() {
                 noreply@sac-app.com
               </a>
             </div>
-            <div className="lg:col-span-7">
+          </div>
+
+          <div className="flex items-center bg-[#f7f5f0] px-5 py-28 sm:px-10 sm:py-36 lg:px-14">
+            <div className="w-full">
               {sent ? (
-                <div className="rounded-3xl border border-white/15 bg-white/5 p-8">
-                  <p className="font-[family-name:var(--f-display)] text-3xl">Mensaje recibido</p>
+                <div className="rounded-3xl border border-black/10 bg-white p-8 text-[#111]">
+                  <p className="font-[family-name:var(--f-display)] text-3xl font-semibold">Mensaje recibido</p>
+                  <p className="mt-2 text-black/50">Te contactaremos pronto.</p>
                   <button
                     type="button"
                     onClick={() => navigate("/login")}
-                    className="mt-6 rounded-full bg-[#3b82f6] px-5 py-3 text-sm font-semibold"
+                    className="mt-6 rounded-full bg-[#3b82f6] px-5 py-3 text-sm font-semibold text-white"
                   >
                     Ir al login
                   </button>
                 </div>
               ) : (
-                <form onSubmit={onContact} className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8">
+                <form onSubmit={onContact} className="space-y-4 rounded-3xl border border-black/[0.08] bg-white p-6 sm:p-8">
                   <div className="grid gap-4 sm:grid-cols-2">
                     <input
                       required
                       name="name"
                       placeholder="Nombre"
-                      className="rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
+                      className="rounded-xl border border-black/15 bg-transparent px-4 py-3 text-[#111] outline-none placeholder:text-black/30 focus:border-[#3b82f6]"
                     />
                     <input
                       required
                       type="email"
                       name="email"
                       placeholder="Correo"
-                      className="rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
+                      className="rounded-xl border border-black/15 bg-transparent px-4 py-3 text-[#111] outline-none placeholder:text-black/30 focus:border-[#3b82f6]"
                     />
                   </div>
                   <textarea
@@ -770,11 +716,11 @@ export default function LandingPage() {
                     name="message"
                     rows={4}
                     placeholder="Mensaje"
-                    className="w-full resize-none rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
+                    className="w-full resize-none rounded-xl border border-black/15 bg-transparent px-4 py-3 text-[#111] outline-none placeholder:text-black/30 focus:border-[#3b82f6]"
                   />
                   <button
                     type="submit"
-                    className="rounded-full bg-[#3b82f6] px-6 py-3.5 text-sm font-semibold"
+                    className="rounded-full bg-[#3b82f6] px-6 py-3.5 text-sm font-semibold text-white"
                   >
                     Enviar
                   </button>
@@ -785,14 +731,15 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 bg-[#050505] pb-safe">
+      {/* ═══════ FOOTER ═════════════════════════════════ */}
+      <footer className="border-t border-white/10 bg-[#050505] pb-safe text-white">
         <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
             <p className="font-[family-name:var(--f-display)] text-lg font-bold uppercase tracking-[0.25em]">
               S.O.T
             </p>
             <p className="mt-1 font-[family-name:var(--f-body)] text-sm text-white/40">
-              Sistema de Organización Tributaria
+              Sistema de Organizacion Tributaria
             </p>
           </div>
           <div className="flex flex-wrap gap-5 text-xs uppercase tracking-[0.16em] text-white/40">

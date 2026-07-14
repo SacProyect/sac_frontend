@@ -1,25 +1,19 @@
-/* Landing: desbloquear scroll del documento (html/body/#root estánen 100dvh) */
-html.landing-active {
-  height: auto !important;
-  min-height: 100% !important;
-  overflow-x: clip !important;
-  overflow-y: auto !important;
-  overscroll-behavior-y: auto !important;
-  scroll-behavior: smooth;
-}
+/* ── Landing: desbloquear scroll para trackpad + mouse ── */
 
-html.landing-active body {
-  height: auto !important;
-  min-height: 100% !important;
-  overflow-x: clip !important;
-  overflow-y: visible !important;
-  overscroll-behavior-y: auto !important;
-}
-
+html.landing-active,
+html.landing-active body,
 html.landing-active #root {
   height: auto !important;
   min-height: 100% !important;
   overflow: visible !important;
+  overscroll-behavior-y: auto !important;
+}
+
+html.landing-active {
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
 }
 
 .sot-landing {
@@ -34,4 +28,19 @@ html.landing-active #root {
   height: 0.55rem;
   background: #3b82f6;
   flex-shrink: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html.landing-active {
+    scroll-behavior: auto !important;
+  }
+
+  .sot-landing *,
+  .sot-landing *::before,
+  .sot-landing *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
