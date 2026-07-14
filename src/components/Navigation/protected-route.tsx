@@ -5,7 +5,7 @@ import { useAuth } from "@/hooks/use-auth";
 export const ProtectedRoute = ({ children }: { children: ReactNode }) => {
     const { user } = useAuth();
     if (!user) {
-        return <Navigate to="/login" />;
+        return <Navigate to="/" replace />;
     }
     return children;
 };

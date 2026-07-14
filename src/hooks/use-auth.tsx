@@ -158,7 +158,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         async (user: User, token: string) => {
             setStoredUser(user);
             setStoredToken(token);
-            navigate("/");
+            navigate("/admin", { replace: true });
         },
         [navigate, setStoredUser, setStoredToken]
     );
