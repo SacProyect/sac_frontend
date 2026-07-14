@@ -1,16 +1,244 @@
 import { useEffect, useState, type CSSProperties, type FormEvent } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { ArrowUpRight, ChevronDown, Menu, X } from "lucide-react";
+import { ArrowUpRight, Check, ChevronDown, Menu, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 const NAV = [
   { href: "#about", label: "Nosotros" },
   { href: "#modulos", label: "Módulos" },
   { href: "#servicios", label: "Capacidades" },
+  { href: "#planes", label: "Planes" },
   { href: "#faq", label: "FAQ" },
   { href: "#contacto", label: "Contacto" },
 ];
+
+type Billing = "monthly" | "annual";
+
+const PLANS = [
+  {
+    id: "esencial",
+    name: "Esencial",
+    blurb: "Ideal para equipos compactos que arrancan con un flujo operativo claro.",
+    monthly: 499,
+    annual: 399,
+    cta: "Empezar",
+    popular: false,
+    features: [
+      "Módulo de contribuyentes y eventos",
+      "Hasta 3 roles operativos",
+      "Implementación guiada en 2 semanas",
+      "Soporte por correo (48 h)",
+      "Actualizaciones de plataforma",
+    ],
+  },
+  {
+    id: "profesional",
+    name: "Profesional",
+    blurb: "Para municipios listos a automatizar varios procesos en paralelo.",
+    monthly: 2500,
+    annual: 2000,
+    cta: "Empezar",
+    popular: true,
+    features: [
+      "Hasta 3 frentes (campo, cobranza, reportes)",
+      "Integraciones ilimitadas del stack SAC",
+      "Analytics e indicadores avanzados",
+      "Optimización continua + revisiones trimestrales",
+      "Capacitación personalizada",
+      "Soporte prioritario (correo + canal directo)",
+    ],
+  },
+  {
+    id: "institucional",
+    name: "Institucional",
+    blurb: "Estrategia completa para organizaciones grandes y multi-equipo.",
+    monthly: 6750,
+    annual: 5400,
+    cta: "Hablar con ventas",
+    popular: false,
+    features: [
+      "Módulos y flujos ilimitados",
+      "Integraciones enterprise",
+      "Onboarding white-glove y change management",
+      "Sesiones mensuales de estrategia",
+      "SLA garantizado",
+      "Estratega SAC dedicado",
+      "Reporte anual de ROI y comité ejecutivo",
+    ],
+  },
+] as const;
+
+function formatUsd(n: number) {
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 0,
+  }).format(n);
+}
+
+function PricingSection({ onCta }: { onCta: () => void }) {
+  const [billing, setBilling] = useState<Billing>("monthly");
+
+  return (
+    <section id="planes" className="border-t border-[#1c1915]/10 bg-[#0b0b0b] py-20 text-[#f3efe6] sm:py-28">
+      <div className="mx-auto max-w-6xl px-4 sm:px-6">
+        <div className="flex flex-col items-start justify-between gap-8 lg:flex-row lg:items-end">
+          <div>
+            <p className="font-[family-name:var(--lp-sans)] text-[11px] font-semibold uppercase tracking-[0.28em] text-white/40">
+              [09] Pricing
+            </p>
+            <h2 className="mt-3 font-[family-name:var(--lp-serif)] text-4xl font-semibold tracking-[-0.02em] sm:text-5xl md:text-6xl">
+              Planes flexibles{" "}
+              <span className="italic text-white/55">para cualquier escala.</span>
+            </h2>
+            <p className="mt-4 max-w-xl font-[family-name:var(--lp-sans)] text-base text-white/55">
+              Elige el alcance. Cambia de mensual a anual y ahorra 20%.
+            </p>
+          </div>
+
+          {/* Kyma-style billing toggle */}
+          <div className="relative inline-flex rounded-full border border-white/15 bg-white/5 p-1 backdrop-blur">
+            {(["monthly", "annual"] as const).map((key) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setBilling(key)}
+                className="relative min-w-[7.5rem] rounded-full px-4 py-2.5 font-[family-name:var(--lp-sans)] text-sm font-semibold"
+              >
+                {billing === key && (
+                  <motion.span
+                    layoutId="sac-billing-pill"
+                    className="absolute inset-0 rounded-full bg-[#f3efe6] shadow-[0_0_24px_rgba(243,239,230,0.25)]"
+                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
+                  />
+                )}
+                <span
+                  className={`relative z-10 transition-colors ${
+                    billing === key ? "text-[#0b0b0b]" : "text-white/60 hover:text-white"
+                  }`}
+                >
+                  {key === "monthly" ? "Mensual" : "Anual"}
+                  {key === "annual" && (
+                    <span
+                      className={`ml-1.5 text-[10px] font-bold uppercase tracking-wide ${
+                        billing === "annual" ? "text-emerald-700" : "text-emerald-400"
+                      }`}
+                    >
+                      −20%
+                    </span>
+                  )}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-stretch">
+          {PLANS.map((plan, i) => {
+            const price = billing === "monthly" ? plan.monthly : plan.annual;
+            return (
+              <motion.article
+                key={plan.id}
+                initial={{ opacity: 0, y: 28 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-60px" }}
+                transition={{ duration: 0.45, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                whileHover={{ y: -8, transition: { duration: 0.25 } }}
+                className={`group relative flex flex-col overflow-hidden rounded-[1.6rem] border p-6 sm:p-7 ${
+                  plan.popular
+                    ? "border-white/25 bg-gradient-to-b from-[#1a1a1a] to-[#0f0f0f] shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_30px_80px_rgba(0,0,0,0.55)] lg:-mt-4 lg:mb-[-1rem] lg:min-h-[34rem]"
+                    : "border-white/10 bg-white/[0.03] hover:border-white/20"
+                }`}
+              >
+                {/* Glow effects like Kyma featured card */}
+                <div
+                  className={`pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full blur-3xl transition-opacity duration-500 ${
+                    plan.popular
+                      ? "bg-indigo-500/30 opacity-100"
+                      : "bg-white/10 opacity-0 group-hover:opacity-100"
+                  }`}
+                />
+                <div
+                  className={`pointer-events-none absolute -bottom-20 -left-10 h-36 w-36 rounded-full blur-3xl transition-opacity duration-500 ${
+                    plan.popular ? "bg-sky-400/20 opacity-80" : "opacity-0"
+                  }`}
+                />
+
+                <div className="relative flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-[family-name:var(--lp-sans)] text-[11px] font-semibold uppercase tracking-[0.22em] text-white/40">
+                      {plan.name}
+                    </p>
+                    <p className="mt-3 max-w-[16rem] font-[family-name:var(--lp-sans)] text-sm leading-relaxed text-white/55">
+                      {plan.blurb}
+                    </p>
+                  </div>
+                  {plan.popular && (
+                    <motion.span
+                      initial={{ scale: 0.9, opacity: 0 }}
+                      whileInView={{ scale: 1, opacity: 1 }}
+                      className="shrink-0 rounded-full bg-[#f3efe6] px-3 py-1 font-[family-name:var(--lp-sans)] text-[10px] font-bold uppercase tracking-[0.14em] text-[#0b0b0b]"
+                    >
+                      Popular
+                    </motion.span>
+                  )}
+                </div>
+
+                <div className="relative mt-8 flex items-end gap-1">
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={`${plan.id}-${billing}`}
+                      initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                      exit={{ opacity: 0, y: -10, filter: "blur(4px)" }}
+                      transition={{ duration: 0.28 }}
+                      className="font-[family-name:var(--lp-serif)] text-5xl font-semibold tracking-tight sm:text-6xl"
+                    >
+                      {formatUsd(price)}
+                    </motion.span>
+                  </AnimatePresence>
+                  <span className="mb-2 font-[family-name:var(--lp-sans)] text-sm text-white/45">/mes</span>
+                </div>
+                {billing === "annual" && (
+                  <p className="relative mt-2 font-[family-name:var(--lp-sans)] text-xs text-emerald-400/90">
+                    Facturado anualmente · ahorras {formatUsd(plan.monthly * 12 - plan.annual * 12)}
+                  </p>
+                )}
+
+                <ul className="relative mt-8 flex flex-1 flex-col gap-3">
+                  {plan.features.map((f) => (
+                    <li key={f} className="flex items-start gap-3 font-[family-name:var(--lp-sans)] text-sm text-white/75">
+                      <span className="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-white/10">
+                        <Check className="h-3 w-3 text-emerald-400" strokeWidth={3} />
+                      </span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+
+                <motion.button
+                  type="button"
+                  onClick={onCta}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className={`relative mt-8 inline-flex w-full items-center justify-center gap-2 rounded-full px-5 py-3.5 font-[family-name:var(--lp-sans)] text-sm font-semibold transition ${
+                    plan.popular
+                      ? "bg-[#f3efe6] text-[#0b0b0b] shadow-[0_0_40px_rgba(243,239,230,0.15)] hover:bg-white"
+                      : "border border-white/20 bg-transparent text-[#f3efe6] hover:bg-white/10"
+                  }`}
+                >
+                  {plan.cta}
+                  <ArrowUpRight className="h-4 w-4" />
+                </motion.button>
+              </motion.article>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 const MODULES = [
   {
@@ -474,6 +702,8 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+
+        <PricingSection onCta={() => navigate("/login")} />
 
         {/* FAQ */}
         <section id="faq" className="border-t border-[#1c1915]/10 bg-[#ebe6db] py-20 sm:py-28">
