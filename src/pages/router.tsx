@@ -112,6 +112,7 @@ function lazyWithRetry<T extends ComponentType<unknown>>(
 }
 
 const LoginPageV2 = lazyWithRetry(() => import("@/pages/Auth/login-page-v2"));
+const LandingPage = lazyWithRetry(() => import("@/pages/landing/landing-page"));
 const AdminPageV2 = lazyWithRetry(() => import("@/pages/Admin/admin-page-v2"));
 const SettingsPageV2 = lazyWithRetry(() => import("@/pages/Settings/settings-page-v2"));
 const StatsDashboardV2 = lazyWithRetry(() => import("@/pages/stats/stats-dashboard-v2"));
@@ -217,6 +218,13 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: (
+                    <Suspense fallback={<GlobalLoader message="Cargando SAC..." />}>
+                        <LandingPage />
+                    </Suspense>
+                ),
+            },
+            {
+                element: (
                     <ProtectedRoute>
                         <NotificationsProvider>
                             <MainLayoutV2 />
@@ -224,10 +232,6 @@ export const router = createBrowserRouter([
                     </ProtectedRoute>
                 ),
                 children: [
-                    {
-                        index: true,
-                        element: <Navigate to="/admin" replace />,
-                    },
                     {
                         path: "admin",
                         element: <Suspense fallback={<GlobalLoader message="Cargando Administración..." />}><AdminPageV2 /></Suspense>,
