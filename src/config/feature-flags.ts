@@ -85,14 +85,27 @@ export const getMaintenanceMessage = (): string =>
   import.meta.env.VITE_MAINTENANCE_MESSAGE?.trim() ||
   "Estamos realizando actualizaciones en el sistema. Por favor, vuelve a intentarlo más tarde.";
 
-type MaintenanceUser = { role?: string } | null | undefined;
+type MaintenanceUser = { role?: string; personId?: string | number } | null | undefined;
 
-export const canAccessAppDuringMaintenance = (user: MaintenanceUser): boolean =>
-  !isMaintenanceModeEnabled || user?.role === "ADMIN";
+/** Si está definido, solo ese personId (cédula) puede usar la app en mantenimiento. */
+export const getMaintenanceAllowedPersonId = (): string | null => {
+  const raw = import.meta.env.VITE_MAINTENANCE_ALLOWED_PERSON_ID?.trim();
+  return raw ? raw : null;
+};
+
+export const canAccessAppDuringMaintenance = (user: MaintenanceUser): boolean => {
+  if (!isMaintenanceModeEnabled) return true;
+  if (!user || user.role !== "ADMIN") return false;
+
+  const allowedPersonId = getMaintenanceAllowedPersonId();
+  if (!allowedPersonId) return true;
+
+  return String(user.personId ?? "") === allowedPersonId;
+};
 
 /**
  * Bloquea peticiones HTTP cuando el modo mantenimiento está activo y el usuario
- * autenticado no es ADMIN. Permite peticiones sin sesión (p. ej. login de admin).
+ * autenticado no está autorizado. Permite peticiones sin sesión (p. ej. login).
  */
 export const shouldBlockApiDuringMaintenance = (): boolean => {
   if (!isMaintenanceModeEnabled) return false;
@@ -101,8 +114,8 @@ export const shouldBlockApiDuringMaintenance = (): boolean => {
     const raw = localStorage.getItem("user");
     if (!raw || raw === "null" || raw === "undefined") return false;
 
-    const user = JSON.parse(raw) as { role?: string };
-    return user?.role !== "ADMIN";
+    const user = JSON.parse(raw) as MaintenanceUser;
+    return !canAccessAppDuringMaintenance(user);
   } catch {
     return false;
   }
