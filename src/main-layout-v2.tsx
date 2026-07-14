@@ -75,8 +75,8 @@ const MainLayoutV2 = () => {
                         <Landmark className="w-5 h-5" />
                     </div>
                     <div>
-                        <h1 className="text-sm font-bold text-foreground tracking-tight leading-none">SAC FISCAL</h1>
-                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">Plataforma v2.0</p>
+                        <h1 className="text-sm font-bold text-foreground tracking-tight leading-none">S.O.T</h1>
+                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-widest mt-1">Organización Tributaria</p>
                     </div>
                 </div>
             </div>

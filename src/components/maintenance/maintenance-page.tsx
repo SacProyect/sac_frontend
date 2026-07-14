@@ -20,7 +20,7 @@ export function MaintenancePage() {
               <Landmark className="w-8 h-8 text-white" />
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">S.A.C Fiscal</h1>
+          <h1 className="text-4xl font-bold text-white mb-4">S.O.T</h1>
           <p className="text-blue-200 text-lg">
             Estamos realizando mejoras para ofrecerte un mejor servicio.
           </p>

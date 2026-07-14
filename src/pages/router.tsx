@@ -218,7 +218,7 @@ export const router = createBrowserRouter([
             {
                 path: "/",
                 element: (
-                    <Suspense fallback={<GlobalLoader message="Cargando SAC..." />}>
+                    <Suspense fallback={<GlobalLoader message="Cargando S.O.T..." />}>
                         <LandingPage />
                     </Suspense>
                 ),

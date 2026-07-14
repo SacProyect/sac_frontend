@@ -1,7 +1,7 @@
 {
-  "name": "S.A.C — Sistema de Administración Central",
-  "short_name": "SAC",
-  "description": "Plataforma de gestión tributaria y fiscalización.",
+  "name": "S.O.T — Sistema de Organización Tributaria",
+  "short_name": "S.O.T",
+  "description": "Sistema de Organización Tributaria — gestión tributaria y fiscalización.",
   "lang": "es",
   "dir": "ltr",
   "start_url": "/",

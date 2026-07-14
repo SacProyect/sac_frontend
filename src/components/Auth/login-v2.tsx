@@ -80,11 +80,11 @@ export default function LoginV2() {
         <div className="text-center max-w-md">
           <div className="mb-8 flex justify-center">
             <div className="w-16 h-16 bg-blue-500 rounded-lg flex items-center justify-center">
-              <span className="text-3xl font-bold text-white">S.A.C</span>
+              <span className="text-2xl font-bold text-white tracking-tight">S.O.T</span>
             </div>
           </div>
-          <h1 className="text-4xl font-bold text-white mb-4">Sistema de Administración</h1>
-          <p className="text-blue-200 text-lg mb-8">Gestión integral de administración fiscal y contribuyentes</p>
+          <h1 className="text-4xl font-bold text-white mb-4">Sistema de Organización Tributaria</h1>
+          <p className="text-blue-200 text-lg mb-8">Gestión integral tributaria, fiscalización y cobranza</p>
           <div className="space-y-4 text-left">
             <div className="flex items-start gap-3">
               <div className="w-2 h-2 bg-blue-400 rounded-full mt-2"></div>
@@ -115,6 +115,9 @@ export default function LoginV2() {
       <div className="w-full min-h-app lg:min-h-0 lg:w-1/2 bg-slate-950 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
         <div className="w-full max-w-md">
           <div className="mb-6 sm:mb-8">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-[0.28em] text-blue-400 lg:hidden">
+              S.O.T · Sistema de Organización Tributaria
+            </p>
             <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">Bienvenido de nuevo</h2>
             <p className="text-slate-400">Inicia sesión para acceder al sistema</p>
             {isMaintenanceModeEnabled && (

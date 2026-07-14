@@ -1,5 +1,7 @@
+import "./landing.css";
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -8,195 +10,167 @@ import {
 } from "react";
 import { Link, Navigate, useNavigate } from "react-router-dom";
 import {
-  motion,
   AnimatePresence,
+  motion,
+  useMotionValueEvent,
   useScroll,
-  useTransform,
   useSpring,
+  useTransform,
 } from "framer-motion";
-import {
-  ArrowLeft,
-  ArrowRight,
-  ArrowUpRight,
-  Check,
-  ChevronDown,
-  Menu,
-  X,
-} from "lucide-react";
+import { ArrowDown, ArrowRight, Check, Menu, Plus, X } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
-/* ─── Revana structure · SAC content · black + SAC blues ─── */
+/** Revana-like layout · brand S.O.T · black + blue accents */
+
+const fontStyle = {
+  "--f-display": '"Syne", system-ui, sans-serif',
+  "--f-body": '"Outfit", system-ui, sans-serif',
+} as CSSProperties;
 
 const NAV = [
-  { href: "#about", label: "About" },
-  { href: "#works", label: "Works" },
-  { href: "#services", label: "Services" },
-  { href: "#planes", label: "Pricing" },
+  { href: "#about", label: "Nosotros" },
+  { href: "#works", label: "Módulos" },
+  { href: "#services", label: "Servicios" },
+  { href: "#planes", label: "Planes" },
   { href: "#faq", label: "FAQ" },
-  { href: "#contacto", label: "Contact" },
+  { href: "#contact", label: "Contacto" },
+];
+
+const STRIP = [
+  "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=900&q=80",
+  "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=900&q=80",
 ];
 
 const WORKS = [
   {
-    cat: "Operación",
-    title: "Administración Central",
-    desc: "Contribuyentes, providencias y cobranza en un panel unificado.",
+    title: "Administración",
+    desc: "Contribuyentes, providencias y cobranza en un solo panel.",
     year: "2026",
-    img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=80",
+    offset: "lg:mt-24",
   },
   {
-    cat: "Campo",
-    title: "Fiscalización Territorial",
-    desc: "Censo, mapas y presencia fiscal con trazabilidad completa.",
+    title: "Fiscalización",
+    desc: "Campo, censo y mapas con trazabilidad completa.",
     year: "2025",
-    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1400&q=80",
+    offset: "lg:mt-0",
   },
   {
-    cat: "Control",
     title: "Actas & Expedientes",
     desc: "Centro de mando para reparos y control administrativo.",
     year: "2026",
-    img: "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1400&q=80",
+    offset: "lg:mt-32",
   },
   {
-    cat: "Inteligencia",
     title: "Reportes & KPI",
-    desc: "IVA, ISLR y desempeño de grupos al instante.",
+    desc: "IVA, ISLR y desempeño institucional en tiempo real.",
     year: "2025",
-    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80",
+    img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1400&q=80",
+    offset: "lg:mt-8",
   },
 ];
 
 const SERVICES = [
   {
     title: "Gestión tributaria",
-    body: "Layouts claros, flujos diarios y control total de cada contribuyente — de alta a cobranza.",
-    img: "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1200&q=80",
+    body: "Layouts claros y control total de cada contribuyente — de alta a cobranza.",
+    img: "https://images.unsplash.com/photo-1556761175-b413da4baf72?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Fiscalización en campo",
-    body: "Captura móvil, mapas y supervisión de cuadrillas pensados para el terreno.",
-    img: "https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=1200&q=80",
+    body: "Captura móvil, mapas y cuadrillas pensados para el terreno.",
+    img: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Cumplimiento & cobranza",
     body: "Multas, pagos, compromisos e indicadores de recupero por periodo.",
-    img: "https://images.unsplash.com/photo-1554224155-6726b3ff858f?auto=format&fit=crop&w=1200&q=80",
+    img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1400&q=80",
   },
   {
     title: "Gobierno & auditoría",
-    body: "Roles, bitácora y auditoría interna para equipos municipales exigentes.",
-    img: "https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?auto=format&fit=crop&w=1200&q=80",
+    body: "Roles, bitácora y auditoría interna para equipos exigentes.",
+    img: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1400&q=80",
   },
 ];
 
 const FAQS = [
   {
-    q: "¿Quién puede usar SAC?",
-    a: "Personal autorizado: administradores, coordinadores, supervisores y fiscales, según el rol asignado.",
+    q: "¿Quién puede usar S.O.T?",
+    a: "Personal autorizado de la administración tributaria según rol: administradores, coordinadores, supervisores y fiscales.",
   },
   {
     q: "¿Hay un tamaño mínimo de equipo?",
-    a: "Trabajamos desde equipos compactos hasta direcciones completas. El plan se ajusta al alcance operativo.",
+    a: "No. Escala desde equipos compactos hasta direcciones completas con planes flexibles.",
   },
   {
-    q: "¿Cómo empiezo?",
-    a: "Entra por Acceder con tu cédula institucional, o escríbenos desde Contacto para alta y capacitación.",
+    q: "¿Cómo empiezo con un proyecto?",
+    a: "Accede con tu cédula institucional o escríbenos desde Contacto para alta y capacitación.",
   },
   {
     q: "¿Incluye campo y oficina?",
-    a: "Sí: censo, fiscalización territorial, cobranza, reportes y control documental en la misma plataforma.",
+    a: "Sí. Censo, fiscalización, cobranza, reportes y control documental en una sola plataforma.",
   },
   {
     q: "¿Qué tan involucrado estaré?",
-    a: "Colaboramos en implementación y roles. Tú defines procesos; SAC ejecuta el día a día.",
+    a: "Colaboramos en roles e implementación. Tú defines procesos; S.O.T ejecuta el día a día.",
   },
   {
-    q: "¿Cuánto tarda el despliegue?",
-    a: "Depende del plan: de 2 semanas en Esencial hasta un onboarding institucional completo.",
+    q: "¿Cuál es el timeline típico?",
+    a: "De 2 semanas en el plan Esencial hasta un onboarding institucional completo.",
   },
 ];
-
-const TESTIMONIALS = [
-  {
-    quote:
-      "SAC transformó nuestra operación tributaria en algo que finalmente se siente ordenado, claro y bajo control.",
-    name: "Laura M.",
-    role: "Coordinación operativa",
-  },
-  {
-    quote:
-      "Del concepto a los detalles finales, el sistema quedó alineado con cómo trabajamos en campo y en oficina.",
-    name: "Nadia S.",
-    role: "Supervisión fiscal",
-  },
-  {
-    quote:
-      "Trabajar con SAC fue un cambio real. Cada módulo tiene propósito — y el equipo lo nota todos los días.",
-    name: "Elise D.",
-    role: "Administración central",
-  },
-];
-
-type Billing = "monthly" | "annual";
 
 const PLANS = [
   {
-    id: "esencial",
     name: "Esencial",
     blurb: "Un flujo de alto impacto para equipos compactos.",
     monthly: 499,
     annual: 399,
-    cta: "Empezar",
     popular: false,
+    cta: "Empezar",
     features: [
       "Contribuyentes y eventos",
-      "Hasta 3 roles operativos",
-      "Implementación en 2 semanas",
-      "Soporte por correo (48 h)",
-      "Actualizaciones incluidas",
+      "Hasta 3 roles",
+      "Implementación 2 semanas",
+      "Soporte por correo 48h",
     ],
   },
   {
-    id: "profesional",
     name: "Profesional",
     blurb: "Varios procesos en paralelo, con analytics.",
     monthly: 2500,
     annual: 2000,
-    cta: "Empezar",
     popular: true,
+    cta: "Empezar",
     features: [
       "Hasta 3 frentes operativos",
-      "Integraciones del stack SAC",
       "Analytics avanzados",
       "Revisiones trimestrales",
-      "Capacitación + soporte prioritario",
+      "Soporte prioritario",
     ],
   },
   {
-    id: "institucional",
     name: "Institucional",
     blurb: "Estrategia completa multi-equipo.",
     monthly: 6750,
     annual: 5400,
-    cta: "Hablar con ventas",
     popular: false,
+    cta: "Hablar con ventas",
     features: [
       "Flujos ilimitados",
-      "Integraciones enterprise",
-      "Onboarding white-glove",
+      "Onboarding acompañado",
       "SLA + estratega dedicado",
       "ROI ejecutivo anual",
     ],
   },
 ] as const;
 
-const fontStyle = {
-  "--lp-serif": '"Cormorant Garamond", "Times New Roman", Georgia, serif',
-  "--lp-sans": '"Sora", system-ui, sans-serif',
-} as CSSProperties;
-
-function formatUsd(n: number) {
+function money(n: number) {
   return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "USD",
@@ -215,10 +189,10 @@ function Reveal({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: 40 }}
+      initial={{ opacity: 0, y: 48 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-80px" }}
-      transition={{ duration: 0.8, delay, ease: [0.22, 1, 0.36, 1] }}
+      viewport={{ once: true, margin: "-10% 0px" }}
+      transition={{ duration: 0.85, delay, ease: [0.22, 1, 0.36, 1] }}
       className={className}
     >
       {children}
@@ -226,166 +200,14 @@ function Reveal({
   );
 }
 
-function FaqItem({ q, a }: { q: string; a: string }) {
-  const [open, setOpen] = useState(false);
+function SectionLabel({ children }: { children: ReactNode }) {
   return (
-    <div className="border-b border-white/10">
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="flex w-full items-center justify-between gap-4 py-6 text-left"
-      >
-        <span className="font-[family-name:var(--lp-serif)] text-xl text-white sm:text-2xl">
-          {q}
-        </span>
-        <ChevronDown
-          className={`h-5 w-5 shrink-0 text-[#60a5fa] transition-transform duration-300 ${
-            open ? "rotate-180" : ""
-          }`}
-        />
-      </button>
-      <AnimatePresence initial={false}>
-        {open && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: "auto", opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden"
-          >
-            <p className="pb-6 pr-10 font-[family-name:var(--lp-sans)] text-sm leading-relaxed text-white/55 sm:text-base">
-              {a}
-            </p>
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <div className="mb-6 flex items-center gap-3">
+      <span className="sot-mark" />
+      <span className="font-[family-name:var(--f-body)] text-[11px] font-medium uppercase tracking-[0.28em] text-white/45">
+        {children}
+      </span>
     </div>
-  );
-}
-
-function PricingSection({ onCta }: { onCta: () => void }) {
-  const [billing, setBilling] = useState<Billing>("monthly");
-
-  return (
-    <section id="planes" className="relative border-t border-white/10 py-24 sm:py-32">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(59,130,246,0.12),_transparent_60%)]" />
-      <div className="relative mx-auto max-w-6xl px-5 sm:px-8">
-        <Reveal>
-          <p className="font-[family-name:var(--lp-sans)] text-[11px] font-medium uppercase tracking-[0.32em] text-[#60a5fa]">
-            Pricing
-          </p>
-          <h2 className="mt-4 max-w-3xl font-[family-name:var(--lp-serif)] text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl md:text-6xl">
-            Flexible plans for any scale.
-          </h2>
-        </Reveal>
-
-        <div className="mt-10 flex justify-start">
-          <div className="relative inline-flex rounded-full border border-white/15 bg-white/[0.03] p-1">
-            {(["monthly", "annual"] as const).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setBilling(key)}
-                className="relative min-w-[7.25rem] rounded-full px-4 py-2.5 font-[family-name:var(--lp-sans)] text-sm font-medium"
-              >
-                {billing === key && (
-                  <motion.span
-                    layoutId="pricing-pill"
-                    className="absolute inset-0 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#6366f1] shadow-[0_0_30px_rgba(59,130,246,0.45)]"
-                    transition={{ type: "spring", stiffness: 420, damping: 34 }}
-                  />
-                )}
-                <span className="relative z-10 text-white">
-                  {key === "monthly" ? "Monthly" : "Annual"}
-                  {key === "annual" && (
-                    <span className="ml-1.5 text-[10px] font-bold uppercase tracking-wide text-emerald-200">
-                      −20%
-                    </span>
-                  )}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="mt-14 grid gap-5 lg:grid-cols-3 lg:items-stretch">
-          {PLANS.map((plan, i) => {
-            const price = billing === "monthly" ? plan.monthly : plan.annual;
-            return (
-              <motion.article
-                key={plan.id}
-                initial={{ opacity: 0, y: 36 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-40px" }}
-                transition={{ delay: i * 0.08, duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
-                whileHover={{ y: -10 }}
-                className={`relative flex flex-col overflow-hidden rounded-[1.75rem] border p-7 ${
-                  plan.popular
-                    ? "border-[#3b82f6]/50 bg-[#0c1220] shadow-[0_0_0_1px_rgba(59,130,246,0.25),0_40px_100px_rgba(37,99,235,0.2)] lg:-translate-y-3"
-                    : "border-white/10 bg-white/[0.02]"
-                }`}
-              >
-                {plan.popular && (
-                  <div className="pointer-events-none absolute -right-10 -top-10 h-40 w-40 rounded-full bg-[#3b82f6]/25 blur-3xl" />
-                )}
-                <div className="relative flex items-start justify-between">
-                  <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.28em] text-white/40">
-                    {plan.name}
-                  </p>
-                  {plan.popular && (
-                    <span className="rounded-full bg-[#3b82f6] px-3 py-1 font-[family-name:var(--lp-sans)] text-[10px] font-bold uppercase tracking-wider text-white">
-                      Popular
-                    </span>
-                  )}
-                </div>
-                <p className="relative mt-4 font-[family-name:var(--lp-sans)] text-sm text-white/50">
-                  {plan.blurb}
-                </p>
-                <div className="relative mt-8 flex items-end gap-1">
-                  <AnimatePresence mode="wait">
-                    <motion.span
-                      key={`${plan.id}-${billing}`}
-                      initial={{ opacity: 0, y: 14, filter: "blur(6px)" }}
-                      animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: -10, filter: "blur(6px)" }}
-                      transition={{ duration: 0.28 }}
-                      className="font-[family-name:var(--lp-serif)] text-5xl text-white sm:text-6xl"
-                    >
-                      {formatUsd(price)}
-                    </motion.span>
-                  </AnimatePresence>
-                  <span className="mb-2 text-sm text-white/40">/mo</span>
-                </div>
-                <ul className="relative mt-8 flex flex-1 flex-col gap-3">
-                  {plan.features.map((f) => (
-                    <li
-                      key={f}
-                      className="flex items-start gap-3 font-[family-name:var(--lp-sans)] text-sm text-white/70"
-                    >
-                      <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-[#3b82f6]/15">
-                        <Check className="h-3 w-3 text-[#60a5fa]" strokeWidth={3} />
-                      </span>
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  type="button"
-                  onClick={onCta}
-                  className={`relative mt-8 rounded-full px-5 py-3.5 font-[family-name:var(--lp-sans)] text-sm font-semibold transition ${
-                    plan.popular
-                      ? "bg-gradient-to-r from-[#3b82f6] to-[#6366f1] text-white shadow-[0_0_40px_rgba(59,130,246,0.35)] hover:brightness-110"
-                      : "border border-white/20 text-white hover:bg-white/5"
-                  }`}
-                >
-                  {plan.cta}
-                </button>
-              </motion.article>
-            );
-          })}
-        </div>
-      </div>
-    </section>
   );
 }
 
@@ -393,39 +215,50 @@ export default function LandingPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [serviceIdx, setServiceIdx] = useState(0);
-  const [testiIdx, setTestiIdx] = useState(0);
+  const [billing, setBilling] = useState<"monthly" | "annual">("monthly");
+  const [openFaq, setOpenFaq] = useState<number | null>(0);
   const [sent, setSent] = useState(false);
-  const heroRef = useRef<HTMLElement>(null);
+  const [serviceIdx, setServiceIdx] = useState(0);
 
-  const { scrollYProgress } = useScroll({
+  const heroRef = useRef<HTMLElement>(null);
+  const servicesRef = useRef<HTMLElement>(null);
+  const worksBgRef = useRef<HTMLDivElement>(null);
+
+  const { scrollYProgress: heroProgress } = useScroll({
     target: heroRef,
     offset: ["start start", "end start"],
   });
-  const heroY = useTransform(scrollYProgress, [0, 1], [0, 180]);
-  const heroScale = useTransform(scrollYProgress, [0, 1], [1, 1.12]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 0.85], [1, 0.35]);
-  const titleY = useSpring(useTransform(scrollYProgress, [0, 1], [0, -80]), {
-    stiffness: 80,
-    damping: 28,
+  const heroImgY = useTransform(heroProgress, [0, 1], ["0%", "28%"]);
+  const heroImgScale = useTransform(heroProgress, [0, 1], [1, 1.15]);
+  const brandY = useSpring(useTransform(heroProgress, [0, 1], [0, -120]), {
+    stiffness: 90,
+    damping: 26,
   });
 
-  useEffect(() => {
-    document.documentElement.classList.add("landing-scroll");
-    document.documentElement.style.scrollBehavior = "smooth";
-    return () => {
-      document.documentElement.classList.remove("landing-scroll");
-      document.documentElement.style.scrollBehavior = "";
-    };
-  }, []);
+  const { scrollYProgress: servicesProgress } = useScroll({
+    target: servicesRef,
+    offset: ["start start", "end end"],
+  });
+
+  useMotionValueEvent(servicesProgress, "change", (v) => {
+    const next = Math.min(SERVICES.length - 1, Math.floor(v * SERVICES.length));
+    setServiceIdx((prev) => (prev === next ? prev : next));
+  });
+
+  const { scrollYProgress: worksProgress } = useScroll({
+    target: worksBgRef,
+    offset: ["start end", "end start"],
+  });
+  const worksTextX = useTransform(worksProgress, [0, 1], ["0%", "-18%"]);
+
+  const stripX = useTransform(heroProgress, [0.2, 1], ["0%", "-20%"]);
 
   useEffect(() => {
-    const id = window.setInterval(
-      () => setTestiIdx((i) => (i + 1) % TESTIMONIALS.length),
-      6000
-    );
-    return () => window.clearInterval(id);
+    document.documentElement.classList.add("landing-active");
+    return () => document.documentElement.classList.remove("landing-active");
   }, []);
+
+  const activeService = useMemo(() => SERVICES[serviceIdx], [serviceIdx]);
 
   if (user) return <Navigate to="/admin" replace />;
 
@@ -436,240 +269,215 @@ export default function LandingPage() {
 
   return (
     <div
-      className="sac-landing min-h-app overflow-x-hidden bg-[#05070c] text-white antialiased"
+      className="sot-landing bg-[#050505] text-white antialiased"
       style={fontStyle}
     >
-      {/* ambient glows */}
-      <div className="pointer-events-none fixed inset-0 -z-10">
-        <div className="absolute left-1/2 top-0 h-[60vh] w-[80vw] -translate-x-1/2 bg-[radial-gradient(ellipse,_rgba(59,130,246,0.18),_transparent_60%)]" />
-        <div className="absolute bottom-0 right-0 h-[40vh] w-[50vw] bg-[radial-gradient(ellipse,_rgba(99,102,241,0.12),_transparent_55%)]" />
-      </div>
-
-      {/* NAV — Revana minimal */}
-      <header className="fixed inset-x-0 top-0 z-50 border-b border-white/5 bg-[#05070c]/70 pt-safe backdrop-blur-xl">
-        <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-5 sm:px-8">
+      {/* NAV */}
+      <header className="fixed inset-x-0 top-0 z-50 pt-safe">
+        <div className="mx-auto flex h-16 max-w-[1400px] items-center justify-between px-5 sm:px-8">
           <a
             href="#top"
-            className="font-[family-name:var(--lp-serif)] text-2xl font-semibold tracking-tight"
+            className="font-[family-name:var(--f-display)] text-sm font-bold uppercase tracking-[0.35em] text-white"
           >
-            SAC<span className="text-[#60a5fa]">®</span>
+            S.O.T
           </a>
-          <nav className="hidden items-center gap-9 md:flex">
-            {NAV.map((n) => (
-              <a
-                key={n.href}
-                href={n.href}
-                className="font-[family-name:var(--lp-sans)] text-[12px] uppercase tracking-[0.18em] text-white/55 transition hover:text-white"
-              >
-                {n.label}
-              </a>
-            ))}
-          </nav>
-          <div className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate("/login")}
-              className="hidden rounded-full border border-white/15 bg-white/5 px-4 py-2 font-[family-name:var(--lp-sans)] text-xs uppercase tracking-[0.16em] text-white transition hover:border-[#60a5fa]/50 hover:bg-[#3b82f6]/15 sm:inline-flex"
-            >
-              Acceder
-            </button>
-            <button
-              type="button"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-white/15 md:hidden"
-              aria-label="Menu"
-              onClick={() => setMenuOpen((v) => !v)}
-            >
-              {menuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </button>
-          </div>
+          <button
+            type="button"
+            aria-label="Menú"
+            onClick={() => setMenuOpen(true)}
+            className="inline-flex h-10 w-10 items-center justify-center text-white"
+          >
+            <Menu className="h-5 w-5" />
+          </button>
         </div>
-        <AnimatePresence>
-          {menuOpen && (
-            <motion.div
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className="overflow-hidden border-t border-white/10 md:hidden"
-            >
-              <div className="flex flex-col gap-1 px-5 py-4">
-                {NAV.map((n) => (
-                  <a
+      </header>
+
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[60] bg-[#050505]/95 backdrop-blur-xl"
+          >
+            <div className="flex h-full flex-col px-6 pb-safe pt-6">
+              <div className="flex items-center justify-between">
+                <span className="font-[family-name:var(--f-display)] text-sm font-bold uppercase tracking-[0.35em]">
+                  S.O.T
+                </span>
+                <button type="button" aria-label="Cerrar" onClick={() => setMenuOpen(false)}>
+                  <X className="h-6 w-6" />
+                </button>
+              </div>
+              <nav className="mt-16 flex flex-1 flex-col gap-5">
+                {NAV.map((n, i) => (
+                  <motion.a
                     key={n.href}
                     href={n.href}
                     onClick={() => setMenuOpen(false)}
-                    className="rounded-lg px-3 py-3 font-[family-name:var(--lp-sans)] text-sm text-white/80"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 * i }}
+                    className="font-[family-name:var(--f-display)] text-4xl font-semibold tracking-tight text-white sm:text-5xl"
                   >
                     {n.label}
-                  </a>
+                  </motion.a>
                 ))}
-                <button
-                  type="button"
-                  onClick={() => navigate("/login")}
-                  className="mt-2 rounded-full bg-[#3b82f6] px-4 py-3 text-sm font-semibold"
-                >
-                  Acceder al sistema
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </header>
+              </nav>
+              <button
+                type="button"
+                onClick={() => {
+                  setMenuOpen(false);
+                  navigate("/login");
+                }}
+                className="mb-8 rounded-full bg-[#3b82f6] px-6 py-4 font-[family-name:var(--f-body)] text-sm font-semibold uppercase tracking-wider"
+              >
+                Acceder al sistema
+              </button>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <main id="top">
-        {/* HERO — brand first, full-bleed image like Revana */}
-        <section ref={heroRef} className="relative min-h-[100dvh] overflow-hidden">
-          <motion.div style={{ y: heroY, scale: heroScale, opacity: heroOpacity }} className="absolute inset-0">
+        {/* HERO — full bleed image + giant brand like Revana */}
+        <section ref={heroRef} className="relative h-[100svh] min-h-[640px] overflow-hidden">
+          <motion.div style={{ y: heroImgY, scale: heroImgScale }} className="absolute inset-0">
             <img
-              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=80"
+              src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2400&q=85"
               alt=""
               className="h-full w-full object-cover"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-[#05070c]/55 via-[#05070c]/75 to-[#05070c]" />
-            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_#05070c_75%)]" />
+            <div className="absolute inset-0 bg-black/45" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/30 via-transparent to-[#050505]" />
           </motion.div>
 
-          <div className="relative mx-auto flex min-h-[100dvh] max-w-6xl flex-col justify-end px-5 pb-16 pt-28 sm:px-8 sm:pb-24">
-            <motion.div style={{ y: titleY }}>
-              <motion.p
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
-                className="mb-4 font-[family-name:var(--lp-sans)] text-[11px] font-medium uppercase tracking-[0.35em] text-[#60a5fa]"
+          <div className="relative z-10 flex h-full flex-col items-center justify-between px-5 pb-8 pt-28 sm:px-8">
+            <motion.div
+              initial={{ opacity: 0, y: 24 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.15 }}
+              className="mx-auto max-w-2xl text-center"
+            >
+              <p className="font-[family-name:var(--f-body)] text-sm leading-relaxed text-white/90 sm:text-base md:text-lg">
+                Operaciones tributarias rigurosas y funcionales — del campo a los
+                reportes — pensadas para tu institución y su visión.
+              </p>
+              <a
+                href="#works"
+                className="mt-8 inline-flex items-center gap-2 font-[family-name:var(--f-body)] text-sm text-white/90 transition hover:text-[#93c5fd]"
               >
-                Administration
-              </motion.p>
-              <motion.h1
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.15, ease: [0.22, 1, 0.36, 1] }}
-                className="font-[family-name:var(--lp-serif)] text-[clamp(4.5rem,18vw,10rem)] font-medium leading-[0.85] tracking-[-0.04em] text-white"
-              >
-                SAC<span className="text-[#60a5fa]">®</span>
-              </motion.h1>
-              <motion.p
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.75, delay: 0.28 }}
-                className="mt-5 max-w-xl font-[family-name:var(--lp-serif)] text-xl italic leading-snug text-white/70 sm:text-2xl md:text-3xl"
-              >
-                We craft rigorous, functional tax operations — from field to reports —
-                tailored to your institution.
-              </motion.p>
-              <motion.div
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                className="mt-10 flex flex-wrap gap-3"
-              >
-                <a
-                  href="#works"
-                  className="group inline-flex items-center gap-2 rounded-full bg-white px-6 py-3.5 font-[family-name:var(--lp-sans)] text-sm font-semibold text-[#05070c] transition hover:bg-[#dbeafe]"
-                >
-                  View Works
-                  <ArrowUpRight className="h-4 w-4 transition group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                </a>
-                <button
-                  type="button"
-                  onClick={() => navigate("/login")}
-                  className="inline-flex items-center gap-2 rounded-full border border-white/25 px-6 py-3.5 font-[family-name:var(--lp-sans)] text-sm font-medium text-white transition hover:border-[#60a5fa] hover:bg-[#3b82f6]/15"
-                >
-                  SAC Studio®
-                </button>
-              </motion.div>
+                Ver módulos <ArrowDown className="h-4 w-4" />
+              </a>
             </motion.div>
+
+            <motion.h1
+              style={{ y: brandY }}
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 1, delay: 0.25, ease: [0.22, 1, 0.36, 1] }}
+              className="w-full text-center font-[family-name:var(--f-display)] text-[clamp(3.2rem,14vw,9.5rem)] font-bold leading-[0.9] tracking-[-0.04em] text-white"
+            >
+              S.O.T<span className="text-[#60a5fa]">®</span>
+            </motion.h1>
           </div>
         </section>
 
-        {/* ABOUT — Revana “designing everyday spaces” */}
-        <section id="about" className="relative py-24 sm:py-32">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 sm:px-8 lg:grid-cols-12 lg:gap-16">
-            <Reveal className="lg:col-span-6">
-              <div className="overflow-hidden rounded-[1.75rem]">
-                <motion.img
-                  whileInView={{ scale: 1 }}
-                  initial={{ scale: 1.08 }}
-                  transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-                  viewport={{ once: true }}
-                  src="https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=1400&q=80"
-                  alt=""
-                  className="aspect-[4/5] w-full object-cover"
-                />
+        {/* IMAGE STRIP — horizontal parallax as you leave hero */}
+        <section className="relative z-20 -mt-6 bg-[#050505] pb-6 pt-2">
+          <motion.div style={{ x: stripX }} className="flex w-[140%] gap-3 px-3 sm:gap-4 sm:px-4">
+            {STRIP.map((src) => (
+              <div
+                key={src}
+                className="relative h-48 w-[42vw] shrink-0 overflow-hidden rounded-sm sm:h-64 sm:w-[28vw] md:h-80"
+              >
+                <img src={src} alt="" className="h-full w-full object-cover" />
               </div>
-            </Reveal>
-            <Reveal className="flex flex-col justify-center lg:col-span-6" delay={0.1}>
-              <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.32em] text-[#60a5fa]">
-                About
-              </p>
-              <h2 className="mt-5 font-[family-name:var(--lp-serif)] text-4xl font-medium leading-[1.05] tracking-[-0.02em] text-white sm:text-5xl md:text-[3.25rem]">
-                Designing everyday operations with care.
+            ))}
+          </motion.div>
+        </section>
+
+        {/* ABOUT */}
+        <section id="about" className="bg-[#050505] py-28 sm:py-36">
+          <div className="mx-auto grid max-w-[1400px] gap-14 px-5 sm:px-8 lg:grid-cols-12">
+            <Reveal className="lg:col-span-5">
+              <SectionLabel>Nosotros</SectionLabel>
+              <h2 className="font-[family-name:var(--f-display)] text-4xl font-semibold leading-[1.05] tracking-tight text-white sm:text-5xl md:text-6xl">
+                Operaciones cotidianas, diseñadas con precisión.
               </h2>
-              <p className="mt-6 font-[family-name:var(--lp-sans)] text-base leading-relaxed text-white/55 sm:text-lg">
-                Built for municipal and institutional teams, SAC helps transform field work,
-                collection, and reporting through thoughtful, lasting software design.
+            </Reveal>
+            <Reveal className="lg:col-span-7" delay={0.1}>
+              <p className="max-w-2xl font-[family-name:var(--f-body)] text-lg leading-relaxed text-white/55 sm:text-xl">
+                Pensado para equipos institucionales: ayuda a oficinas tributarias a transformar
+                el trabajo de campo, la cobranza y los reportes con software claro y durable.
               </p>
-              <div className="mt-10 grid grid-cols-3 gap-4 border-t border-white/10 pt-8">
+              <div className="mt-12 grid grid-cols-2 gap-4 sm:grid-cols-3">
                 {[
-                  ["2018+", "En producción"],
-                  ["7k+", "Contribuyentes"],
-                  ["PWA", "Mobile-ready"],
-                ].map(([k, v]) => (
-                  <div key={v}>
-                    <p className="font-[family-name:var(--lp-serif)] text-3xl text-white">{k}</p>
-                    <p className="mt-1 font-[family-name:var(--lp-sans)] text-xs uppercase tracking-wider text-white/40">
-                      {v}
-                    </p>
-                  </div>
+                  "https://images.unsplash.com/photo-1497366811353-6870744d04b2?auto=format&fit=crop&w=800&q=80",
+                  "https://images.unsplash.com/photo-1497215842964-222b430dc094?auto=format&fit=crop&w=800&q=80",
+                  "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=800&q=80",
+                ].map((src, i) => (
+                  <motion.div
+                    key={src}
+                    initial={{ opacity: 0, y: 30 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.1 * i, duration: 0.7 }}
+                    className={`overflow-hidden ${i === 1 ? "mt-8" : ""}`}
+                  >
+                    <img src={src} alt="" className="aspect-[3/4] w-full object-cover" />
+                  </motion.div>
                 ))}
               </div>
             </Reveal>
           </div>
         </section>
 
-        {/* SELECTED WORKS — Revana grid with image zoom */}
-        <section id="works" className="border-t border-white/10 py-24 sm:py-32">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
+        {/* SELECTED WORKS — giant bg text + asymmetric cards */}
+        <section id="works" ref={worksBgRef} className="relative overflow-hidden bg-[#0a0a0a] py-28 sm:py-36">
+          <motion.div
+            style={{ x: worksTextX }}
+            className="pointer-events-none absolute left-0 top-24 whitespace-nowrap font-[family-name:var(--f-display)] text-[clamp(5rem,18vw,14rem)] font-bold leading-none tracking-[-0.05em] text-white/[0.05]"
+          >
+            Módulos seleccionados · S.O.T · Módulos seleccionados
+          </motion.div>
+
+          <div className="relative mx-auto max-w-[1400px] px-5 sm:px-8">
             <Reveal>
-              <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.32em] text-[#60a5fa]">
-                Selected Works
-              </p>
-              <h2 className="mt-4 font-[family-name:var(--lp-serif)] text-4xl font-medium tracking-[-0.02em] text-white sm:text-5xl">
-                Modules that define the platform.
-              </h2>
+              <SectionLabel>Módulos</SectionLabel>
             </Reveal>
 
-            <div className="mt-14 grid gap-6 sm:grid-cols-2">
+            <div className="mt-10 grid gap-10 sm:grid-cols-2 sm:gap-x-10 sm:gap-y-20">
               {WORKS.map((w, i) => (
                 <motion.article
                   key={w.title}
-                  initial={{ opacity: 0, y: 48 }}
+                  initial={{ opacity: 0, y: 60 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true, margin: "-60px" }}
-                  transition={{ delay: (i % 2) * 0.1, duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-                  className={`group ${i % 3 === 0 ? "sm:mt-12" : ""}`}
+                  viewport={{ once: true, margin: "-10%" }}
+                  transition={{ duration: 0.8, delay: (i % 2) * 0.08, ease: [0.22, 1, 0.36, 1] }}
+                  className={`group ${w.offset}`}
                 >
-                  <div className="relative overflow-hidden rounded-[1.5rem]">
-                    <motion.img
+                  <div className="relative overflow-hidden">
+                    <div className="pointer-events-none absolute left-3 top-3 z-10 h-5 w-5 border-l border-t border-white/70" />
+                    <div className="pointer-events-none absolute bottom-3 right-3 z-10 h-5 w-5 border-b border-r border-white/70" />
+                    <img
                       src={w.img}
                       alt=""
-                      className="aspect-[5/4] w-full object-cover transition duration-700 group-hover:scale-105"
+                      className="aspect-[16/11] w-full object-cover transition duration-700 group-hover:scale-[1.04]"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#05070c]/90 via-transparent to-transparent" />
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <p className="font-[family-name:var(--lp-sans)] text-[10px] uppercase tracking-[0.25em] text-[#93c5fd]">
-                        {w.cat}
-                      </p>
-                      <h3 className="mt-2 font-[family-name:var(--lp-serif)] text-3xl text-white">
+                  </div>
+                  <div className="mt-5 flex items-start justify-between gap-4">
+                    <div>
+                      <h3 className="font-[family-name:var(--f-display)] text-2xl font-semibold tracking-tight text-white sm:text-3xl">
                         {w.title}
                       </h3>
-                      <div className="mt-2 flex items-end justify-between gap-4">
-                        <p className="max-w-xs font-[family-name:var(--lp-sans)] text-sm text-white/60">
-                          {w.desc}
-                        </p>
-                        <span className="font-[family-name:var(--lp-sans)] text-xs text-white/40">
-                          {w.year}
-                        </span>
-                      </div>
+                      <p className="mt-2 max-w-sm font-[family-name:var(--f-body)] text-sm text-white/50">
+                        {w.desc}
+                      </p>
                     </div>
+                    <span className="pt-1 font-[family-name:var(--f-body)] text-xs text-white/35">
+                      {w.year}
+                    </span>
                   </div>
                 </motion.article>
               ))}
@@ -677,217 +485,298 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* SERVICES — giant titles + image swap (Revana) */}
-        <section id="services" className="border-t border-white/10 py-24 sm:py-32">
-          <div className="mx-auto max-w-6xl px-5 sm:px-8">
-            <Reveal>
-              <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.32em] text-[#60a5fa]">
-                Service
-              </p>
-            </Reveal>
-            <div className="mt-10 grid gap-10 lg:grid-cols-12 lg:gap-14">
-              <div className="space-y-1 lg:col-span-5">
-                {SERVICES.map((s, i) => (
-                  <button
-                    key={s.title}
-                    type="button"
-                    onMouseEnter={() => setServiceIdx(i)}
-                    onClick={() => setServiceIdx(i)}
-                    className="block w-full py-3 text-left"
-                  >
-                    <span
-                      className={`font-[family-name:var(--lp-serif)] text-3xl leading-none tracking-[-0.02em] transition duration-300 sm:text-4xl md:text-5xl ${
-                        serviceIdx === i ? "text-white" : "text-white/25 hover:text-white/50"
-                      }`}
-                    >
-                      {s.title}
-                    </span>
-                  </button>
-                ))}
+        {/* SERVICES — sticky scroll scrub like Revana */}
+        <section ref={servicesRef} className="relative h-[280vh] bg-black">
+          <div className="sticky top-0 flex h-[100svh] items-center overflow-hidden">
+            <div className="mx-auto grid w-full max-w-[1400px] gap-10 px-5 sm:px-8 lg:grid-cols-12 lg:gap-16">
+              <div className="lg:col-span-5">
+                <SectionLabel>Servicios</SectionLabel>
+                <ul className="mt-4 space-y-2">
+                  {SERVICES.map((s, i) => {
+                    const active = i === serviceIdx;
+                    return (
+                      <li key={s.title}>
+                        <button
+                          type="button"
+                          onClick={() => setServiceIdx(i)}
+                          className="group flex w-full items-center gap-4 py-2 text-left"
+                        >
+                          <span
+                            className={`flex h-9 w-9 items-center justify-center rounded-full border transition ${
+                              active
+                                ? "border-white bg-white text-black"
+                                : "border-transparent text-transparent"
+                            }`}
+                          >
+                            <ArrowRight className="h-4 w-4" />
+                          </span>
+                          <span
+                            className={`font-[family-name:var(--f-display)] text-3xl font-semibold tracking-tight transition sm:text-4xl md:text-5xl ${
+                              active ? "text-white" : "text-white/20"
+                            }`}
+                          >
+                            {s.title}
+                          </span>
+                        </button>
+                      </li>
+                    );
+                  })}
+                </ul>
               </div>
+
               <div className="lg:col-span-7">
-                <div className="relative overflow-hidden rounded-[1.75rem]">
+                <div className="overflow-hidden">
                   <AnimatePresence mode="wait">
                     <motion.img
-                      key={SERVICES[serviceIdx].img}
-                      src={SERVICES[serviceIdx].img}
+                      key={activeService.img}
+                      src={activeService.img}
                       alt=""
-                      initial={{ opacity: 0, scale: 1.06 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.55 }}
-                      className="aspect-[5/4] w-full object-cover"
+                      initial={{ opacity: 0, y: 24, scale: 1.04 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -12 }}
+                      transition={{ duration: 0.45 }}
+                      className="aspect-[5/3.4] w-full object-cover"
                     />
                   </AnimatePresence>
-                  <div className="absolute inset-0 bg-gradient-to-t from-[#05070c] via-[#05070c]/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-7 sm:p-9">
-                    <AnimatePresence mode="wait">
-                      <motion.p
-                        key={SERVICES[serviceIdx].body}
-                        initial={{ opacity: 0, y: 12 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -8 }}
-                        className="max-w-md font-[family-name:var(--lp-sans)] text-base leading-relaxed text-white/75"
-                      >
-                        {SERVICES[serviceIdx].body}
-                      </motion.p>
-                    </AnimatePresence>
-                  </div>
                 </div>
+                <AnimatePresence mode="wait">
+                  <motion.p
+                    key={activeService.body}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0 }}
+                    className="mt-6 max-w-lg font-[family-name:var(--f-body)] text-base text-white/60"
+                  >
+                    {activeService.body}
+                  </motion.p>
+                </AnimatePresence>
               </div>
             </div>
           </div>
         </section>
 
-        <PricingSection onCta={() => navigate("/login")} />
-
-        {/* FAQ */}
-        <section id="faq" className="border-t border-white/10 py-24 sm:py-32">
-          <div className="mx-auto grid max-w-6xl gap-12 px-5 sm:px-8 lg:grid-cols-12">
-            <Reveal className="lg:col-span-4">
-              <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.32em] text-[#60a5fa]">
-                faq
-              </p>
-              <h2 className="mt-4 font-[family-name:var(--lp-serif)] text-4xl font-medium tracking-[-0.02em] text-white sm:text-5xl">
-                Your Questions, Answered.
+        {/* PRICING */}
+        <section id="planes" className="border-t border-white/10 bg-[#050505] py-28 sm:py-36">
+          <div className="mx-auto max-w-[1400px] px-5 sm:px-8">
+            <Reveal>
+              <SectionLabel>Planes</SectionLabel>
+              <h2 className="max-w-3xl font-[family-name:var(--f-display)] text-4xl font-semibold tracking-tight text-white sm:text-5xl md:text-6xl">
+                Precios flexibles para cualquier escala.
               </h2>
-              <p className="mt-4 font-[family-name:var(--lp-sans)] text-sm text-white/50">
-                Find quick answers about access, roles, and how SAC fits your teams.
-              </p>
             </Reveal>
-            <div className="lg:col-span-8">
-              {FAQS.map((f) => (
-                <FaqItem key={f.q} q={f.q} a={f.a} />
+
+            <div className="mt-10 inline-flex rounded-full border border-white/15 p-1">
+              {(["monthly", "annual"] as const).map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setBilling(k)}
+                  className="relative min-w-[7rem] rounded-full px-4 py-2.5 font-[family-name:var(--f-body)] text-sm"
+                >
+                  {billing === k && (
+                    <motion.span
+                      layoutId="bill"
+                      className="absolute inset-0 rounded-full bg-[#3b82f6]"
+                      transition={{ type: "spring", stiffness: 400, damping: 32 }}
+                    />
+                  )}
+                  <span className="relative z-10 font-medium text-white">
+                    {k === "monthly" ? "Mensual" : "Anual"}
+                    {k === "annual" && (
+                      <span className="ml-1 text-[10px] font-bold uppercase text-emerald-200">
+                        −20%
+                      </span>
+                    )}
+                  </span>
+                </button>
               ))}
             </div>
-          </div>
-        </section>
 
-        {/* TESTIMONIALS carousel */}
-        <section className="border-t border-white/10 py-24 sm:py-32">
-          <div className="mx-auto max-w-4xl px-5 text-center sm:px-8">
-            <AnimatePresence mode="wait">
-              <motion.figure
-                key={testiIdx}
-                initial={{ opacity: 0, y: 24 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -16 }}
-                transition={{ duration: 0.45 }}
-              >
-                <blockquote className="font-[family-name:var(--lp-serif)] text-3xl font-medium leading-snug tracking-[-0.02em] text-white sm:text-4xl md:text-5xl">
-                  “{TESTIMONIALS[testiIdx].quote}”
-                </blockquote>
-                <figcaption className="mt-10 font-[family-name:var(--lp-sans)]">
-                  <p className="text-sm font-semibold text-white">{TESTIMONIALS[testiIdx].name}</p>
-                  <p className="mt-1 text-sm text-white/45">{TESTIMONIALS[testiIdx].role}</p>
-                </figcaption>
-              </motion.figure>
-            </AnimatePresence>
-            <div className="mt-10 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                aria-label="Anterior"
-                onClick={() =>
-                  setTestiIdx((i) => (i - 1 + TESTIMONIALS.length) % TESTIMONIALS.length)
-                }
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-[#60a5fa] hover:text-white"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-              <button
-                type="button"
-                aria-label="Siguiente"
-                onClick={() => setTestiIdx((i) => (i + 1) % TESTIMONIALS.length)}
-                className="inline-flex h-11 w-11 items-center justify-center rounded-full border border-white/15 text-white/70 transition hover:border-[#60a5fa] hover:text-white"
-              >
-                <ArrowRight className="h-4 w-4" />
-              </button>
+            <div className="mt-14 grid gap-5 lg:grid-cols-3">
+              {PLANS.map((p, i) => {
+                const price = billing === "monthly" ? p.monthly : p.annual;
+                return (
+                  <motion.article
+                    key={p.name}
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: i * 0.08 }}
+                    whileHover={{ y: -8 }}
+                    className={`relative flex flex-col rounded-3xl border p-7 ${
+                      p.popular
+                        ? "border-[#3b82f6]/60 bg-[#0b1220] shadow-[0_0_80px_rgba(59,130,246,0.2)] lg:-translate-y-3"
+                        : "border-white/10 bg-white/[0.02]"
+                    }`}
+                  >
+                    {p.popular && (
+                      <span className="absolute right-5 top-5 rounded-full bg-[#3b82f6] px-3 py-1 text-[10px] font-bold uppercase tracking-wider">
+                        Destacado
+                      </span>
+                    )}
+                    <p className="font-[family-name:var(--f-body)] text-xs uppercase tracking-[0.25em] text-white/40">
+                      {p.name}
+                    </p>
+                    <p className="mt-3 text-sm text-white/50">{p.blurb}</p>
+                    <div className="mt-8 flex items-end gap-1">
+                      <AnimatePresence mode="wait">
+                        <motion.span
+                          key={`${p.name}-${billing}`}
+                          initial={{ opacity: 0, y: 12, filter: "blur(4px)" }}
+                          animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                          exit={{ opacity: 0, y: -8 }}
+                          className="font-[family-name:var(--f-display)] text-5xl font-semibold"
+                        >
+                          {money(price)}
+                        </motion.span>
+                      </AnimatePresence>
+                      <span className="mb-2 text-sm text-white/40">/mo</span>
+                    </div>
+                    <ul className="mt-8 flex-1 space-y-3">
+                      {p.features.map((f) => (
+                        <li key={f} className="flex gap-3 text-sm text-white/70">
+                          <Check className="mt-0.5 h-4 w-4 shrink-0 text-[#60a5fa]" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      onClick={() => navigate("/login")}
+                      className={`mt-8 rounded-full py-3.5 text-sm font-semibold ${
+                        p.popular
+                          ? "bg-[#3b82f6] text-white"
+                          : "border border-white/20 text-white hover:bg-white/5"
+                      }`}
+                    >
+                      {p.cta}
+                    </button>
+                  </motion.article>
+                );
+              })}
             </div>
           </div>
         </section>
 
-        {/* CONTACT — Revana contact block */}
-        <section id="contacto" className="relative border-t border-white/10">
-          <div className="absolute inset-0">
-            <img
-              src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
-              alt=""
-              className="h-full w-full object-cover opacity-30"
-            />
-            <div className="absolute inset-0 bg-[#05070c]/85" />
-          </div>
-          <div className="relative mx-auto grid max-w-6xl gap-12 px-5 py-24 sm:px-8 sm:py-32 lg:grid-cols-12">
-            <div className="lg:col-span-5">
-              <p className="font-[family-name:var(--lp-sans)] text-[11px] uppercase tracking-[0.32em] text-[#60a5fa]">
-                Contact us
+        {/* FAQ — light section like Revana, inverted to near-white ink on dark... Revana uses white bg; we use off-black soft */}
+        <section id="faq" className="border-t border-white/10 bg-[#f4f1ea] py-28 text-[#111] sm:py-36">
+          <div className="mx-auto grid max-w-[1400px] gap-14 px-5 sm:px-8 lg:grid-cols-12">
+            <Reveal className="lg:col-span-5">
+              <div className="mb-6 flex items-center gap-3">
+                <span className="sot-mark" />
+                <span className="font-[family-name:var(--f-body)] text-[11px] uppercase tracking-[0.28em] text-black/40">
+                  FAQ
+                </span>
+              </div>
+              <h2 className="font-[family-name:var(--f-display)] text-4xl font-semibold leading-[1.05] tracking-tight sm:text-5xl md:text-6xl">
+                Tus preguntas,
+                <br />
+                respondidas.
+              </h2>
+              <p className="mt-5 max-w-sm font-[family-name:var(--f-body)] text-sm text-black/50">
+                Respuestas rápidas a lo que más preguntan sobre el sistema y el proceso.
               </p>
-              <h2 className="mt-4 font-[family-name:var(--lp-serif)] text-4xl font-medium text-white sm:text-5xl">
-                Let’s Chat
+            </Reveal>
+            <div className="lg:col-span-7">
+              {FAQS.map((f, i) => {
+                const open = openFaq === i;
+                return (
+                  <div key={f.q} className="border-b border-black/10">
+                    <button
+                      type="button"
+                      onClick={() => setOpenFaq(open ? null : i)}
+                      className="flex w-full items-center gap-4 py-5 text-left"
+                    >
+                      <Plus
+                        className={`h-4 w-4 shrink-0 text-black/35 transition ${open ? "rotate-45" : ""}`}
+                      />
+                      <span className="font-[family-name:var(--f-body)] text-base font-medium text-black sm:text-lg">
+                        {f.q}
+                      </span>
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {open && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <p className="pb-5 pl-8 font-[family-name:var(--f-body)] text-sm leading-relaxed text-black/55">
+                            {f.a}
+                          </p>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* CONTACT */}
+        <section id="contact" className="relative overflow-hidden bg-black py-28 sm:py-36">
+          <img
+            src="https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=2000&q=80"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover opacity-25"
+          />
+          <div className="absolute inset-0 bg-black/70" />
+          <div className="relative mx-auto grid max-w-[1400px] gap-12 px-5 sm:px-8 lg:grid-cols-12">
+            <div className="lg:col-span-5">
+              <SectionLabel>Contacto</SectionLabel>
+              <h2 className="font-[family-name:var(--f-display)] text-5xl font-semibold tracking-tight text-white sm:text-6xl">
+                Hablemos
               </h2>
               <a
                 href="mailto:noreply@sac-app.com"
-                className="mt-8 inline-block font-[family-name:var(--lp-serif)] text-2xl text-white underline-offset-4 hover:text-[#93c5fd] hover:underline sm:text-3xl"
+                className="mt-8 inline-block font-[family-name:var(--f-display)] text-2xl text-white underline-offset-4 hover:text-[#93c5fd] hover:underline sm:text-3xl"
               >
                 noreply@sac-app.com
               </a>
-              <p className="mt-6 font-[family-name:var(--lp-sans)] text-sm uppercase tracking-[0.2em] text-white/40">
-                Administration
-              </p>
             </div>
             <div className="lg:col-span-7">
               {sent ? (
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-8 backdrop-blur">
-                  <p className="font-[family-name:var(--lp-serif)] text-3xl text-white">Message received</p>
-                  <p className="mt-2 text-white/55">Meanwhile you can enter the system with your credentials.</p>
+                <div className="rounded-3xl border border-white/15 bg-white/5 p-8">
+                  <p className="font-[family-name:var(--f-display)] text-3xl">Mensaje recibido</p>
                   <button
                     type="button"
                     onClick={() => navigate("/login")}
-                    className="mt-6 rounded-full bg-[#3b82f6] px-5 py-3 text-sm font-semibold text-white"
+                    className="mt-6 rounded-full bg-[#3b82f6] px-5 py-3 text-sm font-semibold"
                   >
                     Ir al login
                   </button>
                 </div>
               ) : (
-                <form
-                  onSubmit={onContact}
-                  className="space-y-4 rounded-[1.5rem] border border-white/10 bg-white/[0.04] p-6 backdrop-blur sm:p-8"
-                >
+                <form onSubmit={onContact} className="space-y-4 rounded-3xl border border-white/15 bg-white/5 p-6 sm:p-8">
                   <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="block text-sm text-white/60">
-                      Name
-                      <input
-                        required
-                        name="name"
-                        className="mt-2 w-full rounded-xl border border-white/15 bg-transparent px-4 py-3 text-white outline-none placeholder:text-white/25 focus:border-[#60a5fa]"
-                        placeholder="Your name"
-                      />
-                    </label>
-                    <label className="block text-sm text-white/60">
-                      Email
-                      <input
-                        required
-                        type="email"
-                        name="email"
-                        className="mt-2 w-full rounded-xl border border-white/15 bg-transparent px-4 py-3 text-white outline-none placeholder:text-white/25 focus:border-[#60a5fa]"
-                        placeholder="you@email.com"
-                      />
-                    </label>
-                  </div>
-                  <label className="block text-sm text-white/60">
-                    Message
-                    <textarea
+                    <input
                       required
-                      name="message"
-                      rows={4}
-                      className="mt-2 w-full resize-none rounded-xl border border-white/15 bg-transparent px-4 py-3 text-white outline-none placeholder:text-white/25 focus:border-[#60a5fa]"
-                      placeholder="Tell us what you need"
+                      name="name"
+                      placeholder="Nombre"
+                      className="rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
                     />
-                  </label>
+                    <input
+                      required
+                      type="email"
+                      name="email"
+                      placeholder="Correo"
+                      className="rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
+                    />
+                  </div>
+                  <textarea
+                    required
+                    name="message"
+                    rows={4}
+                    placeholder="Mensaje"
+                    className="w-full resize-none rounded-xl border border-white/15 bg-transparent px-4 py-3 outline-none placeholder:text-white/30 focus:border-[#60a5fa]"
+                  />
                   <button
                     type="submit"
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#3b82f6] to-[#6366f1] px-6 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(59,130,246,0.35)]"
+                    className="rounded-full bg-[#3b82f6] px-6 py-3.5 text-sm font-semibold"
                   >
-                    Submit <ArrowUpRight className="h-4 w-4" />
+                    Enviar
                   </button>
                 </form>
               )}
@@ -896,17 +785,17 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-white/10 pb-safe">
-        <div className="mx-auto flex max-w-6xl flex-col gap-8 px-5 py-12 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+      <footer className="border-t border-white/10 bg-[#050505] pb-safe">
+        <div className="mx-auto flex max-w-[1400px] flex-col gap-6 px-5 py-10 sm:flex-row sm:items-center sm:justify-between sm:px-8">
           <div>
-            <p className="font-[family-name:var(--lp-serif)] text-2xl text-white">
-              SAC<span className="text-[#60a5fa]">®</span>
+            <p className="font-[family-name:var(--f-display)] text-lg font-bold uppercase tracking-[0.25em]">
+              S.O.T
             </p>
-            <p className="mt-1 font-[family-name:var(--lp-sans)] text-sm text-white/40">
-              Sistema de Administración Central
+            <p className="mt-1 font-[family-name:var(--f-body)] text-sm text-white/40">
+              Sistema de Organización Tributaria
             </p>
           </div>
-          <div className="flex flex-wrap gap-6 font-[family-name:var(--lp-sans)] text-xs uppercase tracking-[0.16em] text-white/45">
+          <div className="flex flex-wrap gap-5 text-xs uppercase tracking-[0.16em] text-white/40">
             {NAV.map((n) => (
               <a key={n.href} href={n.href} className="hover:text-white">
                 {n.label}

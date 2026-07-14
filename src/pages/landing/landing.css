@@ -1,0 +1,37 @@
+/* Landing: desbloquear scroll del documento (html/body/#root estánen 100dvh) */
+html.landing-active {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: clip !important;
+  overflow-y: auto !important;
+  overscroll-behavior-y: auto !important;
+  scroll-behavior: smooth;
+}
+
+html.landing-active body {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow-x: clip !important;
+  overflow-y: visible !important;
+  overscroll-behavior-y: auto !important;
+}
+
+html.landing-active #root {
+  height: auto !important;
+  min-height: 100% !important;
+  overflow: visible !important;
+}
+
+.sot-landing {
+  position: relative;
+  width: 100%;
+  min-height: 100%;
+}
+
+.sot-mark {
+  display: inline-block;
+  width: 0.55rem;
+  height: 0.55rem;
+  background: #3b82f6;
+  flex-shrink: 0;
+}
