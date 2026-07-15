@@ -12,7 +12,8 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test:e2e:notifications": "playwright test tests/notifications.e2e.spec.ts",
-    "test:e2e:gestion-actas": "playwright test tests/gestion-actas.spec.ts tests/gestion-actas.a11y.spec.ts tests/gestion-actas.concurrency.spec.ts"
+    "test:e2e:gestion-actas": "playwright test tests/gestion-actas.spec.ts tests/gestion-actas.a11y.spec.ts tests/gestion-actas.concurrency.spec.ts",
+    "start": "node scripts/serve-dist.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^4.1.3",
